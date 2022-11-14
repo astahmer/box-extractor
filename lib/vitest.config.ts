@@ -7,5 +7,6 @@ export default defineConfig({
     test: {
         include: ["src/*.test.ts", "tests/*.test.ts"],
         snapshotFormat: { indent: 4, escapeString: false },
+        setupFiles: ["tests/setup.ts"],
     },
 });
