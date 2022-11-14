@@ -14,12 +14,14 @@ export const extract = (ast: SourceFile) => {
     //           ^^^^^           ^^^^^^^^^^^^^^^
 
     console.log(selector);
-    const nodes = query<Identifier>(ast, selector);
-    if (nodes.length > 0) {
-        console.log(
-            nodes.length,
-            nodes.map((n) => extractJsxAttributeIdentifierValue(n))
-        );
+    const identifierNodesFromJsxAttribute = query<Identifier>(ast, selector);
+    if (identifierNodesFromJsxAttribute.length > 0) {
+        const values = identifierNodesFromJsxAttribute.map((n) => [n.getText(), extractJsxAttributeIdentifierValue(n)]);
+
+        console.log(identifierNodesFromJsxAttribute.length);
+        console.log(values);
+
+        return values;
     }
 };
 
