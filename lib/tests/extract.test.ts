@@ -1,5 +1,5 @@
-import { Project, ts } from "ts-morph";
-import { beforeAll, expect, it } from "vitest";
+import { Project, SourceFile, ts } from "ts-morph";
+import { afterEach, expect, it } from "vitest";
 import { extract } from "../src/extract";
 import { default as ExtractSample } from "./ExtractSample?raw";
 
@@ -20,29 +20,33 @@ const createProject = () => {
         },
         // tsConfigFilePath: tsConfigPath,
         skipAddingFilesFromTsConfig: true,
+        skipFileDependencyResolution: true,
+        skipLoadingLibFiles: true,
     });
 };
 
-// let project: Project;
-// let fileCount = 0;
+let project: Project = createProject();
+let fileCount = 0;
 
-// beforeAll(() => {
-//     project = createProject();
-// });
+let sourceFile: SourceFile;
+afterEach(() => {
+    if (!sourceFile) return;
+
+    if (sourceFile.wasForgotten()) return;
+    project.removeSourceFile(sourceFile);
+});
 
 const componentName = "ColorBox";
 const propNameList = ["color", "backgroundColor"];
 
 const extractFromCode = (code: string) => {
-    const project = createProject();
-    // const fileName = `file${fileCount++}.tsx`;
-    const sourceFile = project.createSourceFile("Sample.tsx", code, { scriptKind: ts.ScriptKind.TSX });
+    const fileName = `file${fileCount++}.tsx`;
+    sourceFile = project.createSourceFile(fileName, code, { scriptKind: ts.ScriptKind.TSX });
     // console.log(sourceFile.forEachDescendant((c) => [c.getKindName(), c.getText()]));
     return extract(sourceFile, { componentName, propNameList });
 };
 
 it("extract it all", () => {
-    const project = createProject();
     const sourceFile = project.createSourceFile("ExtractSample.tsx", ExtractSample);
 
     expect(extract(sourceFile, { componentName, propNameList })).toMatchInlineSnapshot(`
@@ -58,22 +62,33 @@ it("extract it all", () => {
           ["color", ["gray.200", "gray.300"]],
           ["color", "gray.100"],
           ["color", "facebook.900"],
+          ["color", "facebook.900"],
+          ["color", "pink.100"],
+          ["color", "pink.100"],
+          ["color", "pink.100"],
+          ["color", "pink.100"],
+          ["color", "pink.100"],
+          ["color", "facebook.900"],
+          ["color", "facebook.900"],
+          ["color", "facebook.900"],
           ["color", "gray.100"],
-          ["color", null],
-          ["color", null],
-          ["color", null],
           ["color", "gray.100"],
-          ["color", null],
-          ["color", null],
-          ["color", null],
           ["color", "gray.100"],
-          ["color", null],
-          ["color", null],
-          ["color", null],
-          ["color", [null, null]],
+          ["color", "gray.100"],
+          ["color", "gray.100"],
+          ["color", "gray.100"],
+          ["color", "gray.100"],
+          ["color", "gray.100"],
+          ["color", "gray.100"],
+          ["color", "gray.100"],
+          ["color", "gray.100"],
+          ["color", ["gray.600", "gray.700"]],
+          ["color", ["gray.700", "gray.100"]],
           ["color", "gray.100"],
       ]
     `);
+
+    project.removeSourceFile(sourceFile);
 });
 
 it("extract JsxAttribute > StringLiteral (multiple)", () => {
@@ -321,29 +336,172 @@ it("extract JsxAttribute > JsxExpression > ElementAccessExpression (AsExpression
     ).toMatchInlineSnapshot('[["color", "green.500"]]');
 });
 
-// TODO sans `as const`
+it("extract JsxAttribute > JsxExpression > ElementAccessExpression (AsExpression) > Identifier (StringLiteral) x2 on ShorthandPropertyAssignment", () => {
+    expect(
+        extractFromCode(`
+            const longProp = "green.600"
+            const colorMap = {
+                longProp,
+            };
+            <ColorBox color={colorMap["long" + "Prop"] as any}></ColorBox>
+        `)
+    ).toMatchInlineSnapshot('[["color", "green.600"]]');
+});
 
-// TODO
-// [
-//   [ 'color={colorMap["static" + "Color"] as any}', undefined ],
-//   [ 'color={colorMap["static" + `${"Color"}`] as any}', undefined ],
-//   [
-//     'color={colorMap["static" + `${dynamicPart2}`] as any}',
-//     undefined
-//   ],
-//   [
-//     'color={colorMap[("static" as any) + `${withDynamicPart["dynamicPart2"]}`] as any}',
-//     undefined
-//   ],
-//   [ 'color={colorMap[dynamicPart1 + "Color"]!}', undefined ],
-//   [ 'color={colorMap[dynamicPart1 + dynamicPart2]}', undefined ],
-//   [ 'color={colorMap[wrapperMap[secondRef]]}', undefined ],
-//   [
-//     'color={colorMap[wrapperMap.thirdRef + wrapperMap["fourthRef"]]}',
-//     undefined
-//   ],
-//   [
-//     'color={colorMap[isShown ? ("literalColor" as const) : deepReference] as any}',
-//     undefined
-//   ]
-// ]
+it("extract JsxAttribute > JsxExpression > ElementAccessExpression > BinaryExpression > StringLiteral (AsExpression) + TemplateStringLiteral > Identifier (StringLiteral) (AsExpression)", () => {
+    expect(
+        extractFromCode(`
+            const dynamicPart2 = "Prop";
+            const withDynamicPart = {
+                dynamicPart2: dynamicPart2,
+            };
+            const longProp = "green.700"
+            const colorMap = {
+                longProp,
+            };
+            <ColorBox color={colorMap[("long" as any) + \`\${withDynamicPart["dynamicPart2"]}\`] as any}></ColorBox>
+        `)
+    ).toMatchInlineSnapshot('[["color", "green.700"]]');
+});
+
+it("extract JsxAttribute > JsxExpression > ElementAccessExpression > ElementAccessExpression > Identifier > Identifier", () => {
+    expect(
+        extractFromCode(`
+            const dynamicElement = "longProp";
+            const secondRef = "secondLevel";
+            const wrapperMap = {
+                [secondRef]: dynamicElement,
+            };
+            const longProp = "green.800"
+            const colorMap = {
+                longProp,
+            };
+            <ColorBox color={colorMap[wrapperMap[secondRef]]}></ColorBox>
+        `)
+    ).toMatchInlineSnapshot('[["color", "green.800"]]');
+});
+
+it("extract JsxAttribute > JsxExpression > ElementAccessExpression > ArrayLiteralExpression > NumericLiteral", () => {
+    expect(
+        extractFromCode(`
+            <ColorBox color={["green.900"][0]}></ColorBox>
+        `)
+    ).toMatchInlineSnapshot('[["color", "green.900"]]');
+});
+
+it("extract JsxAttribute > JsxExpression > ElementAccessExpression > ArrayLiteralExpression > StringLiteral", () => {
+    expect(
+        extractFromCode(`
+            <ColorBox color={["pink.100"]["0"]}></ColorBox>
+        `)
+    ).toMatchInlineSnapshot('[["color", "pink.100"]]');
+});
+
+it("extract JsxAttribute > JsxExpression > ElementAccessExpression > ArrayLiteralExpression > Identifier > NumericLiteral", () => {
+    expect(
+        extractFromCode(`
+            const nbIndex = 1;
+            <ColorBox color={["pink.100", "pink.200"][nbIndex]}></ColorBox>
+        `)
+    ).toMatchInlineSnapshot('[["color", "pink.200"]]');
+});
+
+it("extract JsxAttribute > JsxExpression > ElementAccessExpression > ArrayLiteralExpression > Identifier > StringLiteral", () => {
+    expect(
+        extractFromCode(`
+            const strIndex = "0";
+            <ColorBox color={["pink.300"][strIndex]}></ColorBox>
+        `)
+    ).toMatchInlineSnapshot('[["color", "pink.300"]]');
+});
+
+it("extract JsxAttribute > JsxExpression > ElementAccessExpression > ParenthesizedExpression > AsExpression > NumericLiteral", () => {
+    expect(
+        extractFromCode(`
+            const array = ["pink.400"];
+            <ColorBox color={(array as any)?.[0] as any}></ColorBox>
+        `)
+    ).toMatchInlineSnapshot('[["color", "pink.400"]]');
+});
+
+it("extract JsxAttribute > JsxExpression > ArrayLiteralExpression > ElementAccessExpression > NonNullExpression > ElementAccessExpression > NumericLiteral", () => {
+    expect(
+        extractFromCode(`
+            const array = ["pink.500"];
+            <ColorBox color={[array[0]]![0]}></ColorBox>
+        `)
+    ).toMatchInlineSnapshot('[["color", "pink.500"]]');
+});
+
+it("extract JsxAttribute > JsxExpression > ElementAccessExpression > ElementAccessExpression > ArrayLiteralExpression > ObjectLiteralExpresssion > PropertyAssignment > StringLiteral", () => {
+    expect(
+        extractFromCode(`
+            <ColorBox color={[{ staticColor: "pink.600" }][0]["staticColor"]}></ColorBox>
+        `)
+    ).toMatchInlineSnapshot('[["color", "pink.600"]]');
+});
+
+it("extract JsxAttribute > JsxExpression > ConditionalExpression", () => {
+    expect(
+        extractFromCode(`
+            const isShown = true;
+            const dynamicColorName = "something";
+            const nestedReference = { ref: dynamicColorName } as const;
+            const deepReference = nestedReference.ref;
+
+            const colorMap = {
+                literalColor: "pink.700",
+                [deepReference]: "pink.800",
+            };
+
+            <ColorBox color={colorMap[isShown ? ("literalColor" as const) : deepReference] as any}></ColorBox>
+        `)
+    ).toMatchInlineSnapshot('[["color", ["pink.700", "pink.800"]]]');
+});
+
+it("extract JsxAttribute > JsxExpression > ElementAccessExpression > TemplateExpression > Identifier > TemplateExpression", () => {
+    expect(
+        extractFromCode(`
+            const dynamicPart1 = "long";
+            const dynamicPart2 = "Prop";
+            const dynamicPartsAsTemplateString = \`\${dynamicPart1}\${dynamicPart2}\` as const;
+
+            const longProp = "pink.900"
+            const colorMap = {
+                longProp,
+            };
+            <ColorBox color={colorMap[\`\${dynamicPartsAsTemplateString}\`] as any}></ColorBox>
+        `)
+    ).toMatchInlineSnapshot('[["color", "pink.900"]]');
+});
+
+it("extract JsxAttribute > JsxExpression > ElementAccessExpression > BinaryExpression > PropertyAccessExpression + ElementAccessExpression", () => {
+    expect(
+        extractFromCode(`
+            const dynamicElement = "longProp";
+            const secondRef = "secondLevel";
+
+            const dynamicPart1 = "long";
+            const dynamicPart2 = "Prop";
+            const withDynamicPart = {
+                dynamicPart1,
+                dynamicPart2: dynamicPart2,
+            };
+
+            const wrapperMap = {
+                [secondRef]: dynamicElement,
+                thirdRef: withDynamicPart.dynamicPart1,
+                fourthRef: withDynamicPart["dynamicPart2"],
+            };
+            const longProp = "yellow.100"
+            const colorMap = {
+                longProp,
+            };
+            <ColorBox color={colorMap[wrapperMap.thirdRef + wrapperMap["fourthRef"]]}></ColorBox>
+        `)
+    ).toMatchInlineSnapshot('[["color", "yellow.100"]]');
+});
+
+// TODO sans `as const`
+// TODO condtions ternaires imbriquées
+// TODO conditions check si truthy ?

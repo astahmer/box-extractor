@@ -42,10 +42,12 @@ const dynamicAttribute = "borderColor";
 const objectWithAttributes = { color: "blackAlpha.400" } as any;
 
 const dynamicColor = colorMap[dynamicElement];
+const array = ["pink.100"];
+const strIndex = "0";
+const numberIndex = 0;
 
 export const Demo = () => {
     const [isShown, setIsShown] = useState(false);
-    const obj = isShown ? { text: "children" } : undefined;
 
     // const [controlledColor, setControlledColor] = useState("gray.400" as any);
     // const [dynamicVarColor, setDynamicVarColor] = useState("gray.500" as any);
@@ -61,25 +63,14 @@ export const Demo = () => {
                     </div>
                     {/* <DessertBox>box</DessertBox> */}
                     <div className={colorSprinkes({ color: "blue.100" })}>blue100 without ColorBox</div>
+                    {/* self closing */}
                     <ColorBox color="red.200" />
+
+                    {/* jsxopeningelement */}
                     <ColorBox color="yellow.300" backgroundColor="blackAlpha.100">
                         yellow.300 with children
                     </ColorBox>
                     <ColorBox color={isShown ? "cyan.400" : "cyan.500"}>ternary</ColorBox>
-                    <ColorBox {...{ color: "facebook.100" }}>spread</ColorBox>
-                    <ColorBox {...objectWithAttributes}>var spread</ColorBox>
-                    <ColorBox {...(isShown ? objectWithAttributes : null)}>conditional var spread</ColorBox>
-                    <ColorBox
-                        {...{
-                            color: "facebook.100",
-                            backgroundColor: "blackAlpha.100",
-                            [dynamicAttribute]: "blackAlpha.300",
-                        }}
-                    >
-                        multiple spread
-                    </ColorBox>
-                    <ColorBox {...(isShown ? { color: "facebook.200" } : undefined)}>spread ternary</ColorBox>
-                    <ColorBox {...(isShown && { color: "facebook.300" })}>spread &&</ColorBox>
                     <ColorBox color={"facebook.400"}>string in expression</ColorBox>
                     <ColorBox color={staticColor}>staticColor</ColorBox>
                     <ColorBox color={1 === 1 ? "facebook.500" : staticColor3}>staticColor ternary</ColorBox>
@@ -91,6 +82,15 @@ export const Demo = () => {
                     <ColorBox color={{ staticColor: "facebook.900" }["staticColor"]}>
                         colorMap bracket staticColor
                     </ColorBox>
+                    <ColorBox color={["facebook.900"][0]}></ColorBox>
+                    <ColorBox color={array[0]}></ColorBox>
+                    <ColorBox color={array[strIndex]}></ColorBox>
+                    <ColorBox color={array[numberIndex]}></ColorBox>
+                    <ColorBox color={(array as any)?.[0] as any}></ColorBox>
+                    <ColorBox color={[array[0]]![0]}></ColorBox>
+                    <ColorBox color={[{ staticColor: "facebook.900" }][0]["staticColor"]}></ColorBox>
+                    <ColorBox color={[{ staticColor: "facebook.900" }]?.[0]?.["staticColor"]}></ColorBox>
+                    <ColorBox color={([{ staticColor: "facebook.900" }]! as any)[0]!["staticColor"]}></ColorBox>
                     <ColorBox color={colorMap["staticColor"]}>colorMap bracket staticColor</ColorBox>
                     <ColorBox color={colorMap["static" + "Color"] as any}>
                         colorMap bracket binary expression with 2 string literal
@@ -131,6 +131,22 @@ export const Demo = () => {
                     </ColorBox>
                     {/* gray100 */}
                     <ColorBox color={colorMap?.staticColor}>colorMap dot optional staticColor</ColorBox>
+
+                    {/* spread */}
+                    <ColorBox {...{ color: "facebook.100" }}>spread</ColorBox>
+                    <ColorBox {...objectWithAttributes}>var spread</ColorBox>
+                    <ColorBox {...(isShown ? objectWithAttributes : null)}>conditional var spread</ColorBox>
+                    <ColorBox
+                        {...{
+                            color: "facebook.100",
+                            backgroundColor: "blackAlpha.100",
+                            [dynamicAttribute]: "blackAlpha.300",
+                        }}
+                    >
+                        multiple spread
+                    </ColorBox>
+                    <ColorBox {...(isShown ? { color: "facebook.200" } : undefined)}>spread ternary</ColorBox>
+                    <ColorBox {...(isShown && { color: "facebook.300" })}>spread &&</ColorBox>
 
                     {/* unlikely this will ever be supported (unless ezno delivers) */}
                     {/* <ColorBox color={controlledColor}>controlledColor</ColorBox>
