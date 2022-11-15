@@ -31,6 +31,13 @@ const colorMap = {
     [deepReference]: "gray.800",
     [dynamicName]: dynamicLiteralColor,
 };
+
+const secondRef = "secondLevel";
+const wrapperMap = {
+    [secondRef]: dynamicElement,
+    thirdRef: withDynamicPart.dynamicPart1,
+    fourthRef: withDynamicPart["dynamicPart2"],
+};
 const dynamicAttribute = "borderColor";
 const objectWithAttributes = { color: "blackAlpha.400" } as any;
 
@@ -81,6 +88,9 @@ export const Demo = () => {
                     <ColorBox color={isShown ? staticColor2 : staticColor3}>staticColor ternary</ColorBox>
                     {/* gray100 */}
                     <ColorBox color={colorMap.staticColor}>colorMap dot staticColor</ColorBox>
+                    <ColorBox color={{ staticColor: "facebook.900" }["staticColor"]}>
+                        colorMap bracket staticColor
+                    </ColorBox>
                     <ColorBox color={colorMap["staticColor"]}>colorMap bracket staticColor</ColorBox>
                     <ColorBox color={colorMap["static" + "Color"] as any}>
                         colorMap bracket binary expression with 2 string literal
@@ -107,6 +117,10 @@ export const Demo = () => {
                     </ColorBox>
                     {/* gray100 */}
                     <ColorBox color={colorMap[dynamicElement]}>colorMap bracket var</ColorBox>
+                    <ColorBox color={colorMap[wrapperMap[secondRef]]}>colorMap bracket var</ColorBox>
+                    <ColorBox color={colorMap[wrapperMap.thirdRef + wrapperMap["fourthRef"]]}>
+                        colorMap bracket var
+                    </ColorBox>
                     {/* gray600/gray700 */}
                     <ColorBox color={colorMap[isShown ? ("literalColor" as const) : deepReference] as any}>
                         colorMap bracket conditonal access with ref and literal wrapped with as any

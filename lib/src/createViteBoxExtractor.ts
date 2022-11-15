@@ -71,7 +71,10 @@ export const createViteBoxExtractor = (): Plugin => {
             }
 
             if (id.endsWith(".tsx")) {
-                extract(sourceFile!);
+                extract(sourceFile!, {
+                    componentName: "ColorBox",
+                    propNameList: ["color", "backgroundColor"],
+                });
             }
 
             return null;
