@@ -22,6 +22,7 @@
         "@babel/core": "^7.20.2",
         "@phenomnomnominal/tsquery": "^5.0.0",
         "pastable": "^2.0.10",
+        "ts-evaluator": "^1.0.7",
         "ts-morph": "^16.0.0",
         "ts-pattern": "^4.0.5"
     },

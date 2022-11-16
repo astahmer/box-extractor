@@ -13,7 +13,11 @@ import {
     ts,
     Type,
     Node,
+    Expression,
+    TypeChecker,
+    BinaryExpression,
 } from "ts-morph";
+import { evaluate } from "ts-evaluator";
 
 // const ast = tsquery.ast(code, "", ScriptKind.TSX);
 
@@ -79,49 +83,25 @@ const extractJsxAttributeIdentifierValue = (identifier: Identifier) => {
 
         // console.log("expr", expression.getKindName(), expression.getText());
 
-        // const type = expression.getType();
-        // if (type.isLiteral() || type.isUnionOrIntersection()) return parseType(type);
+        const maybeValue = maybeLiteral(expression);
+        if (isNotNullish(maybeValue)) return maybeValue;
 
-        // <ColorBox color={"xxx"} />
-        if (Node.isStringLiteral(expression)) {
-            return expression.getLiteralText();
-        }
+        const type = expression.getType();
+        if (type.isLiteral() || type.isUnionOrIntersection()) return parseType(type);
 
-        // <ColorBox color={staticColor} />
-        if (Node.isIdentifier(expression)) {
-            return getIdentifierReferenceValue(expression);
-        }
-
+        // unresolvable condition (isDark) will return both possible outcome
+        // const [isDark, setIsDark] = useColorMode();
         // <ColorBox color={isDark ? darkValue : "whiteAlpha.100"} />
         if (Node.isConditionalExpression(expression)) {
             return [maybeLiteral(expression.getWhenTrue()), maybeLiteral(expression.getWhenFalse())];
         }
-
-        // <ColorBox color={xxx[yyy]} /> / <ColorBox color={xxx["zzz"]} />
-        if (Node.isElementAccessExpression(expression)) {
-            return getElementAccessedExpressionValue(expression);
-        }
-
-        // <ColorBox color={xxx.yyy} />
-        if (Node.isPropertyAccessExpression(expression)) {
-            return getPropertyAccessedExpressionValue(expression);
-        }
-
-        // if (Node.isBinaryExpression(expression)) {
-        //     const left = getLiteralOrIdentifierValue(expression.getLeft());
-        //     const right = getLiteralOrIdentifierValue(expression.getRight());
-        //     console.log({ left, right });
-        //     return [left, right];
-        // }
     }
 };
 
 const findProperty = (node: ObjectLiteralElementLike, propName: string) => {
-    console.log({ node: node.getText(), propName, nodeKind: node.getKindName() });
     if (Node.isPropertyAssignment(node)) {
         const name = node.getNameNode();
 
-        // console.log({ name: name.getText(), nameKind: name.getKindName(), true: name.getText() === propName });
         if (Node.isIdentifier(name) && name.getText() === propName) {
             return node;
         }
@@ -129,7 +109,6 @@ const findProperty = (node: ObjectLiteralElementLike, propName: string) => {
         if (Node.isComputedPropertyName(name)) {
             const expression = name.getExpression();
             const computedPropName = maybeLiteral(expression);
-            console.log({ computedPropName, true: computedPropName === propName });
 
             if (computedPropName === propName) {
                 return node;
@@ -139,7 +118,6 @@ const findProperty = (node: ObjectLiteralElementLike, propName: string) => {
 
     if (Node.isShorthandPropertyAssignment(node)) {
         const name = node.getNameNode();
-        console.log({ name: name.getText(), nameKind: name.getKindName(), true: name.getText() === propName });
         if (Node.isIdentifier(name) && name.getText() === propName) {
             return node;
         }
@@ -150,14 +128,14 @@ const getPropValue = (initializer: ObjectLiteralExpression, propName: string) =>
     const property =
         initializer.getProperty(propName) ?? initializer.getProperties().find((p) => findProperty(p, propName));
 
-    console.log("props", {
-        propName,
-        property: property?.getText(),
-        properties: initializer.getProperties().map((p) => p.getText()),
-        propertyKind: property?.getKindName(),
-        initializer: initializer.getText(),
-        initializerKind: initializer.getKindName(),
-    });
+    // console.log("props", {
+    //     propName,
+    //     property: property?.getText(),
+    //     properties: initializer.getProperties().map((p) => p.getText()),
+    //     propertyKind: property?.getKindName(),
+    //     initializer: initializer.getText(),
+    //     initializerKind: initializer.getKindName(),
+    // });
 
     if (Node.isPropertyAssignment(property)) {
         const propInit = property.getInitializerOrThrow();
@@ -185,10 +163,8 @@ const maybeTemplateStringValue = (template: TemplateExpression) => {
     const headValue = maybeLiteral(head);
     const tailValues = tail.map((t) => {
         const expression = t.getExpression();
-        console.log({ expression: expression.getText(), expressionKind: expression.getKindName() });
         return maybeLiteral(expression);
     });
-    console.log({ headkind: head.getKindName(), head: head.getLiteralText(), headValue, tailValues });
 
     if (isNotNullish(headValue) && tailValues.every(isNotNullish)) {
         // console.log({ propName, headValue, tailValues });
@@ -200,17 +176,16 @@ const maybePropIdentifierDefinitionValue = (elementAccessed: Identifier, propNam
     const defs = elementAccessed.getDefinitionNodes();
     while (defs.length > 0) {
         const def = unwrapExpression(defs.shift()!);
-        console.log({
-            def: def?.getText(),
-            elementAccessed: elementAccessed.getText(),
-            kind: def?.getKindName(),
-            type: def?.getType().getText(),
-            propName,
-        });
+        // console.log({
+        //     def: def?.getText(),
+        //     elementAccessed: elementAccessed.getText(),
+        //     kind: def?.getKindName(),
+        //     type: def?.getType().getText(),
+        //     propName,
+        // });
 
         if (Node.isVariableDeclaration(def)) {
             const initializer = unwrapExpression(def.getInitializerOrThrow());
-            console.log("nno", { initializer: initializer?.getText(), kind: initializer?.getKindName() });
 
             if (Node.isObjectLiteralExpression(initializer)) {
                 return getPropValue(initializer, propName);
@@ -230,14 +205,17 @@ const maybePropIdentifierDefinitionValue = (elementAccessed: Identifier, propNam
 };
 
 function maybeLiteral(node: Node): string | undefined {
+    // <ColorBox color={"xxx"} />
     if (Node.isStringLiteral(node)) {
         return node.getLiteralText();
     }
 
+    // <ColorBox color={123} />
     if (Node.isNumericLiteral(node)) {
         return node.getLiteralText();
     }
 
+    // <ColorBox color={staticColor} />
     if (Node.isIdentifier(node)) {
         return getIdentifierReferenceValue(node);
     }
@@ -246,20 +224,38 @@ function maybeLiteral(node: Node): string | undefined {
         return node.getLiteralText();
     }
 
-    // console.log(node.getKindName(), node.getText());
+    // <ColorBox color={`${xxx}yyy`} />
     if (Node.isTemplateExpression(node)) {
         return maybeTemplateStringValue(node);
     }
 
+    // <ColorBox color={xxx[yyy]} /> / <ColorBox color={xxx["zzz"]} />
     if (Node.isElementAccessExpression(node)) {
         return getElementAccessedExpressionValue(node) as string;
     }
 
+    // <ColorBox color={xxx.yyy} />
     if (Node.isPropertyAccessExpression(node)) {
         return getPropertyAccessedExpressionValue(node)!;
     }
 
-    // TODO isBinaryExpression
+    // <ColorBox color={isDark ? darkValue : "whiteAlpha.100"} />
+    if (Node.isConditionalExpression(node)) {
+        return evaluateExpression(node, node.getProject().getTypeChecker()) ?? undefined;
+    }
+
+    // <ColorBox color={fn()} />
+    if (Node.isCallExpression(node)) {
+        return evaluateExpression(node, node.getProject().getTypeChecker()) ?? undefined;
+    }
+
+    if (Node.isBinaryExpression(node)) {
+        return (
+            tryUnwrapBinaryExpression(node) ?? evaluateExpression(node, node.getProject().getTypeChecker()) ?? undefined
+        );
+    }
+
+    console.log({ maybeLiteralEnd: true, node: node.getText(), kind: node.getKindName() });
 }
 
 const unwrapExpression = (node: Node): Node => {
@@ -311,15 +307,15 @@ const getIdentifierReferenceValue = (identifier: Identifier) => {
             const type = initializer.getType();
             if (type.isLiteral() || type.isUnionOrIntersection()) return parseType(type) as string;
 
-            console.log({
-                getIdentifierReferenceValue: true,
-                def: def?.getText(),
-                identifier: identifier.getText(),
-                kind: def?.getKindName(),
-                type: def?.getType().getText(),
-                initializer: initializer?.getText(),
-                initializerKind: initializer?.getKindName(),
-            });
+            // console.log({
+            //     getIdentifierReferenceValue: true,
+            //     def: def?.getText(),
+            //     identifier: identifier.getText(),
+            //     kind: def?.getKindName(),
+            //     type: def?.getType().getText(),
+            //     initializer: initializer?.getText(),
+            //     initializerKind: initializer?.getKindName(),
+            // });
 
             if (Node.isPropertyAccessExpression(initializer)) {
                 return getPropertyAccessedExpressionValue(initializer);
@@ -329,6 +325,27 @@ const getIdentifierReferenceValue = (identifier: Identifier) => {
             //     return getIdentifierReferenceValue(initializer);
             // }
         }
+    }
+};
+
+const tryUnwrapBinaryExpression = (node: BinaryExpression) => {
+    if (node.getOperatorToken().getKind() !== ts.SyntaxKind.PlusToken) return;
+
+    const left = unwrapExpression(node.getLeft());
+    const right = unwrapExpression(node.getRight());
+
+    const leftValue = maybeLiteral(left);
+    const rightValue = maybeLiteral(right);
+
+    // console.log({
+    //     leftValue,
+    //     rightValue,
+    //     left: [left.getKindName(), left.getText()],
+    //     right: [right.getKindName(), right.getText()],
+    // });
+
+    if (isNotNullish(leftValue) && isNotNullish(rightValue)) {
+        return leftValue + rightValue;
     }
 };
 
@@ -343,52 +360,33 @@ const getElementAccessedExpressionValue = (
 
     const argValue = maybeLiteral(arg);
 
-    console.log("yes", {
-        arg: arg.getText(),
-        argKind: arg.getKindName(),
-        elementAccessed: elementAccessed.getText(),
-        elementAccessedKind: elementAccessed.getKindName(),
-        expression: expression.getText(),
-        expressionKind: expression.getKindName(),
-        argValue,
-    });
+    // console.log("yes", {
+    //     arg: arg.getText(),
+    //     argKind: arg.getKindName(),
+    //     elementAccessed: elementAccessed.getText(),
+    //     elementAccessedKind: elementAccessed.getKindName(),
+    //     expression: expression.getText(),
+    //     expressionKind: expression.getKindName(),
+    //     argValue,
+    // });
 
     // <ColorBox color={xxx["yyy"]} />
     if (Node.isIdentifier(elementAccessed) && isNotNullish(argValue)) {
-        console.log({ first: true, propName: argValue });
         return maybePropIdentifierDefinitionValue(elementAccessed, argValue);
     }
 
     // <ColorBox color={xxx[yyy + "zzz"]} />
-    if (Node.isBinaryExpression(arg) && arg.getOperatorToken().getKind() === ts.SyntaxKind.PlusToken) {
-        const left = unwrapExpression(arg.getLeft());
-        const right = unwrapExpression(arg.getRight());
+    if (Node.isBinaryExpression(arg)) {
+        const propName = tryUnwrapBinaryExpression(arg) ?? maybeLiteral(arg);
 
-        const leftValue = maybeLiteral(left);
-        const rightValue = maybeLiteral(right);
-
-        console.log({
-            leftValue,
-            rightValue,
-            left: [left.getKindName(), left.getText()],
-            right: [right.getKindName(), right.getText()],
-        });
-
-        if (isNotNullish(leftValue) && isNotNullish(rightValue)) {
-            const propName = leftValue + rightValue;
-            // console.log({ propName });
-
-            if (isNotNullish(propName) && Node.isIdentifier(elementAccessed)) {
-                console.log({ propName, propValue: maybePropIdentifierDefinitionValue(elementAccessed, propName) });
-                return maybePropIdentifierDefinitionValue(elementAccessed, propName);
-            }
+        if (isNotNullish(propName) && Node.isIdentifier(elementAccessed)) {
+            return maybePropIdentifierDefinitionValue(elementAccessed, propName);
         }
     }
 
     // <ColorBox color={xxx[`yyy`]} />
     if (Node.isTemplateExpression(arg)) {
         const propName = maybeTemplateStringValue(arg);
-        // console.log({ propName });
 
         if (isNotNullish(propName) && Node.isIdentifier(elementAccessed)) {
             return maybePropIdentifierDefinitionValue(elementAccessed, propName);
@@ -408,7 +406,6 @@ const getElementAccessedExpressionValue = (
     // <ColorBox color={xxx[yyy[zzz]]} />
     if (Node.isIdentifier(elementAccessed) && Node.isElementAccessExpression(arg)) {
         const propName = getElementAccessedExpressionValue(arg) as string;
-        // console.log({ nested: true, propName });
 
         if (isNotNullish(propName)) {
             return maybePropIdentifierDefinitionValue(elementAccessed, propName);
@@ -430,6 +427,29 @@ const getElementAccessedExpressionValue = (
 
     // <ColorBox color={xxx[aaa ? yyy : zzz]]} />
     if (Node.isConditionalExpression(arg)) {
+        const propName = maybeLiteral(arg);
+        if (isNotNullish(propName)) {
+            if (Node.isIdentifier(elementAccessed)) {
+                return maybePropIdentifierDefinitionValue(elementAccessed, propName);
+            }
+
+            // TODO
+            // if (Node.isObjectLiteralExpression(elementAccessed)) {
+            //     return getPropValue(elementAccessed, propName);
+            // }
+
+            // if (Node.isArrayLiteralExpression(elementAccessed)) {
+            //     return getArrayElementValueAtIndex(elementAccessed, Number(propName));
+            // }
+
+            // if (Node.isElementAccessExpression(elementAccessed)) {
+            //     const identifier = getElementAccessedExpressionValue(elementAccessed);
+            //     if (Node.isNode(identifier) && Node.isObjectLiteralExpression(identifier)) {
+            //         return getPropValue(identifier, propName);
+            //     }
+            // }
+        }
+
         const whenTrue = unwrapExpression(arg.getWhenTrue());
         const whenFalse = unwrapExpression(arg.getWhenFalse());
 
@@ -463,13 +483,13 @@ const getArrayElementValueAtIndex = (array: ArrayLiteralExpression, index: numbe
     if (!element) return;
 
     const value = maybeLiteral(element);
-    console.log({
-        array: array.getText(),
-        arrayKind: array.getKindName(),
-        element: element.getText(),
-        elementKind: element.getKindName(),
-        value,
-    });
+    // console.log({
+    //     array: array.getText(),
+    //     arrayKind: array.getKindName(),
+    //     element: element.getText(),
+    //     elementKind: element.getKindName(),
+    //     value,
+    // });
 
     if (isNotNullish(value)) {
         return value;
@@ -502,23 +522,33 @@ function queryOne<T extends Node = Node>(node: Node, q: string): T | undefined {
     return results.length > 0 ? results[0] : undefined;
 }
 
-// const initializer = def.getInitializerIfKindOrThrow(ts.SyntaxKind.StringLiteral);
+/**
+ * Evaluates with strict policies restrictions
+ * @see https://github.com/wessberg/ts-evaluator#setting-up-policies
+ */
+const evaluateExpression = (node: Expression, morphTypeChecker: TypeChecker): string | null => {
+    const compilerNode = node.compilerNode;
+    const typeChecker = morphTypeChecker.compilerObject;
 
-// const propAssignment = queryOne<Identifier>(
-//     sourceFile,
-//     `PropertyAssignment > Identifier[name=${name}], PropertyAssignment > ComputedPropertyName > Identifier[name=${name}]`
-// );
+    const result = evaluate({
+        node: compilerNode as any,
+        typeChecker: typeChecker as any,
+        typescript: ts as any,
+        policy: {
+            deterministic: true,
+            network: false,
+            console: false,
+            maxOps: 100,
+            maxOpDuration: 1000,
+            io: { read: false, write: false },
+            process: { exit: false, spawnChild: false },
+        },
+    });
 
-// if (propAssignment) {
-//     const parent = propAssignment.getParent();
-//     if (MorphNode.isPropertyAssignment(parent)) {
-//         const initializer = parent.getInitializer();
-//         if (initializer && MorphNode.isStringLiteral(initializer)) {
-//             return initializer.getLiteralText();
-//         }
-
-//         console.log(["propAssignment", parent.getText(), propAssignment.getText()]);
-//     }
-// }
-
-// queryOne(sourceFile, parent.getText());
+    console.log({
+        compilerNode: compilerNode.getText(),
+        compilerNodeKind: node.getKindName(),
+        result: result.success ? result.value : undefined,
+    });
+    return result.success ? (result.value as string) : null;
+};

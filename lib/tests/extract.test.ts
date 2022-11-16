@@ -57,7 +57,7 @@ it("extract it all", () => {
           ["color", ["cyan.400", "cyan.500"]],
           ["color", "facebook.400"],
           ["color", "gray.100"],
-          ["color", ["facebook.500", "gray.300"]],
+          ["color", "facebook.500"],
           ["color", ["facebook.600", "gray.200"]],
           ["color", ["gray.200", "gray.300"]],
           ["color", "gray.100"],
@@ -454,9 +454,9 @@ it("extract JsxAttribute > JsxExpression > ConditionalExpression", () => {
                 [deepReference]: "pink.800",
             };
 
-            <ColorBox color={colorMap[isShown ? ("literalColor" as const) : deepReference] as any}></ColorBox>
+            <ColorBox color={colorMap[!isShown ? ("literalColor" as const) : deepReference] as any}></ColorBox>
         `)
-    ).toMatchInlineSnapshot('[["color", ["pink.700", "pink.800"]]]');
+    ).toMatchInlineSnapshot('[["color", "pink.800"]]');
 });
 
 it("extract JsxAttribute > JsxExpression > ElementAccessExpression > TemplateExpression > Identifier > TemplateExpression", () => {
@@ -500,6 +500,168 @@ it("extract JsxAttribute > JsxExpression > ElementAccessExpression > BinaryExpre
             <ColorBox color={colorMap[wrapperMap.thirdRef + wrapperMap["fourthRef"]]}></ColorBox>
         `)
     ).toMatchInlineSnapshot('[["color", "yellow.100"]]');
+});
+
+it("extract JsxAttribute > JsxExpression > ConditionalExpression evaluate (first when true is right)", () => {
+    expect(
+        extractFromCode(`
+            const isShown = true;
+            const dynamicColorName = "something";
+            const nestedReference = { ref: dynamicColorName } as const;
+            const deepReference = nestedReference.ref;
+
+            const colorMap = {
+                literalColor: "yellow.200",
+                [deepReference]: "yellow.300",
+                refToAnother: "another",
+                another: "yellow.400",
+            };
+
+            <ColorBox color={colorMap[isShown ? ("literalColor" as const) : (false ? "yellow.never" : 1 === 1 ? colorMap["refToAnother"] : deepReference)] as any}></ColorBox>
+        `)
+    ).toMatchInlineSnapshot('[["color", "yellow.200"]]');
+});
+
+it("extract JsxAttribute > JsxExpression > ConditionalExpression evaluate (second when true is right)", () => {
+    expect(
+        extractFromCode(`
+            const dynamicColorName = "something";
+            const nestedReference = { ref: dynamicColorName } as const;
+            const deepReference = nestedReference.ref;
+
+            const colorMap = {
+                literalColor: "yellow.200",
+                [deepReference]: "yellow.300",
+                refToAnother: "another",
+                another: "yellow.500",
+            };
+
+            <ColorBox color={colorMap[(false ? "yellow.never" : 1 === 1 ? colorMap["refToAnother"] : deepReference)] as any}></ColorBox>
+        `)
+    ).toMatchInlineSnapshot('[["color", "yellow.500"]]');
+});
+
+it("extract JsxAttribute > JsxExpression > CallExpression > ArrowFunction > Identifier (StringLiteral)", () => {
+    expect(
+        extractFromCode(`
+            const getColor = () => "yellow.600";
+
+            <ColorBox color={getColor()}></ColorBox>
+        `)
+    ).toMatchInlineSnapshot('[["color", "yellow.600"]]');
+});
+
+it("extract JsxAttribute > JsxExpression > CallExpression > FunctionDeclaration > Identifier (StringLiteral)", () => {
+    expect(
+        extractFromCode(`
+            function getColor() {
+                return "yellow.700";
+            }
+
+            <ColorBox color={getColor()}></ColorBox>
+        `)
+    ).toMatchInlineSnapshot('[["color", "yellow.700"]]');
+});
+
+it("extract JsxAttribute > JsxExpression > CallExpression with Parameter > ElementAccessExpression > ArrayLiteralExpression > StringLiteral", () => {
+    expect(
+        extractFromCode(`
+            const pickSecondElement = (arr: string[]) => arr[1];
+            const array = ["yellow.800", "yellow.900"];
+
+            <ColorBox color={pickSecondElement(array)}></ColorBox>
+        `)
+    ).toMatchInlineSnapshot('[["color", "yellow.900"]]');
+});
+
+it("extract JsxAttribute > JsxExpression > CallExpression with non-deterministic results > should returns nothing", () => {
+    expect(
+        extractFromCode(`
+            const pickRandom = <T = any>(arr: T[]) => arr[Math.floor(Math.random() * arr.length)];
+            const array = ["purple.never1", "purple.alsoNever"];
+
+            <ColorBox color={pickRandom(array)}></ColorBox>
+        `)
+    ).toMatchInlineSnapshot('[["color", null]]');
+});
+
+it("extract JsxAttribute > JsxExpression > ConditionalExpression > BinaryExpression > StringLiteral", () => {
+    expect(
+        extractFromCode(`
+            <ColorBox color={(1 + 1) === 2 ? "purple.100" : "purple.never2"}></ColorBox>
+        `)
+    ).toMatchInlineSnapshot('[["color", "purple.100"]]');
+});
+
+it("extract JsxAttribute > JsxExpression > ElementAccessExpression > ConditionalExpression > ParenthesizedExpression > BinaryExpression", () => {
+    expect(
+        extractFromCode(`
+            const colorMap = {
+                literalColor: "purple.200",
+            };
+            <ColorBox color={colorMap[(1 + 1) !== 2 ? "never" : "literalColor"]}></ColorBox>
+        `)
+    ).toMatchInlineSnapshot('[["color", "purple.200"]]');
+});
+
+it("extract JsxAttribute > JsxExpression > CallExpression > ElementAccessExpression > ArrowFunction > ElementAccessExpression > ArrayLiteralExpression > Identifier > CallExpression > ConditionalExpression > BinaryExpression", () => {
+    expect(
+        extractFromCode(`
+            const array = ["never1", "literalColor"]
+            const getter = () => array[1];
+            const colorMap = {
+                literalColor: () => (1 + 1) === 3 ? "never2" : "purple.300",
+            };
+            <ColorBox color={colorMap[getter()]()}></ColorBox>
+        `)
+    ).toMatchInlineSnapshot('[["color", "purple.300"]]');
+});
+
+it("extract JsxAttribute > JsxExpression > BinaryExpression > StringLiteral", () => {
+    expect(
+        extractFromCode(`
+            const dot = ".";
+            <ColorBox color={"purple" + dot + "400"}></ColorBox>
+        `)
+    ).toMatchInlineSnapshot('[["color", "purple.400"]]');
+});
+
+it("extract JsxAttribute > JsxExpression > resolvable ConditionalExpression result", () => {
+    expect(
+        extractFromCode(`
+            const isShown = true;
+            const dynamicColorName = "something";
+            const dynamicElement = "staticColor";
+            const staticColor = "never.100" as const;
+
+            const colorMap = {
+                staticColor,
+                [dynamicColorName]: "purple.500",
+            };
+            const dynamicColor = colorMap[dynamicElement];
+
+            <ColorBox color={(isShown ? colorMap?.[dynamicColorName] : dynamicColor) as any}></ColorBox>
+        `)
+    ).toMatchInlineSnapshot('[["color", "purple.500"]]');
+});
+
+it("extract JsxAttribute > JsxExpression > ConditionalExpression with Unexpected Node: 'BindingElement' cause of useState should fallback to both possible outcome", () => {
+    expect(
+        extractFromCode(`
+            const [isShown] = useState(true);
+            const dynamicColorName = "something";
+            const dynamicElement = "staticColor";
+            const staticColor = "purple.700" as const;
+
+            const colorMap = {
+                staticColor,
+                [dynamicColorName]: "purple.600",
+            };
+            const dynamicColor = colorMap[dynamicElement];
+
+            <ColorBox color={(isShown ? colorMap?.[dynamicColorName] : dynamicColor) as any}></ColorBox>
+        `)
+    ).toMatchInlineSnapshot('[["color", ["purple.600", "purple.700"]]]');
 });
 
 // TODO sans `as const`
