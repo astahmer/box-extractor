@@ -26,6 +26,9 @@
         "ts-morph": "^16.0.0",
         "ts-pattern": "^4.0.5"
     },
+    "peerDependencies": {
+        "vite": "^3.2.3"
+    },
     "devDependencies": {
         "@astahmer/eslint-config-ts": "^0.1.5",
         "@babel/preset-env": "^7.20.2",
@@ -42,9 +45,9 @@
         "ts-toolbelt": "^9.6.0",
         "type-fest": "^3.2.0",
         "typescript": "^4.7.4",
-        "vite": "^3.0.4",
         "vite-plugin-inspect": "^0.7.7",
-        "vitest": "^0.25.2"
+        "vitest": "^0.25.2",
+        "vite": "^3.2.3"
     },
     "preconstruct": {
         "entrypoints": [

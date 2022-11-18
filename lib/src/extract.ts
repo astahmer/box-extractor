@@ -18,39 +18,87 @@ import {
     BinaryExpression,
 } from "ts-morph";
 import { evaluate } from "ts-evaluator";
+import { castAsArray } from "pastable";
 
+// https://github.com/TheMightyPenguin/dessert-box/pull/23
+// https://github.com/vanilla-extract-css/vanilla-extract/discussions/91#discussioncomment-2653340
 // const ast = tsquery.ast(code, "", ScriptKind.TSX);
+
+// critical css = Box context + collect
+
+// finding which className was generated from [Box.prop (css prop or shorthand), value]
+// -> fork sprinkles defineProperties / wrap `@vanilla-extract/css`.style (2nd arg optional debugId)
+// -> defaults to generateIdentifier(`${key}_${String(valueName)}_${conditionName}`) in packages/sprinkles/src/index.ts
+// -> or need the identOption PR to be merged (https://github.com/vanilla-extract-css/vanilla-extract/pull/657/files) ?
+
+// callback in processVanillaFile with { localClassNames, composedClassLists, usedCompositions }
+// after `const evalResult = evalCode(`
+// filter localClassNames using regex on debugId (`${key}_${String(valueName)}_${conditionName}`)
+
+// hijack createSprinkles -> createBoxSprinkles
+// so we have access to all the sprinkles informations (conditions, defaultConditionName, shorthands, etc)
 
 type Nullable<T> = T | null | undefined;
 
 const isNotNullish = <T>(element: Nullable<T>): element is T => element != null;
 
-export const extract = (
-    ast: SourceFile,
-    config: {
-        componentName: string;
-        propNameList: string[];
-    }
-) => {
-    const propIdentifier = `Identifier[name=/${config.propNameList.join("|")}/]`;
-    const selector = `JsxElement:has(Identifier[name="${config.componentName}"]) JsxAttribute > ${propIdentifier}`;
-    // <ColorBox color="red.200" backgroundColor="blackAlpha.100" />
-    //           ^^^^^           ^^^^^^^^^^^^^^^
+type ComponentUsedPropertiesStyle = {
+    properties: Map<string, Set<string>>;
+};
+export type UsedMap = Map<string, ComponentUsedPropertiesStyle>;
 
-    // console.log(selector);
-    const identifierNodesFromJsxAttribute = query<Identifier>(ast, selector);
-    if (identifierNodesFromJsxAttribute.length > 0) {
-        const values = identifierNodesFromJsxAttribute.map((n) => [n.getText(), extractJsxAttributeIdentifierValue(n)]);
+type ExtractedValue = ReturnType<typeof extractJsxAttributeIdentifierValue>;
+type ExtractedProp = [string, ExtractedValue[]];
+type ExtractedComponentProperties = [string, ExtractedProp[]];
 
-        // console.log(identifierNodesFromJsxAttribute.length);
-        console.log(
-            "final",
-            identifierNodesFromJsxAttribute.map((n) => [n.getParent().getText(), extractJsxAttributeIdentifierValue(n)])
-            // .filter((v) => !v[v.length - 1])
-        );
+export type ExtractOptions = {
+    ast: SourceFile;
+    config: Record<string, string[]>;
+    used: UsedMap;
+};
 
-        return values;
-    }
+export const extract = ({ ast, config, used }: ExtractOptions) => {
+    const componentPropValues: ExtractedComponentProperties[] = [];
+
+    Object.entries(config).forEach(([componentName, propNameList]) => {
+        const extractedPropValues = [] as ExtractedProp[];
+        componentPropValues.push([componentName, extractedPropValues]);
+
+        const propIdentifier = `Identifier[name=/${propNameList.join("|")}/]`;
+        const selector = `JsxElement:has(Identifier[name="${componentName}"]) JsxAttribute > ${propIdentifier}`;
+        // <ColorBox color="red.200" backgroundColor="blackAlpha.100" />
+        //           ^^^^^           ^^^^^^^^^^^^^^^
+
+        // console.log(selector);
+        if (!used.has(componentName)) {
+            used.set(componentName, { properties: new Map() });
+        }
+
+        const componentMap = used.get(componentName)!;
+
+        const identifierNodesFromJsxAttribute = query<Identifier>(ast, selector) ?? [];
+        identifierNodesFromJsxAttribute.forEach((node) => {
+            const propName = node.getText();
+            const propValues = componentMap.properties.get(propName) ?? new Set();
+
+            if (!componentMap.properties.has(propName)) {
+                componentMap.properties.set(propName, propValues);
+            }
+
+            const extracted = extractJsxAttributeIdentifierValue(node);
+            const extractedValues = castAsArray(extracted).filter(isNotNullish);
+            extractedValues.forEach((v) => propValues.add(v));
+
+            extractedPropValues.push([propName, extracted] as ExtractedProp);
+        });
+
+        // console.log(
+        //     identifierNodesFromJsxAttribute.map((n) => [n.getParent().getText(), extractJsxAttributeIdentifierValue(n)])
+        //     // .filter((v) => !v[v.length - 1])
+        // );
+    });
+
+    return componentPropValues;
 };
 
 const parseType = (type: Type) => {
@@ -166,6 +214,8 @@ const maybeTemplateStringValue = (template: TemplateExpression) => {
         return maybeLiteral(expression);
     });
 
+    // console.log({ headValue, tailValues });
+
     if (isNotNullish(headValue) && tailValues.every(isNotNullish)) {
         // console.log({ propName, headValue, tailValues });
         return headValue + tailValues.join("");
@@ -207,6 +257,11 @@ const maybePropIdentifierDefinitionValue = (elementAccessed: Identifier, propNam
 function maybeLiteral(node: Node): string | undefined {
     // <ColorBox color={"xxx"} />
     if (Node.isStringLiteral(node)) {
+        return node.getLiteralText();
+    }
+
+    // <ColorBox color={`xxx`} />
+    if (Node.isNoSubstitutionTemplateLiteral(node)) {
         return node.getLiteralText();
     }
 
@@ -255,7 +310,7 @@ function maybeLiteral(node: Node): string | undefined {
         );
     }
 
-    console.log({ maybeLiteralEnd: true, node: node.getText(), kind: node.getKindName() });
+    // console.log({ maybeLiteralEnd: true, node: node.getText(), kind: node.getKindName() });
 }
 
 const unwrapExpression = (node: Node): Node => {
@@ -294,15 +349,8 @@ const getIdentifierReferenceValue = (identifier: Identifier) => {
         if (Node.isVariableDeclaration(def)) {
             const initializer = unwrapExpression(def.getInitializerOrThrow());
 
-            // const staticColor = "gray.100";
-            if (Node.isStringLiteral(initializer)) {
-                return initializer.getLiteralText();
-            }
-
-            // const index = 0;
-            if (Node.isNumericLiteral(initializer)) {
-                return initializer.getLiteralText();
-            }
+            const maybeValue = maybeLiteral(initializer);
+            if (isNotNullish(maybeValue)) return maybeValue;
 
             const type = initializer.getType();
             if (type.isLiteral() || type.isUnionOrIntersection()) return parseType(type) as string;
@@ -316,14 +364,6 @@ const getIdentifierReferenceValue = (identifier: Identifier) => {
             //     initializer: initializer?.getText(),
             //     initializerKind: initializer?.getKindName(),
             // });
-
-            if (Node.isPropertyAccessExpression(initializer)) {
-                return getPropertyAccessedExpressionValue(initializer);
-            }
-
-            // if (Node.isIdentifier(initializer)) {
-            //     return getIdentifierReferenceValue(initializer);
-            // }
         }
     }
 };
@@ -387,6 +427,7 @@ const getElementAccessedExpressionValue = (
     // <ColorBox color={xxx[`yyy`]} />
     if (Node.isTemplateExpression(arg)) {
         const propName = maybeTemplateStringValue(arg);
+        console.log({ propName });
 
         if (isNotNullish(propName) && Node.isIdentifier(elementAccessed)) {
             return maybePropIdentifierDefinitionValue(elementAccessed, propName);
@@ -428,7 +469,9 @@ const getElementAccessedExpressionValue = (
     // <ColorBox color={xxx[aaa ? yyy : zzz]]} />
     if (Node.isConditionalExpression(arg)) {
         const propName = maybeLiteral(arg);
+        // eslint-disable-next-line sonarjs/no-collapsible-if
         if (isNotNullish(propName)) {
+            // eslint-disable-next-line unicorn/no-lonely-if
             if (Node.isIdentifier(elementAccessed)) {
                 return maybePropIdentifierDefinitionValue(elementAccessed, propName);
             }
@@ -456,12 +499,12 @@ const getElementAccessedExpressionValue = (
         const whenTrueValue = maybeLiteral(whenTrue);
         const whenFalseValue = maybeLiteral(whenFalse);
 
-        console.log({
-            whenTrueValue,
-            whenFalseValue,
-            whenTrue: [whenTrue.getKindName(), whenTrue.getText()],
-            whenFalse: [whenFalse.getKindName(), whenFalse.getText()],
-        });
+        // console.log({
+        //     whenTrueValue,
+        //     whenFalseValue,
+        //     whenTrue: [whenTrue.getKindName(), whenTrue.getText()],
+        //     whenFalse: [whenFalse.getKindName(), whenFalse.getText()],
+        // });
 
         if (Node.isIdentifier(elementAccessed)) {
             const whenTrueResolved = isNotNullish(whenTrueValue)
@@ -545,10 +588,10 @@ const evaluateExpression = (node: Expression, morphTypeChecker: TypeChecker): st
         },
     });
 
-    console.log({
-        compilerNode: compilerNode.getText(),
-        compilerNodeKind: node.getKindName(),
-        result: result.success ? result.value : undefined,
-    });
+    // console.log({
+    //     compilerNode: compilerNode.getText(),
+    //     compilerNodeKind: node.getKindName(),
+    //     result: result.success ? result.value : undefined,
+    // });
     return result.success ? (result.value as string) : null;
 };

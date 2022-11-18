@@ -39,7 +39,7 @@
         "@types/react": "^18.0.15",
         "@types/react-dom": "^18.0.6",
         "@typescript-eslint/eslint-plugin": "^5.42.1",
-        "@vanilla-extract/vite-plugin": "^3.6.1",
+        "@vanilla-extract/vite-plugin": "link:/Users/astahmer/dev/open-source/vanilla-extract/packages/vite-plugin",
         "@vitejs/plugin-react": "^2.0.0",
         "eslint": "^8.27.0",
         "eslint-formatter-pretty": "^4.1.0",
