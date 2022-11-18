@@ -790,7 +790,7 @@ it("extract JsxAttribute > JsxExpression > ConditionalExpression > unresolvable 
     ).toMatchInlineSnapshot('[["ColorBox", [["color", ["purple.800", "purple.900", "purple.950"]]]]]');
 });
 
-it.only("extract JsxAttribute > JsxExpression > ConditionalExpression > ElementAccessExpression > unresolvable expression will output both outcome ", () => {
+it("extract JsxAttribute > JsxExpression > ConditionalExpression > ElementAccessExpression > nested unresolvable expression will output both outcome ", () => {
     expect(
         extractFromCode(`
             const [unresolvableBoolean, setUnresolvableBoolean] = useState(false)
@@ -803,12 +803,23 @@ it.only("extract JsxAttribute > JsxExpression > ConditionalExpression > ElementA
 
             <ColorBox color={(!knownCondition ? "orange.100" : colorMap[unresolvableBoolean ? "staticColor" : "another"])}></ColorBox>
         `)
-    ).toMatchInlineSnapshot('[["ColorBox", [["color", "purple.800"]]]]');
+    ).toMatchInlineSnapshot('[["ColorBox", [["color", ["orange.100", "orange.200", "orange.300"]]]]]');
 });
 
-// TODO unresolvable nested conditions:
-// const [unresolvableBoolean, setUnresolvableBoolean] = useState(false)
-// const knownCondition = true;
-// <Box color={knownCondition ? (unresolvableBoolean ? "red.500" : "red.600") : "red.700"}></Box>
+it("extract JsxAttribute > JsxExpression > ConditionalExpression > ElementAccessExpression > with nested unresolvable expression will stop at first resolved truthy condition ", () => {
+    expect(
+        extractFromCode(`
+            const [unresolvableBoolean, setUnresolvableBoolean] = useState(false)
+            const knownTruthy = true;
+
+            const colorMap = {
+                staticColor: "never.200",
+                another: "never.300",
+            };
+
+            <ColorBox color={(knownTruthy ? "orange.400" : colorMap[unresolvableBoolean ? "staticColor" : "another"])}></ColorBox>
+        `)
+    ).toMatchInlineSnapshot('[["ColorBox", [["color", "orange.400"]]]]');
+});
 
 // TODO test avec variables scoped / global du même nom = getClosestDefinition

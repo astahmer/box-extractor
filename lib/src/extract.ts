@@ -87,7 +87,15 @@ export const extract = ({ ast, config, used }: ExtractOptions) => {
 
             const extracted = extractJsxAttributeIdentifierValue(node);
             const extractedValues = castAsArray(extracted).filter(isNotNullish);
-            extractedValues.forEach((v) => propValues.add(v));
+            extractedValues.forEach((value) => {
+                if (typeof value === "string") {
+                    propValues.add(value);
+                }
+
+                // if (Array.isArray(value)) {
+                //     value.forEach((possibleValue) => propValues.add(possibleValue));
+                // }
+            });
 
             extractedPropValues.push([propName, extracted] as ExtractedProp);
         });
@@ -118,6 +126,10 @@ const extractJsxAttributeIdentifierValue = (identifier: Identifier) => {
     const initializer = parent.getInitializer();
     if (!initializer) return;
 
+    // TODO
+    // const maybeValue = maybeLiteral(initializer);
+    // if (isNotNullish(maybeValue)) return maybeValue;
+
     if (Node.isStringLiteral(initializer)) {
         // initializer = `"red.200"` (and then "blackAlpha.100")
 
@@ -141,7 +153,7 @@ const extractJsxAttributeIdentifierValue = (identifier: Identifier) => {
         // const [isDark, setIsDark] = useColorMode();
         // <ColorBox color={isDark ? darkValue : "whiteAlpha.100"} />
         if (Node.isConditionalExpression(expression)) {
-            return [maybeLiteral(expression.getWhenTrue()), maybeLiteral(expression.getWhenFalse())];
+            return [maybeLiteral(expression.getWhenTrue()), maybeLiteral(expression.getWhenFalse())].flat();
         }
     }
 };
@@ -187,7 +199,7 @@ const getPropValue = (initializer: ObjectLiteralExpression, propName: string) =>
 
     if (Node.isPropertyAssignment(property)) {
         const propInit = property.getInitializerOrThrow();
-        const maybePropValue = maybeLiteral(propInit);
+        const maybePropValue = maybeStringLiteral(propInit);
 
         if (maybePropValue) {
             return maybePropValue;
@@ -196,7 +208,7 @@ const getPropValue = (initializer: ObjectLiteralExpression, propName: string) =>
 
     if (Node.isShorthandPropertyAssignment(property)) {
         const propInit = property.getNameNode();
-        const maybePropValue = maybeLiteral(propInit);
+        const maybePropValue = maybeStringLiteral(propInit);
 
         if (maybePropValue) {
             return maybePropValue;
@@ -208,7 +220,7 @@ const maybeTemplateStringValue = (template: TemplateExpression) => {
     const head = template.getHead();
     const tail = template.getTemplateSpans();
 
-    const headValue = maybeLiteral(head);
+    const headValue = maybeStringLiteral(head);
     const tailValues = tail.map((t) => {
         const expression = t.getExpression();
         return maybeLiteral(expression);
@@ -248,13 +260,13 @@ const maybePropIdentifierDefinitionValue = (elementAccessed: Identifier, propNam
                 const element = initializer.getElements()[index];
                 if (!element) return;
 
-                return maybeLiteral(element);
+                return maybeStringLiteral(element);
             }
         }
     }
 };
 
-function maybeLiteral(node: Node): string | undefined {
+function maybeLiteral(node: Node): string | string[] | ObjectLiteralExpression | undefined {
     // <ColorBox color={"xxx"} />
     if (Node.isStringLiteral(node)) {
         return node.getLiteralText();
@@ -286,7 +298,7 @@ function maybeLiteral(node: Node): string | undefined {
 
     // <ColorBox color={xxx[yyy]} /> / <ColorBox color={xxx["zzz"]} />
     if (Node.isElementAccessExpression(node)) {
-        return getElementAccessedExpressionValue(node) as string;
+        return getElementAccessedExpressionValue(node);
     }
 
     // <ColorBox color={xxx.yyy} />
@@ -312,6 +324,13 @@ function maybeLiteral(node: Node): string | undefined {
 
     // console.log({ maybeLiteralEnd: true, node: node.getText(), kind: node.getKindName() });
 }
+
+const maybeStringLiteral = (node: Node) => {
+    const literal = maybeLiteral(node);
+    if (typeof literal === "string") {
+        return literal;
+    }
+};
 
 const unwrapExpression = (node: Node): Node => {
     if (Node.isAsExpression(node)) {
@@ -353,7 +372,7 @@ const getIdentifierReferenceValue = (identifier: Identifier) => {
             if (isNotNullish(maybeValue)) return maybeValue;
 
             const type = initializer.getType();
-            if (type.isLiteral() || type.isUnionOrIntersection()) return parseType(type) as string;
+            if (type.isLiteral() || type.isUnionOrIntersection()) return parseType(type);
 
             // console.log({
             //     getIdentifierReferenceValue: true,
@@ -374,8 +393,8 @@ const tryUnwrapBinaryExpression = (node: BinaryExpression) => {
     const left = unwrapExpression(node.getLeft());
     const right = unwrapExpression(node.getRight());
 
-    const leftValue = maybeLiteral(left);
-    const rightValue = maybeLiteral(right);
+    const leftValue = maybeStringLiteral(left);
+    const rightValue = maybeStringLiteral(right);
 
     // console.log({
     //     leftValue,
@@ -398,7 +417,7 @@ const getElementAccessedExpressionValue = (
     const elementAccessed = unwrapExpression(expression.getExpression());
     const arg = unwrapExpression(expression.getArgumentExpressionOrThrow());
 
-    const argValue = maybeLiteral(arg);
+    const argValue = maybeStringLiteral(arg);
 
     // console.log("yes", {
     //     arg: arg.getText(),
@@ -417,7 +436,7 @@ const getElementAccessedExpressionValue = (
 
     // <ColorBox color={xxx[yyy + "zzz"]} />
     if (Node.isBinaryExpression(arg)) {
-        const propName = tryUnwrapBinaryExpression(arg) ?? maybeLiteral(arg);
+        const propName = tryUnwrapBinaryExpression(arg) ?? maybeStringLiteral(arg);
 
         if (isNotNullish(propName) && Node.isIdentifier(elementAccessed)) {
             return maybePropIdentifierDefinitionValue(elementAccessed, propName);
@@ -446,9 +465,9 @@ const getElementAccessedExpressionValue = (
 
     // <ColorBox color={xxx[yyy[zzz]]} />
     if (Node.isIdentifier(elementAccessed) && Node.isElementAccessExpression(arg)) {
-        const propName = getElementAccessedExpressionValue(arg) as string;
+        const propName = getElementAccessedExpressionValue(arg);
 
-        if (isNotNullish(propName)) {
+        if (typeof propName === "string" && isNotNullish(propName)) {
             return maybePropIdentifierDefinitionValue(elementAccessed, propName);
         }
     }
@@ -468,7 +487,7 @@ const getElementAccessedExpressionValue = (
 
     // <ColorBox color={xxx[aaa ? yyy : zzz]]} />
     if (Node.isConditionalExpression(arg)) {
-        const propName = maybeLiteral(arg);
+        const propName = maybeStringLiteral(arg);
         // eslint-disable-next-line sonarjs/no-collapsible-if
         if (isNotNullish(propName)) {
             // eslint-disable-next-line unicorn/no-lonely-if
@@ -496,8 +515,8 @@ const getElementAccessedExpressionValue = (
         const whenTrue = unwrapExpression(arg.getWhenTrue());
         const whenFalse = unwrapExpression(arg.getWhenFalse());
 
-        const whenTrueValue = maybeLiteral(whenTrue);
-        const whenFalseValue = maybeLiteral(whenFalse);
+        const whenTrueValue = maybeStringLiteral(whenTrue);
+        const whenFalseValue = maybeStringLiteral(whenFalse);
 
         // console.log({
         //     whenTrueValue,
@@ -515,7 +534,7 @@ const getElementAccessedExpressionValue = (
                 : undefined;
 
             if (isNotNullish(whenTrueResolved) && isNotNullish(whenFalseResolved)) {
-                return [whenTrueResolved, whenFalseResolved];
+                return [whenTrueResolved, whenFalseResolved].flat();
             }
         }
     }
@@ -543,9 +562,9 @@ const getArrayElementValueAtIndex = (array: ArrayLiteralExpression, index: numbe
     }
 };
 
-const getPropertyAccessedExpressionValue = (expression: PropertyAccessExpression): string | undefined => {
+const getPropertyAccessedExpressionValue = (expression: PropertyAccessExpression) => {
     const type = expression.getType();
-    if (type.isLiteral() || type.isUnionOrIntersection()) return parseType(type) as string;
+    if (type.isLiteral() || type.isUnionOrIntersection()) return parseType(type);
 
     const propName = expression.getName();
     const elementAccessed = unwrapExpression(expression.getExpression());
