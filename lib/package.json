@@ -21,6 +21,8 @@
     "dependencies": {
         "@babel/core": "^7.20.2",
         "@phenomnomnominal/tsquery": "^5.0.0",
+        "eval": "^0.1.8",
+        "javascript-stringify": "^2.1.0",
         "pastable": "^2.0.10",
         "ts-evaluator": "^1.0.7",
         "ts-morph": "^16.0.0",
@@ -38,16 +40,17 @@
         "@types/react": "^18.0.15",
         "@types/react-dom": "^18.0.6",
         "@typescript-eslint/eslint-plugin": "^5.42.1",
-        "@vanilla-extract/sprinkles": "^1.5.0",
+        "@vanilla-extract/integration": "link:/Users/astahmer/dev/open-source/vanilla-extract/packages/integration",
+        "@vanilla-extract/sprinkles": "link:/Users/astahmer/dev/open-source/vanilla-extract/packages/sprinkles",
         "eslint": "^8.27.0",
         "eslint-formatter-pretty": "^4.1.0",
         "prettier": "^2.7.1",
         "ts-toolbelt": "^9.6.0",
         "type-fest": "^3.2.0",
         "typescript": "^4.7.4",
+        "vite": "^3.2.3",
         "vite-plugin-inspect": "^0.7.7",
-        "vitest": "^0.25.2",
-        "vite": "^3.2.3"
+        "vitest": "^0.25.2"
     },
     "preconstruct": {
         "entrypoints": [
