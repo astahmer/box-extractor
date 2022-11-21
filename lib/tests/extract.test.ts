@@ -806,7 +806,7 @@ it("extract JsxAttribute > JsxExpression > ConditionalExpression > ElementAccess
     ).toMatchInlineSnapshot('[["ColorBox", [["color", ["orange.100", "orange.200", "orange.300"]]]]]');
 });
 
-it("extract JsxAttribute > JsxExpression > ConditionalExpression > ElementAccessExpression > with nested unresolvable expression will stop at first resolved truthy condition ", () => {
+it("extract JsxAttribute > JsxExpression > ConditionalExpression > ElementAccessExpression > with nested unresolvable expression will stop at first resolved truthy condition", () => {
     expect(
         extractFromCode(`
             const [unresolvableBoolean, setUnresolvableBoolean] = useState(false)
@@ -822,4 +822,30 @@ it("extract JsxAttribute > JsxExpression > ConditionalExpression > ElementAccess
     ).toMatchInlineSnapshot('[["ColorBox", [["color", "orange.400"]]]]');
 });
 
-// TODO test avec variables scoped / global du même nom = getClosestDefinition
+it("extract JsxAttribute > JsxExpression > multiple variables with same name but different scope", () => {
+    expect(
+        extractFromCode(`
+            const color = "never.500";
+
+            const Wrapper = () => {
+                const color = "orange.500";
+                return <ColorBox color={color}></ColorBox>
+            }
+
+        `)
+    ).toMatchInlineSnapshot('[["ColorBox", [["color", "orange.500"]]]]');
+});
+
+it("extract JsxAttribute > JsxExpression > variables referencing another var in above scope", () => {
+    expect(
+        extractFromCode(`
+            const referenced = "orange.600";
+
+            const Wrapper = () => {
+                const color = referenced;
+                return <ColorBox color={color}></ColorBox>
+            }
+
+        `)
+    ).toMatchInlineSnapshot('[["ColorBox", [["color", "orange.600"]]]]');
+});

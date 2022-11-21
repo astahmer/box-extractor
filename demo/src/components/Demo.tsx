@@ -1,7 +1,7 @@
 /* eslint-disable unicorn/no-abusive-eslint-disable */
 /* eslint-disable */
 import { PropsWithChildren, useState } from "react";
-import { ColorSprinkes, colorSprinkes } from "./colors.css";
+import { ColorSprinkes, colorSprinkles } from "./colors.css";
 // import { DessertBox } from "../theme/DessertBox";
 
 import { Show } from "./Show";
@@ -58,7 +58,7 @@ export const Demo = () => {
                         </Show>
                     </div>
                     {/* <DessertBox>box</DessertBox> */}
-                    <div className={colorSprinkes({ color: "blue.100" })}>blue100 without ColorBox</div>
+                    <div className={colorSprinkles({ color: "blue.100" })}>blue100 without ColorBox</div>
                     <ColorBox color="red.200" />
                     <ColorBox color="yellow.300" backgroundColor="blackAlpha.100">
                         yellow.300 with children
@@ -132,5 +132,5 @@ export const Demo = () => {
 };
 
 const ColorBox = ({ children, ...props }: PropsWithChildren<ColorSprinkes>) => {
-    return <div className={colorSprinkes(props)} children={children} />;
+    return <div className={colorSprinkles(props)} children={children} />;
 };

@@ -1,3 +1,4 @@
+import { createTheme, createVar, style } from "@vanilla-extract/css";
 import { createSprinkles, defineProperties } from "@vanilla-extract/sprinkles";
 import type { NonUndefined } from "pastable";
 import type tb from "ts-toolbelt";
@@ -5,6 +6,9 @@ import type tb from "ts-toolbelt";
 // import { style,generateIdentifier } from "@vanilla-extract/css";
 
 // const oui = style()
+
+// TODO add more styles (not using sprinkles but maybe with createTheme/style)
+// TODO try with external imports ?
 
 // https://github.com/chakra-ui/chakra-ui/blob/05b19899b02e17b4ee16045c9e5065fa835f0159/packages/components/theme/src/foundations/colors.ts#L1-L240
 const colors = {
@@ -331,31 +335,81 @@ type NonStringKeys<T extends object> = {
 }[keyof T];
 
 const colorProps = defineProperties({
-    // conditions: {
-    //     default: {},
-    //     lightMode: { "@media": "(prefers-color-scheme: light)" },
-    //     darkMode: { "@media": "(prefers-color-scheme: dark)" },
-    //     focus: { selector: "&:focus" },
-    //     hover: { selector: "&:hover" },
-    // },
-    // defaultCondition: "default",
-    properties: {
-        color: flatColors,
-        // background: flatColors,
-        backgroundColor: flatColors,
-        borderColor: flatColors,
-        // borderTopColor: flatColors,
-        // borderBottomColor: flatColors,
-        // borderLeftColor: flatColors,
-        // borderRightColor: flatColors,
-        // outlineColor: flatColors,
+    conditions: {
+        default: {},
+        lightMode: { "@media": "(prefers-color-scheme: light)" },
+        darkMode: { "@media": "(prefers-color-scheme: dark)" },
+        focus: { selector: "&:focus" },
+        hover: { selector: "&:hover" },
     },
-    // shorthands: {
-    //     bg: ["background"],
-    //     bgColor: ["backgroundColor"],
-    //     borderXColor: ["borderLeftColor", "borderRightColor"],
-    // },
+    defaultCondition: "default",
+    properties: {
+        // color: flatColors,
+        color: flatMapColorsWithVariants({ red: colors.red } as any),
+        //     background: flatColors,
+        //     backgroundColor: flatColors,
+        //     borderColor: flatColors,
+        //     borderTopColor: flatColors,
+        //     borderBottomColor: flatColors,
+        //     borderLeftColor: flatColors,
+        //     borderRightColor: flatColors,
+        //     outlineColor: flatColors,
+        // },
+        // shorthands: {
+        //     bg: ["background"],
+        //     bgColor: ["backgroundColor"],
+        //     borderXColor: ["borderLeftColor", "borderRightColor"],
+        //     borderYColor: ["borderTopColor", "borderBottomColor"],
+    },
 });
 
-export const colorSprinkes = createSprinkles(colorProps);
-export type ColorSprinkes = Parameters<typeof colorSprinkes>[0];
+export const colorSprinkles = createSprinkles(colorProps);
+export type ColorSprinkes = Parameters<typeof colorSprinkles>[0];
+
+const space = {
+    none: 0,
+    small: "4px",
+    medium: "8px",
+    large: "16px",
+    // etc.
+};
+
+const alpha = createVar();
+const spacingProps = defineProperties({
+    // conditions: {
+    //     mobile: {},
+    //     tablet: { "@media": "screen and (min-width: 768px)" },
+    //     desktop: { "@media": "screen and (min-width: 1024px)" },
+    // },
+    // defaultCondition: "mobile",
+    // responsiveArray: ["mobile", "tablet", "desktop"],
+    properties: {
+        margin: space,
+        display: ["none", "flex", "block", "inline"],
+        backgroundOpacity: {
+            1: { vars: { [alpha]: "1" } },
+            0.1: { vars: { [alpha]: "0.1" } },
+        },
+        // marginTop: space,
+        // marginBottom: space,
+        // marginLeft: space,
+        // marginRight: space,
+        // padding: space,
+    },
+});
+
+export const spacingSprinkles = createSprinkles(spacingProps);
+
+export const bothSprinkles = createSprinkles(colorProps, spacingProps);
+
+export const container = style({
+    padding: 10,
+});
+
+export const [themeClass, vars] = createTheme({
+    color: { brand: "blue" },
+    font: { body: "arial" },
+});
+
+// TODO try with theme values (vars.space)
+// TODO try with style objects https://vanilla-extract.style/documentation/packages/sprinkles/#properties

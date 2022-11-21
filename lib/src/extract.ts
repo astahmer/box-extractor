@@ -38,6 +38,9 @@ import { castAsArray } from "pastable";
 // hijack createSprinkles -> createBoxSprinkles
 // so we have access to all the sprinkles informations (conditions, defaultConditionName, shorthands, etc)
 
+// accidentally extractable tailwind classNames ?
+// also remove unused variants from https://vanilla-extract.style/documentation/packages/recipes/ ?
+
 type Nullable<T> = T | null | undefined;
 
 const isNotNullish = <T>(element: Nullable<T>): element is T => element != null;
@@ -125,10 +128,6 @@ const extractJsxAttributeIdentifierValue = (identifier: Identifier) => {
 
     const initializer = parent.getInitializer();
     if (!initializer) return;
-
-    // TODO
-    // const maybeValue = maybeLiteral(initializer);
-    // if (isNotNullish(maybeValue)) return maybeValue;
 
     if (Node.isStringLiteral(initializer)) {
         // initializer = `"red.200"` (and then "blackAlpha.100")
@@ -494,22 +493,6 @@ const getElementAccessedExpressionValue = (
             if (Node.isIdentifier(elementAccessed)) {
                 return maybePropIdentifierDefinitionValue(elementAccessed, propName);
             }
-
-            // TODO
-            // if (Node.isObjectLiteralExpression(elementAccessed)) {
-            //     return getPropValue(elementAccessed, propName);
-            // }
-
-            // if (Node.isArrayLiteralExpression(elementAccessed)) {
-            //     return getArrayElementValueAtIndex(elementAccessed, Number(propName));
-            // }
-
-            // if (Node.isElementAccessExpression(elementAccessed)) {
-            //     const identifier = getElementAccessedExpressionValue(elementAccessed);
-            //     if (Node.isNode(identifier) && Node.isObjectLiteralExpression(identifier)) {
-            //         return getPropValue(identifier, propName);
-            //     }
-            // }
         }
 
         const whenTrue = unwrapExpression(arg.getWhenTrue());

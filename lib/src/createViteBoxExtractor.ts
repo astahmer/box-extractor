@@ -13,6 +13,8 @@ const ensureAbsolute = (path: string, root: string) => (path ? (isAbsolute(path)
 
 // JsxElement:has(Identifier[name="ColorBox"]) JsxAttribute > Identifier[name=/color|backgroundColor/] ~ StringLiteral
 
+// TODO use unplugin to get a bundler-agnostic plugin https://github.com/unjs/unplugin
+
 export const createViteBoxExtractor = ({ config, used }: Pick<ExtractOptions, "config" | "used">): Plugin => {
     let project: Project;
 
