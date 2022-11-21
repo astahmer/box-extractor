@@ -1,5 +1,4 @@
 import type { AdapterContext } from "@vanilla-extract/integration";
-import type { SprinklesProperties } from "@vanilla-extract/sprinkles";
 import evalCode from "eval";
 import { stringify } from "javascript-stringify";
 import { isDefined, isObject } from "pastable";
@@ -15,7 +14,12 @@ type Conditions = {
           };
 };
 
-type CompiledSprinkle = {
+export type CompiledSprinkle = { styles: Record<string, CompiledSprinklePropertyMap> } & Conditions;
+export const isCompiledSprinkle = (value: any): value is CompiledSprinkle => {
+    return isObject(value) && "styles" in value && "conditions" in value;
+};
+
+type CompiledSprinklePropertyMap = {
     values: Record<string, CompiledSprinklePropertyValue>;
 };
 
@@ -32,24 +36,19 @@ const debugIdByPropWithValuePair = new Map<
 export function onContextFilled(context: AdapterContext, evalResult: Record<string, unknown>, usedMap: UsedMap) {
     const stringifiedEval = "module.exports = " + stringifyExportsToSprinklesMap(evalResult);
     // console.log(stringifiedEval);
-    console.log("bbb");
+    // console.log("bbb");
 
     const sprinklesMap = evalCode(stringifiedEval) as Record<string, unknown>;
-    const flatSprinkles = Object.values(sprinklesMap)
-        .flat()
-        .filter((value) => isObject(value) && "conditions" in value && "styles" in value) as Array<
-        SprinklesProperties & Conditions
-    >;
+    const flatSprinkles = Object.values(sprinklesMap).flat().filter(isCompiledSprinkle);
 
     flatSprinkles.forEach((sprinkle) => {
         let defaultConditionName: string | undefined;
-        if ("conditions" in sprinkle && isDefined(sprinkle.conditions) && sprinkle.conditions.defaultCondition) {
+        if (isDefined(sprinkle.conditions) && sprinkle.conditions.defaultCondition) {
             defaultConditionName = sprinkle.conditions.defaultCondition;
         }
 
-        Object.entries(sprinkle.styles).forEach(([propName, prop]) => {
-            if ("values" in prop) {
-                const compiledSprinkle = prop as CompiledSprinkle;
+        Object.entries(sprinkle.styles).forEach(([propName, compiledSprinkle]) => {
+            if ("values" in compiledSprinkle) {
                 Object.entries(compiledSprinkle.values).forEach(([valueName, value]) => {
                     debugIdByPropWithValuePair.set(`${propName}_${valueName}`, {
                         ...value,
@@ -64,7 +63,7 @@ export function onContextFilled(context: AdapterContext, evalResult: Record<stri
     // console.log(debugIdByPropWithValuePair);
     // console.log(identifierByDebugId);
     const usedProps = usedMap.get("ColorBox")!.properties;
-    console.log(usedProps);
+    // console.log(usedProps);
     const usedGeneratedClassNameList = new Set<string>();
     usedProps.forEach((values, propName) => {
         values.forEach((value) => {
@@ -98,7 +97,7 @@ export function onContextFilled(context: AdapterContext, evalResult: Record<stri
         console.log({ from: css.length, to: usedRules.length });
     });
     // console.dir(Array.from(context.cssByFileScope.values()), { depth: null });
-    console.log({ usedGeneratedClassNameList: usedGeneratedClassNameList });
+    // console.log({ usedGeneratedClassNameList });
 }
 
 function stringifyExportsToSprinklesMap(value: any): any {

@@ -345,26 +345,26 @@ const colorProps = defineProperties({
     defaultCondition: "default",
     properties: {
         color: flatMapColorsWithVariants({ red: colors.red } as any),
-        //     background: flatColors,
         // color: flatColors,
+        // background: flatColors,
         // backgroundColor: flatColors,
         // borderColor: flatColors,
-        //     borderTopColor: flatColors,
-        //     borderBottomColor: flatColors,
-        //     borderLeftColor: flatColors,
-        //     borderRightColor: flatColors,
-        //     outlineColor: flatColors,
-        // },
-        // shorthands: {
-        //     bg: ["background"],
-        //     bgColor: ["backgroundColor"],
-        //     borderXColor: ["borderLeftColor", "borderRightColor"],
-        //     borderYColor: ["borderTopColor", "borderBottomColor"],
+        // borderTopColor: flatColors,
+        // borderBottomColor: flatColors,
+        // borderLeftColor: flatColors,
+        // borderRightColor: flatColors,
+        // outlineColor: flatColors,
     },
+    // shorthands: {
+    //     bg: ["background"],
+    //     bgColor: ["backgroundColor"],
+    //     borderXColor: ["borderLeftColor", "borderRightColor"],
+    //     borderYColor: ["borderTopColor", "borderBottomColor"],
+    // },
 });
 
 export const colorSprinkles = createSprinkles(colorProps);
-export type ColorSprinkes = Parameters<typeof colorSprinkles>[0];
+export type ColorSprinkles = Parameters<typeof colorSprinkles>[0];
 
 const space = {
     none: 0,

@@ -3,7 +3,6 @@ import { vanillaExtractPlugin } from "@vanilla-extract/vite-plugin";
 import react from "@vitejs/plugin-react";
 import UnoCSS from "unocss/vite";
 import { defineConfig } from "vite";
-import * as path from "node:path";
 
 import {
     createViteBoxExtractor,
@@ -14,7 +13,6 @@ import {
 } from "../lib";
 
 const usedMap = new Map() as UsedMap;
-console.log(path.resolve(__dirname, "../lib"));
 
 // https://vitejs.dev/config/
 export default defineConfig((env) => ({
