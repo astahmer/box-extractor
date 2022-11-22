@@ -46,6 +46,10 @@ const array = ["pink.100"];
 const strIndex = "0";
 const numberIndex = 0;
 
+const getColorConfig = () => ({ color: "twitter.100", backgroundColor: "twitter.200" });
+
+// TODO dynamic attribute retrieved using IIFE / function call (also try it in spread expressions)
+
 export const Demo = () => {
     const [isShown, setIsShown] = useState(false);
 
@@ -138,7 +142,7 @@ export const Demo = () => {
                     <ColorBox {...(isShown ? objectWithAttributes : null)}>conditional var spread</ColorBox>
                     <ColorBox
                         {...{
-                            color: "facebook.100",
+                            color: "facebook.200",
                             backgroundColor: "blackAlpha.100",
                             [dynamicAttribute]: "blackAlpha.300",
                         }}
@@ -147,6 +151,39 @@ export const Demo = () => {
                     </ColorBox>
                     <ColorBox {...(isShown ? { color: "facebook.200" } : undefined)}>spread ternary</ColorBox>
                     <ColorBox {...(isShown && { color: "facebook.300" })}>spread &&</ColorBox>
+                    <ColorBox {...getColorConfig()}>spread fn result</ColorBox>
+                    <ColorBox {...{ ...getColorConfig(), color: "orange.100" }}>
+                        nested spread fn result and override
+                    </ColorBox>
+                    <ColorBox
+                        {...{
+                            ...(isShown ? getColorConfig() : { color: "never.150" }),
+                            color: "orange.200",
+                        }}
+                    >
+                        nested spread conditional fn result and override
+                    </ColorBox>
+                    <ColorBox
+                        {...{
+                            ...(!isShown ? (getColorConfig() as any) : ({ [dynamicAttribute]: "orange.300" } as any)),
+                            color: "orange.400",
+                        }}
+                    >
+                        nested spread conditional fn result and override with object literal expression and dynamic
+                        attribute
+                    </ColorBox>
+                    <ColorBox
+                        {...{
+                            ...{
+                                color: "telegram.100",
+                                backgroundColor: "telegram.200",
+                            },
+                            color: "telegram.300",
+                            backgroundColor: "telegram.400",
+                        }}
+                    >
+                        spread with nested spread and override
+                    </ColorBox>
 
                     {/* unlikely this will ever be supported (unless ezno delivers) */}
                     {/* <ColorBox color={controlledColor}>controlledColor</ColorBox>

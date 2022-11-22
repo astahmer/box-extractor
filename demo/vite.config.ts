@@ -24,7 +24,6 @@ export default defineConfig((env) => ({
         UnoCSS({ presets: [presetIcons({})] }),
         react(),
         vanillaExtractPlugin({
-            // TODO try with multiple .css.ts files
             onContextFilled: (context, evalResult) => onContextFilled(context, evalResult, usedMap),
             serializeVanillaModule: (cssImports, exports, context) =>
                 serializeVanillaModuleWithoutUnused(cssImports, exports, context, usedMap),

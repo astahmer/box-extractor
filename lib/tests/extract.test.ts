@@ -46,7 +46,7 @@ const extractFromCode = (code: string) => {
     return extract({ ast: sourceFile, config, used: usedMap });
 };
 
-it("extract it all", () => {
+it.skip("extract it all", () => {
     expect(extractFromCode(ExtractSample)).toMatchInlineSnapshot(`
       [
           [
@@ -848,4 +848,168 @@ it("extract JsxAttribute > JsxExpression > variables referencing another var in 
 
         `)
     ).toMatchInlineSnapshot('[["ColorBox", [["color", "orange.600"]]]]');
+});
+
+it("extract JsxSpreadAttribute > ObjectLiteralExpression", () => {
+    expect(
+        extractFromCode(`
+            <ColorBox {...{ color: "orange.700" }}>spread</ColorBox>
+        `)
+    ).toMatchInlineSnapshot('[["ColorBox", [["color", "orange.700"]]]]');
+});
+
+it("extract JsxSpreadAttribute > Identifier > ObjectLiteralExpression", () => {
+    expect(
+        extractFromCode(`
+            const objectWithAttributes = { color: "orange.800" } as any;
+            <ColorBox {...objectWithAttributes}>var spread</ColorBox>
+        `)
+    ).toMatchInlineSnapshot('[["ColorBox", [["color", "orange.800"]]]]');
+});
+
+it("extract JsxSpreadAttribute > ConditionalExpression > Identifier/NullKeyword > falsy", () => {
+    expect(
+        extractFromCode(`
+            const isShown = false;
+            const objectWithAttributes = { color: "never.400" } as any;
+            <ColorBox {...(isShown ? objectWithAttributes : null)}>conditional var spread</ColorBox>
+        `)
+    ).toMatchInlineSnapshot('[["ColorBox", []]]');
+});
+
+it("extract JsxSpreadAttribute > ConditionalExpression > Identifier/NullKeyword > truthy", () => {
+    expect(
+        extractFromCode(`
+            const isShown = true;
+            const objectWithAttributes = { color: "orange.900" } as any;
+            <ColorBox {...(isShown ? objectWithAttributes : null)}>conditional var spread</ColorBox>
+        `)
+    ).toMatchInlineSnapshot('[["ColorBox", [["color", "orange.900"]]]]');
+});
+
+it("extract JsxSpreadAttribute > ConditionalExpression > Identifier/NullKeyword > truthy", () => {
+    expect(
+        extractFromCode(`
+            const dynamicThemeProp = "backgroundColor";
+            const dynamicAttribute = "notThemeProp";
+            <ColorBox
+                {...{
+                    color: "teal.100",
+                    [dynamicThemeProp]: "teal.200",
+                    [dynamicAttribute]: "teal.300",
+                }}
+            >
+                multiple spread
+            </ColorBox>
+        `)
+    ).toMatchInlineSnapshot(`
+      [
+          [
+              "ColorBox",
+              [
+                  ["color", "teal.100"],
+                  ["backgroundColor", "teal.200"],
+              ],
+          ],
+      ]
+    `);
+});
+
+it("extract JsxSpreadAttribute > ConditionalExpression > ObjectLiteralExpression/Identifier", () => {
+    expect(
+        extractFromCode(`
+            <ColorBox {...(true ? ({ color: "teal.400" }) as any : (undefined) as unknown)}></ColorBox>
+        `)
+    ).toMatchInlineSnapshot('[["ColorBox", [["color", "teal.400"]]]]');
+});
+
+it("extract JsxSpreadAttribute > BinaryExpression > AmpersandAmpersandToken / ObjectLiteralExpression", () => {
+    expect(
+        extractFromCode(`
+            <ColorBox {...(true && ({ color: "teal.500" }))}></ColorBox>
+        `)
+    ).toMatchInlineSnapshot('[["ColorBox", [["color", "teal.500"]]]]');
+});
+
+it("extract JsxSpreadAttribute > CallExpression", () => {
+    expect(
+        extractFromCode(`
+            const getColorConfig = () => ({ color: "teal.600", backgroundColor: "teal.650" });
+            <ColorBox {...getColorConfig()}>spread fn result</ColorBox>
+        `)
+    ).toMatchInlineSnapshot(`
+      [
+          [
+              "ColorBox",
+              [
+                  ["color", "teal.600"],
+                  ["backgroundColor", "teal.650"],
+              ],
+          ],
+      ]
+    `);
+});
+
+it.only("extract JsxSpreadAttribute > ObjectLiteralExpression > SpreadAssignment > CallExpression", () => {
+    expect(
+        extractFromCode(`
+            const getColorConfig = () => ({ color: "teal.700", backgroundColor: "teal.800" });
+            <ColorBox {...{ ...getColorConfig(), color: "orange.100" }}></ColorBox>
+        `)
+    ).toMatchInlineSnapshot('[["ColorBox", [["color", "teal.700"]]]]');
+});
+
+// TODO - template tests below
+
+it("extract JsxSpreadAttribute > ObjectLiteralExpression > SpreadAssignment > ConditionalExpression > CallExpression", () => {
+    expect(
+        extractFromCode(`
+            const getColorConfig = () => ({ color: "teal.700", backgroundColor: "teal.800" });
+            <ColorBox
+                {...{
+                    ...(isShown ? getColorConfig() : { color: "never.150" }),
+                    color: "orange.200",
+                }}
+            >
+                nested spread conditional fn result and override
+            </ColorBox>
+        `)
+    ).toMatchInlineSnapshot('[["ColorBox", [["color", "teal800"]]]]');
+});
+
+it("extract JsxSpreadAttribute > BinaryExpression > AmpersandAmpersandToken / ObjectLiteralExpression", () => {
+    expect(
+        extractFromCode(`
+            const getColorConfig = () => ({ color: "teal.700", backgroundColor: "teal.800" });
+            <ColorBox
+                {...{
+                    ...(!isShown ? (getColorConfig() as any) : ({ [dynamicAttribute]: "orange.300" } as any)),
+                    color: "orange.400",
+                }}
+            >
+                nested spread conditional fn result and override with object literal expression and dynamic
+                attribute
+            </ColorBox>
+        `)
+    ).toMatchInlineSnapshot('[["ColorBox", [["color", "teal.900"]]]]');
+});
+
+it("extract JsxSpreadAttribute > BinaryExpression > AmpersandAmpersandToken / ObjectLiteralExpression", () => {
+    expect(
+        extractFromCode(`
+            const getColorConfig = () => ({ color: "teal.700", backgroundColor: "teal.800" });
+            <ColorBox
+                {...{
+                    ...{
+                        color: "telegram.100",
+                        backgroundColor: "telegram.200",
+                    },
+                    color: "telegram.300",
+                    backgroundColor: "telegram.400",
+                }}
+            >
+                spread with nested spread and override
+            </ColorBox>
+        `)
+    ).toMatchInlineSnapshot('[["ColorBox", [["color", "cyan.100"]]]]');
 });

@@ -115,6 +115,7 @@ importers:
     dependencies:
       '@babel/core': 7.20.2
       '@phenomnomnominal/tsquery': 5.0.0_typescript@4.8.4
+      '@vanilla-extract/integration': link:../../../open-source/vanilla-extract/packages/integration
       eval: 0.1.8
       javascript-stringify: 2.1.0
       pastable: 2.0.13
@@ -130,7 +131,6 @@ importers:
       '@types/react': 18.0.25
       '@types/react-dom': 18.0.8
       '@typescript-eslint/eslint-plugin': 5.42.1_rmayb2veg2btbq6mbmnyivgasy
-      '@vanilla-extract/integration': link:../../../open-source/vanilla-extract/packages/integration
       '@vanilla-extract/sprinkles': link:../../../open-source/vanilla-extract/packages/sprinkles
       eslint: 8.27.0
       eslint-formatter-pretty: 4.1.0
