@@ -138,8 +138,11 @@ export const Demo = () => {
 
                     {/* spread */}
                     <ColorBox {...{ color: "facebook.100" }}>spread</ColorBox>
+                    {/* color.blackAlpha400 */}
                     <ColorBox {...objectWithAttributes}>var spread</ColorBox>
+                    {/* color.blackAlpha400 */}
                     <ColorBox {...(isShown ? objectWithAttributes : null)}>conditional var spread</ColorBox>
+                    {/* color.facebook.200 / backgroundColor.blackAlpha.100 / borderColor.blackAlpha.300 */}
                     <ColorBox
                         {...{
                             color: "facebook.200",
@@ -151,10 +154,13 @@ export const Demo = () => {
                     </ColorBox>
                     <ColorBox {...(isShown ? { color: "facebook.200" } : undefined)}>spread ternary</ColorBox>
                     <ColorBox {...(isShown && { color: "facebook.300" })}>spread &&</ColorBox>
+                    {/* color.twitter.100 / backgroundColor.twitter.200 */}
                     <ColorBox {...getColorConfig()}>spread fn result</ColorBox>
+                    {/* backgroundColor.twitter.200 / color.orange.100 */}
                     <ColorBox {...{ ...getColorConfig(), color: "orange.100" }}>
                         nested spread fn result and override
                     </ColorBox>
+                    {/* color.orange.200 / backgroundColor.twitter.200 */}
                     <ColorBox
                         {...{
                             ...(isShown ? getColorConfig() : { color: "never.150" }),
@@ -163,6 +169,7 @@ export const Demo = () => {
                     >
                         nested spread conditional fn result and override
                     </ColorBox>
+                    {/* backgroundColor.twitter.200 / color.orange.400 */}
                     <ColorBox
                         {...{
                             ...(!isShown ? (getColorConfig() as any) : ({ [dynamicAttribute]: "orange.300" } as any)),

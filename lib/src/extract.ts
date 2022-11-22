@@ -83,10 +83,6 @@ export const extract = ({ ast, config, used }: ExtractOptions) => {
                 if (typeof value === "string") {
                     propValues.add(value);
                 }
-
-                // if (Array.isArray(value)) {
-                //     value.forEach((possibleValue) => propValues.add(possibleValue));
-                // }
             });
 
             extractedComponentPropValues.push([propName, extracted] as ExtractedPropPair);
@@ -94,11 +90,42 @@ export const extract = ({ ast, config, used }: ExtractOptions) => {
 
         const spreadSelector = `JsxElement:has(Identifier[name="${componentName}"]) JsxSpreadAttribute`;
         const spreadNodes = query<JsxSpreadAttribute>(ast, spreadSelector) ?? [];
-        spreadNodes
-            .flatMap((node) => extractJsxSpreadAttributeValues(node, propNameList, componentMap))
-            .forEach(([propName, extracted]) => {
-                extractedComponentPropValues.push([propName, extracted]);
+        spreadNodes.forEach((node) => {
+            const extracted = extractJsxSpreadAttributeValues(node);
+            const foundPropList = new Set<string>();
+
+            // reverse prop entries so that the last one wins
+            // ex: <Box sx={{ ...{ color: "red" }, color: "blue" }} />
+            // color: "blue" wins / color: "red" is ignored
+            const entries = extracted.reverse().filter(([propName]) => {
+                if (!propNameList.includes(propName)) return false;
+                if (foundPropList.has(propName)) return false;
+
+                foundPropList.add(propName);
+                return true;
             });
+
+            // console.log(extracted);
+
+            // reverse again to keep the original order
+            entries.reverse().forEach(([propName, propValue]) => {
+                const propValues = componentMap.properties.get(propName) ?? new Set();
+
+                if (!componentMap.properties.has(propName)) {
+                    componentMap.properties.set(propName, propValues);
+                }
+
+                const extractedValues = castAsArray(propValue).filter(isNotNullish);
+                extractedValues.forEach((value) => {
+                    if (typeof value === "string") {
+                        propValues.add(value);
+                        extractedComponentPropValues.push([propName, value]);
+                    }
+                });
+            });
+
+            return entries;
+        });
 
         // console.log(extractedComponentPropValues);
 
@@ -156,41 +183,29 @@ const extractJsxAttributeIdentifierValue = (identifier: Identifier) => {
     }
 };
 
-const extractJsxSpreadAttributeValues = (
-    spreadAttribute: JsxSpreadAttribute,
-    propNameList: string[],
-    componentMap: ComponentUsedPropertiesStyle
-) => {
+const extractJsxSpreadAttributeValues = (spreadAttribute: JsxSpreadAttribute) => {
     const node = unwrapExpression(spreadAttribute.getExpression());
 
-    return maybeObjectPairs(node, propNameList, componentMap) ?? [];
+    const maybeEntries = maybeObjectEntries(node);
+    if (isNotNullish(maybeEntries)) return maybeEntries;
+
+    return [];
 };
 
-const getObjectLiteralExpressionPropPairs = (
-    expression: ObjectLiteralExpression,
-    propNameList: string[],
-    componentMap: ComponentUsedPropertiesStyle
-) => {
+const getObjectLiteralExpressionPropPairs = (expression: ObjectLiteralExpression) => {
     const extractedPropValues = [] as ExtractedPropPair[];
 
     const properties = expression.getProperties();
     properties.forEach((propElement) => {
         if (Node.isPropertyAssignment(propElement) || Node.isShorthandPropertyAssignment(propElement)) {
             const propName = getPropertyName(propElement);
-            if (!propName || !propNameList.includes(propName)) return;
-
-            const propValues = componentMap.properties.get(propName) ?? new Set();
-
-            if (!componentMap.properties.has(propName)) {
-                componentMap.properties.set(propName, propValues);
-            }
+            if (!propName) return;
 
             const initializer = unwrapExpression(propElement.getInitializerOrThrow());
             const maybeValue = maybeStringLiteral(initializer);
 
             if (isNotNullish(maybeValue)) {
                 extractedPropValues.push([propName, maybeValue]);
-                propValues.add(maybeValue);
                 return;
             }
 
@@ -201,7 +216,6 @@ const getObjectLiteralExpressionPropPairs = (
                 if (isNotNullish(extracted)) {
                     if (typeof extracted === "string") {
                         extractedPropValues.push([propName, extracted]);
-                        propValues.add(extracted);
                         return;
                     }
 
@@ -209,30 +223,17 @@ const getObjectLiteralExpressionPropPairs = (
 
                     extracted.forEach((possibleValue) => {
                         extractedPropValues.push([propName, possibleValue]);
-                        propValues.add(possibleValue);
                     });
                 }
             }
         }
 
         if (Node.isSpreadAssignment(propElement)) {
-            console.log({
-                propElement: propElement.getText(),
-                expression: expression.getText(),
-            });
             const initializer = unwrapExpression(propElement.getExpression());
-            const extracted = maybeObjectPairs(initializer, propNameList, componentMap);
+            const extracted = maybeObjectEntries(initializer);
             if (extracted) {
                 extracted.forEach(([propName, value]) => {
-                    if (!propNameList.includes(propName)) return;
-
-                    const propValues = componentMap.properties.get(propName) ?? new Set();
-                    if (!componentMap.properties.has(propName)) {
-                        componentMap.properties.set(propName, propValues);
-                    }
-
                     extractedPropValues.push([propName, value]);
-                    propValues.add(value);
                 });
             }
         }
@@ -265,13 +266,9 @@ const getPropertyName = (property: ObjectLiteralElementLike) => {
     }
 };
 
-const maybeObjectPairs = (node: Node, propNameList: string[], componentMap: ComponentUsedPropertiesStyle) => {
-    console.log({
-        node: node.getText(),
-        kind: node.getKindName(),
-    });
+const maybeObjectEntries = (node: Node): ExtractedPropPair[] | undefined => {
     if (Node.isObjectLiteralExpression(node)) {
-        return getObjectLiteralExpressionPropPairs(node, propNameList, componentMap);
+        return getObjectLiteralExpressionPropPairs(node);
     }
 
     // <ColorBox {...xxx} />
@@ -281,36 +278,45 @@ const maybeObjectPairs = (node: Node, propNameList: string[], componentMap: Comp
 
         // <ColorBox {...objectLiteral} />
         if (Node.isObjectLiteralExpression(maybeObject)) {
-            return getObjectLiteralExpressionPropPairs(maybeObject, propNameList, componentMap);
+            return getObjectLiteralExpressionPropPairs(maybeObject);
         }
     }
 
     // <ColorBox {...(xxx ? yyy : zzz)} />
     if (Node.isConditionalExpression(node)) {
-        const maybeObject = evaluateExpression(node, node.getProject().getTypeChecker()) ?? undefined;
-        if (!maybeObject) return [];
+        const maybeObject = evaluateNode(node);
 
-        if (isObjectLiteral(maybeObject)) {
-            return Object.entries(maybeObject).filter(([key]) => propNameList.includes(key));
+        // fallback to both possible outcome
+        if (maybeObject === EvalError) {
+            const whenTrue = maybeObjectEntries(node.getWhenTrue());
+            const whenFalse = maybeObjectEntries(node.getWhenFalse());
+
+            return [...(whenTrue ?? []), ...(whenFalse ?? [])].filter(isNotNullish);
         }
+
+        if (isNotNullish(maybeObject) && isObjectLiteral(maybeObject)) {
+            return Object.entries(maybeObject);
+        }
+
+        return [];
     }
 
     // <ColorBox {...(condition && objectLiteral)} />
     if (Node.isBinaryExpression(node) && node.getOperatorToken().getKind() === ts.SyntaxKind.AmpersandAmpersandToken) {
-        const maybeObject = evaluateExpression(node, node.getProject().getTypeChecker()) ?? undefined;
+        const maybeObject = safeEvaluateNode(node);
         if (!maybeObject) return [];
 
         if (isObjectLiteral(maybeObject)) {
-            return Object.entries(maybeObject).filter(([key]) => propNameList.includes(key));
+            return Object.entries(maybeObject);
         }
     }
 
     if (Node.isCallExpression(node)) {
-        const maybeObject = evaluateExpression(node, node.getProject().getTypeChecker()) ?? undefined;
+        const maybeObject = safeEvaluateNode(node);
         if (!maybeObject) return [];
 
         if (isObjectLiteral(maybeObject)) {
-            return Object.entries(maybeObject).filter(([key]) => propNameList.includes(key));
+            return Object.entries(maybeObject);
         }
     }
 };
@@ -468,18 +474,16 @@ function maybeLiteral(node: Node): string | string[] | ObjectLiteralExpression |
 
     // <ColorBox color={isDark ? darkValue : "whiteAlpha.100"} />
     if (Node.isConditionalExpression(node)) {
-        return evaluateExpression(node, node.getProject().getTypeChecker()) ?? undefined;
+        return safeEvaluateNode<string>(node);
     }
 
     // <ColorBox color={fn()} />
     if (Node.isCallExpression(node)) {
-        return evaluateExpression(node, node.getProject().getTypeChecker()) ?? undefined;
+        return safeEvaluateNode<string>(node);
     }
 
     if (Node.isBinaryExpression(node)) {
-        return (
-            tryUnwrapBinaryExpression(node) ?? evaluateExpression(node, node.getProject().getTypeChecker()) ?? undefined
-        );
+        return tryUnwrapBinaryExpression(node) ?? safeEvaluateNode<string>(node);
     }
 
     // console.log({ maybeLiteralEnd: true, node: node.getText(), kind: node.getKindName() });
@@ -738,11 +742,12 @@ function queryOne<T extends Node = Node>(node: Node, q: string): T | undefined {
     return results.length > 0 ? results[0] : undefined;
 }
 
+const EvalError = Symbol("EvalError");
 /**
  * Evaluates with strict policies restrictions
  * @see https://github.com/wessberg/ts-evaluator#setting-up-policies
  */
-const evaluateExpression = (node: Expression, morphTypeChecker: TypeChecker): string | null => {
+const evaluateExpression = (node: Expression, morphTypeChecker: TypeChecker) => {
     const compilerNode = node.compilerNode;
     const typeChecker = morphTypeChecker.compilerObject;
 
@@ -766,5 +771,13 @@ const evaluateExpression = (node: Expression, morphTypeChecker: TypeChecker): st
     //     compilerNodeKind: node.getKindName(),
     //     result: result.success ? result.value : result.reason,
     // });
-    return result.success ? (result.value as string) : null;
+    return result.success ? result.value : EvalError;
 };
+
+const safeEvaluateNode = <T>(node: Expression) => {
+    const result = evaluateExpression(node, node.getProject().getTypeChecker());
+    if (result === EvalError) return;
+    return result as T;
+};
+
+const evaluateNode = <T>(node: Expression) => evaluateExpression(node, node.getProject().getTypeChecker()) as T;
