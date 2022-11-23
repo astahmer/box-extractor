@@ -45,7 +45,6 @@ export type ExtractOptions = {
     used: UsedMap;
 };
 
-// TODO spread operator
 // TODO runtime sprinkles fn
 // TODO rename maybeStringLiteral with maybeSingularLiteral ? (NumericLiteral, StringLiteral)
 
@@ -266,6 +265,42 @@ const getPropertyName = (property: ObjectLiteralElementLike) => {
     }
 };
 
+/**
+ * whenTrue: [ [ 'color', 'never.250' ] ],
+ * whenFalse: [ [ 'color', [ 'salmon.850', 'salmon.900' ] ] ],
+ * merged: [ [ 'color', [ 'never.250', 'salmon.850', 'salmon.900' ] ] ]
+ */
+const mergePossibleEntries = (whenTrue: ExtractedPropPair[], whenFalse: ExtractedPropPair[]) => {
+    const merged = new Map<string, Set<string>>();
+
+    whenTrue.forEach(([propName, propValues]) => {
+        const whenFalsePairWithPropName = whenFalse.find(([prop]) => prop === propName);
+        if (whenFalsePairWithPropName) {
+            merged.set(propName, new Set([...castAsArray(propValues), ...castAsArray(whenFalsePairWithPropName[1])]));
+            return;
+        }
+
+        merged.set(propName, new Set(castAsArray(propValues)));
+    });
+
+    whenFalse.forEach(([propName, propValues]) => {
+        if (merged.has(propName)) return;
+
+        const whenTruePairWithPropName = whenTrue.find(([prop]) => prop === propName);
+        if (whenTruePairWithPropName) {
+            merged.set(propName, new Set([...castAsArray(propValues), ...castAsArray(whenTruePairWithPropName[1])]));
+            return;
+        }
+
+        merged.set(propName, new Set(castAsArray(propValues)));
+    });
+
+    return Array.from(merged.entries()).map(([propName, propValues]) => [
+        propName,
+        Array.from(propValues),
+    ]) as ExtractedPropPair[];
+};
+
 const maybeObjectEntries = (node: Node): ExtractedPropPair[] | undefined => {
     if (Node.isObjectLiteralExpression(node)) {
         return getObjectLiteralExpressionPropPairs(node);
@@ -288,10 +323,9 @@ const maybeObjectEntries = (node: Node): ExtractedPropPair[] | undefined => {
 
         // fallback to both possible outcome
         if (maybeObject === EvalError) {
-            const whenTrue = maybeObjectEntries(node.getWhenTrue());
-            const whenFalse = maybeObjectEntries(node.getWhenFalse());
-
-            return [...(whenTrue ?? []), ...(whenFalse ?? [])].filter(isNotNullish);
+            const whenTrue = maybeObjectEntries(node.getWhenTrue()) ?? [];
+            const whenFalse = maybeObjectEntries(node.getWhenFalse()) ?? [];
+            return mergePossibleEntries(whenTrue, whenFalse);
         }
 
         if (isNotNullish(maybeObject) && isObjectLiteral(maybeObject)) {
@@ -312,6 +346,24 @@ const maybeObjectEntries = (node: Node): ExtractedPropPair[] | undefined => {
     }
 
     if (Node.isCallExpression(node)) {
+        const maybeObject = safeEvaluateNode(node);
+        if (!maybeObject) return [];
+
+        if (isObjectLiteral(maybeObject)) {
+            return Object.entries(maybeObject);
+        }
+    }
+
+    if (Node.isPropertyAccessExpression(node)) {
+        const maybeObject = safeEvaluateNode(node);
+        if (!maybeObject) return [];
+
+        if (isObjectLiteral(maybeObject)) {
+            return Object.entries(maybeObject);
+        }
+    }
+
+    if (Node.isElementAccessExpression(node)) {
         const maybeObject = safeEvaluateNode(node);
         if (!maybeObject) return [];
 
@@ -769,7 +821,7 @@ const evaluateExpression = (node: Expression, morphTypeChecker: TypeChecker) => 
     // console.log({
     //     compilerNode: compilerNode.getText(),
     //     compilerNodeKind: node.getKindName(),
-    //     result: result.success ? result.value : result.reason,
+    //     result: result.success ? result.value : null,
     // });
     return result.success ? result.value : EvalError;
 };

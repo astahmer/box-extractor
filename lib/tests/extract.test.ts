@@ -1089,4 +1089,166 @@ it("extract JsxSpreadAttribute > ConditionalExpression > unresolvable expression
     `);
 });
 
-// TODO ElementAccessExpression / nested unresolvable expression
+it("extract JsxSpreadAttribute > ElementAccessExpression", () => {
+    expect(
+        extractFromCode(`
+            const objectWithAttributes = { color: "cyan.900" } as any;
+            const themeObjectsMap = {
+                basic: objectWithAttributes,
+            };
+            <ColorBox {...themeObjectsMap[\`basic\`]}></ColorBox>
+        `)
+    ).toMatchInlineSnapshot('[["ColorBox", [["color", "cyan.900"]]]]');
+});
+
+it("extract JsxSpreadAttribute > PropertyAccessExpression", () => {
+    expect(
+        extractFromCode(`
+            const objectWithAttributes = { color: "salmon.100" } as any;
+            const themeObjectsMap = {
+                basic: objectWithAttributes,
+            };
+            <ColorBox {...themeObjectsMap.basic}></ColorBox>
+        `)
+    ).toMatchInlineSnapshot('[["ColorBox", [["color", "salmon.100"]]]]');
+});
+
+it("extract JsxSpreadAttribute > PropertyAccessExpression > nested", () => {
+    expect(
+        extractFromCode(`
+            const objectWithAttributes = { color: "salmon.200" } as any;
+            const themeObjectsMap = {
+                basic: {
+                    nested: objectWithAttributes
+                },
+            };
+            <ColorBox {...themeObjectsMap.basic.nested}></ColorBox>
+        `)
+    ).toMatchInlineSnapshot('[["ColorBox", [["color", "salmon.200"]]]]');
+});
+
+it("extract JsxSpreadAttribute > ElementAccessExpression + PropertyAccessExpression", () => {
+    expect(
+        extractFromCode(`
+            const objectWithAttributes = { color: "salmon.300" } as any;
+            const themeObjectsMap = {
+                basic: { nested: objectWithAttributes },
+            };
+            <ColorBox {...themeObjectsMap[\`basic\`].nested}></ColorBox>
+        `)
+    ).toMatchInlineSnapshot('[["ColorBox", [["color", "salmon.300"]]]]');
+});
+
+it("extract JsxSpreadAttribute > ElementAccessExpression > nested", () => {
+    expect(
+        extractFromCode(`
+            const objectWithAttributes = { color: "salmon.400" } as any;
+            const themeObjectsMap = {
+                basic: { nested: objectWithAttributes },
+            };
+            <ColorBox {...themeObjectsMap[\`basic\`]["nested"]}></ColorBox>
+        `)
+    ).toMatchInlineSnapshot('[["ColorBox", [["color", "salmon.400"]]]]');
+});
+
+it("extract JsxSpreadAttribute > ElementAccessExpression > Identifier / ComputedProperty", () => {
+    expect(
+        extractFromCode(`
+            const objectWithAttributes = { color: "salmon.500" } as any;
+            const dynamicAttribute = "basic";
+            const themeObjectsMap = {
+                [dynamicAttribute]: objectWithAttributes
+            };
+            <ColorBox {...themeObjectsMap[dynamicAttribute]}></ColorBox>
+        `)
+    ).toMatchInlineSnapshot('[["ColorBox", [["color", "salmon.500"]]]]');
+});
+
+it("extract JsxSpreadAttribute > ElementAccessExpression > ComputedProperty / TemplateStringLiteral", () => {
+    expect(
+        extractFromCode(`
+            const objectWithAttributes = { color: "salmon.600" } as any;
+            const dynamicPart1 = "long";
+            const dynamicPart2 = "Prop";
+            const dynamicPartsAsTemplateString = \`\${dynamicPart1}\${dynamicPart2}\`;
+
+            const themeObjectsMap = {
+                longProp: objectWithAttributes
+            };
+            <ColorBox {...(themeObjectsMap[\`\${dynamicPartsAsTemplateString}\`]) as any}></ColorBox>
+        `)
+    ).toMatchInlineSnapshot('[["ColorBox", [["color", "salmon.600"]]]]');
+});
+
+it("extract JsxAttribute > JsxExpression > ConditionalExpression > complex nested condition > truthy", () => {
+    expect(
+        extractFromCode(`
+            const knownCondition = true;
+
+            const objectWithAttributes = { color: "salmon.700" } as any;
+            const dynamicPart1 = "long";
+            const dynamicPart2 = "Prop";
+
+            const themeObjectsMap = {
+                basic: objectWithAttributes,
+                ['long' + 'Prop']: { color: "never.500" },
+            };
+            const getBasic = () => (themeObjectsMap as any)?.basic!;
+            const getMap = { getter: getBasic };
+            const assertMap = { isTrue: () => !!Boolean(true) && 1 };
+
+            <ColorBox {...(!knownCondition ? { color: "never.250" } : assertMap.isTrue() ? getMap.getter() : themeObjectsMap[dynamicPart1 + dynamicPart2] )}></ColorBox>
+        `)
+    ).toMatchInlineSnapshot('[["ColorBox", [["color", "salmon.700"]]]]');
+});
+
+it("extract JsxAttribute > JsxExpression > ConditionalExpression > complex nested condition > truthy", () => {
+    expect(
+        extractFromCode(`
+            const knownCondition = true;
+
+            const objectWithAttributes = { color: "never.700" } as any;
+            const dynamicPart1 = "long";
+            const dynamicPart2 = "Prop";
+
+            const themeObjectsMap = {
+                basic: objectWithAttributes,
+                ['long' + 'Prop']: { color: "salmon.800" },
+            };
+            const getBasic = () => (themeObjectsMap as any)?.basic!;
+            const getMap = { getter: getBasic };
+            const assertMap = { isFalse: () => false };
+
+            <ColorBox {...(!knownCondition ? { color: "never.250" } : assertMap.isFalse() ? getMap.getter() : themeObjectsMap[dynamicPart1 + dynamicPart2] )}></ColorBox>
+        `)
+    ).toMatchInlineSnapshot('[["ColorBox", [["color", "salmon.800"]]]]');
+});
+
+it("extract JsxAttribute > JsxExpression > ConditionalExpression > unresolvable expression will output both outcome ", () => {
+    expect(
+        extractFromCode(`
+            const [unresolvableBoolean, setUnresolvableBoolean] = useState(false)
+            const knownCondition = true;
+
+            const objectWithAttributes = { color: "salmon.850" } as any;
+
+            const themeObjectsMap = {
+                basic: objectWithAttributes,
+                ['long' + 'Prop']: { color: "salmon.900" },
+            };
+
+            <ColorBox {...(!knownCondition ? { color: "never.250" } : unresolvableBoolean ? themeObjectsMap.basic : themeObjectsMap.longProp )}></ColorBox>
+        `)
+    ).toMatchInlineSnapshot(`
+      [
+          [
+              "ColorBox",
+              [
+                  ["color", "never.250"],
+                  ["color", "salmon.850"],
+                  ["color", "salmon.900"],
+              ],
+          ],
+      ]
+    `);
+});
