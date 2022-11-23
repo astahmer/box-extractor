@@ -36,7 +36,7 @@ afterEach(() => {
     project.removeSourceFile(sourceFile);
 });
 
-const config = { ColorBox: ["color", "backgroundColor"] };
+const config = { ColorBox: ["color", "backgroundColor", "zIndex"] };
 
 const extractFromCode = (code: string) => {
     const usedMap = new Map() as UsedMap;
@@ -1277,4 +1277,57 @@ it("extract JsxAttribute > ElementAccessExpression > CallExpression > PropertyAc
             <ColorBox color={themeObjectsMap[getDynamicAttribute()].color}></ColorBox>
         `)
     ).toMatchInlineSnapshot('[["ColorBox", [["color", "white.200"]]]]');
+});
+
+it("extract JsxAttribute > JsxExpression  > NumericLiteral", () => {
+    expect(
+        extractFromCode(`
+            <ColorBox zIndex={1}></ColorBox>
+        `)
+    ).toMatchInlineSnapshot('[["ColorBox", [["zIndex", "1"]]]]');
+});
+
+it("extract JsxAttribute > JsxExpression > Identifier > NumericLiteral", () => {
+    expect(
+        extractFromCode(`
+            const nbIndex = 2;
+            <ColorBox zIndex={nbIndex}></ColorBox>
+        `)
+    ).toMatchInlineSnapshot('[["ColorBox", [["zIndex", "2"]]]]');
+});
+
+it("extract JsxAttribute > JsxExpression > Identifier > NumericLiteral", () => {
+    expect(
+        extractFromCode(`
+            const nbIndex = 1;
+            const isShown = true;
+            <ColorBox zIndex={isShown ? 3 : 0}></ColorBox>
+        `)
+    ).toMatchInlineSnapshot('[["ColorBox", [["zIndex", 3]]]]');
+});
+
+it("extract JsxAttribute > JsxExpression > CallExpression > immediately invoked > NumericLiteral", () => {
+    expect(
+        extractFromCode(`
+            <ColorBox zIndex={(() => 4)()}></ColorBox>
+        `)
+    ).toMatchInlineSnapshot('[["ColorBox", [["zIndex", 4]]]]');
+});
+
+it("extract JsxAttribute > JsxExpression > CallExpression > optional + NonNullable + AsExpression > NumericLiteral", () => {
+    expect(
+        extractFromCode(`
+            const getMap = { get: () => 5 };
+            <ColorBox zIndex={(getMap?.get()!) as any}></ColorBox>
+        `)
+    ).toMatchInlineSnapshot('[["ColorBox", [["zIndex", 5]]]]');
+});
+
+it("extract JsxAttribute > JsxExpression > ElementAccessExpression > NumericLiteral", () => {
+    expect(
+        extractFromCode(`
+            const map = { thing: 6 };
+            <ColorBox zIndex={map["thing"]}></ColorBox>
+        `)
+    ).toMatchInlineSnapshot('[["ColorBox", [["zIndex", "6"]]]]');
 });
