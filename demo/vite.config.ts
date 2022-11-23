@@ -20,7 +20,12 @@ export default defineConfig((env) => ({
     root: "./",
     build: { outDir: "./dist", sourcemap: true },
     plugins: [
-        createViteBoxExtractor({ config: { ColorBox: ["color", "backgroundColor"] }, used: usedMap }),
+        createViteBoxExtractor({
+            config: {
+                ColorBox: { properties: ["color", "backgroundColor"], conditions: ["mobile", "tablet", "desktop"] },
+            },
+            used: usedMap,
+        }),
         UnoCSS({ presets: [presetIcons({})] }),
         react(),
         vanillaExtractPlugin({

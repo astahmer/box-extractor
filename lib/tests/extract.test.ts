@@ -1,6 +1,6 @@
 import { Project, SourceFile, ts } from "ts-morph";
 import { afterEach, expect, it } from "vitest";
-import { extract, UsedMap } from "../src/extract";
+import { extract, ExtractOptions, UsedMap } from "../src/extract";
 import { default as ExtractSample } from "./ExtractSample?raw";
 
 const createProject = () => {
@@ -36,7 +36,9 @@ afterEach(() => {
     project.removeSourceFile(sourceFile);
 });
 
-const config = { ColorBox: ["color", "backgroundColor", "zIndex"] };
+const config: ExtractOptions["config"] = {
+    ColorBox: { properties: ["color", "backgroundColor", "zIndex"], conditions: ["mobile", "tablet", "desktop"] },
+};
 
 const extractFromCode = (code: string) => {
     const usedMap = new Map() as UsedMap;
@@ -1328,6 +1330,14 @@ it("extract JsxAttribute > JsxExpression > ElementAccessExpression > NumericLite
         extractFromCode(`
             const map = { thing: 6 };
             <ColorBox zIndex={map["thing"]}></ColorBox>
+        `)
+    ).toMatchInlineSnapshot('[["ColorBox", [["zIndex", "6"]]]]');
+});
+
+it("extract JsxAttribute > JsxExpression > ObjectLiteralExpression > conditional sprinkles", () => {
+    expect(
+        extractFromCode(`
+            <ColorBox color={{ mobile: "white.300", tablet: "white.400", desktop: "white.500" }}></ColorBox>
         `)
     ).toMatchInlineSnapshot('[["ColorBox", [["zIndex", "6"]]]]');
 });

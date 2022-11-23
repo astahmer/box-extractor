@@ -41,17 +41,26 @@ type ExtractedPropPair = [propName: string, propValue: string | string[]];
 
 export type ExtractOptions = {
     ast: SourceFile;
-    config: Record<string, string[]>;
+    // TODO rename to: "tracked"
+    // TODO option: isJsx?: boolean ? so the sprinkles fn can also be in this map
+    config: Record<string, { properties: string[]; conditions: string[] }>;
     used: UsedMap;
 };
 
 // TODO runtime sprinkles fn
 // TODO rename maybeStringLiteral with maybeSingularLiteral ? (NumericLiteral, StringLiteral)
 
+// not in extract method, make it another function that can be used to provide a more complete config to `extract` fn
+// ->
+// TODO find all components that use source <Box /> & that allows spreading props on it
+// ex: const CustomBox = (props) => <Box {...props} />
+// Box is the source component, CustomBox re-uses it and should also be tracked
+
 export const extract = ({ ast, config, used }: ExtractOptions) => {
     const componentPropValues: ExtractedComponentProperties[] = [];
 
-    Object.entries(config).forEach(([componentName, propNameList]) => {
+    Object.entries(config).forEach(([componentName, component]) => {
+        const propNameList = component.properties;
         const extractedComponentPropValues = [] as ExtractedPropPair[];
         componentPropValues.push([componentName, extractedComponentPropValues]);
 
@@ -166,6 +175,8 @@ const extractJsxAttributeIdentifierValue = (identifier: Identifier) => {
         if (!expression) return;
 
         // console.log("expr", expression.getKindName(), expression.getText());
+        // expression.getKindName() === "ObjectLiteralExpression"
+        // = defineProperties.conditions
 
         const maybeValue = maybeLiteral(expression);
         if (isNotNullish(maybeValue)) return maybeValue;
