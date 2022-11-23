@@ -2,7 +2,7 @@ import type { AdapterContext } from "@vanilla-extract/integration";
 import { hash } from "@vanilla-extract/integration";
 import { stringify } from "javascript-stringify";
 import { isObject } from "pastable";
-import type { UsedMap } from "./extract";
+import type { UsedMap } from "./extractor/types";
 import { isCompiledSprinkle } from "./onContextFilled";
 
 export function serializeVanillaModuleWithoutUnused(

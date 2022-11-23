@@ -4,7 +4,8 @@ import type { SourceFile } from "ts-morph";
 import { Project, ts } from "ts-morph";
 import { normalizePath } from "vite";
 import type { Plugin } from "vite";
-import { extract, ExtractOptions } from "./extract";
+import { extract } from "./extractor/extract";
+import type { ExtractOptions } from "./extractor/types";
 
 // https://github.com/qmhc/vite-plugin-dts/blob/main/src/plugin.ts
 const tsConfigFilePath = "tsconfig.json";

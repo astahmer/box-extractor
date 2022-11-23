@@ -2,7 +2,7 @@ import type { AdapterContext } from "@vanilla-extract/integration";
 import evalCode from "eval";
 import { stringify } from "javascript-stringify";
 import { isDefined, isObject } from "pastable";
-import type { UsedMap } from "./extract";
+import type { UsedMap } from "./extractor/types";
 
 type Conditions = {
     conditions:
