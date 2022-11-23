@@ -1252,3 +1252,29 @@ it("extract JsxAttribute > JsxExpression > ConditionalExpression > unresolvable 
       ]
     `);
 });
+
+it("extract JsxSpreadAttribute > ElementAccessExpression > CallExpression", () => {
+    expect(
+        extractFromCode(`
+            const objectWithAttributes = { color: "white.100" } as any;
+            const getDynamicAttribute = () => "basic";
+            const themeObjectsMap = {
+                basic: objectWithAttributes
+            };
+            <ColorBox {...themeObjectsMap[getDynamicAttribute()]}></ColorBox>
+        `)
+    ).toMatchInlineSnapshot('[["ColorBox", [["color", "white.100"]]]]');
+});
+
+it("extract JsxAttribute > ElementAccessExpression > CallExpression > PropertyAccessExpression", () => {
+    expect(
+        extractFromCode(`
+            const objectWithAttributes = { color: "white.200" } as any;
+            const getDynamicAttribute = () => "basic";
+            const themeObjectsMap = {
+                basic: objectWithAttributes
+            };
+            <ColorBox color={themeObjectsMap[getDynamicAttribute()].color}></ColorBox>
+        `)
+    ).toMatchInlineSnapshot('[["ColorBox", [["color", "white.200"]]]]');
+});

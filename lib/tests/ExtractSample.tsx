@@ -48,8 +48,6 @@ const numberIndex = 0;
 
 const getColorConfig = () => ({ color: "twitter.100", backgroundColor: "twitter.200" });
 
-// TODO dynamic attribute retrieved using IIFE / function call (also try it in spread expressions)
-
 export const Demo = () => {
     const [isShown, setIsShown] = useState(false);
 

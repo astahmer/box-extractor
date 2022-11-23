@@ -776,6 +776,9 @@ const getPropertyAccessedExpressionValue = (expression: PropertyAccessExpression
     const type = expression.getType();
     if (type.isLiteral() || type.isUnionOrIntersection()) return parseType(type);
 
+    const maybeValue = safeEvaluateNode<string | string[]>(expression);
+    if (isNotNullish(maybeValue)) return maybeValue;
+
     const propName = expression.getName();
     const elementAccessed = unwrapExpression(expression.getExpression());
 
