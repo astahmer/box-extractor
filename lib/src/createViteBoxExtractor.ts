@@ -2,8 +2,9 @@ import { isAbsolute, resolve } from "node:path";
 
 import type { SourceFile } from "ts-morph";
 import { Project, ts } from "ts-morph";
-import { normalizePath } from "vite";
 import type { Plugin } from "vite";
+import { normalizePath } from "vite";
+
 import { extract } from "./extractor/extract";
 import type { ExtractOptions } from "./extractor/types";
 

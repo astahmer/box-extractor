@@ -2,6 +2,7 @@ import type { AdapterContext } from "@vanilla-extract/integration";
 import evalCode from "eval";
 import { stringify } from "javascript-stringify";
 import { isDefined, isObject } from "pastable";
+
 import type { UsedMap } from "./extractor/types";
 
 type Conditions = {
@@ -14,7 +15,7 @@ type Conditions = {
           };
 };
 
-export type CompiledSprinkle = { styles: Record<string, CompiledSprinklePropertyMap> } & Conditions;
+type CompiledSprinkle = { styles: Record<string, CompiledSprinklePropertyMap> } & Conditions;
 export const isCompiledSprinkle = (value: any): value is CompiledSprinkle => {
     return isObject(value) && "styles" in value && "conditions" in value;
 };
@@ -36,7 +37,6 @@ const debugIdByPropWithValuePair = new Map<
 export function onContextFilled(context: AdapterContext, evalResult: Record<string, unknown>, usedMap: UsedMap) {
     const stringifiedEval = "module.exports = " + stringifyExportsToSprinklesMap(evalResult);
     // console.log(stringifiedEval);
-    // console.log("bbb");
 
     const sprinklesMap = evalCode(stringifiedEval) as Record<string, unknown>;
     const flatSprinkles = Object.values(sprinklesMap).flat().filter(isCompiledSprinkle);
@@ -63,14 +63,14 @@ export function onContextFilled(context: AdapterContext, evalResult: Record<stri
     // console.log(debugIdByPropWithValuePair);
     // console.log(identifierByDebugId);
     const usedProps = usedMap.get("ColorBox")!.properties;
-    // console.log(usedProps);
+    console.log(usedProps);
     const usedGeneratedClassNameList = new Set<string>();
     usedProps.forEach((values, propName) => {
         values.forEach((value) => {
             const debugId = `${propName}_${value}`;
             // const className = getClassNameByDebugId(debugId);
             const className = debugIdByPropWithValuePair.get(debugId)?.defaultClass;
-            // console.log({ debugId, className });
+            console.log({ debugId, className });
             if (className) {
                 usedGeneratedClassNameList.add(className);
             }
@@ -97,7 +97,7 @@ export function onContextFilled(context: AdapterContext, evalResult: Record<stri
         console.log({ from: css.length, to: usedRules.length });
     });
     // console.dir(Array.from(context.cssByFileScope.values()), { depth: null });
-    // console.log({ usedGeneratedClassNameList });
+    console.log({ usedGeneratedClassNameList });
 }
 
 function stringifyExportsToSprinklesMap(value: any): any {

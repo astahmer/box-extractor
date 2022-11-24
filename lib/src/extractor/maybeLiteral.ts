@@ -1,19 +1,24 @@
-import {
+import type {
     ArrayLiteralExpression,
     BinaryExpression,
     ElementAccessExpression,
     Identifier,
-    Node,
     ObjectLiteralElementLike,
     ObjectLiteralExpression,
     PropertyAccessExpression,
     TemplateExpression,
-    ts,
 } from "ts-morph";
+import { Node, ts } from "ts-morph";
+
 import { safeEvaluateNode } from "./evaluate";
+// eslint-disable-next-line import/no-cycle
+import { maybeObjectEntries } from "./maybeObjectEntries";
+import type { ExtractedPropMap } from "./types";
 import { isNotNullish, parseType, unwrapExpression } from "./utils";
 
-export function maybeLiteral(node: Node): string | string[] | ObjectLiteralExpression | undefined {
+export function maybeLiteral(node: Node): string | string[] | ObjectLiteralExpression | ExtractedPropMap | undefined {
+    // console.log("maybeLiteral", node.getKindName(), node.getText());
+
     // <ColorBox color={"xxx"} />
     if (Node.isStringLiteral(node)) {
         return node.getLiteralText();
@@ -58,7 +63,7 @@ export function maybeLiteral(node: Node): string | string[] | ObjectLiteralExpre
 
     // <ColorBox color={isDark ? darkValue : "whiteAlpha.100"} />
     if (Node.isConditionalExpression(node)) {
-        return safeEvaluateNode<string>(node);
+        return maybeExpandConditionalExpression(node);
     }
 
     // <ColorBox color={fn()} />
@@ -77,6 +82,49 @@ export const maybeStringLiteral = (node: Node) => {
     const literal = maybeLiteral(node);
     if (typeof literal === "string") {
         return literal;
+    }
+};
+
+const maybeExpandConditionalExpression = (node: Node): string | string[] | ExtractedPropMap | undefined => {
+    // <ColorBox color={isDark ? darkValue : "whiteAlpha.100"} />
+    if (Node.isConditionalExpression(node)) {
+        const maybeValue = safeEvaluateNode<string | string[]>(node);
+        if (isNotNullish(maybeValue)) return maybeValue;
+
+        // unresolvable condition will return both possible outcome
+        const whenTrueExpr = unwrapExpression(node.getWhenTrue());
+        const whenFalseExpr = unwrapExpression(node.getWhenFalse());
+
+        let whenTrueValue: ReturnType<typeof maybeLiteral> | ExtractedPropMap = maybeLiteral(whenTrueExpr);
+        let whenFalseValue: ReturnType<typeof maybeLiteral> | ExtractedPropMap = maybeLiteral(whenFalseExpr);
+
+        // <ColorBox color={isDark ? { mobile: "blue.100", desktop: "blue.300" } : "whiteAlpha.100"} />
+        if (!isNotNullish(whenTrueValue)) {
+            const maybeObject = maybeObjectEntries(whenTrueExpr);
+            if (isNotNullish(maybeObject) && maybeObject.length > 0) {
+                whenTrueValue = Object.fromEntries(maybeObject);
+            }
+        }
+
+        // <ColorBox color={isDark ? { mobile: "blue.100", desktop: "blue.300" } : "whiteAlpha.100"} />
+        if (!isNotNullish(whenFalseValue)) {
+            const maybeObject = maybeObjectEntries(whenFalseExpr);
+            if (isNotNullish(maybeObject) && maybeObject.length > 0) {
+                whenFalseValue = Object.fromEntries(maybeObject);
+            }
+        }
+
+        // console.log({
+        //     whenTrueLiteral: unwrapExpression(node.getWhenTrue()).getText(),
+        //     whenFalseLiteral: unwrapExpression(node.getWhenFalse()).getText(),
+        //     whenTrueValue,
+        //     whenFalseValue,
+        // });
+
+        return [whenTrueValue, whenFalseValue].flat().filter((v) => {
+            if (!isNotNullish(v)) return false;
+            return !(Node.isNode(v) && Node.isObjectLiteralExpression(v));
+        }) as string[];
     }
 };
 
@@ -207,8 +255,8 @@ export const getIdentifierReferenceValue = (identifier: Identifier) => {
             const maybeValue = maybeLiteral(initializer);
             if (isNotNullish(maybeValue)) return maybeValue;
 
-            const type = initializer.getType();
-            if (type.isLiteral() || type.isUnionOrIntersection()) return parseType(type);
+            const maybeType = parseType(initializer.getType());
+            if (isNotNullish(maybeType)) return maybeType;
 
             if (Node.isObjectLiteralExpression(initializer)) {
                 return initializer;
@@ -250,9 +298,9 @@ const tryUnwrapBinaryExpression = (node: BinaryExpression) => {
 
 const getElementAccessedExpressionValue = (
     expression: ElementAccessExpression
-): string | string[] | ObjectLiteralExpression | undefined => {
-    const type = expression.getType();
-    if (type.isLiteral() || type.isUnionOrIntersection()) return parseType(type);
+): string | string[] | ObjectLiteralExpression | ExtractedPropMap | undefined => {
+    const maybeType = parseType(expression.getType());
+    if (isNotNullish(maybeType)) return maybeType;
 
     const elementAccessed = unwrapExpression(expression.getExpression());
     const arg = unwrapExpression(expression.getArgumentExpressionOrThrow());
@@ -356,9 +404,7 @@ const getElementAccessedExpressionValue = (
                 ? maybePropIdentifierDefinitionValue(elementAccessed, whenFalseValue)
                 : undefined;
 
-            if (isNotNullish(whenTrueResolved) && isNotNullish(whenFalseResolved)) {
-                return [whenTrueResolved, whenFalseResolved].flat();
-            }
+            return [whenTrueResolved, whenFalseResolved].flat().filter(isNotNullish);
         }
     }
 };
@@ -386,8 +432,8 @@ const getArrayElementValueAtIndex = (array: ArrayLiteralExpression, index: numbe
 };
 
 const getPropertyAccessedExpressionValue = (expression: PropertyAccessExpression) => {
-    const type = expression.getType();
-    if (type.isLiteral() || type.isUnionOrIntersection()) return parseType(type);
+    const maybeType = parseType(expression.getType());
+    if (isNotNullish(maybeType)) return maybeType;
 
     const maybeValue = safeEvaluateNode<string | string[]>(expression);
     if (isNotNullish(maybeValue)) return maybeValue;

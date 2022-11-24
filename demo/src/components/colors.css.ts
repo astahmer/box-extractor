@@ -339,8 +339,8 @@ const colorProps = defineProperties({
     },
     defaultCondition: "default",
     properties: {
-        color: flatMapColorsWithVariants({ red: colors.red } as any),
-        // color: flatColors,
+        // color: flatMapColorsWithVariants({ red: colors.red } as any),
+        color: flatColors,
         // background: flatColors,
         // backgroundColor: flatColors,
         // borderColor: flatColors,

@@ -1,5 +1,8 @@
-import { Identifier, Node } from "ts-morph";
+import type { Identifier } from "ts-morph";
+import { Node } from "ts-morph";
+
 import { maybeLiteral } from "./maybeLiteral";
+import { maybeObjectEntries } from "./maybeObjectEntries";
 import { isNotNullish, parseType, unwrapExpression } from "./utils";
 
 export const extractJsxAttributeIdentifierValue = (identifier: Identifier) => {
@@ -23,20 +26,17 @@ export const extractJsxAttributeIdentifierValue = (identifier: Identifier) => {
         const expression = unwrapExpression(initializer.getExpressionOrThrow());
         if (!expression) return;
 
-        // console.log("expr", expression.getKindName(), expression.getText());
         // expression.getKindName() === "ObjectLiteralExpression"
         // = defineProperties.conditions
         const maybeValue = maybeLiteral(expression);
         if (isNotNullish(maybeValue)) return maybeValue;
 
-        const type = expression.getType();
-        if (type.isLiteral() || type.isUnionOrIntersection()) return parseType(type);
+        const maybeType = parseType(expression.getType());
+        if (isNotNullish(maybeType)) return maybeType;
 
-        // unresolvable condition (isDark) will return both possible outcome
-        // const [isDark, setIsDark] = useColorMode();
-        // <ColorBox color={isDark ? darkValue : "whiteAlpha.100"} />
-        if (Node.isConditionalExpression(expression)) {
-            return [maybeLiteral(expression.getWhenTrue()), maybeLiteral(expression.getWhenFalse())].flat();
-        }
+        const maybeObject = maybeObjectEntries(expression);
+        // console.dir({ maybeObject }, { depth: null });
+        // console.log("expr", expression.getKindName(), expression.getText());
+        if (isNotNullish(maybeObject) && maybeObject.length > 0) return Object.fromEntries(maybeObject);
     }
 };

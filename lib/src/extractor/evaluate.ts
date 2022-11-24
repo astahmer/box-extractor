@@ -1,5 +1,6 @@
 import { evaluate } from "ts-evaluator";
-import { Expression, ts, TypeChecker } from "ts-morph";
+import type { Expression, TypeChecker } from "ts-morph";
+import { ts } from "ts-morph";
 
 const TsEvalError = Symbol("EvalError");
 

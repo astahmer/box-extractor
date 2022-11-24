@@ -1335,10 +1335,188 @@ it("extract JsxAttribute > JsxExpression > ElementAccessExpression > NumericLite
     ).toMatchInlineSnapshot('[["ColorBox", [["zIndex", "6"]]]]');
 });
 
-it.skip("extract JsxAttribute > JsxExpression > ObjectLiteralExpression > conditional sprinkles", () => {
+it("extract JsxAttribute > JsxExpression > ObjectLiteralExpression > conditional sprinkles", () => {
     expect(
         extractFromCode(`
             <ColorBox color={{ mobile: "white.300", tablet: "white.400", desktop: "white.500" }}></ColorBox>
         `)
-    ).toMatchInlineSnapshot('[["ColorBox", [["zIndex", "6"]]]]');
+    ).toMatchInlineSnapshot(`
+      [
+          [
+              "ColorBox",
+              [
+                  [
+                      "color",
+                      {
+                          mobile: "white.300",
+                          tablet: "white.400",
+                          desktop: "white.500",
+                      },
+                  ],
+              ],
+          ],
+      ]
+    `);
+});
+
+it("extract JsxAttribute > JsxExpression > PropertyAccessExpression > ObjectLiteralExpression", () => {
+    expect(
+        extractFromCode(`
+            const map = {
+                responsiveColor: {
+                    mobile: "white.600",
+                    tablet: "white.700",
+                    desktop: "white.800",
+                }
+            };
+
+            <ColorBox color={(map?.responsiveColor) as any}></ColorBox>
+        `)
+    ).toMatchInlineSnapshot(`
+      [
+          [
+              "ColorBox",
+              [
+                  [
+                      "color",
+                      {
+                          mobile: "white.600",
+                          tablet: "white.700",
+                          desktop: "white.800",
+                      },
+                  ],
+              ],
+          ],
+      ]
+    `);
+});
+
+it("extract JsxAttribute > JsxExpression > PropertyAccessExpression > ObjectLiteralExpression", () => {
+    expect(
+        extractFromCode(`
+            const map = {
+                responsiveColor: () => ({
+                    mobile: "white.600",
+                    tablet: "white.700",
+                    desktop: "white.800",
+                })
+            };
+
+            <ColorBox color={map["responsiveColor"]!()}></ColorBox>
+        `)
+    ).toMatchInlineSnapshot(`
+      [
+          [
+              "ColorBox",
+              [
+                  [
+                      "color",
+                      {
+                          mobile: "white.600",
+                          tablet: "white.700",
+                          desktop: "white.800",
+                      },
+                  ],
+              ],
+          ],
+      ]
+    `);
+});
+
+it("extract JsxAttribute > JsxExpression > ElementAccessExpression + AsExpression + QuestionMarkToken + TemplateExpression + BinaryExpression + CallExpression", () => {
+    expect(
+        extractFromCode(`
+            const colorRef = "Color";
+            const dynamic = "responsiveColor";
+            const responsiveColor = ({
+                mobile: "black.100",
+                tablet: "black.200",
+                desktop: "black.300",
+            });
+
+            const map = {
+                [dynamic]: () => responsiveColor
+            };
+
+            <ColorBox color={((map as any)?.[\`responsive\` + \`\${colorRef}\`] as any)()}></ColorBox>
+        `)
+    ).toMatchInlineSnapshot(`
+      [
+          [
+              "ColorBox",
+              [
+                  [
+                      "color",
+                      {
+                          mobile: "black.100",
+                          tablet: "black.200",
+                          desktop: "black.300",
+                      },
+                  ],
+              ],
+          ],
+      ]
+    `);
+});
+
+it("extract JsxAttribute > JsxExpression > ConditionalExpression > StringLiteral/ObjectLiteralExpression (conditional sprinkles) > truthy", () => {
+    expect(
+        extractFromCode(`
+            <ColorBox color={true ? { mobile: "black.400", tablet: "black.500", desktop: "black.600" } : "black.700"}></ColorBox>
+        `)
+    ).toMatchInlineSnapshot(`
+      [
+          [
+              "ColorBox",
+              [
+                  [
+                      "color",
+                      {
+                          mobile: "black.400",
+                          tablet: "black.500",
+                          desktop: "black.600",
+                      },
+                  ],
+              ],
+          ],
+      ]
+    `);
+});
+
+it("extract JsxAttribute > JsxExpression > ConditionalExpression > StringLiteral/ObjectLiteralExpression (conditional sprinkles) > falsy", () => {
+    expect(
+        extractFromCode(`
+            <ColorBox color={false ? { mobile: "black.400", tablet: "black.500", desktop: "black.600" } : "black.700"}></ColorBox>
+        `)
+    ).toMatchInlineSnapshot('[["ColorBox", [["color", "black.700"]]]]');
+});
+
+it("extract JsxAttribute > JsxExpression > ConditionalExpression > StringLiteral/ObjectLiteralExpression (conditional sprinkles) > unresolvable condition", () => {
+    expect(
+        extractFromCode(`
+            const [isShown] = useState(true);
+            <ColorBox color={isShown ? { mobile: "black.400", tablet: "black.500", desktop: "black.600" } : "black.700"}></ColorBox>
+        `)
+    ).toMatchInlineSnapshot(
+        `
+      [
+          [
+              "ColorBox",
+              [
+                  [
+                      "color",
+                      [
+                          {
+                              mobile: "black.400",
+                              tablet: "black.500",
+                              desktop: "black.600",
+                          },
+                          "black.700",
+                      ],
+                  ],
+              ],
+          ],
+      ]
+    `
+    );
 });

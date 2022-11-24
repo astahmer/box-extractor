@@ -1,13 +1,13 @@
 import { tsquery } from "@phenomnomnominal/tsquery";
-import { castAsArray } from "pastable";
+import { castAsArray, isObjectLiteral } from "pastable";
 import type { Identifier, JsxSpreadAttribute, Node } from "ts-morph";
+
 import { extractJsxAttributeIdentifierValue } from "./extractJsxAttributeIdentifierValue";
 import { extractJsxSpreadAttributeValues } from "./maybeObjectEntries";
 import type { ExtractedComponentProperties, ExtractedPropPair, ExtractOptions } from "./types";
 import { isNotNullish } from "./utils";
 
 // TODO runtime sprinkles fn
-// TODO rename maybeStringLiteral with maybeSingularLiteral ? (NumericLiteral, StringLiteral)
 
 // not in extract method, make it another function that can be used to provide a more complete config to `extract` fn
 // ->
@@ -45,10 +45,17 @@ export const extract = ({ ast, config, used }: ExtractOptions) => {
             }
 
             const extracted = extractJsxAttributeIdentifierValue(node);
+            // console.log({ propName, extracted });
             const extractedValues = castAsArray(extracted).filter(isNotNullish);
             extractedValues.forEach((value) => {
                 if (typeof value === "string") {
                     propValues.add(value);
+                }
+
+                if (isObjectLiteral(value)) {
+                    // Object.entries(value).forEach(([key, value]) => {
+                    //     propValues.add(`${key}:${value}`);
+                    // });
                 }
             });
 

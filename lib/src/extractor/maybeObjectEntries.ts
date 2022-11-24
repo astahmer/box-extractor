@@ -1,10 +1,12 @@
 import { castAsArray, isObjectLiteral } from "pastable";
-import { JsxSpreadAttribute, Node, ObjectLiteralElementLike, ObjectLiteralExpression, ts } from "ts-morph";
+import type { JsxSpreadAttribute, ObjectLiteralElementLike, ObjectLiteralExpression } from "ts-morph";
+import { Node, ts } from "ts-morph";
 
 import { evaluateNode, isEvalError, safeEvaluateNode } from "./evaluate";
+// eslint-disable-next-line import/no-cycle
 import { getIdentifierReferenceValue, maybeStringLiteral } from "./maybeLiteral";
 import type { ExtractedPropPair } from "./types";
-import { unwrapExpression, isNotNullish, parseType } from "./utils";
+import { isNotNullish, parseType, unwrapExpression } from "./utils";
 
 export const extractJsxSpreadAttributeValues = (spreadAttribute: JsxSpreadAttribute) => {
     const node = unwrapExpression(spreadAttribute.getExpression());
@@ -39,6 +41,7 @@ export const maybeObjectEntries = (node: Node): ExtractedPropPair[] | undefined 
         if (isEvalError(maybeObject)) {
             const whenTrue = maybeObjectEntries(node.getWhenTrue()) ?? [];
             const whenFalse = maybeObjectEntries(node.getWhenFalse()) ?? [];
+            // console.log({ whenTrue, whenFalse });
             return mergePossibleEntries(whenTrue, whenFalse);
         }
 
@@ -104,22 +107,18 @@ const getObjectLiteralExpressionPropPairs = (expression: ObjectLiteralExpression
                 return;
             }
 
-            const type = initializer.getType();
-            if (type.isLiteral() || type.isUnionOrIntersection()) {
-                const extracted = parseType(type);
-
-                if (isNotNullish(extracted)) {
-                    if (typeof extracted === "string") {
-                        extractedPropValues.push([propName, extracted]);
-                        return;
-                    }
-
-                    if (!Array.isArray(extracted)) return;
-
-                    extracted.forEach((possibleValue) => {
-                        extractedPropValues.push([propName, possibleValue]);
-                    });
+            const maybeType = parseType(expression.getType());
+            if (isNotNullish(maybeType)) {
+                if (typeof maybeType === "string") {
+                    extractedPropValues.push([propName, maybeType]);
+                    return;
                 }
+
+                if (!Array.isArray(maybeType)) return;
+
+                maybeType.forEach((possibleValue) => {
+                    extractedPropValues.push([propName, possibleValue]);
+                });
             }
         }
 

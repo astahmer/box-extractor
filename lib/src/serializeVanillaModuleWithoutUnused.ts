@@ -2,6 +2,7 @@ import type { AdapterContext } from "@vanilla-extract/integration";
 import { hash } from "@vanilla-extract/integration";
 import { stringify } from "javascript-stringify";
 import { isObject } from "pastable";
+
 import type { UsedMap } from "./extractor/types";
 import { isCompiledSprinkle } from "./onContextFilled";
 
@@ -37,7 +38,7 @@ function stringifyExports(
     value: any,
     unusedCompositionRegex: RegExp | null,
     usedMap: UsedMap
-): any {
+): string {
     const usedProps = usedMap.get("ColorBox")!.properties;
     const usedPropNames = new Set(usedProps.keys());
 
@@ -136,5 +137,5 @@ function stringifyExports(
             maxDepth: Number.POSITIVE_INFINITY,
             maxValues: Number.POSITIVE_INFINITY,
         }
-    );
+    )!;
 }

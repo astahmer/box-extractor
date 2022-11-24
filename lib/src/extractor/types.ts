@@ -11,6 +11,7 @@ type ComponentUsedPropertiesStyle = {
 export type UsedMap = Map<string, ComponentUsedPropertiesStyle>;
 export type ExtractedComponentProperties = [componentName: string, propPairs: ExtractedPropPair[]];
 export type ExtractedPropPair = [propName: string, propValue: string | string[]];
+export type ExtractedPropMap = Record<string, string | string[]>;
 
 export type ExtractOptions = {
     ast: SourceFile;
