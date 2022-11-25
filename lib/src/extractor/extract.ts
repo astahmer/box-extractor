@@ -3,7 +3,7 @@ import { castAsArray, isObjectLiteral } from "pastable";
 import type { Identifier, JsxSpreadAttribute, Node } from "ts-morph";
 
 import { extractJsxAttributeIdentifierValue } from "./extractJsxAttributeIdentifierValue";
-import { extractJsxSpreadAttributeValues } from "./maybeObjectEntries";
+import { extractJsxSpreadAttributeValues } from "./extractJsxSpreadAttributeValues";
 import type { ExtractedComponentProperties, ExtractedPropPair, ExtractOptions } from "./types";
 import { isNotNullish } from "./utils";
 

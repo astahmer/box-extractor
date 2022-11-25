@@ -1,5 +1,5 @@
 import { castAsArray, isObjectLiteral } from "pastable";
-import type { JsxSpreadAttribute, ObjectLiteralElementLike, ObjectLiteralExpression } from "ts-morph";
+import type { ObjectLiteralElementLike, ObjectLiteralExpression } from "ts-morph";
 import { Node, ts } from "ts-morph";
 
 import { evaluateNode, isEvalError, safeEvaluateNode } from "./evaluate";
@@ -7,15 +7,6 @@ import { evaluateNode, isEvalError, safeEvaluateNode } from "./evaluate";
 import { getIdentifierReferenceValue, maybeStringLiteral } from "./maybeLiteral";
 import type { ExtractedPropPair } from "./types";
 import { isNotNullish, parseType, unwrapExpression } from "./utils";
-
-export const extractJsxSpreadAttributeValues = (spreadAttribute: JsxSpreadAttribute) => {
-    const node = unwrapExpression(spreadAttribute.getExpression());
-
-    const maybeEntries = maybeObjectEntries(node);
-    if (isNotNullish(maybeEntries)) return maybeEntries;
-
-    return [];
-};
 
 export const maybeObjectEntries = (node: Node): ExtractedPropPair[] | undefined => {
     if (Node.isObjectLiteralExpression(node)) {
