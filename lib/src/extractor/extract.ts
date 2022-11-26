@@ -25,7 +25,7 @@ export const extract = ({ ast, config, used }: ExtractOptions) => {
 
         // console.log(selector);
         if (!used.has(componentName)) {
-            used.set(componentName, { properties: new Map() });
+            used.set(componentName, { properties: new Map(), conditionalProperties: new Map() });
         }
 
         const componentMap = used.get(componentName)!;
@@ -38,10 +38,16 @@ export const extract = ({ ast, config, used }: ExtractOptions) => {
         const identifierNodesFromJsxAttribute = query<Identifier>(ast, selector) ?? [];
         identifierNodesFromJsxAttribute.forEach((node) => {
             const propName = node.getText();
+
             const propValues = componentMap.properties.get(propName) ?? new Set();
+            const conditionalProps = componentMap.conditionalProperties.get(propName) ?? new Map();
 
             if (!componentMap.properties.has(propName)) {
                 componentMap.properties.set(propName, propValues);
+            }
+
+            if (!componentMap.conditionalProperties.has(propName)) {
+                componentMap.conditionalProperties.set(propName, conditionalProps);
             }
 
             const extracted = extractJsxAttributeIdentifierValue(node);
@@ -53,9 +59,14 @@ export const extract = ({ ast, config, used }: ExtractOptions) => {
                 }
 
                 if (isObjectLiteral(value)) {
-                    // Object.entries(value).forEach(([key, value]) => {
-                    //     propValues.add(`${key}:${value}`);
-                    // });
+                    Object.entries(value).forEach(([conditionName, value]) => {
+                        const conditionValues = conditionalProps.get(conditionName) ?? new Set();
+                        if (!conditionalProps.has(conditionName)) {
+                            conditionalProps.set(conditionName, conditionValues);
+                        }
+
+                        conditionValues.add(value);
+                    });
                 }
             });
 

@@ -1,9 +1,8 @@
 import type { AdapterContext } from "@vanilla-extract/integration";
-import evalCode from "eval";
-import { stringify } from "javascript-stringify";
 import { isDefined, isObject } from "pastable";
 
-import type { UsedMap } from "./extractor/types";
+import type { UsedComponentsMap } from "./extractor/types";
+import { getSprinklesMap } from "./getSprinklesMap";
 
 type Conditions = {
     conditions:
@@ -34,11 +33,13 @@ const debugIdByPropWithValuePair = new Map<
     CompiledSprinklePropertyValue & { defaultConditionName: string | undefined }
 >();
 
-export function onContextFilled(context: AdapterContext, evalResult: Record<string, unknown>, usedMap: UsedMap) {
-    const stringifiedEval = "module.exports = " + stringifyExportsToSprinklesMap(evalResult);
-    // console.log(stringifiedEval);
-
-    const sprinklesMap = evalCode(stringifiedEval) as Record<string, unknown>;
+export function onContextFilled(
+    context: AdapterContext,
+    evalResult: Record<string, unknown>,
+    usedMap: UsedComponentsMap
+) {
+    const sprinklesMap = getSprinklesMap(evalResult);
+    // console.log(sprinklesMap);
     const flatSprinkles = Object.values(sprinklesMap).flat().filter(isCompiledSprinkle);
 
     flatSprinkles.forEach((sprinkle) => {
@@ -50,6 +51,7 @@ export function onContextFilled(context: AdapterContext, evalResult: Record<stri
         Object.entries(sprinkle.styles).forEach(([propName, compiledSprinkle]) => {
             if ("values" in compiledSprinkle) {
                 Object.entries(compiledSprinkle.values).forEach(([valueName, value]) => {
+                    // console.log({ value, propName, valueName });
                     debugIdByPropWithValuePair.set(`${propName}_${valueName}`, {
                         ...value,
                         defaultConditionName,
@@ -62,98 +64,52 @@ export function onContextFilled(context: AdapterContext, evalResult: Record<stri
     // console.dir(Array.from(context.cssByFileScope.values()), { depth: null });
     // console.log(debugIdByPropWithValuePair);
     // console.log(identifierByDebugId);
-    const usedProps = usedMap.get("ColorBox")!.properties;
-    console.log(usedProps);
-    const usedGeneratedClassNameList = new Set<string>();
-    usedProps.forEach((values, propName) => {
-        values.forEach((value) => {
-            const debugId = `${propName}_${value}`;
-            // const className = getClassNameByDebugId(debugId);
-            const className = debugIdByPropWithValuePair.get(debugId)?.defaultClass;
-            console.log({ debugId, className });
-            if (className) {
-                usedGeneratedClassNameList.add(className);
-            }
+    Array.from(usedMap.entries()).forEach(([componentName, usedStyles]) => {
+        console.log(componentName, usedStyles);
+        const usedGeneratedClassNameList = new Set<string>();
+
+        usedStyles.properties.forEach((values, propName) => {
+            values.forEach((value) => {
+                const debugId = `${propName}_${value}`;
+                const className = debugIdByPropWithValuePair.get(debugId)?.defaultClass;
+                // console.log({ debugId, className });
+                if (className) {
+                    usedGeneratedClassNameList.add(className);
+                }
+            });
         });
-    });
 
-    context.cssByFileScope.forEach((css, fileScope) => {
-        // const fileName = getFileNameFromFileScopeStr(fileScope);
-        const usedRules = css.slice().filter((rule) => {
-            if (rule.type === "local") {
-                const isRuleUsed = usedGeneratedClassNameList.has(rule.selector);
+        usedStyles.conditionalProperties.forEach((properties, propName) => {
+            properties.forEach((values, conditionName) => {
+                values.forEach((value) => {
+                    const debugId = `${propName}_${value}`;
+                    const className = debugIdByPropWithValuePair.get(debugId)?.conditions?.[conditionName];
+                    // console.log({ debugId, className, conditionName });
+                    if (className) {
+                        usedGeneratedClassNameList.add(className);
+                    }
+                });
+            });
+        });
 
-                if (!isRuleUsed) {
+        context.cssByFileScope.forEach((css, fileScope) => {
+            // const fileName = getFileNameFromFileScopeStr(fileScope);
+            const usedRules = css.slice().filter((rule) => {
+                if (rule.type !== "local") return true;
+
+                const isSelectorUsed = usedGeneratedClassNameList.has(rule.selector);
+
+                if (!isSelectorUsed) {
                     context.localClassNames.delete(rule.selector);
                 }
 
-                return isRuleUsed;
-            }
+                return isSelectorUsed;
+            });
 
-            return true;
+            context.cssByFileScope.set(fileScope, usedRules);
+            console.log({ from: css.length, to: usedRules.length });
         });
-
-        context.cssByFileScope.set(fileScope, usedRules);
-        console.log({ from: css.length, to: usedRules.length });
+        // console.dir(Array.from(context.cssByFileScope.values()), { depth: null });
+        console.log({ usedGeneratedClassNameList });
     });
-    // console.dir(Array.from(context.cssByFileScope.values()), { depth: null });
-    console.log({ usedGeneratedClassNameList });
-}
-
-function stringifyExportsToSprinklesMap(value: any): any {
-    return stringify(
-        value,
-        (value, _indent, next) => {
-            const valueType = typeof value;
-
-            if (
-                valueType === "boolean" ||
-                valueType === "number" ||
-                valueType === "undefined" ||
-                value === null ||
-                Array.isArray(value) ||
-                isObject(value)
-            ) {
-                return next(value);
-            }
-
-            if (Symbol.toStringTag in Object(value)) {
-                const { [Symbol.toStringTag]: _tag, ...valueWithoutTag } = value;
-                return next(valueWithoutTag);
-            }
-
-            if (valueType === "string") {
-                return next(value);
-            }
-
-            // createSprinkles
-            if (valueType === "function" && (value.__function_serializer__ || value.__recipe__)) {
-                const { importPath, importName, args } = value.__function_serializer__ || value.__recipe__;
-
-                if (typeof importPath !== "string" || typeof importName !== "string" || !Array.isArray(args)) {
-                    throw new TypeError("Invalid recipe");
-                }
-
-                try {
-                    return "[" + args.map((arg) => stringifyExportsToSprinklesMap(arg)).join(",") + "]";
-                } catch (error) {
-                    console.error(error);
-
-                    throw new Error("Invalid recipe.");
-                }
-            }
-
-            throw new Error(`
-          Invalid exports.
-
-          You can only export plain objects, arrays, strings, numbers and null/undefined.
-        `);
-        },
-        2,
-        {
-            references: true, // Allow circular references
-            maxDepth: Number.POSITIVE_INFINITY,
-            maxValues: Number.POSITIVE_INFINITY,
-        }
-    );
 }

@@ -6,13 +6,13 @@ import { defineConfig } from "vite";
 
 import {
     createViteBoxExtractor,
-    UsedMap,
+    UsedComponentsMap,
     onContextFilled,
     serializeVanillaModuleWithoutUnused,
     // } from "vite-box-extractor";
 } from "../lib";
 
-const usedMap = new Map() as UsedMap;
+const usedMap = new Map() as UsedComponentsMap;
 
 // https://vitejs.dev/config/
 export default defineConfig((env) => ({

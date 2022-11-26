@@ -3,14 +3,19 @@ import { hash } from "@vanilla-extract/integration";
 import { stringify } from "javascript-stringify";
 import { isObject } from "pastable";
 
-import type { UsedMap } from "./extractor/types";
+import type { UsedComponentsMap } from "./extractor/types";
 import { isCompiledSprinkle } from "./onContextFilled";
+
+type UsedValuesMap = Map<
+    string,
+    { properties: Set<string>; conditionalProperties: Map<string, Set<string>>; allProperties: Set<string> }
+>;
 
 export function serializeVanillaModuleWithoutUnused(
     cssImports: string[],
     exports: Record<string, unknown>,
     context: AdapterContext,
-    usedMap: UsedMap
+    usedMap: UsedComponentsMap
 ) {
     // console.log("serializeVanillaModuleWithoutUnused", usedMap);
     const unusedCompositions = context.composedClassLists
@@ -21,9 +26,59 @@ export function serializeVanillaModuleWithoutUnused(
         unusedCompositions.length > 0 ? RegExp(`(${unusedCompositions.join("|")})\\s`, "g") : null;
 
     const recipeImports = new Set<string>();
+    const mergedMap: UsedValuesMap = new Map();
+
+    usedMap.forEach((style, _componentName) => {
+        style.properties.forEach((values, propName) => {
+            if (!mergedMap.has(propName)) {
+                mergedMap.set(propName, {
+                    properties: new Set(values),
+                    conditionalProperties: new Map(),
+                    allProperties: new Set(values),
+                });
+                return;
+            }
+
+            const currentPropValues = mergedMap.get(propName)!.properties;
+            const allPropValues = mergedMap.get(propName)!.allProperties;
+            values.forEach((value) => {
+                currentPropValues.add(value);
+                allPropValues.add(value);
+            });
+        });
+
+        style.conditionalProperties.forEach((values, propName) => {
+            if (!mergedMap.has(propName)) {
+                // TODO
+                mergedMap.set(propName, {
+                    properties: new Set(),
+                    conditionalProperties: new Map(values),
+                    allProperties: new Set(Array.from(values.values()).flatMap((set) => Array.from(set))),
+                });
+                return;
+            }
+
+            const currentConditionalValues = mergedMap.get(propName)!.conditionalProperties;
+            const allPropValues = mergedMap.get(propName)!.allProperties;
+
+            values.forEach((values, conditionName) => {
+                if (!currentConditionalValues.has(conditionName)) {
+                    currentConditionalValues.set(conditionName, new Set(values));
+                    values.forEach((value) => allPropValues.add(value));
+                    return;
+                }
+
+                const currentConditionValues = currentConditionalValues.get(conditionName)!;
+                values.forEach((value) => {
+                    currentConditionValues.add(value);
+                    allPropValues.add(value);
+                });
+            });
+        });
+    });
 
     const moduleExports = Object.keys(exports).map((key) => {
-        const result = stringifyExports(recipeImports, exports[key], unusedCompositionRegex, usedMap);
+        const result = stringifyExports(recipeImports, exports[key], unusedCompositionRegex, mergedMap);
         return key === "default" ? `export default ${result};` : `export var ${key} = ${result};`;
     });
 
@@ -37,11 +92,8 @@ function stringifyExports(
     recipeImports: Set<string>,
     value: any,
     unusedCompositionRegex: RegExp | null,
-    usedMap: UsedMap
+    valuesUsedMap: UsedValuesMap
 ): string {
-    const usedProps = usedMap.get("ColorBox")!.properties;
-    const usedPropNames = new Set(usedProps.keys());
-
     return stringify(
         value,
         (value, _indent, next) => {
@@ -50,16 +102,17 @@ function stringifyExports(
             if (isCompiledSprinkle(value)) {
                 // console.log({ sprinkle: value });
 
-                // TODO rm les conditions unused aussi en passant
-                // conditions: { defaultCondition: xxx, conditionNames: xxx, responsiveArray: xxx }
-                // -> conditions: { defaultCondition: xxx, conditionNames: xxx.filter(isUsed), responsiveArray: xxx.filter(isUsed) }
-                // ou complètement -> conditions: undefined
-                // console.log({ value });
+                let isUsingAnyCondition = false;
                 const usedStyles = Object.fromEntries(
                     Object.entries(value.styles)
-                        .filter(([propName]) => usedPropNames.has(propName))
+                        .filter(([propName]) => valuesUsedMap.has(propName))
                         .map(([propName]) => {
-                            const propUsedValues = usedProps.get(propName)!;
+                            const propUsedValues = valuesUsedMap.get(propName)!;
+
+                            if (propUsedValues.conditionalProperties.size > 0) {
+                                isUsingAnyCondition = true;
+                            }
+
                             // const usedValues = Object.keys(value.styles[propName].values).filter((valueName) => !propValues.has(valueName));
                             // console.log(propUsedValues, value.styles[propName]);
 
@@ -69,16 +122,21 @@ function stringifyExports(
                                     ...value.styles[propName],
                                     values: Object.fromEntries(
                                         Object.entries(value.styles[propName]!.values).filter(([valueName]) =>
-                                            propUsedValues.has(valueName)
+                                            propUsedValues.allProperties.has(valueName)
                                         )
                                     ),
                                 },
                             ];
                         })
                 );
-                // console.dir({ usedStyles });
 
-                return next(usedStyles);
+                if (!isUsingAnyCondition) {
+                    value.conditions = undefined;
+                }
+
+                // console.dir({ usedStyles, value });
+
+                return next({ ...value, styles: usedStyles });
             }
 
             if (
@@ -116,7 +174,7 @@ function stringifyExports(
                     recipeImports.add(`import { ${importName} as ${hashedImportName} } from '${importPath}';`);
 
                     return `${hashedImportName}(${args
-                        .map((arg) => stringifyExports(recipeImports, arg, unusedCompositionRegex, usedMap))
+                        .map((arg) => stringifyExports(recipeImports, arg, unusedCompositionRegex, valuesUsedMap))
                         .join(",")})`;
                 } catch (error) {
                     console.error(error);

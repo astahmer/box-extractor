@@ -65,8 +65,10 @@ export const Demo = () => {
                     <div className={colorSprinkles({ color: "blue.100" })}>blue100 without ColorBox</div>
                     {/* self closing */}
 
-                    <ColorBox color="blackAlpha.100"></ColorBox>
-                    <ColorBox color={{ default: "red.100", hover: "green.100", focus: "blue.100" }}></ColorBox>
+                    <ColorBox color="yellow.100">yellow.100</ColorBox>
+                    <ColorBox color={{ default: "red.100", hover: "green.100", focus: "blue.100" }}>
+                        conditional rgb
+                    </ColorBox>
 
                     {/* unlikely this will ever be supported (unless ezno delivers) */}
                     {/* <ColorBox color={controlledColor}>controlledColor</ColorBox>

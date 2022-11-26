@@ -1,7 +1,7 @@
 import { Project, SourceFile, ts } from "ts-morph";
 import { afterEach, expect, it } from "vitest";
 import { extract } from "../src/extractor/extract";
-import type { ExtractOptions, UsedMap } from "../src/extractor/types";
+import type { ExtractOptions, UsedComponentsMap } from "../src/extractor/types";
 import { default as ExtractSample } from "./ExtractSample?raw";
 
 const createProject = () => {
@@ -42,7 +42,7 @@ const config: ExtractOptions["config"] = {
 };
 
 const extractFromCode = (code: string) => {
-    const usedMap = new Map() as UsedMap;
+    const usedMap = new Map() as UsedComponentsMap;
     const fileName = `file${fileCount++}.tsx`;
     sourceFile = project.createSourceFile(fileName, code, { scriptKind: ts.ScriptKind.TSX });
     // console.log(sourceFile.forEachDescendant((c) => [c.getKindName(), c.getText()]));
