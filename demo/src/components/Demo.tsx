@@ -40,6 +40,7 @@ const wrapperMap = {
 };
 const dynamicAttribute = "borderColor";
 const objectWithAttributes = { color: "blackAlpha.400" } as any;
+const anotherObject = { color: "black.400" };
 
 const dynamicColor = colorMap[dynamicElement];
 const array = ["pink.100"];
@@ -63,9 +64,95 @@ export const Demo = () => {
                     </div>
                     {/* <DessertBox>box</DessertBox> */}
                     <div className={colorSprinkles({ color: "blue.100" })}>blue100 without ColorBox</div>
+                    <div {...{ className: colorSprinkles({ color: "blue.200" }) }}>blue200 without ColorBox</div>
+                    <div {...{ ...{ className: colorSprinkles({ color: "blue.300" }) } }}>blue300 without ColorBox</div>
+                    <div {...{ ...{ className: colorSprinkles(anotherObject as any) } }}>blue400 without ColorBox</div>
                     {/* self closing */}
+                    <ColorBox color="red.200" />
 
-                    <ColorBox color="yellow.100">yellow.100</ColorBox>
+                    {/* jsxopeningelement */}
+                    <ColorBox color="yellow.300" backgroundColor="blackAlpha.100">
+                        yellow.300 with children
+                    </ColorBox>
+                    <ColorBox color={isShown ? "cyan.400" : "cyan.500"}>ternary</ColorBox>
+                    <ColorBox color={"facebook.400"}>string in expression</ColorBox>
+                    <ColorBox color={staticColor}>staticColor</ColorBox>
+                    <ColorBox color={1 === 1 ? "facebook.500" : staticColor3}>staticColor ternary</ColorBox>
+                    <ColorBox color={isShown ? "facebook.600" : staticColor2}>staticColor ternary</ColorBox>
+                    {/* gray200/gray300 */}
+                    <ColorBox color={isShown ? staticColor2 : staticColor3}>staticColor ternary</ColorBox>
+                    {/* gray100 */}
+                    <ColorBox color={colorMap.staticColor}>colorMap dot staticColor</ColorBox>
+                    <ColorBox color={{ staticColor: "facebook.900" }["staticColor"]}>
+                        colorMap bracket staticColor
+                    </ColorBox>
+                    <ColorBox color={["facebook.900"][0]}></ColorBox>
+                    <ColorBox color={array[0]}></ColorBox>
+                    <ColorBox color={array[strIndex]}></ColorBox>
+                    <ColorBox color={array[numberIndex]}></ColorBox>
+                    <ColorBox color={(array as any)?.[0] as any}></ColorBox>
+                    <ColorBox color={[array[0]]![0]}></ColorBox>
+                    <ColorBox color={[{ staticColor: "facebook.900" }][0]["staticColor"]}></ColorBox>
+                    <ColorBox color={[{ staticColor: "facebook.900" }]?.[0]?.["staticColor"]}></ColorBox>
+                    <ColorBox color={([{ staticColor: "facebook.900" }]! as any)[0]!["staticColor"]}></ColorBox>
+                    <ColorBox color={colorMap["staticColor"]}>colorMap bracket staticColor</ColorBox>
+                    <ColorBox color={colorMap["static" + "Color"] as any}>
+                        colorMap bracket binary expression with 2 string literal
+                    </ColorBox>
+                    <ColorBox color={colorMap["static" + `${"Color"}`] as any}>
+                        colorMap bracket binary expression with 1 string literal & 1 template string using string
+                        literal
+                    </ColorBox>
+                    <ColorBox color={colorMap["static" + `${dynamicPart2}`] as any}>
+                        colorMap bracket binary expression with 1 string literal & 1 template string using identifier
+                    </ColorBox>
+                    <ColorBox color={colorMap[`${dynamicPartsAsTemplateString}`]}>
+                        colorMap bracket template string using nested template string
+                    </ColorBox>
+                    <ColorBox color={colorMap[("static" as any) + `${withDynamicPart["dynamicPart2"]}`] as any}>
+                        colorMap bracket binary expression with 1 string literal & as expression & 1 template string
+                        using identifier
+                    </ColorBox>
+                    <ColorBox color={colorMap[dynamicPart1 + "Color"]!}>
+                        colorMap bracket binary expression with 1 string literal & 1 identifier and exclamation mark
+                    </ColorBox>
+                    <ColorBox color={colorMap[dynamicPart1 + dynamicPart2]}>
+                        colorMap bracket binary expression with 2 identifier
+                    </ColorBox>
+                    {/* gray100 */}
+                    <ColorBox color={colorMap[dynamicElement]}>colorMap bracket var</ColorBox>
+                    <ColorBox color={colorMap[wrapperMap[secondRef]]}>colorMap bracket var</ColorBox>
+                    <ColorBox color={colorMap[wrapperMap.thirdRef + wrapperMap["fourthRef"]]}>
+                        colorMap bracket var
+                    </ColorBox>
+                    {/* gray600/gray700 */}
+                    <ColorBox color={colorMap[isShown ? ("literalColor" as const) : deepReference] as any}>
+                        colorMap bracket conditonal access with ref and literal wrapped with as any
+                    </ColorBox>
+                    {/* gray700/gray100 */}
+                    <ColorBox color={(isShown ? colorMap?.[dynamicColorName] : dynamicColor) as any}>
+                        conditional colorMap bracket with optional dynamic access and fallback to ref
+                    </ColorBox>
+                    {/* gray100 */}
+                    <ColorBox color={colorMap?.staticColor}>colorMap dot optional staticColor</ColorBox>
+
+                    {/* spread */}
+                    <ColorBox {...{ color: "facebook.100" }}>spread</ColorBox>
+                    <ColorBox {...objectWithAttributes}>var spread</ColorBox>
+                    <ColorBox {...(isShown ? objectWithAttributes : null)}>conditional var spread</ColorBox>
+                    <ColorBox
+                        {...{
+                            color: "facebook.100",
+                            backgroundColor: "blackAlpha.100",
+                            [dynamicAttribute]: "blackAlpha.300",
+                        }}
+                    >
+                        multiple spread
+                    </ColorBox>
+                    <ColorBox {...(isShown ? { color: "facebook.200" } : undefined)}>spread ternary</ColorBox>
+                    <ColorBox {...(isShown && { color: "facebook.300" })}>spread &&</ColorBox>
+
+                    {/* conditional properties */}
                     <ColorBox color={{ default: "red.100", hover: "green.100", focus: "blue.100" }}>
                         conditional rgb
                     </ColorBox>
@@ -78,7 +165,6 @@ export const Demo = () => {
                     <div onClick={() => setDynamicVarColor("gray.600")}>
                         <ColorBox color={dynamicVarColor}>dynamicVarColor</ColorBox>
                     </div> */}
-
                     {/* uncomment to import the big theme sprinkles */}
                     {/* <DessertBox color="blackAlpha.200"></DessertBox>
                     <DessertBox color="blackAlpha.300"></DessertBox>

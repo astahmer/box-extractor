@@ -21,8 +21,11 @@ export default defineConfig((env) => ({
     build: { outDir: "./dist", sourcemap: true },
     plugins: [
         createViteBoxExtractor({
-            config: {
+            components: {
                 ColorBox: { properties: ["color", "backgroundColor"], conditions: ["mobile", "tablet", "desktop"] },
+            },
+            functions: {
+                colorSprinkles: { properties: ["color", "backgroundColor"] },
             },
             used: usedMap,
         }),

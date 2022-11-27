@@ -18,8 +18,7 @@ export type ExtractedPropMap = Record<string, string | string[]>;
 
 export type ExtractOptions = {
     ast: SourceFile;
-    // TODO rename to: "tracked"
-    // TODO option: isJsx?: boolean ? so the sprinkles fn can also be in this map
-    config: Record<string, { properties: string[]; conditions: string[] }>;
+    components: Record<string, { properties: string[]; conditions: string[] }>;
+    functions?: Record<string, { properties: string[] }>;
     used: UsedComponentsMap;
 };

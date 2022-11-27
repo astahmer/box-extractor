@@ -37,7 +37,7 @@ afterEach(() => {
     project.removeSourceFile(sourceFile);
 });
 
-const config: ExtractOptions["config"] = {
+const config: ExtractOptions["components"] = {
     ColorBox: { properties: ["color", "backgroundColor", "zIndex"], conditions: ["mobile", "tablet", "desktop"] },
 };
 
@@ -46,7 +46,7 @@ const extractFromCode = (code: string) => {
     const fileName = `file${fileCount++}.tsx`;
     sourceFile = project.createSourceFile(fileName, code, { scriptKind: ts.ScriptKind.TSX });
     // console.log(sourceFile.forEachDescendant((c) => [c.getKindName(), c.getText()]));
-    return extract({ ast: sourceFile, config, used: usedMap });
+    return extract({ ast: sourceFile, components: config, used: usedMap });
 };
 
 it("extract it all", () => {

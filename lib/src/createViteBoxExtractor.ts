@@ -13,11 +13,19 @@ const tsConfigFilePath = "tsconfig.json";
 const tsRE = /\.tsx?$/;
 const ensureAbsolute = (path: string, root: string) => (path ? (isAbsolute(path) ? path : resolve(root, path)) : root);
 
-// JsxElement:has(Identifier[name="ColorBox"]) JsxAttribute > Identifier[name=/color|backgroundColor/] ~ StringLiteral
+// Components
+// JsxElement > * > Identifier[name="ColorBox"] JsxAttribute > Identifier[name=/color|backgroundColor/] ~ StringLiteral
+
+// Sprinkles fn
+// JsxElement > * > Identifier[name="ColorBox"] JsxAttribute CallExpression > Identifier[name=/colorSprinkles/]
 
 // TODO use unplugin to get a bundler-agnostic plugin https://github.com/unjs/unplugin
 
-export const createViteBoxExtractor = ({ config, used }: Pick<ExtractOptions, "config" | "used">): Plugin => {
+export const createViteBoxExtractor = ({
+    components,
+    functions = {},
+    used,
+}: Pick<ExtractOptions, "components" | "functions" | "used">): Plugin => {
     let project: Project;
 
     return {
@@ -54,7 +62,7 @@ export const createViteBoxExtractor = ({ config, used }: Pick<ExtractOptions, "c
             }
 
             if (id.endsWith(".tsx")) {
-                extract({ ast: sourceFile!, config, used });
+                extract({ ast: sourceFile!, components, functions, used });
             }
 
             return null;
