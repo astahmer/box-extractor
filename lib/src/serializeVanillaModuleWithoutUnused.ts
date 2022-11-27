@@ -15,7 +15,7 @@ export function serializeVanillaModuleWithoutUnused(
     cssImports: string[],
     exports: Record<string, unknown>,
     context: AdapterContext,
-    usedMap: UsedComponentsMap
+    usedComponentsMap: UsedComponentsMap
 ) {
     // console.log("serializeVanillaModuleWithoutUnused", usedMap);
     const unusedCompositions = context.composedClassLists
@@ -26,6 +26,20 @@ export function serializeVanillaModuleWithoutUnused(
         unusedCompositions.length > 0 ? RegExp(`(${unusedCompositions.join("|")})\\s`, "g") : null;
 
     const recipeImports = new Set<string>();
+    const usedValuesMap = mergeUsedValues(usedComponentsMap);
+
+    const moduleExports = Object.keys(exports).map((key) => {
+        const result = stringifyExports(recipeImports, exports[key], unusedCompositionRegex, usedValuesMap);
+        return key === "default" ? `export default ${result};` : `export var ${key} = ${result};`;
+    });
+
+    const outputCode = [...cssImports, ...Array.from(recipeImports), ...moduleExports];
+    // console.log(outputCode);
+
+    return outputCode.join("\n");
+}
+
+function mergeUsedValues(usedMap: UsedComponentsMap) {
     const mergedMap: UsedValuesMap = new Map();
 
     usedMap.forEach((style, _componentName) => {
@@ -49,7 +63,6 @@ export function serializeVanillaModuleWithoutUnused(
 
         style.conditionalProperties.forEach((values, propName) => {
             if (!mergedMap.has(propName)) {
-                // TODO
                 mergedMap.set(propName, {
                     properties: new Set(),
                     conditionalProperties: new Map(values),
@@ -77,22 +90,14 @@ export function serializeVanillaModuleWithoutUnused(
         });
     });
 
-    const moduleExports = Object.keys(exports).map((key) => {
-        const result = stringifyExports(recipeImports, exports[key], unusedCompositionRegex, mergedMap);
-        return key === "default" ? `export default ${result};` : `export var ${key} = ${result};`;
-    });
-
-    const outputCode = [...cssImports, ...Array.from(recipeImports), ...moduleExports];
-    // console.log(outputCode);
-
-    return outputCode.join("\n");
+    return mergedMap;
 }
 
 function stringifyExports(
     recipeImports: Set<string>,
     value: any,
     unusedCompositionRegex: RegExp | null,
-    valuesUsedMap: UsedValuesMap
+    usedValuesMap: UsedValuesMap
 ): string {
     return stringify(
         value,
@@ -105,9 +110,9 @@ function stringifyExports(
                 let isUsingAnyCondition = false;
                 const usedStyles = Object.fromEntries(
                     Object.entries(value.styles)
-                        .filter(([propName]) => valuesUsedMap.has(propName))
+                        .filter(([propName]) => usedValuesMap.has(propName))
                         .map(([propName]) => {
-                            const propUsedValues = valuesUsedMap.get(propName)!;
+                            const propUsedValues = usedValuesMap.get(propName)!;
 
                             if (propUsedValues.conditionalProperties.size > 0) {
                                 isUsingAnyCondition = true;
@@ -174,7 +179,7 @@ function stringifyExports(
                     recipeImports.add(`import { ${importName} as ${hashedImportName} } from '${importPath}';`);
 
                     return `${hashedImportName}(${args
-                        .map((arg) => stringifyExports(recipeImports, arg, unusedCompositionRegex, valuesUsedMap))
+                        .map((arg) => stringifyExports(recipeImports, arg, unusedCompositionRegex, usedValuesMap))
                         .join(",")})`;
                 } catch (error) {
                     console.error(error);

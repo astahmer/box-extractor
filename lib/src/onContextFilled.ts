@@ -94,7 +94,7 @@ export function onContextFilled(
 
         context.cssByFileScope.forEach((css, fileScope) => {
             // const fileName = getFileNameFromFileScopeStr(fileScope);
-            const usedRules = css.slice().filter((rule) => {
+            const usedRules = css.filter((rule) => {
                 if (rule.type !== "local") return true;
 
                 const isSelectorUsed = usedGeneratedClassNameList.has(rule.selector);

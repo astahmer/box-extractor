@@ -69,6 +69,9 @@ export const Demo = () => {
                     <ColorBox color={{ default: "red.100", hover: "green.100", focus: "blue.100" }}>
                         conditional rgb
                     </ColorBox>
+                    <ColorBox backgroundColor={{ default: "orange.800", hover: "telegram.200", focus: "yellow.700" }}>
+                        conditional rgb
+                    </ColorBox>
 
                     {/* unlikely this will ever be supported (unless ezno delivers) */}
                     {/* <ColorBox color={controlledColor}>controlledColor</ColorBox>
