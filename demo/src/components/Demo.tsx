@@ -9,7 +9,7 @@ const staticColor2 = "gray.200" as any;
 const staticColor3 = "gray.300" as any;
 
 const dynamicColorName = "something";
-const nestedReference = { ref: dynamicColorName } as const;
+const nestedReference = { ref: "gray.800" } as const;
 const deepReference = nestedReference.ref;
 
 const dynamicElement = "staticColor";
@@ -28,7 +28,7 @@ const colorMap = {
     staticColor,
     literalColor: "gray.600",
     [dynamicColorName]: "gray.700",
-    [deepReference]: "gray.800",
+    deepReference,
     [dynamicName]: dynamicLiteralColor,
 };
 
@@ -40,7 +40,7 @@ const wrapperMap = {
 };
 const dynamicAttribute = "borderColor";
 const objectWithAttributes = { color: "blackAlpha.400" } as any;
-const anotherObject = { color: "black.400" };
+const anotherObject = { color: "blackAlpha.500" };
 
 const dynamicColor = colorMap[dynamicElement];
 const array = ["pink.100"];
@@ -126,7 +126,7 @@ export const Demo = () => {
                         colorMap bracket var
                     </ColorBox>
                     {/* gray600/gray700 */}
-                    <ColorBox color={colorMap[isShown ? ("literalColor" as const) : deepReference] as any}>
+                    <ColorBox color={colorMap[isShown ? ("literalColor" as const) : "deepReference"] as any}>
                         colorMap bracket conditonal access with ref and literal wrapped with as any
                     </ColorBox>
                     {/* gray700/gray100 */}

@@ -343,7 +343,7 @@ const colorProps = defineProperties({
         color: flatColors,
         // background: flatColors,
         backgroundColor: flatColors,
-        // borderColor: flatColors,
+        borderColor: flatColors,
         // borderTopColor: flatColors,
         // borderBottomColor: flatColors,
         // borderLeftColor: flatColors,

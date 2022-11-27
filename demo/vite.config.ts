@@ -22,10 +22,13 @@ export default defineConfig((env) => ({
     plugins: [
         createViteBoxExtractor({
             components: {
-                ColorBox: { properties: ["color", "backgroundColor"], conditions: ["mobile", "tablet", "desktop"] },
+                ColorBox: {
+                    properties: ["color", "backgroundColor", "borderColor"],
+                    conditions: ["mobile", "tablet", "desktop"],
+                },
             },
             functions: {
-                colorSprinkles: { properties: ["color", "backgroundColor"] },
+                colorSprinkles: { properties: ["color", "backgroundColor", "borderColor"] },
             },
             used: usedMap,
         }),
