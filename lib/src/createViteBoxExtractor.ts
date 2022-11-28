@@ -14,10 +14,10 @@ const tsRE = /\.tsx?$/;
 const ensureAbsolute = (path: string, root: string) => (path ? (isAbsolute(path) ? path : resolve(root, path)) : root);
 
 // Components
-// JsxElement > * > Identifier[name="ColorBox"] JsxAttribute > Identifier[name=/color|backgroundColor/] ~ StringLiteral
+// :matches(JsxOpeningElement, JsxSelfClosingElement):has(Identifier[name="ColorBox"]) JsxAttribute > Identifier[name=/color|backgroundColor/] ~ StringLiteral
 
 // Sprinkles fn
-// JsxElement > * > Identifier[name="ColorBox"] JsxAttribute CallExpression > Identifier[name=/colorSprinkles/]
+// JsxAttributes CallExpression > Identifier[name=/colorSprinkles/]
 
 // TODO use unplugin to get a bundler-agnostic plugin https://github.com/unjs/unplugin
 

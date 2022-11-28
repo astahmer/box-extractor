@@ -33,7 +33,7 @@ export const extract = ({ ast, components, functions, used }: ExtractOptions) =>
         }
 
         const componentMap = used.get(componentName)!;
-        const componentSelector = `JsxElement:has(Identifier[name="${componentName}"])`;
+        const componentSelector = `:matches(JsxOpeningElement, JsxSelfClosingElement):has(Identifier[name="${componentName}"])`;
 
         const propIdentifier = `Identifier[name=/${propNameList.join("|")}/]`;
         const propSelector = `${componentSelector} JsxAttribute > ${propIdentifier}`;
