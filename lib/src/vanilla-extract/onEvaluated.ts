@@ -1,7 +1,7 @@
 import type { AdapterContext } from "@vanilla-extract/integration";
 import { isDefined, isObject } from "pastable";
 
-import type { UsedComponentsMap } from "./extractor/types";
+import type { UsedComponentsMap } from "../extractor/types";
 import { getSprinklesMap } from "./getSprinklesMap";
 
 type Conditions = {
@@ -28,12 +28,11 @@ type CompiledSprinklePropertyValue = {
     defaultClass: string;
 };
 
-export function onContextFilled(
-    context: AdapterContext,
-    evalResult: Record<string, unknown>,
+export function getUsedClassNameFromCompiledSprinkles(
+    compiledMap: ReturnType<typeof getCompiledSprinklePropertyByDebugIdPairMap>,
     usedMap: UsedComponentsMap
 ) {
-    const compiledSprinkleByDebugId = getCompiledSprinklePropertyByDebugIdPairMap(evalResult);
+    // console.log("getUsedClassNameFromCompiledSprinkles", { context, evalResult, usedMap });
 
     // console.dir(Array.from(context.cssByFileScope.values()), { depth: null });
     // console.log(compiledSprinkleByDebugId);
@@ -41,13 +40,13 @@ export function onContextFilled(
     const usedClassNameList = new Set<string>();
 
     Array.from(usedMap.entries()).forEach(([componentName, usedStyles]) => {
-        console.log(componentName, usedStyles);
+        // console.log(componentName, usedStyles);
         // console.dir({ usedMap }, { depth: null });
 
         usedStyles.properties.forEach((values, propName) => {
             values.forEach((value) => {
                 const debugId = getDebugId(propName, value);
-                const className = compiledSprinkleByDebugId.get(debugId)?.defaultClass;
+                const className = compiledMap.get(debugId)?.defaultClass;
                 // console.log({ debugId, className });
                 if (className) {
                     usedClassNameList.add(className);
@@ -59,7 +58,7 @@ export function onContextFilled(
             properties.forEach((values, conditionName) => {
                 values.forEach((value) => {
                     const debugId = getDebugId(propName, value);
-                    const className = compiledSprinkleByDebugId.get(debugId)?.conditions?.[conditionName];
+                    const className = compiledMap.get(debugId)?.conditions?.[conditionName];
                     // console.log({ debugId, className, conditionName });
                     if (className) {
                         usedClassNameList.add(className);
@@ -69,6 +68,12 @@ export function onContextFilled(
         });
     });
 
+    // console.log({ usedClassNameList });
+
+    return usedClassNameList;
+}
+
+export const mutateContextByKeepingUsedRulesOnly = (context: AdapterContext, usedClassNameList: Set<string>) => {
     context.cssByFileScope.forEach((css, fileScope) => {
         // const fileName = getFileNameFromFileScopeStr(fileScope);
         const usedRules = css.filter((rule) => {
@@ -87,18 +92,21 @@ export function onContextFilled(
         console.log({ from: css.length, to: usedRules.length, sprinklesRules: usedClassNameList.size });
     });
 
-    console.log({ usedClassNameList });
     // console.dir(Array.from(context.cssByFileScope.values()), { depth: null });
+};
 
+export const cloneAdapterContext = (context: AdapterContext): AdapterContext => {
     return {
-        debugIdByPropWithValuePair: compiledSprinkleByDebugId,
-        usedClassNameList,
+        cssByFileScope: new Map(context.cssByFileScope),
+        localClassNames: new Set(context.localClassNames),
+        composedClassLists: context.composedClassLists.slice(),
+        usedCompositions: new Set(context.usedCompositions),
     };
-}
+};
 
 const getDebugId = (propName: string, value: string) => `${propName}_${value}`;
 
-function getCompiledSprinklePropertyByDebugIdPairMap(evalResult: Record<string, unknown>) {
+export function getCompiledSprinklePropertyByDebugIdPairMap(evalResult: Record<string, unknown>) {
     const compiledSprinkleByDebugId = new Map<
         string,
         CompiledSprinklePropertyValue & { defaultConditionName: string | undefined }

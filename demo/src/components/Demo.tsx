@@ -160,6 +160,16 @@ export const Demo = () => {
                         conditional rgb
                     </ColorBox>
 
+                    <ColorBox color="teal.400">yes</ColorBox>
+                    <ColorBox color="teal.500">yes</ColorBox>
+                    <ColorBox color="teal.600">yes</ColorBox>
+                    <ColorBox color="teal.700">yes</ColorBox>
+                    <ColorBox color="teal.800">yes</ColorBox>
+                    {/* <ColorBox color="teal.900">yes</ColorBox> */}
+                    {/* <ColorBox color="orange.900">yes</ColorBox> */}
+                    {/* <ColorBox color="orange.800">yes</ColorBox> */}
+                    {/* <ColorBox color="orange.700">yes</ColorBox> */}
+
                     {/* unlikely this will ever be supported (unless ezno delivers) */}
                     {/* <ColorBox color={controlledColor}>controlledColor</ColorBox>
                     <div onClick={() => setDynamicVarColor("gray.600")}>

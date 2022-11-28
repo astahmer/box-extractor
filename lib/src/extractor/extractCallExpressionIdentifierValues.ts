@@ -1,4 +1,5 @@
 import type { CallExpression } from "ts-morph";
+
 import { maybeObjectEntries } from "./maybeObjectEntries";
 import { isNotNullish, unwrapExpression } from "./utils";
 

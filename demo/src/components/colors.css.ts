@@ -380,7 +380,7 @@ const spacingProps = defineProperties({
     // responsiveArray: ["mobile", "tablet", "desktop"],
     properties: {
         margin: space,
-        display: ["none", "flex", "block", "inline"],
+        display: ["none", "flex", "block", "inline", "grid"],
         backgroundOpacity: {
             1: { vars: { [alpha]: "1" } },
             0.1: { vars: { [alpha]: "0.1" } },

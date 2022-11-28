@@ -3,8 +3,8 @@ import { hash } from "@vanilla-extract/integration";
 import { stringify } from "javascript-stringify";
 import { isObject } from "pastable";
 
-import type { UsedComponentsMap } from "./extractor/types";
-import { isCompiledSprinkle } from "./onContextFilled";
+import type { UsedComponentsMap } from "../extractor/types";
+import { isCompiledSprinkle } from "./onEvaluated";
 
 type UsedValuesMap = Map<
     string,
@@ -17,7 +17,7 @@ export function serializeVanillaModuleWithoutUnused(
     context: AdapterContext,
     usedComponentsMap: UsedComponentsMap
 ) {
-    // console.log("serializeVanillaModuleWithoutUnused", usedMap);
+    // console.log("serializeVanillaModuleWithoutUnused", usedComponentsMap);
     const unusedCompositions = context.composedClassLists
         .filter(({ identifier }) => !context.usedCompositions.has(identifier))
         .map(({ identifier }) => identifier);

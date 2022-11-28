@@ -9,7 +9,7 @@ import { extract } from "./extractor/extract";
 import type { ExtractOptions } from "./extractor/types";
 
 // https://github.com/qmhc/vite-plugin-dts/blob/main/src/plugin.ts
-const tsConfigFilePath = "tsconfig.json";
+const tsConfigFilePath = "tsconfig.json"; // TODO
 const tsRE = /\.tsx?$/;
 const ensureAbsolute = (path: string, root: string) => (path ? (isAbsolute(path) ? path : resolve(root, path)) : root);
 
@@ -25,12 +25,18 @@ export const createViteBoxExtractor = ({
     components,
     functions = {},
     used,
-}: Pick<ExtractOptions, "components" | "functions" | "used">): Plugin => {
+    onExtracted,
+}: Pick<ExtractOptions, "components" | "functions" | "used"> & {
+    onExtracted?: (result: ReturnType<typeof extract>, id: string, isSsr?: boolean) => void;
+}): Plugin => {
     let project: Project;
 
     return {
         enforce: "pre",
         name: "vite-box-extractor",
+        buildStart() {
+            used.clear();
+        },
         configResolved(config) {
             const root = ensureAbsolute("", config.root);
             const tsConfigPath = ensureAbsolute(tsConfigFilePath, root);
@@ -45,15 +51,14 @@ export const createViteBoxExtractor = ({
                     declaration: false,
                     noEmit: true,
                     emitDeclarationOnly: false,
-                    // allowJs: true,
-                    // useVirtualFileSystem: true,
+                    allowJs: true,
+                    useVirtualFileSystem: true,
                 },
                 tsConfigFilePath: tsConfigPath,
-                skipAddingFilesFromTsConfig: true,
             });
         },
-
-        transform(code, id) {
+        transform(code, id, options) {
+            // console.log({ id });
             let sourceFile: SourceFile;
 
             // add ts file to project so that references can be resolved
@@ -62,23 +67,20 @@ export const createViteBoxExtractor = ({
             }
 
             if (id.endsWith(".tsx")) {
-                extract({ ast: sourceFile!, components, functions, used });
+                const extracted = extract({ ast: sourceFile!, components, functions, used });
+                onExtracted?.(extracted, id, options?.ssr);
+                // TODO clean relevant part in used map if file is removed
+                // which means we have to track what was added in usedMap by file id ?
             }
 
             return null;
         },
-        watchChange(id) {
+        watchChange(id, change) {
+            // console.log({ id, change });
             if (tsRE.test(id) && project) {
                 const sourceFile = project.getSourceFile(normalizePath(id));
 
                 sourceFile && project.removeSourceFile(sourceFile);
-            }
-        },
-        closeBundle() {
-            console.log("closeBundle");
-
-            if (project) {
-                project.resolveSourceFileDependencies();
             }
         },
     };

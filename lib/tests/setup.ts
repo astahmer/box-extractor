@@ -2,7 +2,7 @@ import * as path from "node:path";
 import { isObject } from "pastable";
 import { Options, resolveConfig } from "prettier";
 import { beforeAll, expect } from "vitest";
-import { maybePretty } from "../src/maybePretty";
+import { maybePretty } from "./maybePretty";
 
 let prettierConfig: Options | null;
 const pkgRoot = process.cwd();

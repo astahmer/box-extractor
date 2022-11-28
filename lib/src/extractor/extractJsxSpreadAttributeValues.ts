@@ -1,6 +1,7 @@
 import type { JsxSpreadAttribute } from "ts-morph";
-import { isNotNullish, unwrapExpression } from "./utils";
+
 import { maybeObjectEntries } from "./maybeObjectEntries";
+import { isNotNullish, unwrapExpression } from "./utils";
 
 export const extractJsxSpreadAttributeValues = (spreadAttribute: JsxSpreadAttribute) => {
     const node = unwrapExpression(spreadAttribute.getExpression());

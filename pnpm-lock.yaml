@@ -97,6 +97,7 @@ importers:
       '@typescript-eslint/eslint-plugin': ^5.42.1
       '@vanilla-extract/integration': link:/Users/astahmer/dev/open-source/vanilla-extract/packages/integration
       '@vanilla-extract/sprinkles': link:/Users/astahmer/dev/open-source/vanilla-extract/packages/sprinkles
+      '@vanilla-extract/vite-plugin': link:/Users/astahmer/dev/open-source/vanilla-extract/packages/vite-plugin
       eslint: ^8.27.0
       eslint-formatter-pretty: ^4.1.0
       eval: ^0.1.8
@@ -116,6 +117,7 @@ importers:
       '@babel/core': 7.20.2
       '@phenomnomnominal/tsquery': 5.0.0_typescript@4.8.4
       '@vanilla-extract/integration': link:../../../open-source/vanilla-extract/packages/integration
+      '@vanilla-extract/vite-plugin': link:../../../open-source/vanilla-extract/packages/vite-plugin
       eval: 0.1.8
       javascript-stringify: 2.1.0
       pastable: 2.0.13

@@ -17,12 +17,4 @@ module.exports = defineConfig({
         "sonarjs/cognitive-complexity": ["warn", 30],
         "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
     },
-    overrides: [
-        {
-            files: ["src/toasts.ts", "src/Playground/Playground.machine.ts"],
-            rules: {
-                "import/no-unused-modules": 0,
-            },
-        },
-    ],
 });

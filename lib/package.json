@@ -22,6 +22,7 @@
         "@babel/core": "^7.20.2",
         "@phenomnomnominal/tsquery": "^5.0.0",
         "@vanilla-extract/integration": "link:/Users/astahmer/dev/open-source/vanilla-extract/packages/integration",
+        "@vanilla-extract/vite-plugin": "link:/Users/astahmer/dev/open-source/vanilla-extract/packages/vite-plugin",
         "eval": "^0.1.8",
         "javascript-stringify": "^2.1.0",
         "pastable": "^2.0.10",

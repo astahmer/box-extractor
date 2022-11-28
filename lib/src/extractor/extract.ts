@@ -1,8 +1,8 @@
 import { tsquery } from "@phenomnomnominal/tsquery";
 import { castAsArray, isObjectLiteral } from "pastable";
 import type { CallExpression, Identifier, JsxSpreadAttribute, Node } from "ts-morph";
-import { extractCallExpressionValues } from "./extractCallExpressionIdentifierValues";
 
+import { extractCallExpressionValues } from "./extractCallExpressionIdentifierValues";
 import { extractJsxAttributeIdentifierValue } from "./extractJsxAttributeIdentifierValue";
 import { extractJsxSpreadAttributeValues } from "./extractJsxSpreadAttributeValues";
 import type {
@@ -116,7 +116,7 @@ export const extract = ({ ast, components, functions, used }: ExtractOptions) =>
         // <div className={colorSprinkles({ color: "blue.100" })}></ColorBox>
         //                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-        console.log({ sprinklesFnSelector, functionName, propNameList });
+        // console.log({ sprinklesFnSelector, functionName, propNameList });
         const maybeObjectNodes = query<CallExpression>(ast, sprinklesFnSelector) ?? [];
         maybeObjectNodes.forEach((node) => {
             const extracted = extractCallExpressionValues(node);
