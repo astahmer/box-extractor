@@ -13,7 +13,7 @@ import type { ExtractOptions } from "./extractor/types";
 
 // https://github.com/qmhc/vite-plugin-dts/blob/main/src/plugin.ts
 const tsConfigFilePath = "tsconfig.json"; // TODO
-const tsRE = /\.tsx?$/;
+const tsRE = /\.(tsx?)|(astro)$/;
 const ensureAbsolute = (path: string, root: string) => (path ? (isAbsolute(path) ? path : resolve(root, path)) : root);
 
 // Components
@@ -68,7 +68,7 @@ export const createViteBoxRefUsageFinder = ({
                 sourceFile = project.createSourceFile(id, code, { overwrite: true });
             }
 
-            if (id.endsWith(".tsx")) {
+            if (id.endsWith(".tsx") || id.endsWith(".astro")) {
                 const transitiveMap: FindAllTransitiveComponentsOptions["transitiveMap"] = new Map();
                 findAllTransitiveComponents({ ast: sourceFile!, components: Object.keys(components), transitiveMap });
 

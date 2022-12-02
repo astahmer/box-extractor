@@ -10,7 +10,7 @@ import type { ExtractOptions } from "./extractor/types";
 
 // https://github.com/qmhc/vite-plugin-dts/blob/main/src/plugin.ts
 const tsConfigFilePath = "tsconfig.json"; // TODO
-const tsRE = /\.tsx?$/;
+const tsRE = /\.(tsx?)|(astro)$/;
 const ensureAbsolute = (path: string, root: string) => (path ? (isAbsolute(path) ? path : resolve(root, path)) : root);
 
 // Components
@@ -67,7 +67,7 @@ export const createViteBoxExtractor = ({
                 sourceFile = project.createSourceFile(id, code, { overwrite: true });
             }
 
-            if (id.endsWith(".tsx")) {
+            if (id.endsWith(".tsx") || id.endsWith(".astro")) {
                 const extracted = extract({ ast: sourceFile!, components, functions, used });
                 onExtracted?.(extracted, id, options?.ssr);
                 // TODO clean relevant part in used map if file is removed
