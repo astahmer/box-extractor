@@ -10,6 +10,7 @@ import type {
     ExtractedComponentProperties,
     ExtractedPropPair,
     ExtractOptions,
+    ListOrAll,
 } from "./types";
 import { isNotNullish } from "./utils";
 
@@ -24,6 +25,8 @@ export const extract = ({ ast, components, functions, used }: ExtractOptions) =>
 
     Object.entries(components).forEach(([componentName, component]) => {
         const propNameList = component.properties;
+        const canTakeAllProp = propNameList === "all";
+
         const extractedComponentPropValues = [] as ExtractedPropPair[];
         componentPropValues.push([componentName, extractedComponentPropValues]);
 
@@ -35,7 +38,8 @@ export const extract = ({ ast, components, functions, used }: ExtractOptions) =>
         const componentMap = used.get(componentName)!;
         const componentSelector = `:matches(JsxOpeningElement, JsxSelfClosingElement):has(Identifier[name="${componentName}"])`;
 
-        const propIdentifier = `Identifier[name=/${propNameList.join("|")}/]`;
+        const namedProp = canTakeAllProp ? "" : `[name=/${propNameList.join("|")}/]`;
+        const propIdentifier = `Identifier${namedProp}`;
         const propSelector = `${componentSelector} JsxAttribute > ${propIdentifier}`;
         // <ColorBox color="red.200" backgroundColor="blackAlpha.100" />
         //           ^^^^^           ^^^^^^^^^^^^^^^
@@ -141,18 +145,21 @@ export const extract = ({ ast, components, functions, used }: ExtractOptions) =>
  */
 function mergeSpreadEntries({
     extracted,
-    propNameList,
+    propNameList: maybePropNameList,
     componentMap,
     extractedComponentPropValues,
 }: {
     extracted: ExtractedPropPair[];
-    propNameList: string[];
+    propNameList: ListOrAll;
     componentMap: ComponentUsedPropertiesStyle;
     extractedComponentPropValues: ExtractedPropPair[];
 }) {
     const foundPropList = new Set<string>();
+    const canTakeAllProp = maybePropNameList === "all";
+    const propNameList = canTakeAllProp ? [] : maybePropNameList;
+
     const entries = extracted.reverse().filter(([propName]) => {
-        if (!propNameList.includes(propName)) return false;
+        if (!canTakeAllProp && !propNameList.includes(propName)) return false;
         if (foundPropList.has(propName)) return false;
 
         foundPropList.add(propName);
@@ -180,6 +187,6 @@ function mergeSpreadEntries({
 }
 
 // https://gist.github.com/dsherret/826fe77613be22676778b8c4ba7390e7
-function query<T extends Node = Node>(node: Node, q: string): T[] {
+export function query<T extends Node = Node>(node: Node, q: string): T[] {
     return tsquery(node.compilerNode as any, q).map((n) => (node as any)._getNodeFromCompilerNode(n) as T);
 }

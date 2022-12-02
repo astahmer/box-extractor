@@ -5,7 +5,10 @@ import { Project, ts } from "ts-morph";
 import type { Plugin } from "vite";
 import { normalizePath } from "vite";
 
-import { extract } from "./extractor/extract";
+import {
+    findAllTransitiveComponents,
+    FindAllTransitiveComponentsOptions,
+} from "./extractor/findAllTransitiveComponents";
 import type { ExtractOptions } from "./extractor/types";
 
 // https://github.com/qmhc/vite-plugin-dts/blob/main/src/plugin.ts
@@ -21,23 +24,21 @@ const ensureAbsolute = (path: string, root: string) => (path ? (isAbsolute(path)
 
 // TODO use unplugin to get a bundler-agnostic plugin https://github.com/unjs/unplugin
 
-export const createViteBoxExtractor = ({
+// TODO functions
+// TODO logs with debug
+
+export const createViteBoxRefUsageFinder = ({
     components,
     functions = {},
-    used,
-    onExtracted,
-}: Pick<ExtractOptions, "components" | "functions" | "used"> & {
-    onExtracted?: (result: ReturnType<typeof extract>, id: string, isSsr?: boolean) => void;
+}: Pick<ExtractOptions, "components" | "functions"> & {
+    // onExtracted?: (result: ReturnType<typeof extract>, id: string, isSsr?: boolean) => void;
 }): Plugin => {
     let project: Project;
-    console.log("createViteBoxExtractor", components);
+    // console.log('createViteBoxRefUsageFinder', components);
 
     return {
         enforce: "pre",
-        name: "vite-box-extractor",
-        buildStart() {
-            used.clear();
-        },
+        name: "vite-box-ref-usage-finder",
         configResolved(config) {
             const root = ensureAbsolute("", config.root);
             const tsConfigPath = ensureAbsolute(tsConfigFilePath, root);
@@ -58,7 +59,7 @@ export const createViteBoxExtractor = ({
                 tsConfigFilePath: tsConfigPath,
             });
         },
-        transform(code, id, options) {
+        transform(code, id) {
             // console.log({ id });
             let sourceFile: SourceFile;
 
@@ -68,10 +69,20 @@ export const createViteBoxExtractor = ({
             }
 
             if (id.endsWith(".tsx")) {
-                const extracted = extract({ ast: sourceFile!, components, functions, used });
-                onExtracted?.(extracted, id, options?.ssr);
-                // TODO clean relevant part in used map if file is removed
-                // which means we have to track what was added in usedMap by file id ?
+                const transitiveMap: FindAllTransitiveComponentsOptions["transitiveMap"] = new Map();
+                findAllTransitiveComponents({ ast: sourceFile!, components: Object.keys(components), transitiveMap });
+
+                // TODO callback ?
+                console.log({ transitiveMap, components });
+                transitiveMap.forEach((value, componentName) => {
+                    value.refUsedWithSpread.forEach((transitiveName) => {
+                        const config = components[value.from ?? componentName];
+                        if (config) {
+                            components[transitiveName] = config;
+                        }
+                    });
+                });
+                console.log("after", { components });
             }
 
             return null;

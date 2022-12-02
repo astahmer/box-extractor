@@ -15,6 +15,7 @@ import {
     mutateContextByKeepingUsedRulesOnly,
 } from "./onEvaluated";
 import { serializeVanillaModuleWithoutUnused } from "./serializeVanillaModuleWithoutUnused";
+import { createViteBoxRefUsageFinder } from "../createViteBoxRefUsageFinder";
 
 const virtualExtCss = ".vanilla.css";
 const virtualExtJs = ".vanilla.js";
@@ -32,6 +33,7 @@ export const createVanillaExtractSprinklesExtractor = ({
     const getAbsoluteVirtualFileId = (source: string) => normalizePath(path.join(config.root, source));
 
     return [
+        createViteBoxRefUsageFinder({ components, functions }),
         {
             name: "vite-box-extractor-ve-adapter",
             configResolved(resolvedConfig) {

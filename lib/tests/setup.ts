@@ -15,10 +15,28 @@ expect.addSnapshotSerializer({
     serialize(value, config, indentation, depth, refs, printer) {
         if (depth === 0) {
             const prefix = "export const oui = ";
-            const prettyOutput = maybePretty(prefix + JSON.stringify(value, null, 4), {
-                ...prettierConfig,
-                semi: false,
-            });
+            const prettyOutput = maybePretty(
+                prefix +
+                    JSON.stringify(
+                        value,
+                        (_key, value) => {
+                            if (value instanceof Set) {
+                                return Array.from(value);
+                            }
+
+                            if (value instanceof Map) {
+                                return Object.fromEntries(value);
+                            }
+
+                            return value;
+                        },
+                        4
+                    ),
+                {
+                    ...prettierConfig,
+                    semi: false,
+                }
+            );
             return prettyOutput.slice(prefix.length);
         }
 

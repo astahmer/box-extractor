@@ -16,9 +16,10 @@ export type ExtractedComponentProperties = [componentName: string, propPairs: Ex
 export type ExtractedPropPair = [propName: string, propValue: string | string[]];
 export type ExtractedPropMap = Record<string, string | string[]>;
 
+export type ListOrAll = "all" | string[];
 export type ExtractOptions = {
     ast: SourceFile;
-    components: Record<string, { properties: string[]; conditions: string[] }>;
-    functions?: Record<string, { properties: string[] }>;
+    components: Record<string, { properties: ListOrAll; conditions: ListOrAll }>;
+    functions?: Record<string, { properties: ListOrAll }>;
     used: UsedComponentsMap;
 };

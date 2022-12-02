@@ -28,5 +28,5 @@ const colorProps = defineProperties({
     },
 });
 
-export const colorSprinkes = createSprinkles(colorProps);
-export type ColorSprinkes = Parameters<typeof colorSprinkes>[0];
+export const colorSprinkles = createSprinkles(colorProps);
+export type ColorSprinkes = Parameters<typeof colorSprinkles>[0];

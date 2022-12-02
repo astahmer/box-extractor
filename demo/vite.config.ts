@@ -15,15 +15,8 @@ export default defineConfig((env) => ({
     build: { outDir: "./dist", sourcemap: true },
     plugins: [
         createVanillaExtractSprinklesExtractor({
-            components: {
-                ColorBox: {
-                    properties: ["color", "backgroundColor", "borderColor"],
-                    conditions: ["mobile", "tablet", "desktop"],
-                },
-            },
-            functions: {
-                colorSprinkles: { properties: ["color", "backgroundColor", "borderColor"] },
-            },
+            components: { ColorBox: { properties: "all", conditions: "all" } },
+            functions: { colorSprinkles: { properties: "all" } },
         }),
         UnoCSS({ presets: [presetIcons({})] }),
         react(),

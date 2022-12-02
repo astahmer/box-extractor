@@ -47,6 +47,8 @@ const array = ["pink.100"];
 const strIndex = "0";
 const numberIndex = 0;
 
+const getColorConfig = () => ({ color: "twitter.100", backgroundColor: "twitter.200" });
+
 export const Demo = () => {
     const [isShown, setIsShown] = useState(false);
 
@@ -138,11 +140,14 @@ export const Demo = () => {
 
                     {/* spread */}
                     <ColorBox {...{ color: "facebook.100" }}>spread</ColorBox>
+                    {/* color.blackAlpha400 */}
                     <ColorBox {...objectWithAttributes}>var spread</ColorBox>
+                    {/* color.blackAlpha400 */}
                     <ColorBox {...(isShown ? objectWithAttributes : null)}>conditional var spread</ColorBox>
+                    {/* color.facebook.200 / backgroundColor.blackAlpha.100 / borderColor.blackAlpha.300 */}
                     <ColorBox
                         {...{
-                            color: "facebook.100",
+                            color: "facebook.200",
                             backgroundColor: "blackAlpha.100",
                             [dynamicAttribute]: "blackAlpha.300",
                         }}
@@ -151,6 +156,43 @@ export const Demo = () => {
                     </ColorBox>
                     <ColorBox {...(isShown ? { color: "facebook.200" } : undefined)}>spread ternary</ColorBox>
                     <ColorBox {...(isShown && { color: "facebook.300" })}>spread &&</ColorBox>
+                    {/* color.twitter.100 / backgroundColor.twitter.200 */}
+                    <ColorBox {...getColorConfig()}>spread fn result</ColorBox>
+                    {/* backgroundColor.twitter.200 / color.orange.100 */}
+                    <ColorBox {...{ ...getColorConfig(), color: "orange.100" }}>
+                        nested spread fn result and override
+                    </ColorBox>
+                    {/* color.orange.200 / backgroundColor.twitter.200 */}
+                    <ColorBox
+                        {...{
+                            ...(isShown ? getColorConfig() : { color: "never.150" }),
+                            color: "orange.200",
+                        }}
+                    >
+                        nested spread conditional fn result and override
+                    </ColorBox>
+                    {/* backgroundColor.twitter.200 / color.orange.400 */}
+                    <ColorBox
+                        {...{
+                            ...(!isShown ? (getColorConfig() as any) : ({ [dynamicAttribute]: "orange.300" } as any)),
+                            color: "orange.400",
+                        }}
+                    >
+                        nested spread conditional fn result and override with object literal expression and dynamic
+                        attribute
+                    </ColorBox>
+                    <ColorBox
+                        {...{
+                            ...{
+                                color: "telegram.100",
+                                backgroundColor: "telegram.200",
+                            },
+                            color: "telegram.300",
+                            backgroundColor: "telegram.400",
+                        }}
+                    >
+                        spread with nested spread and override
+                    </ColorBox>
 
                     {/* conditional properties */}
                     <ColorBox color={{ default: "red.100", hover: "green.100", focus: "blue.100" }}>
@@ -159,16 +201,6 @@ export const Demo = () => {
                     <ColorBox backgroundColor={{ default: "orange.800", hover: "telegram.200", focus: "yellow.700" }}>
                         conditional rgb
                     </ColorBox>
-
-                    <ColorBox color="teal.400">yes</ColorBox>
-                    <ColorBox color="teal.500">yes</ColorBox>
-                    <ColorBox color="teal.600">yes</ColorBox>
-                    <ColorBox color="teal.700">yes</ColorBox>
-                    <ColorBox color="teal.800">yes</ColorBox>
-                    {/* <ColorBox color="teal.900">yes</ColorBox> */}
-                    {/* <ColorBox color="orange.900">yes</ColorBox> */}
-                    {/* <ColorBox color="orange.800">yes</ColorBox> */}
-                    {/* <ColorBox color="orange.700">yes</ColorBox> */}
 
                     {/* unlikely this will ever be supported (unless ezno delivers) */}
                     {/* <ColorBox color={controlledColor}>controlledColor</ColorBox>
@@ -190,3 +222,98 @@ const ColorBox = ({ children, ...props }: PropsWithChildren<ColorSprinkles>) => 
 };
 
 // const Box = ColorBox
+
+function Wrapper(props) {
+    return (
+        <ColorBox {...props} color="facebook.900">
+            wrapper
+        </ColorBox>
+    );
+}
+
+const UsingWrapper = () => <Wrapper color="facebook.800" />;
+const UsingWrapperWithSpread = (props) => <Wrapper {...props} color="facebook.700" />;
+
+const Another = function (anotherProps) {
+    return (
+        <ColorBox color="facebook.900" {...anotherProps}>
+            <ColorBox color="facebook.900">another</ColorBox>
+        </ColorBox>
+    );
+};
+
+const UsingAnother = () => <Another color="facebook.600" />;
+const UsingAnotherWithSpread = (props) => <Another {...props} color="facebook.500" />;
+
+const ref = "RefSomething";
+const componentsMap = {
+    ArrowSomething: (props) => (
+        <ColorBox color="red.100" {...props}>
+            aaa
+        </ColorBox>
+    ),
+    ArrowWithBlockSomething: (props) => {
+        return (
+            <ColorBox color="red.100" {...props}>
+                aaa
+            </ColorBox>
+        );
+    },
+    FunctionExpressionSomething: function NamedFn(props) {
+        return <ColorBox color="green.100" {...props} />;
+    },
+    AnonymousFunctionExpression: function (props) {
+        return <ColorBox color="blue.100" {...props} />;
+    },
+    [ref]: (props) => <ColorBox color="yellow.100" {...props} />,
+    // prettier-ignore
+    "LiteralRef": (props) => <ColorBox color="orange.100" {...props} />,
+    ["ComputedLiteralRef"]: (props) => <ColorBox color="orange.300" {...props} />,
+};
+
+const { ObjectBindingSomething } = { ObjectBindingSomething: (props) => <ColorBox color="red.100" {...props} /> };
+const [RandomName] = [(props) => <ColorBox color="orange.400" {...props} />];
+
+const UsingArrowSomething = () => <componentsMap.ArrowSomething color="red.200" />;
+const UsingArrowSomethingWithSpread = (props) => <componentsMap.ArrowSomething {...props} color="red.200" />;
+const LevelThreeUsingArrowSomethingWithSpread = (props) => <UsingArrowSomethingWithSpread {...props} color="red.200" />;
+
+const UsingArrowWithBlockSomething = () => <componentsMap.ArrowWithBlockSomething color="red.300" />;
+const UsingArrowWithBlockSomethingWithSpread = (props) => (
+    <componentsMap.ArrowWithBlockSomething {...props} color="red.300" />
+);
+const LevelThreeUsingArrowWithBlockSomethingWithSpread = (props) => (
+    <UsingArrowWithBlockSomethingWithSpread {...props} color="red.300" />
+);
+
+const UsingFunctionExpressionSomething = () => <componentsMap.FunctionExpressionSomething color="green.200" />;
+const UsingFunctionExpressionSomethingWithSpread = (props) => (
+    <componentsMap.FunctionExpressionSomething {...props} color="green.200" />
+);
+const LevelThreeUsingFunctionExpressionSomethingWithSpread = (props) => (
+    <UsingFunctionExpressionSomethingWithSpread {...props} color="green.200" />
+);
+
+const UsingAnonymousFunctionExpression = () => <componentsMap.AnonymousFunctionExpression color="blue.200" />;
+const UsingAnonymousFunctionExpressionWithSpread = (props) => (
+    <componentsMap.AnonymousFunctionExpression {...props} color="blue.200" />
+);
+
+const UsingObjectBindingSomething = () => <ObjectBindingSomething color="red.400" />;
+const UsingObjectBindingSomethingWithSpread = (props) => <ObjectBindingSomething {...props} color="red.400" />;
+
+const UsingRandomName = () => <RandomName color="orange.500" />;
+const UsingRandomNameWithSpread = (props) => <RandomName {...props} color="orange.500" />;
+
+const UsingRef = () => <componentsMap.RefSomething color="yellow.200" />;
+const UsingRefWithSpread = (props) => <componentsMap.RefSomething {...props} color="yellow.200" />;
+
+const UsingLiteralRef = () => <componentsMap.LiteralRef color="orange.200" />;
+const UsingLiteralRefWithSpread = (props) => <componentsMap.LiteralRef {...props} color="orange.200" />;
+
+const UsingComputedLiteralRef = () => <componentsMap.ComputedLiteralRef color="orange.300" />;
+const UsingComputedLiteralRefWithSpread = (props) => <componentsMap.ComputedLiteralRef {...props} color="orange.500" />;
+
+const LevelThreeComponent = (props) => <UsingWrapperWithSpread {...props} color="pink.900" />;
+const LevelFourComponent = () => <LevelThreeComponent color="pink.800" />;
+const LevelFourComponentWithSpread = (props) => <LevelThreeComponent {...props} color="pink.800" />;
