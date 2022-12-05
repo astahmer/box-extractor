@@ -33,7 +33,7 @@
         "ts-morph": "^16.0.0",
         "ts-pattern": "^4.0.5",
         "unocss": "^0.46.4",
-        "vite-box-extractor": "workspace:^0.0.1"
+        "vite-box-extractor": "workspace:*"
     },
     "devDependencies": {
         "@astahmer/eslint-config-react": "^0.1.5",

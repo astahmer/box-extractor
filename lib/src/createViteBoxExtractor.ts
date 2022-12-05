@@ -1,17 +1,14 @@
-import { isAbsolute, resolve } from "node:path";
-
 import type { SourceFile } from "ts-morph";
 import { Project, ts } from "ts-morph";
-import type { Plugin } from "vite";
+import type { Plugin as VitePlugin } from "vite";
 import { normalizePath } from "vite";
+import { defaultIsExtractableFile, ensureAbsolute, AllowedExtensionOptions } from "./extensions-helpers";
 
 import { extract } from "./extractor/extract";
-import type { ExtractOptions } from "./extractor/types";
+import type { ExtractOptions, UsedComponentsMap } from "./extractor/types";
 
 // https://github.com/qmhc/vite-plugin-dts/blob/main/src/plugin.ts
 const tsConfigFilePath = "tsconfig.json"; // TODO
-const tsRE = /\.tsx?$/;
-const ensureAbsolute = (path: string, root: string) => (path ? (isAbsolute(path) ? path : resolve(root, path)) : root);
 
 // Components
 // :matches(JsxOpeningElement, JsxSelfClosingElement):has(Identifier[name="ColorBox"]) JsxAttribute > Identifier[name=/color|backgroundColor/] ~ StringLiteral
@@ -21,23 +18,28 @@ const ensureAbsolute = (path: string, root: string) => (path ? (isAbsolute(path)
 
 // TODO use unplugin to get a bundler-agnostic plugin https://github.com/unjs/unplugin
 
+type OnExtractedArgs = { extracted: ReturnType<typeof extract>; id: string; isSsr?: boolean; used: UsedComponentsMap };
+export type CreateViteBoxExtractorOptions = Pick<ExtractOptions, "components" | "functions" | "used"> & {
+    onExtracted?: (args: OnExtractedArgs) => void;
+} & AllowedExtensionOptions;
+
 export const createViteBoxExtractor = ({
     components,
     functions = {},
     used,
     onExtracted,
-}: Pick<ExtractOptions, "components" | "functions" | "used"> & {
-    onExtracted?: (result: ReturnType<typeof extract>, id: string, isSsr?: boolean) => void;
-}): Plugin => {
+    ...options
+}: CreateViteBoxExtractorOptions): VitePlugin => {
+    const isExtractableFile = options.isExtractableFile ?? defaultIsExtractableFile;
+
     let project: Project;
     console.log("createViteBoxExtractor", components);
+    // TODO arg like include: ["./src/**/*.{ts,tsx}"],
+    // rollup createFilter
 
     return {
         enforce: "pre",
         name: "vite-box-extractor",
-        buildStart() {
-            used.clear();
-        },
         configResolved(config) {
             const root = ensureAbsolute("", config.root);
             const tsConfigPath = ensureAbsolute(tsConfigFilePath, root);
@@ -63,13 +65,18 @@ export const createViteBoxExtractor = ({
             let sourceFile: SourceFile;
 
             // add ts file to project so that references can be resolved
-            if (tsRE.test(id)) {
-                sourceFile = project.createSourceFile(id, code, { overwrite: true });
+            if (isExtractableFile(id)) {
+                sourceFile = project.createSourceFile(id.endsWith(".tsx") ? id : id + ".tsx", code, {
+                    overwrite: true,
+                    scriptKind: ts.ScriptKind.TSX,
+                });
             }
 
-            if (id.endsWith(".tsx")) {
+            // @ts-expect-error
+            if (sourceFile && isExtractableFile(id)) {
                 const extracted = extract({ ast: sourceFile!, components, functions, used });
-                onExtracted?.(extracted, id, options?.ssr);
+                onExtracted?.({ extracted, id, isSsr: Boolean(options?.ssr), used });
+                // console.dir({ id, extracted }, { depth: null });
                 // TODO clean relevant part in used map if file is removed
                 // which means we have to track what was added in usedMap by file id ?
             }
@@ -78,7 +85,7 @@ export const createViteBoxExtractor = ({
         },
         watchChange(id) {
             // console.log({ id, change });
-            if (tsRE.test(id) && project) {
+            if (isExtractableFile(id) && project) {
                 const sourceFile = project.getSourceFile(normalizePath(id));
 
                 sourceFile && project.removeSourceFile(sourceFile);

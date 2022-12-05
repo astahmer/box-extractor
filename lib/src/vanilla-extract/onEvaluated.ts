@@ -29,7 +29,7 @@ type CompiledSprinklePropertyValue = {
 };
 
 export function getUsedClassNameFromCompiledSprinkles(
-    compiledMap: ReturnType<typeof getCompiledSprinklePropertyByDebugIdPairMap>,
+    compiledMap: ReturnType<typeof getCompiledSprinklePropertyByDebugIdPairMap>["compiledSprinkleByDebugId"],
     usedMap: UsedComponentsMap
 ) {
     // console.log("getUsedClassNameFromCompiledSprinkles", { context, evalResult, usedMap });
@@ -39,7 +39,7 @@ export function getUsedClassNameFromCompiledSprinkles(
     // console.log(identifierByDebugId);
     const usedClassNameList = new Set<string>();
 
-    Array.from(usedMap.entries()).forEach(([componentName, usedStyles]) => {
+    Array.from(usedMap.entries()).forEach(([_componentName, usedStyles]) => {
         // console.log(componentName, usedStyles);
         // console.dir({ usedMap }, { depth: null });
 
@@ -73,13 +73,17 @@ export function getUsedClassNameFromCompiledSprinkles(
     return usedClassNameList;
 }
 
-export const mutateContextByKeepingUsedRulesOnly = (context: AdapterContext, usedClassNameList: Set<string>) => {
+export const mutateContextByKeepingUsedRulesOnly = (
+    context: AdapterContext,
+    usedClassNameList: Set<string>,
+    sprinklesClassNames: ReturnType<typeof getCompiledSprinklePropertyByDebugIdPairMap>["sprinklesClassNames"]
+) => {
     context.cssByFileScope.forEach((css, fileScope) => {
         // const fileName = getFileNameFromFileScopeStr(fileScope);
         const usedRules = css.filter((rule) => {
             if (rule.type !== "local") return true;
 
-            const isSelectorUsed = usedClassNameList.has(rule.selector);
+            const isSelectorUsed = usedClassNameList.has(rule.selector) || !sprinklesClassNames.has(rule.selector);
 
             if (!isSelectorUsed) {
                 context.localClassNames.delete(rule.selector);
@@ -111,6 +115,7 @@ export function getCompiledSprinklePropertyByDebugIdPairMap(evalResult: Record<s
         string,
         CompiledSprinklePropertyValue & { defaultConditionName: string | undefined }
     >();
+    const sprinklesClassNames = new Set<string>();
 
     const sprinklesMap = getSprinklesMap(evalResult);
     // console.log(sprinklesMap);
@@ -126,6 +131,13 @@ export function getCompiledSprinklePropertyByDebugIdPairMap(evalResult: Record<s
             if ("values" in compiledSprinkle) {
                 Object.entries(compiledSprinkle.values).forEach(([valueName, value]) => {
                     // console.log({ value, propName, valueName });
+                    sprinklesClassNames.add(value.defaultClass);
+                    if (value.conditions) {
+                        Object.entries(value.conditions).forEach(([_conditionName, className]) => {
+                            sprinklesClassNames.add(className);
+                        });
+                    }
+
                     compiledSprinkleByDebugId.set(getDebugId(propName, valueName), {
                         ...value,
                         defaultConditionName,
@@ -135,5 +147,5 @@ export function getCompiledSprinklePropertyByDebugIdPairMap(evalResult: Record<s
         });
     });
 
-    return compiledSprinkleByDebugId;
+    return { compiledSprinkleByDebugId, sprinklesClassNames };
 }
