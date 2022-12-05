@@ -2,12 +2,12 @@ import path from "node:path";
 
 import type { AdapterContext } from "@vanilla-extract/integration";
 import { parseFileScope } from "@vanilla-extract/integration";
-import { vanillaExtractPlugin } from "@vanilla-extract/vite-plugin";
+import { vanillaExtractPlugin, VanillaExtractPluginOptions } from "@vanilla-extract/vite-plugin";
 import type { Plugin, ResolvedConfig, ViteDevServer } from "vite";
 import { normalizePath } from "vite";
 
-import { createViteBoxExtractor } from "../createViteBoxExtractor";
-import type { ExtractOptions, UsedComponentsMap } from "../extractor/types";
+import { createViteBoxExtractor, CreateViteBoxExtractorOptions } from "../createViteBoxExtractor";
+import type { UsedComponentsMap } from "../extractor/types";
 import {
     cloneAdapterContext,
     getCompiledSprinklePropertyByDebugIdPairMap,
@@ -20,10 +20,27 @@ import { createViteBoxRefUsageFinder } from "../createViteBoxRefUsageFinder";
 const virtualExtCss = ".vanilla.css";
 const virtualExtJs = ".vanilla.js";
 
+type OnAfterEvaluateMutation = {
+    filePath: string;
+    compiled: ReturnType<typeof getCompiledSprinklePropertyByDebugIdPairMap>;
+    usedClassNameList: Set<string>;
+    original: AdapterContext;
+    context: AdapterContext;
+    evalResult: Record<string, unknown>;
+};
+
 export const createVanillaExtractSprinklesExtractor = ({
     components,
     functions = {},
-}: Pick<ExtractOptions, "components" | "functions">): Plugin[] => {
+    onExtracted,
+    vanillaExtractOptions,
+    ...options
+}: Omit<CreateViteBoxExtractorOptions, "used"> & {
+    vanillaExtractOptions?: VanillaExtractPluginOptions & {
+        onAfterEvaluateMutation?: (args: OnAfterEvaluateMutation) => void;
+    };
+    // TODO ignore map (components, functions)
+}): Plugin[] => {
     const usedComponents = new Map() as UsedComponentsMap;
     const contextByFilePath = new Map<string, AdapterContext>();
 
@@ -33,7 +50,7 @@ export const createVanillaExtractSprinklesExtractor = ({
     const getAbsoluteVirtualFileId = (source: string) => normalizePath(path.join(config.root, source));
 
     return [
-        createViteBoxRefUsageFinder({ components, functions }),
+        createViteBoxRefUsageFinder({ ...options, components, functions }),
         {
             name: "vite-box-extractor-ve-adapter",
             configResolved(resolvedConfig) {
@@ -44,10 +61,13 @@ export const createVanillaExtractSprinklesExtractor = ({
             },
         },
         createViteBoxExtractor({
+            ...options,
             components,
             functions,
             used: usedComponents,
-            onExtracted(_extracted, _id, isSsr) {
+            onExtracted(args) {
+                const { isSsr } = args;
+                onExtracted?.(args);
                 // console.dir({ onExtracted: true, extracted, id }, { depth: null });
                 if (!server) return;
 
@@ -81,7 +101,10 @@ export const createVanillaExtractSprinklesExtractor = ({
             },
         }),
         vanillaExtractPlugin({
+            forceEmitCssInSsrBuild: true, // vite-plugin-ssr needs it, tropical too
+            ...vanillaExtractOptions,
             onEvaluated: (context, evalResult, filePath) => {
+                vanillaExtractOptions?.onEvaluated?.(context, evalResult, filePath);
                 // console.log("onEvaluated");
                 // console.log({ filePath, fileScope: Array.from(context.cssByFileScope.keys()) });
                 // TODO : map prop+value -> className -> context.cssByFileScope[x].rule.selector -> context.cssByFileScope[fileScope] -> fileScope
@@ -90,13 +113,24 @@ export const createVanillaExtractSprinklesExtractor = ({
                 // so we can invalidate (using server.reloadModule, in the onExtracted callback) precisely the css.ts files impacting the classNames used
 
                 const compiled = getCompiledSprinklePropertyByDebugIdPairMap(evalResult);
-                const usedClassNameList = getUsedClassNameFromCompiledSprinkles(compiled, usedComponents);
+                const usedClassNameList = getUsedClassNameFromCompiledSprinkles(
+                    compiled.compiledSprinkleByDebugId,
+                    usedComponents
+                );
                 const original = cloneAdapterContext(context);
 
                 contextByFilePath.set(filePath, original);
-                // console.dir({ compiled, evalResult }, { depth: null });
+                // console.dir({ compiled, evalResult, usedComponents, usedClassNameList }, { depth: null });
 
-                mutateContextByKeepingUsedRulesOnly(context, usedClassNameList);
+                mutateContextByKeepingUsedRulesOnly(context, usedClassNameList, compiled.sprinklesClassNames);
+                vanillaExtractOptions?.onAfterEvaluateMutation?.({
+                    filePath,
+                    compiled,
+                    usedClassNameList,
+                    original,
+                    context,
+                    evalResult,
+                });
             },
             serializeVanillaModule: (cssImports, exports, context) =>
                 serializeVanillaModuleWithoutUnused(cssImports, exports, context, usedComponents),

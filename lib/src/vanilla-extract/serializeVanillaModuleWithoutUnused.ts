@@ -126,7 +126,7 @@ function stringifyExports(
                                 {
                                     ...value.styles[propName],
                                     values: Object.fromEntries(
-                                        Object.entries(value.styles[propName]!.values).filter(([valueName]) =>
+                                        Object.entries(value.styles[propName]?.values ?? {}).filter(([valueName]) =>
                                             propUsedValues.allProperties.has(valueName)
                                         )
                                     ),

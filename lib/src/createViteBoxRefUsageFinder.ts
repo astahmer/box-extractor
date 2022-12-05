@@ -1,20 +1,17 @@
-import { isAbsolute, resolve } from "node:path";
-
 import type { SourceFile } from "ts-morph";
 import { Project, ts } from "ts-morph";
 import type { Plugin } from "vite";
 import { normalizePath } from "vite";
+import type { CreateViteBoxExtractorOptions } from "./createViteBoxExtractor";
+import { defaultIsExtractableFile, ensureAbsolute } from "./extensions-helpers";
 
 import {
     findAllTransitiveComponents,
     FindAllTransitiveComponentsOptions,
 } from "./extractor/findAllTransitiveComponents";
-import type { ExtractOptions } from "./extractor/types";
 
 // https://github.com/qmhc/vite-plugin-dts/blob/main/src/plugin.ts
 const tsConfigFilePath = "tsconfig.json"; // TODO
-const tsRE = /\.tsx?$/;
-const ensureAbsolute = (path: string, root: string) => (path ? (isAbsolute(path) ? path : resolve(root, path)) : root);
 
 // Components
 // :matches(JsxOpeningElement, JsxSelfClosingElement):has(Identifier[name="ColorBox"]) JsxAttribute > Identifier[name=/color|backgroundColor/] ~ StringLiteral
@@ -30,9 +27,10 @@ const ensureAbsolute = (path: string, root: string) => (path ? (isAbsolute(path)
 export const createViteBoxRefUsageFinder = ({
     components,
     functions = {},
-}: Pick<ExtractOptions, "components" | "functions"> & {
-    // onExtracted?: (result: ReturnType<typeof extract>, id: string, isSsr?: boolean) => void;
-}): Plugin => {
+    ...options
+}: Omit<CreateViteBoxExtractorOptions, "used" | "onExtracted">): Plugin => {
+    const isExtractableFile = options.isExtractableFile ?? defaultIsExtractableFile;
+
     let project: Project;
     // console.log('createViteBoxRefUsageFinder', components);
 
@@ -64,16 +62,20 @@ export const createViteBoxRefUsageFinder = ({
             let sourceFile: SourceFile;
 
             // add ts file to project so that references can be resolved
-            if (tsRE.test(id)) {
-                sourceFile = project.createSourceFile(id, code, { overwrite: true });
+            if (isExtractableFile(id)) {
+                sourceFile = project.createSourceFile(id.endsWith(".tsx") ? id : id + ".tsx", code, {
+                    overwrite: true,
+                    scriptKind: ts.ScriptKind.TSX,
+                });
             }
 
-            if (id.endsWith(".tsx")) {
+            // @ts-expect-error
+            if (sourceFile && isExtractableFile(id)) {
                 const transitiveMap: FindAllTransitiveComponentsOptions["transitiveMap"] = new Map();
                 findAllTransitiveComponents({ ast: sourceFile!, components: Object.keys(components), transitiveMap });
 
                 // TODO callback ?
-                console.log({ transitiveMap, components });
+                // console.log({ transitiveMap, components });
                 transitiveMap.forEach((value, componentName) => {
                     value.refUsedWithSpread.forEach((transitiveName) => {
                         const config = components[value.from ?? componentName];
@@ -82,14 +84,14 @@ export const createViteBoxRefUsageFinder = ({
                         }
                     });
                 });
-                console.log("after", { components });
+                // console.log("after", { components });
             }
 
             return null;
         },
         watchChange(id) {
             // console.log({ id, change });
-            if (tsRE.test(id) && project) {
+            if (isExtractableFile(id) && project) {
                 const sourceFile = project.getSourceFile(normalizePath(id));
 
                 sourceFile && project.removeSourceFile(sourceFile);
