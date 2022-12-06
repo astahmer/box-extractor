@@ -22,6 +22,8 @@ import { unwrapExpression } from "./utils";
 
 // :matches(JsxOpeningElement, JsxSelfClosingElement):has(Identifier[name="Box"])
 
+// TODO find all Box components used from a sprinkles fn + find all sprinkles fn used
+
 // const CustomBox = ({ render, ...props }) => <Box {...props} >{render()}</Box>;
 //                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 const getJsxComponentWithSpreadByName = (ast: SourceFile, name: string) =>
