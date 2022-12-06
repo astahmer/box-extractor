@@ -1,5 +1,5 @@
 import type { AdapterContext } from "@vanilla-extract/integration";
-import { isDefined, isObject } from "pastable";
+import { castAsArray, isDefined, isObject } from "pastable";
 
 import type { UsedComponentsMap } from "../extractor/types";
 import { getSprinklesMap } from "./getSprinklesMap";
@@ -20,7 +20,8 @@ export const isCompiledSprinkle = (value: any): value is CompiledSprinkle => {
 };
 
 type CompiledSprinklePropertyMap = {
-    values: Record<string, CompiledSprinklePropertyValue>;
+    values?: Record<string, CompiledSprinklePropertyValue>;
+    mappings?: string[];
 };
 
 type CompiledSprinklePropertyValue = {
@@ -29,7 +30,7 @@ type CompiledSprinklePropertyValue = {
 };
 
 export function getUsedClassNameFromCompiledSprinkles(
-    compiledMap: ReturnType<typeof getCompiledSprinklePropertyByDebugIdPairMap>["compiledSprinkleByDebugId"],
+    compiled: ReturnType<typeof getCompiledSprinklePropertyByDebugIdPairMap>,
     usedMap: UsedComponentsMap
 ) {
     // console.log("getUsedClassNameFromCompiledSprinkles", { context, evalResult, usedMap });
@@ -37,29 +38,39 @@ export function getUsedClassNameFromCompiledSprinkles(
     // console.dir(Array.from(context.cssByFileScope.values()), { depth: null });
     // console.log(compiledSprinkleByDebugId);
     // console.log(identifierByDebugId);
+    const compiledMap = compiled.compiledSprinkleByDebugId;
+    const shorthandsMap = new Map(...Array.from(compiled.sprinkleConfigs.values()).map((info) => info.shorthands));
+    // console.dir({ shorthandsMap }, { depth: null });
+
     const usedClassNameList = new Set<string>();
 
     Array.from(usedMap.entries()).forEach(([_componentName, usedStyles]) => {
         // console.log(componentName, usedStyles);
         // console.dir({ usedMap }, { depth: null });
 
-        usedStyles.properties.forEach((values, propName) => {
+        usedStyles.properties.forEach((values, propNameOrShorthand) => {
             values.forEach((value) => {
+                const propName = shorthandsMap.has(propNameOrShorthand)
+                    ? shorthandsMap.get(propNameOrShorthand)!.at(0)!
+                    : propNameOrShorthand;
                 const debugId = getDebugId(propName, value);
                 const className = compiledMap.get(debugId)?.defaultClass;
-                // console.log({ debugId, className });
+                // console.log({ propNameOrShorthand, propName, value, debugId, className });
                 if (className) {
                     usedClassNameList.add(className);
                 }
             });
         });
 
-        usedStyles.conditionalProperties.forEach((properties, propName) => {
+        usedStyles.conditionalProperties.forEach((properties, propNameOrShorthand) => {
             properties.forEach((values, conditionName) => {
                 values.forEach((value) => {
+                    const propName = shorthandsMap.has(propNameOrShorthand)
+                        ? shorthandsMap.get(propNameOrShorthand)!.at(0)!
+                        : propNameOrShorthand;
                     const debugId = getDebugId(propName, value);
                     const className = compiledMap.get(debugId)?.conditions?.[conditionName];
-                    // console.log({ debugId, className, conditionName });
+                    // console.log({ propNameOrShorthand, propName, value, debugId, className })
                     if (className) {
                         usedClassNameList.add(className);
                     }
@@ -73,11 +84,20 @@ export function getUsedClassNameFromCompiledSprinkles(
     return usedClassNameList;
 }
 
-export const mutateContextByKeepingUsedRulesOnly = (
-    context: AdapterContext,
-    usedClassNameList: Set<string>,
-    sprinklesClassNames: ReturnType<typeof getCompiledSprinklePropertyByDebugIdPairMap>["sprinklesClassNames"]
-) => {
+type InferMapValue<T> = T extends Map<any, infer V> ? V : never;
+type CssRuleList = InferMapValue<AdapterContext["cssByFileScope"]>;
+
+export const mutateContextByKeepingUsedRulesOnly = ({
+    context,
+    usedClassNameList,
+    sprinklesClassNames,
+    onMutate,
+}: {
+    context: AdapterContext;
+    usedClassNameList: Set<string>;
+    sprinklesClassNames: ReturnType<typeof getCompiledSprinklePropertyByDebugIdPairMap>["sprinklesClassNames"];
+    onMutate?: (args: { fileScope: string; before: CssRuleList; after: CssRuleList }) => void;
+}) => {
     context.cssByFileScope.forEach((css, fileScope) => {
         // const fileName = getFileNameFromFileScopeStr(fileScope);
         const usedRules = css.filter((rule) => {
@@ -92,8 +112,10 @@ export const mutateContextByKeepingUsedRulesOnly = (
             return isSelectorUsed;
         });
 
-        context.cssByFileScope.set(fileScope, usedRules);
-        console.log({ from: css.length, to: usedRules.length, sprinklesRules: usedClassNameList.size });
+        if (css.length !== usedRules.length) {
+            context.cssByFileScope.set(fileScope, usedRules);
+            onMutate?.({ fileScope, before: css, after: usedRules });
+        }
     });
 
     // console.dir(Array.from(context.cssByFileScope.values()), { depth: null });
@@ -110,16 +132,25 @@ export const cloneAdapterContext = (context: AdapterContext): AdapterContext => 
 
 const getDebugId = (propName: string, value: string) => `${propName}_${value}`;
 
+type CompiledSprinkleInfo = {
+    properties: Set<string>;
+    shorthands: Map<string, string[]>;
+} & Conditions;
+
 export function getCompiledSprinklePropertyByDebugIdPairMap(evalResult: Record<string, unknown>) {
     const compiledSprinkleByDebugId = new Map<
         string,
         CompiledSprinklePropertyValue & { defaultConditionName: string | undefined }
     >();
     const sprinklesClassNames = new Set<string>();
+    const sprinkleConfigs = new Map<string, CompiledSprinkleInfo>();
 
-    const sprinklesMap = getSprinklesMap(evalResult);
-    // console.log(sprinklesMap);
-    const flatSprinkles = Object.values(sprinklesMap).flat().filter(isCompiledSprinkle);
+    const evaluated = getSprinklesMap(evalResult) as Record<string, CompiledSprinkle[]>;
+    const flatSprinkles = Object.entries(evaluated).flatMap(([sprinkleName, sprinkle]) => {
+        return castAsArray(sprinkle)
+            .filter(isCompiledSprinkle)
+            .map((s) => ({ ...s, name: sprinkleName }));
+    });
 
     flatSprinkles.forEach((sprinkle) => {
         let defaultConditionName: string | undefined;
@@ -127,25 +158,73 @@ export function getCompiledSprinklePropertyByDebugIdPairMap(evalResult: Record<s
             defaultConditionName = sprinkle.conditions.defaultCondition;
         }
 
-        Object.entries(sprinkle.styles).forEach(([propName, compiledSprinkle]) => {
+        const properties = new Set<string>();
+        const shorthands = new Map<string, string[]>();
+        sprinkleConfigs.set(sprinkle.name, { properties, conditions: sprinkle.conditions, shorthands });
+
+        Object.entries(sprinkle.styles).forEach(([propNameOrShorthand, compiledSprinkle]) => {
+            properties.add(propNameOrShorthand);
+
             if ("values" in compiledSprinkle) {
                 Object.entries(compiledSprinkle.values).forEach(([valueName, value]) => {
                     // console.log({ value, propName, valueName });
                     sprinklesClassNames.add(value.defaultClass);
+
                     if (value.conditions) {
                         Object.entries(value.conditions).forEach(([_conditionName, className]) => {
                             sprinklesClassNames.add(className);
                         });
                     }
 
-                    compiledSprinkleByDebugId.set(getDebugId(propName, valueName), {
+                    compiledSprinkleByDebugId.set(getDebugId(propNameOrShorthand, valueName), {
                         ...value,
                         defaultConditionName,
                     });
                 });
             }
+
+            if ("mappings" in compiledSprinkle) {
+                shorthands.set(propNameOrShorthand, compiledSprinkle.mappings);
+                // console.log({ propNameOrShorthand, mappings: compiledSprinkle.mappings });
+
+                // loop on each shorthands's property and do as above: add each prop values/conditions used
+                compiledSprinkle.mappings.forEach((propName) => {
+                    const property = sprinkle.styles[propName];
+                    // console.log({ propNameOrShorthand, property, propName });
+                    if (!property) return;
+                    if (!("values" in property)) return;
+
+                    if (property.values) {
+                        Object.entries(property.values).forEach(([valueName, value]) => {
+                            sprinklesClassNames.add(value.defaultClass);
+
+                            if (value.conditions) {
+                                Object.entries(value.conditions).forEach(([_conditionName, className]) => {
+                                    sprinklesClassNames.add(className);
+                                });
+                            }
+
+                            // pt_0
+                            compiledSprinkleByDebugId.set(getDebugId(propNameOrShorthand, valueName), {
+                                ...value,
+                                defaultConditionName,
+                            });
+                            // paddingTop_0
+                            compiledSprinkleByDebugId.set(getDebugId(propName, valueName), {
+                                ...value,
+                                defaultConditionName,
+                            });
+                        });
+                    }
+                });
+            }
         });
     });
 
-    return { compiledSprinkleByDebugId, sprinklesClassNames };
+    return {
+        compiledSprinkleByDebugId,
+        sprinklesClassNames,
+        evaluated,
+        sprinkleConfigs,
+    };
 }

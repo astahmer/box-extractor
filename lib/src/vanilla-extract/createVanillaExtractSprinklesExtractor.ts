@@ -27,6 +27,7 @@ type OnAfterEvaluateMutation = {
     original: AdapterContext;
     context: AdapterContext;
     evalResult: Record<string, unknown>;
+    usedComponents: UsedComponentsMap;
 };
 
 export const createVanillaExtractSprinklesExtractor = ({
@@ -46,6 +47,7 @@ export const createVanillaExtractSprinklesExtractor = ({
 
     let server: ViteDevServer;
     let config: ResolvedConfig;
+    let compiled: ReturnType<typeof getCompiledSprinklePropertyByDebugIdPairMap>;
 
     const getAbsoluteVirtualFileId = (source: string) => normalizePath(path.join(config.root, source));
 
@@ -102,6 +104,8 @@ export const createVanillaExtractSprinklesExtractor = ({
         }),
         vanillaExtractPlugin({
             forceEmitCssInSsrBuild: true, // vite-plugin-ssr needs it, tropical too
+            serializeVanillaModule: (cssImports, exports, context) =>
+                serializeVanillaModuleWithoutUnused(cssImports, exports, context, usedComponents, compiled),
             ...vanillaExtractOptions,
             onEvaluated: (context, evalResult, filePath) => {
                 vanillaExtractOptions?.onEvaluated?.(context, evalResult, filePath);
@@ -112,11 +116,8 @@ export const createVanillaExtractSprinklesExtractor = ({
                 // filePath = path direct to a createSprinkles usage
                 // so we can invalidate (using server.reloadModule, in the onExtracted callback) precisely the css.ts files impacting the classNames used
 
-                const compiled = getCompiledSprinklePropertyByDebugIdPairMap(evalResult);
-                const usedClassNameList = getUsedClassNameFromCompiledSprinkles(
-                    compiled.compiledSprinkleByDebugId,
-                    usedComponents
-                );
+                compiled = getCompiledSprinklePropertyByDebugIdPairMap(evalResult);
+                const usedClassNameList = getUsedClassNameFromCompiledSprinkles(compiled, usedComponents);
                 const original = cloneAdapterContext(context);
 
                 contextByFilePath.set(filePath, original);
@@ -130,10 +131,9 @@ export const createVanillaExtractSprinklesExtractor = ({
                     original,
                     context,
                     evalResult,
+                    usedComponents,
                 });
             },
-            serializeVanillaModule: (cssImports, exports, context) =>
-                serializeVanillaModuleWithoutUnused(cssImports, exports, context, usedComponents),
         }) as any,
     ];
 };

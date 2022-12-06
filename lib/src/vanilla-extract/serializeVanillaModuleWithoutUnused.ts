@@ -4,7 +4,7 @@ import { stringify } from "javascript-stringify";
 import { isObject } from "pastable";
 
 import type { UsedComponentsMap } from "../extractor/types";
-import { isCompiledSprinkle } from "./onEvaluated";
+import { getCompiledSprinklePropertyByDebugIdPairMap, isCompiledSprinkle } from "./onEvaluated";
 
 type UsedValuesMap = Map<
     string,
@@ -15,7 +15,8 @@ export function serializeVanillaModuleWithoutUnused(
     cssImports: string[],
     exports: Record<string, unknown>,
     context: AdapterContext,
-    usedComponentsMap: UsedComponentsMap
+    usedComponentsMap: UsedComponentsMap,
+    compiled: ReturnType<typeof getCompiledSprinklePropertyByDebugIdPairMap>
 ) {
     // console.log("serializeVanillaModuleWithoutUnused", usedComponentsMap);
     const unusedCompositions = context.composedClassLists
@@ -26,7 +27,7 @@ export function serializeVanillaModuleWithoutUnused(
         unusedCompositions.length > 0 ? RegExp(`(${unusedCompositions.join("|")})\\s`, "g") : null;
 
     const recipeImports = new Set<string>();
-    const usedValuesMap = mergeUsedValues(usedComponentsMap);
+    const usedValuesMap = mergeUsedValues(usedComponentsMap, compiled);
 
     const moduleExports = Object.keys(exports).map((key) => {
         const result = stringifyExports(recipeImports, exports[key], unusedCompositionRegex, usedValuesMap);
@@ -39,54 +40,73 @@ export function serializeVanillaModuleWithoutUnused(
     return outputCode.join("\n");
 }
 
-function mergeUsedValues(usedMap: UsedComponentsMap) {
+function mergeUsedValues(
+    usedMap: UsedComponentsMap,
+    compiled: ReturnType<typeof getCompiledSprinklePropertyByDebugIdPairMap>
+) {
     const mergedMap: UsedValuesMap = new Map();
+    const shorthandsMap = new Map(...Array.from(compiled.sprinkleConfigs.values()).map((info) => info.shorthands));
 
     usedMap.forEach((style, _componentName) => {
-        style.properties.forEach((values, propName) => {
-            if (!mergedMap.has(propName)) {
-                mergedMap.set(propName, {
-                    properties: new Set(values),
-                    conditionalProperties: new Map(),
-                    allProperties: new Set(values),
-                });
-                return;
-            }
-
-            const currentPropValues = mergedMap.get(propName)!.properties;
-            const allPropValues = mergedMap.get(propName)!.allProperties;
-            values.forEach((value) => {
-                currentPropValues.add(value);
-                allPropValues.add(value);
-            });
-        });
-
-        style.conditionalProperties.forEach((values, propName) => {
-            if (!mergedMap.has(propName)) {
-                mergedMap.set(propName, {
-                    properties: new Set(),
-                    conditionalProperties: new Map(values),
-                    allProperties: new Set(Array.from(values.values()).flatMap((set) => Array.from(set))),
-                });
-                return;
-            }
-
-            const currentConditionalValues = mergedMap.get(propName)!.conditionalProperties;
-            const allPropValues = mergedMap.get(propName)!.allProperties;
-
-            values.forEach((values, conditionName) => {
-                if (!currentConditionalValues.has(conditionName)) {
-                    currentConditionalValues.set(conditionName, new Set(values));
-                    values.forEach((value) => allPropValues.add(value));
+        style.properties.forEach((values, propNameOrShorthand) => {
+            const registerPropName = (propName: string) => {
+                if (!mergedMap.has(propName)) {
+                    mergedMap.set(propName, {
+                        properties: new Set(values),
+                        conditionalProperties: new Map(),
+                        allProperties: new Set(values),
+                    });
                     return;
                 }
 
-                const currentConditionValues = currentConditionalValues.get(conditionName)!;
+                const currentPropValues = mergedMap.get(propName)!.properties;
+                const allPropValues = mergedMap.get(propName)!.allProperties;
                 values.forEach((value) => {
-                    currentConditionValues.add(value);
+                    currentPropValues.add(value);
                     allPropValues.add(value);
                 });
-            });
+            };
+
+            registerPropName(propNameOrShorthand);
+            if (shorthandsMap.has(propNameOrShorthand)) {
+                (shorthandsMap.get(propNameOrShorthand) ?? []).forEach(registerPropName);
+                registerPropName(propNameOrShorthand);
+            }
+        });
+
+        style.conditionalProperties.forEach((values, propNameOrShorthand) => {
+            const registerConditionalPropName = (propName: string) => {
+                if (!mergedMap.has(propName)) {
+                    mergedMap.set(propName, {
+                        properties: new Set(),
+                        conditionalProperties: new Map(values),
+                        allProperties: new Set(Array.from(values.values()).flatMap((set) => Array.from(set))),
+                    });
+                    return;
+                }
+
+                const currentConditionalValues = mergedMap.get(propName)!.conditionalProperties;
+                const allPropValues = mergedMap.get(propName)!.allProperties;
+
+                values.forEach((values, conditionName) => {
+                    if (!currentConditionalValues.has(conditionName)) {
+                        currentConditionalValues.set(conditionName, new Set(values));
+                        values.forEach((value) => allPropValues.add(value));
+                        return;
+                    }
+
+                    const currentConditionValues = currentConditionalValues.get(conditionName)!;
+                    values.forEach((value) => {
+                        currentConditionValues.add(value);
+                        allPropValues.add(value);
+                    });
+                });
+            };
+
+            registerConditionalPropName(propNameOrShorthand);
+            if (shorthandsMap.has(propNameOrShorthand)) {
+                (shorthandsMap.get(propNameOrShorthand) ?? []).forEach(registerConditionalPropName);
+            }
         });
     });
 
@@ -119,7 +139,7 @@ function stringifyExports(
                             }
 
                             // const usedValues = Object.keys(value.styles[propName].values).filter((valueName) => !propValues.has(valueName));
-                            // console.log(propUsedValues, value.styles[propName]);
+                            // console.log({ propName, propUsedValues, styles: Boolean(value.styles[propName]) });
 
                             return [
                                 propName,
