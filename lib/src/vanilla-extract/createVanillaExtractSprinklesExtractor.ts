@@ -1,7 +1,7 @@
 import path from "node:path";
 
 import type { AdapterContext } from "@vanilla-extract/integration";
-import { parseFileScope } from "@vanilla-extract/integration";
+import { parseFileScope, hash } from "@vanilla-extract/integration";
 import { vanillaExtractPlugin, VanillaExtractPluginOptions } from "@vanilla-extract/vite-plugin";
 import type { Plugin, ResolvedConfig, ViteDevServer } from "vite";
 import { normalizePath } from "vite";
@@ -16,6 +16,7 @@ import {
 } from "./onEvaluated";
 import { serializeVanillaModuleWithoutUnused } from "./serializeVanillaModuleWithoutUnused";
 import { createViteBoxRefUsageFinder } from "../createViteBoxRefUsageFinder";
+import { hash as objectHash } from "pastable";
 
 const virtualExtCss = ".vanilla.css";
 const virtualExtJs = ".vanilla.js";
@@ -50,6 +51,10 @@ export const createVanillaExtractSprinklesExtractor = ({
     let compiled: ReturnType<typeof getCompiledSprinklePropertyByDebugIdPairMap>;
 
     const getAbsoluteVirtualFileId = (source: string) => normalizePath(path.join(config.root, source));
+    const shouldForceEmitCssInSsrBuild =
+        vanillaExtractOptions?.forceEmitCssInSsrBuild ?? !!process.env["VITE_RSC_BUILD"];
+
+    const extractCache = new Map<string, string>();
 
     return [
         createViteBoxRefUsageFinder({ ...options, components, functions }),
@@ -68,35 +73,41 @@ export const createVanillaExtractSprinklesExtractor = ({
             functions,
             used: usedComponents,
             onExtracted(args) {
-                const { isSsr } = args;
                 onExtracted?.(args);
-                // console.dir({ onExtracted: true, extracted, id }, { depth: null });
                 if (!server) return;
 
-                const moduleGraph = server.moduleGraph;
+                const extracted = args.extracted.filter(([_name, values]) => values.length > 0);
+                const hashed = hash(objectHash(extracted));
 
+                if (extractCache.has(args.id) && extractCache.get(args.id) === hashed) {
+                    return;
+                }
+
+                extractCache.set(args.id, hashed);
+
+                const moduleGraph = server.moduleGraph;
                 const scopeList = new Set<string>();
+                // TODO only reload modules related to the extracted properties
                 contextByFilePath.forEach((context) => {
                     for (const serialisedFileScope of Array.from(context.cssByFileScope.keys())) {
+                        // prevent reloading the same module twice
                         if (scopeList.has(serialisedFileScope)) continue;
                         scopeList.add(serialisedFileScope);
 
                         // taken from vanilla-extract/packages/vite-plugin/src/index.ts
                         const fileScope = parseFileScope(serialisedFileScope);
-                        const shouldForceEmitCssInSsrBuild = !!process.env["VITE_RSC_BUILD"];
 
                         const rootRelativeId = `${fileScope.filePath}${
-                            config.command === "build" || (isSsr && shouldForceEmitCssInSsrBuild)
-                                ? virtualExtCss
-                                : virtualExtJs
+                            config.command === "build" || shouldForceEmitCssInSsrBuild ? virtualExtCss : virtualExtJs
                         }`;
                         const absoluteId = getAbsoluteVirtualFileId(rootRelativeId);
 
                         const [module] = Array.from(moduleGraph.getModulesByFile(absoluteId) ?? []);
 
                         if (module) {
+                            // yes this sucks a HMR would be way nicer
+                            // but i've got NO IDEA how to do it with VE virtual (sometimes .css/sometimes .js) files
                             void server.reloadModule(module);
-                            // console.log({ filePath, serialisedFileScope, absoluteId, rootRelativeId, css });
                         }
                     }
                 });
@@ -104,12 +115,14 @@ export const createVanillaExtractSprinklesExtractor = ({
         }),
         vanillaExtractPlugin({
             forceEmitCssInSsrBuild: true, // vite-plugin-ssr needs it, tropical too
-            serializeVanillaModule: (cssImports, exports, context) =>
-                serializeVanillaModuleWithoutUnused(cssImports, exports, context, usedComponents, compiled),
+            serializeVanillaModule: (cssImports, exports, context, _filePath) => {
+                // console.dir({ serializeVanillaModule: true, filePath }, { depth: null });
+                return serializeVanillaModuleWithoutUnused(cssImports, exports, context, usedComponents, compiled);
+            },
             ...vanillaExtractOptions,
             onEvaluated: (context, evalResult, filePath) => {
                 vanillaExtractOptions?.onEvaluated?.(context, evalResult, filePath);
-                // console.log("onEvaluated");
+                // console.log({ onEvaluated: true, filePath });
                 // console.log({ filePath, fileScope: Array.from(context.cssByFileScope.keys()) });
                 // TODO : map prop+value -> className -> context.cssByFileScope[x].rule.selector -> context.cssByFileScope[fileScope] -> fileScope
                 // fileScope = css.ts used by an arg of createSprinkles (result of defineProperties)
@@ -123,7 +136,14 @@ export const createVanillaExtractSprinklesExtractor = ({
                 contextByFilePath.set(filePath, original);
                 // console.dir({ compiled, evalResult, usedComponents, usedClassNameList }, { depth: null });
 
-                mutateContextByKeepingUsedRulesOnly(context, usedClassNameList, compiled.sprinklesClassNames);
+                mutateContextByKeepingUsedRulesOnly({
+                    context,
+                    usedClassNameList,
+                    sprinklesClassNames: compiled.sprinklesClassNames,
+                    onMutate: ({ before, after, fileScope }) => {
+                        console.log({ before: before.length, after: after.length, fileScope, filePath });
+                    },
+                });
                 vanillaExtractOptions?.onAfterEvaluateMutation?.({
                     filePath,
                     compiled,
