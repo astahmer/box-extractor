@@ -138,17 +138,38 @@ function stringifyExports(
                                 isUsingAnyCondition = true;
                             }
 
-                            // const usedValues = Object.keys(value.styles[propName].values).filter((valueName) => !propValues.has(valueName));
-                            // console.log({ propName, propUsedValues, styles: Boolean(value.styles[propName]) });
-
                             return [
                                 propName,
                                 {
                                     ...value.styles[propName],
                                     values: Object.fromEntries(
-                                        Object.entries(value.styles[propName]?.values ?? {}).filter(([valueName]) =>
-                                            propUsedValues.allProperties.has(valueName)
-                                        )
+                                        Object.entries(value.styles[propName]?.values ?? {})
+                                            .filter(([valueName]) => propUsedValues.allProperties.has(valueName))
+                                            .map(([valueName, propValueMap]) => {
+                                                const updated = {
+                                                    defaultClass: propValueMap.defaultClass,
+                                                } as typeof propValueMap;
+                                                if (
+                                                    propValueMap.conditions &&
+                                                    propUsedValues.conditionalProperties.size > 0
+                                                ) {
+                                                    const usedConditionsValues = Object.entries(
+                                                        propValueMap.conditions
+                                                    ).filter(
+                                                        ([conditionName]) =>
+                                                            propUsedValues.conditionalProperties.has(conditionName) &&
+                                                            propUsedValues.conditionalProperties
+                                                                .get(conditionName)!
+                                                                .has(valueName)
+                                                    );
+
+                                                    if (usedConditionsValues.length > 0) {
+                                                        updated.conditions = Object.fromEntries(usedConditionsValues);
+                                                    }
+                                                }
+
+                                                return [valueName, updated];
+                                            })
                                     ),
                                 },
                             ];
