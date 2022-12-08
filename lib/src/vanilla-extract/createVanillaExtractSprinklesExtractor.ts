@@ -80,13 +80,21 @@ export const createVanillaExtractSprinklesExtractor = ({
                 const hashed = hash(objectHash(serialized));
                 const cached = extractCacheById.get(args.id);
 
-                if (extractCacheById.has(args.id) && cached!.hashed === hashed) {
+                if (serialized.length === 0 && !cached) {
+                    console.log("nothing extracted & no cache");
                     return;
                 }
 
+                if (extractCacheById.has(args.id) && cached?.hashed === hashed) {
+                    console.log("same as last time");
+                    return;
+                }
+
+                const moduleGraph = server.moduleGraph;
                 if (extractCacheById.has(args.id)) {
-                    // const extractDiff = diff(cached!.serialized, serialized);
+                    const extractDiff = diff(cached!.serialized, serialized);
                     // TODO use diff to invalidate only the changed modules (by fileScope)
+                    console.log("has cache & different");
                     // console.dir(
                     //     {
                     //         id: args.id,
@@ -97,18 +105,22 @@ export const createVanillaExtractSprinklesExtractor = ({
                     //     },
                     //     { depth: null }
                     // );
+
+                    moduleGraph.invalidateAll();
+                    server.ws.send({ type: "full-reload", path: args.id });
+                    // void server.reloadModule()
                 }
 
-                extractCacheById.set(args.id, { hashed, serialized: serialized });
+                extractCacheById.set(args.id, { hashed, serialized });
+                console.log("extracted", { id: args.id, serialized });
                 // console.log({ id: args.id, keys: Array.from(contextByFilePath.keys()), cached });
 
-                const moduleGraph = server.moduleGraph;
                 const invalidate = (filePath: string) => {
                     const absoluteId = getAbsoluteFileId(filePath);
                     const modules = moduleGraph.getModulesByFile(absoluteId);
                     if (modules) {
                         modules.forEach((module) => {
-                            // console.log({ INVALIDATE: filePath });
+                            console.log({ INVALIDATE: module.id });
                             server.moduleGraph.invalidateModule(module);
                             // Vite uses this timestamp to add `?t=` query string automatically for HMR.
                             module.lastHMRTimestamp = (module as any).lastInvalidationTimestamp || Date.now();
@@ -128,8 +140,8 @@ export const createVanillaExtractSprinklesExtractor = ({
                         const fileScope = parseFileScope(serialisedFileScope);
 
                         invalidate(fileScope.filePath);
-                        invalidate(fileScope.filePath + virtualExtCss);
                         invalidate(fileScope.filePath + virtualExtJs);
+                        invalidate(fileScope.filePath + virtualExtCss);
                     }
                 });
             },
@@ -142,7 +154,7 @@ export const createVanillaExtractSprinklesExtractor = ({
                 if (!compiled || compiled.sprinkleConfigs.size === 0)
                     return defaultSerializeVanillaModule(cssImports, exports, context);
 
-                // console.dir({ serializeVanillaModule: true, filePath }, { depth: null });
+                console.dir({ serializeVanillaModule: true, filePath }, { depth: null });
                 return serializeVanillaModuleWithoutUnused(cssImports, exports, context, usedComponents, compiled);
             },
             ...vanillaExtractOptions,
@@ -171,17 +183,7 @@ export const createVanillaExtractSprinklesExtractor = ({
                 //     ),
                 //     sprinkles: Array.from(compiled.sprinkleConfigs.keys()),
                 // });
-                // console.dir({ compiled, evalResult, usedComponents, usedClassNameList }, { depth: null });
                 // console.dir({ compiled, usedClassNameList }, { depth: null });
-                // console.dir(
-                //     // { classNames: compiled.sprinklesClassNames, usedClassNameList, compiled: original.localClassNames },
-                //     {
-                //         classNamesNotFromSprinkles: Array.from(original.localClassNames).filter(
-                //             (local) => !compiled.sprinklesClassNames.has(local)
-                //         ),
-                //     },
-                //     { depth: null }
-                // );
 
                 mutateContextByKeepingUsedRulesOnly({
                     context,

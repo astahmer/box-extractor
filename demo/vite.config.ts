@@ -2,6 +2,7 @@ import presetIcons from "@unocss/preset-icons";
 import react from "@vitejs/plugin-react";
 import UnoCSS from "unocss/vite";
 import { defineConfig } from "vite";
+import { vanillaExtractPlugin } from "@vanilla-extract/vite-plugin";
 
 import {
     createVanillaExtractSprinklesExtractor,
@@ -19,6 +20,7 @@ export default defineConfig((env) => ({
             functions: ["colorSprinkles", "themeSprinkles", "minimalSprinkles"],
             // vanillaExtractOptions: { identifiers: "short" },
         }),
+        // vanillaExtractPlugin() as any,
         UnoCSS({ presets: [presetIcons({})] }),
         react(),
     ],
