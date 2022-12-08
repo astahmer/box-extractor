@@ -38,7 +38,7 @@ afterEach(() => {
 });
 
 const config: ExtractOptions["components"] = {
-    ColorBox: { properties: ["color", "backgroundColor", "zIndex"], conditions: ["mobile", "tablet", "desktop"] },
+    ColorBox: { properties: ["color", "backgroundColor", "zIndex", "mobile"] },
 };
 
 const extractFromCode = (code: string) => {
@@ -1547,4 +1547,28 @@ it("extract JsxAttribute > JsxExpression > ConditionalExpression > StringLiteral
       ]
     `
     );
+});
+
+it.only("extract JsxAttribute > JsxExpression > reversed", () => {
+    expect(
+        extractFromCode(`
+            <ColorBox mobile={{ color: "sky.100", tablet: "sky.200", desktop: "sky.300" }} />
+        `)
+    ).toMatchInlineSnapshot(`
+      [
+          [
+              "ColorBox",
+              [
+                  [
+                      "mobile",
+                      {
+                          color: "sky.100",
+                          tablet: "sky.200",
+                          desktop: "sky.300",
+                      },
+                  ],
+              ],
+          ],
+      ]
+    `);
 });

@@ -14,13 +14,14 @@ import type {
 } from "./types";
 import { isNotNullish } from "./utils";
 
-// not in extract method, make it another function that can be used to provide a more complete config to `extract` fn
-// ->
-// TODO find all components that use source <Box /> & that allows spreading props on it
-// ex: const CustomBox = (props) => <Box {...props} />
-// Box is the source component, CustomBox re-uses it and should also be tracked
+export const extract = ({ ast, components: _components, functions: _functions, used }: ExtractOptions) => {
+    const components = Array.isArray(_components)
+        ? Object.fromEntries(_components.map((name) => [name, { properties: "all" }]))
+        : _components;
+    const functions = Array.isArray(_functions)
+        ? Object.fromEntries(_functions.map((name) => [name, { properties: "all" }]))
+        : _functions;
 
-export const extract = ({ ast, components, functions, used }: ExtractOptions) => {
     const componentPropValues: ExtractedComponentProperties[] = [];
 
     Object.entries(components).forEach(([componentName, component]) => {
