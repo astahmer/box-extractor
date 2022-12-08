@@ -1,10 +1,14 @@
 import "./App.css";
-import { Demo } from "./components/Demo";
+import { VanillaThemeDemo } from "./components/VanillaThemeDemo";
+// import { Demo } from "./components/Demo";
+// import { MinimalSprinklesDemo } from "./components/MinimalSprinklesDemo";
 
 function App() {
     return (
         <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
-            <Demo />
+            {/* <Demo /> */}
+            {/* <MinimalSprinklesDemo /> */}
+            <VanillaThemeDemo />
         </div>
     );
 }

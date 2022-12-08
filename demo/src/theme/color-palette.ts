@@ -1,37 +1,10 @@
-import { defineProperties } from "@vanilla-extract/sprinkles";
 import type { NonUndefined } from "pastable";
 import type tb from "ts-toolbelt";
-import { theme } from "./vars";
+import { colorMode } from "./color-mode.css";
+import { vars } from "./vars";
 
-const colors = theme.colors;
-export const flatColors = flatMapColorsWithVariants(colors);
-
-export const colorStyles = defineProperties({
-    conditions: {
-        default: {},
-        lightMode: { "@media": "(prefers-color-scheme: light)" },
-        darkMode: { "@media": "(prefers-color-scheme: dark)" },
-        focus: { selector: "&:focus" },
-        hover: { selector: "&:hover" },
-    },
-    defaultCondition: "default",
-    properties: {
-        color: flatColors,
-        background: flatColors,
-        backgroundColor: flatColors,
-        borderColor: flatColors,
-        borderTopColor: flatColors,
-        borderBottomColor: flatColors,
-        borderLeftColor: flatColors,
-        borderRightColor: flatColors,
-        outlineColor: flatColors,
-    },
-    shorthands: {
-        bg: ["background"],
-        bgColor: ["backgroundColor"],
-        borderXColor: ["borderLeftColor", "borderRightColor"],
-    },
-});
+const colors = { ...vars.colors, main: colorMode.vars.color.primary, secondary: colorMode.vars.color.primary };
+export const colorPalette = flatMapColorsWithVariants(colors);
 
 type ChakraThemeColors = typeof colors;
 

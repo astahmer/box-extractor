@@ -14,7 +14,11 @@ export default defineConfig((env) => ({
     root: "./",
     build: { outDir: "./dist", sourcemap: true },
     plugins: [
-        createVanillaExtractSprinklesExtractor({ components: ["ColorBox"], functions: ["colorSprinkles"] }),
+        createVanillaExtractSprinklesExtractor({
+            components: ["ColorBox", "DessertBox"],
+            functions: ["colorSprinkles", "themeSprinkles", "minimalSprinkles"],
+            // vanillaExtractOptions: { identifiers: "short" },
+        }),
         UnoCSS({ presets: [presetIcons({})] }),
         react(),
     ],

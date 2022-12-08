@@ -435,7 +435,7 @@ const sizes = {
     container,
 };
 
-export const theme = {
+export const vars = {
     colors,
     space,
     // breakpoints,

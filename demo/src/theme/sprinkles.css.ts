@@ -1,13 +1,6 @@
 import { createSprinkles } from "@vanilla-extract/sprinkles";
 
-import { interactiveProperties, responsiveProperties, unresponsiveProperties } from "./base.css";
-import { colorStyles } from "./colors.css";
-import { spacingStyles } from "./spacing.css";
+import { interactiveProperties, responsiveProperties, staticProperties } from "./base.css";
 
-export const themeSprinkles = createSprinkles(
-    unresponsiveProperties,
-    responsiveProperties,
-    interactiveProperties,
-    spacingStyles,
-    colorStyles
-);
+export const themeSprinkles = createSprinkles(staticProperties, responsiveProperties, interactiveProperties);
+export type ThemeSprinkles = Parameters<typeof themeSprinkles>[0];
