@@ -45,7 +45,6 @@ export const createVanillaExtractSprinklesExtractor = ({
     // TODO ignore map (components, functions)
 }): Plugin[] => {
     const usedComponents = new Map() as UsedComponentsMap;
-    const contextByFilePath = new Map<string, AdapterContext>();
 
     let server: ViteDevServer;
     let config: ResolvedConfig;
@@ -79,71 +78,47 @@ export const createVanillaExtractSprinklesExtractor = ({
                 // console.dir({ serialized }, { depth: null });
                 const hashed = hash(objectHash(serialized));
                 const cached = extractCacheById.get(args.id);
+                const hasCache = Boolean(cached);
 
                 if (serialized.length === 0 && !cached) {
-                    console.log("nothing extracted & no cache");
+                    // console.log("nothing extracted & no cache");
                     return;
                 }
 
-                if (extractCacheById.has(args.id) && cached?.hashed === hashed) {
-                    console.log("same as last time");
+                if (hasCache && cached?.hashed === hashed) {
+                    console.log("same as last time", { isSsr: args.isSsr });
                     return;
                 }
 
                 const moduleGraph = server.moduleGraph;
-                if (extractCacheById.has(args.id)) {
-                    const extractDiff = diff(cached!.serialized, serialized);
-                    // TODO use diff to invalidate only the changed modules (by fileScope)
-                    console.log("has cache & different");
-                    // console.dir(
-                    //     {
-                    //         id: args.id,
-                    //         extracted: serialized,
-                    //         hashed,
-                    //         cached,
-                    //         extractDiff,
-                    //     },
-                    //     { depth: null }
-                    // );
+                moduleGraph.invalidateAll(); // TODO rm
 
-                    moduleGraph.invalidateAll();
-                    server.ws.send({ type: "full-reload", path: args.id });
-                    // void server.reloadModule()
+                if (hasCache) {
+                    // const extractDiff = diff(cached!.serialized, serialized);
+                    console.log("has cache & different", { isSsr: args.isSsr });
+
+                    if (args.isSsr) {
+                        server.ws.send({ type: "full-reload", path: args.id });
+                    } else {
+                        console.log("invalidate css");
+                        moduleGraph.safeModulesPath.forEach((mod) => {
+                            // TODO only invalidate css.ts impacted by the extract change
+                            // AND if the args.used has changed overally
+                            // -> (no need to invalidate if we already include it ? since we're always adding styles in dev)
+                            if (mod.includes(".css.ts")) {
+                                const module = moduleGraph.getModuleById(getAbsoluteFileId(mod));
+                                if (module) {
+                                    console.log(module.id);
+                                    moduleGraph.invalidateModule(module);
+                                    module.lastHMRTimestamp = (module as any).lastInvalidationTimestamp || Date.now();
+                                }
+                            }
+                        });
+                    }
                 }
 
                 extractCacheById.set(args.id, { hashed, serialized });
-                console.log("extracted", { id: args.id, serialized });
-                // console.log({ id: args.id, keys: Array.from(contextByFilePath.keys()), cached });
-
-                const invalidate = (filePath: string) => {
-                    const absoluteId = getAbsoluteFileId(filePath);
-                    const modules = moduleGraph.getModulesByFile(absoluteId);
-                    if (modules) {
-                        modules.forEach((module) => {
-                            console.log({ INVALIDATE: module.id });
-                            server.moduleGraph.invalidateModule(module);
-                            // Vite uses this timestamp to add `?t=` query string automatically for HMR.
-                            module.lastHMRTimestamp = (module as any).lastInvalidationTimestamp || Date.now();
-                        });
-                    }
-                };
-
-                const scopeList = new Set<string>();
-                // TODO only reload modules related to the extracted properties
-                // also filter out modules with NO sprinkles
-                contextByFilePath.forEach((context) => {
-                    for (const serialisedFileScope of Array.from(context.cssByFileScope.keys())) {
-                        // prevent reloading the same module twice
-                        if (scopeList.has(serialisedFileScope)) continue;
-                        scopeList.add(serialisedFileScope);
-
-                        const fileScope = parseFileScope(serialisedFileScope);
-
-                        invalidate(fileScope.filePath);
-                        invalidate(fileScope.filePath + virtualExtJs);
-                        invalidate(fileScope.filePath + virtualExtCss);
-                    }
-                });
+                console.log("extracted", { id: args.id, serialized, isSsr: args.isSsr });
             },
         }),
         vanillaExtractPlugin({
@@ -175,7 +150,6 @@ export const createVanillaExtractSprinklesExtractor = ({
                 const usedClassNameList = getUsedClassNameFromCompiledSprinkles(compiled, usedComponents);
                 const original = cloneAdapterContext(context);
 
-                contextByFilePath.set(filePath, original);
                 // console.log({
                 //     filePath,
                 //     fileScope: Array.from(context.cssByFileScope.keys()).map((scope) =>
