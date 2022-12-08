@@ -1,12 +1,12 @@
 import path from "node:path";
 
 import type { AdapterContext } from "@vanilla-extract/integration";
-import { parseFileScope, hash } from "@vanilla-extract/integration";
+import { parseFileScope, hash, defaultSerializeVanillaModule } from "@vanilla-extract/integration";
 import { vanillaExtractPlugin, VanillaExtractPluginOptions } from "@vanilla-extract/vite-plugin";
 import type { Plugin, ResolvedConfig, ViteDevServer } from "vite";
 import { normalizePath } from "vite";
 
-import { createViteBoxExtractor, CreateViteBoxExtractorOptions } from "../createViteBoxExtractor";
+import { createViteBoxExtractor, CreateViteBoxExtractorOptions, OnExtractedArgs } from "../createViteBoxExtractor";
 import type { UsedComponentsMap } from "../extractor/types";
 import {
     cloneAdapterContext,
@@ -17,6 +17,7 @@ import {
 import { serializeVanillaModuleWithoutUnused } from "./serializeVanillaModuleWithoutUnused";
 import { createViteBoxRefUsageFinder } from "../createViteBoxRefUsageFinder";
 import { hash as objectHash } from "pastable";
+import diff from "microdiff";
 
 const virtualExtCss = ".vanilla.css";
 const virtualExtJs = ".vanilla.js";
@@ -48,13 +49,11 @@ export const createVanillaExtractSprinklesExtractor = ({
 
     let server: ViteDevServer;
     let config: ResolvedConfig;
-    let compiled: ReturnType<typeof getCompiledSprinklePropertyByDebugIdPairMap>;
 
-    const getAbsoluteVirtualFileId = (source: string) => normalizePath(path.join(config.root, source));
-    const shouldForceEmitCssInSsrBuild =
-        vanillaExtractOptions?.forceEmitCssInSsrBuild ?? !!process.env["VITE_RSC_BUILD"];
+    const getAbsoluteFileId = (source: string) => normalizePath(path.join(config.root, source));
 
-    const extractCache = new Map<string, string>();
+    const extractCacheById = new Map<string, { hashed: string; serialized: OnExtractedArgs["extracted"] }>();
+    const compiledByFilePath = new Map<string, ReturnType<typeof getCompiledSprinklePropertyByDebugIdPairMap>>();
 
     return [
         createViteBoxRefUsageFinder({ ...options, components, functions }),
@@ -76,47 +75,73 @@ export const createVanillaExtractSprinklesExtractor = ({
                 onExtracted?.(args);
                 if (!server) return;
 
-                const extracted = args.extracted.filter(([_name, values]) => values.length > 0);
-                const hashed = hash(objectHash(extracted));
+                const serialized = args.extracted.filter(([_name, values]) => values.length > 0);
+                // console.dir({ serialized }, { depth: null });
+                const hashed = hash(objectHash(serialized));
+                const cached = extractCacheById.get(args.id);
 
-                if (extractCache.has(args.id) && extractCache.get(args.id) === hashed) {
+                if (extractCacheById.has(args.id) && cached!.hashed === hashed) {
                     return;
                 }
 
-                extractCache.set(args.id, hashed);
+                if (extractCacheById.has(args.id)) {
+                    const extractDiff = diff(cached!.serialized, serialized);
+                    // TODO use diff to invalidate only the changed modules (by fileScope)
+                    console.dir(
+                        {
+                            id: args.id,
+                            extracted: serialized,
+                            hashed,
+                            cached,
+                            extractDiff,
+                        },
+                        { depth: null }
+                    );
+                }
+
+                extractCacheById.set(args.id, { hashed, serialized: serialized });
+                // console.log({ id: args.id, keys: Array.from(contextByFilePath.keys()), cached });
 
                 const moduleGraph = server.moduleGraph;
+                const invalidate = (filePath: string) => {
+                    const absoluteId = getAbsoluteFileId(filePath);
+                    const modules = moduleGraph.getModulesByFile(absoluteId);
+                    if (modules) {
+                        modules.forEach((module) => {
+                            console.log({ INVALIDATE: filePath });
+                            server.moduleGraph.invalidateModule(module);
+                            // Vite uses this timestamp to add `?t=` query string automatically for HMR.
+                            module.lastHMRTimestamp = (module as any).lastInvalidationTimestamp || Date.now();
+                        });
+                    }
+                };
+
                 const scopeList = new Set<string>();
                 // TODO only reload modules related to the extracted properties
+                // also filter out modules with NO sprinkles
                 contextByFilePath.forEach((context) => {
                     for (const serialisedFileScope of Array.from(context.cssByFileScope.keys())) {
                         // prevent reloading the same module twice
                         if (scopeList.has(serialisedFileScope)) continue;
                         scopeList.add(serialisedFileScope);
 
-                        // taken from vanilla-extract/packages/vite-plugin/src/index.ts
                         const fileScope = parseFileScope(serialisedFileScope);
 
-                        const rootRelativeId = `${fileScope.filePath}${
-                            config.command === "build" || shouldForceEmitCssInSsrBuild ? virtualExtCss : virtualExtJs
-                        }`;
-                        const absoluteId = getAbsoluteVirtualFileId(rootRelativeId);
-
-                        const [module] = Array.from(moduleGraph.getModulesByFile(absoluteId) ?? []);
-
-                        if (module) {
-                            // yes this sucks a HMR would be way nicer
-                            // but i've got NO IDEA how to do it with VE virtual (sometimes .css/sometimes .js) files
-                            void server.reloadModule(module);
-                        }
+                        invalidate(fileScope.filePath);
+                        invalidate(fileScope.filePath + virtualExtCss);
                     }
                 });
             },
         }),
         vanillaExtractPlugin({
             forceEmitCssInSsrBuild: true, // vite-plugin-ssr needs it, tropical too
-            serializeVanillaModule: (cssImports, exports, context, _filePath) => {
-                // console.dir({ serializeVanillaModule: true, filePath }, { depth: null });
+            serializeVanillaModule: (cssImports, exports, context, filePath) => {
+                const compiled = compiledByFilePath.get(filePath);
+                // we only care about .css.ts with sprinkles
+                if (!compiled || compiled.sprinkleConfigs.size === 0)
+                    return defaultSerializeVanillaModule(cssImports, exports, context);
+
+                console.dir({ serializeVanillaModule: true, filePath }, { depth: null });
                 return serializeVanillaModuleWithoutUnused(cssImports, exports, context, usedComponents, compiled);
             },
             ...vanillaExtractOptions,
@@ -129,11 +154,22 @@ export const createVanillaExtractSprinklesExtractor = ({
                 // filePath = path direct to a createSprinkles usage
                 // so we can invalidate (using server.reloadModule, in the onExtracted callback) precisely the css.ts files impacting the classNames used
 
-                compiled = getCompiledSprinklePropertyByDebugIdPairMap(evalResult);
+                const compiled = getCompiledSprinklePropertyByDebugIdPairMap(evalResult);
+                if (compiled.sprinkleConfigs.size === 0) return;
+
+                compiledByFilePath.set(filePath, compiled);
+
                 const usedClassNameList = getUsedClassNameFromCompiledSprinkles(compiled, usedComponents);
                 const original = cloneAdapterContext(context);
 
                 contextByFilePath.set(filePath, original);
+                // console.log({
+                //     filePath,
+                //     fileScope: Array.from(context.cssByFileScope.keys()).map((scope) =>
+                //         getAbsoluteFileId(parseFileScope(scope).filePath)
+                //     ),
+                //     sprinkles: Array.from(compiled.sprinkleConfigs.keys()),
+                // });
                 // console.dir({ compiled, evalResult, usedComponents, usedClassNameList }, { depth: null });
 
                 mutateContextByKeepingUsedRulesOnly({
@@ -157,3 +193,39 @@ export const createVanillaExtractSprinklesExtractor = ({
         }) as any,
     ];
 };
+
+const serializeValue = <T = unknown>(
+    value: T
+): T extends Map<infer Key, infer Value>
+    ? Key extends string | number | symbol
+        ? Record<Key, Value>
+        : never
+    : T extends Set<infer Item>
+    ? Item[]
+    : T => {
+    if (value == undefined) {
+        // @ts-expect-error
+        return value;
+    }
+
+    if (value instanceof Set) {
+        return Array.from(value).map((item) => serializeValue(item)) as any;
+    }
+
+    if (value instanceof Map) {
+        return Object.fromEntries(Array.from(value.entries()).map(([key, value]) => [key, serializeValue(value)]));
+    }
+
+    if (Array.isArray(value)) {
+        return value.map((item) => serializeValue(item)) as any;
+    }
+
+    if (typeof value === "object" && value !== null) {
+        return Object.fromEntries(Object.entries(value).map(([key, value]) => [key, serializeValue(value)])) as any;
+    }
+
+    // @ts-expect-error
+    return value;
+};
+
+const styleUpdateEvent = (fileId: string) => `vanilla-extract-style-update:${fileId}`;

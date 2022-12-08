@@ -2,6 +2,7 @@ import type { SourceFile } from "ts-morph";
 import { Project, ts } from "ts-morph";
 import type { Plugin as VitePlugin } from "vite";
 import { normalizePath } from "vite";
+
 import { defaultIsExtractableFile, ensureAbsolute, AllowedExtensionOptions } from "./extensions-helpers";
 
 import { extract } from "./extractor/extract";
@@ -18,7 +19,12 @@ const tsConfigFilePath = "tsconfig.json"; // TODO
 
 // TODO use unplugin to get a bundler-agnostic plugin https://github.com/unjs/unplugin
 
-type OnExtractedArgs = { extracted: ReturnType<typeof extract>; id: string; isSsr?: boolean; used: UsedComponentsMap };
+export type OnExtractedArgs = {
+    extracted: ReturnType<typeof extract>;
+    id: string;
+    isSsr?: boolean;
+    used: UsedComponentsMap;
+};
 export type CreateViteBoxExtractorOptions = Pick<ExtractOptions, "components" | "functions" | "used"> & {
     onExtracted?: (args: OnExtractedArgs) => void;
 } & AllowedExtensionOptions;
