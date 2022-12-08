@@ -1,5 +1,5 @@
 import { createSprinkles, defineProperties } from "@vanilla-extract/sprinkles";
-import { flatColorsMap } from "./colors-palette";
+import { colorPalette } from "./colors-palette";
 
 const colorProps = defineProperties({
     // conditions: {
@@ -11,15 +11,15 @@ const colorProps = defineProperties({
     // },
     // defaultCondition: "default",
     properties: {
-        color: flatColorsMap,
-        background: flatColorsMap,
-        backgroundColor: flatColorsMap,
-        borderColor: flatColorsMap,
-        borderTopColor: flatColorsMap,
-        borderBottomColor: flatColorsMap,
-        borderLeftColor: flatColorsMap,
-        borderRightColor: flatColorsMap,
-        outlineColor: flatColorsMap,
+        color: colorPalette,
+        background: colorPalette,
+        backgroundColor: colorPalette,
+        borderColor: colorPalette,
+        borderTopColor: colorPalette,
+        borderBottomColor: colorPalette,
+        borderLeftColor: colorPalette,
+        borderRightColor: colorPalette,
+        outlineColor: colorPalette,
     },
     shorthands: {
         bg: ["background"],
@@ -29,4 +29,4 @@ const colorProps = defineProperties({
 });
 
 export const colorSprinkles = createSprinkles(colorProps);
-export type ColorSprinkes = Parameters<typeof colorSprinkles>[0];
+export type ColorSprinkles = Parameters<typeof colorSprinkles>[0];

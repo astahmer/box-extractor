@@ -1,24 +1,15 @@
 import { defineProperties } from "@vanilla-extract/sprinkles";
-import { flatColors } from "./colors.css";
-import { space } from "./spacing.css";
-import { theme } from "./vars";
+import { colorPalette } from "./color-palette";
+import { vars } from "./vars";
 
-const absPos = ["auto", 0, "0", "-50%", "0%", "50%", "100%"] as const;
+const absPos = ["auto", "0", "-50%", "0%", "50%", "100%"] as const;
 const size = ["auto", "0", "0%", "25%", "50%", "75%", "100%", "100vh", "100vw"] as const;
 const flexAlign = ["stretch", "flex-start", "center", "flex-end", "space-around", "space-between"] as const;
 
 const screens = {
     mobile: { max: "599px" },
-    tablet: { min: "600px", max: "899px" },
-    "gt-tablet": { min: "600px" },
-    "lt-small-desktop": { max: "899px" },
-    "small-desktop": { min: "900px", max: "1199px" },
-    "gt-small-desktop": { min: "900px" },
-    "lt-medium-desktop": { max: "1199px" },
-    "medium-desktop": { min: "1200px", max: "1799px" },
-    "gt-medium-desktop": { min: "1200px" },
-    "lt-large-desktop": { max: "1799px" },
-    "large-desktop": { min: "1800px" },
+    tablet: { min: "600px", max: "1023px" },
+    desktop: { min: "1024px" },
 } as const;
 type TwResponsiveBreakpoints = keyof typeof screens;
 type TwResponsiveBreakpointsMap = Record<TwResponsiveBreakpoints, { min?: string; max?: string }>;
@@ -44,20 +35,19 @@ const twBreakpointsToAppBreakpoints = (breakpointsMap: TwResponsiveBreakpointsMa
 
 const overflow = ["auto", "hidden", "scroll", "visible"] as const;
 export const responsiveProperties = defineProperties({
-    conditions: { ...twBreakpointsToAppBreakpoints(screens), default: {} },
-    defaultCondition: "default",
-    // defaultCondition: "medium-desktop",
-    responsiveArray: ["mobile", "tablet", "small-desktop", "medium-desktop"],
+    conditions: twBreakpointsToAppBreakpoints(screens),
+    defaultCondition: "desktop",
+    // responsiveArray: ["mobile", "tablet", "small-desktop", "medium-desktop"],
     properties: {
-        fontFamily: theme.typography.fonts,
-        fontSize: theme.typography.fontSizes,
-        fontWeight: theme.typography.fontWeights,
-        lineHeight: theme.typography.lineHeights,
-        letterSpacing: theme.typography.letterSpacings,
+        fontFamily: vars.typography.fonts,
+        fontSize: vars.typography.fontSizes,
+        fontWeight: vars.typography.fontWeights,
+        lineHeight: vars.typography.lineHeights,
+        letterSpacing: vars.typography.letterSpacings,
         textAlign: ["inherit", "left", "center", "right"],
         fontStyle: ["normal", "italic"],
         textTransform: ["inherit", "uppercase", "lowercase", "capitalize", "none"],
-        textDecoration: ["none", "underline", "line-through", "underline"],
+        textDecoration: ["none", "underline", "line-through"],
         //
         position: ["absolute", "relative", "fixed", "sticky"],
         display: ["none", "flex", "inline-flex", "block", "inline"],
@@ -83,6 +73,7 @@ export const responsiveProperties = defineProperties({
         minHeight: size,
         maxHeight: size,
         whiteSpace: ["nowrap", "unset"],
+        textOverflow: ["ellipsis", "clip", "unset"],
         overflow: overflow,
         overflowX: overflow,
         overflowY: overflow,
@@ -112,10 +103,14 @@ export const responsiveProperties = defineProperties({
     },
 });
 
-export const unresponsiveProperties = defineProperties({
+export const staticProperties = defineProperties({
     properties: {
-        zIndex: theme.zIndices,
-        transition: ["none", "all 0.1s ease"],
+        zIndex: vars.zIndices,
+        transition: {
+            none: "none",
+            slow: "all .3s ease, opacity .3s ease",
+            fast: "all .15s ease, opacity .15s ease",
+        },
         backgroundSize: ["cover", "contain"],
         backgroundRepeat: ["no-repeat", "repeat"],
         backgroundPosition: ["center", "top", "bottom", "left", "right"],
@@ -125,6 +120,8 @@ export const unresponsiveProperties = defineProperties({
         objectPosition: ["center", "top", "bottom", "left", "right"],
     },
 });
+
+const space = vars.space as Record<keyof typeof vars.space | `${keyof typeof vars.space}`, string>;
 
 /** https://chakra-ui.com/docs/styled-system/style-props#pseudo */
 export const interactiveProperties = defineProperties({
@@ -136,8 +133,12 @@ export const interactiveProperties = defineProperties({
         highlighted: { selector: "&[data-highlighted]" },
         focusWithin: { selector: "&:focus-within" },
         focusVisible: { selector: "&:focus-visible" },
-        disabled: { selector: "&[disabled],&[aria-disabled=true],&[data-disabled]" },
-        readOnly: { selector: "&[aria-readonly=true],&[readonly],&[data-readonly]" },
+        disabled: {
+            selector: "&[disabled],&[aria-disabled=true],&[data-disabled]",
+        },
+        readOnly: {
+            selector: "&[aria-readonly=true],&[readonly],&[data-readonly]",
+        },
         before: { selector: "&::before" },
         after: { selector: "&::after" },
         empty: { selector: "&:empty" },
@@ -160,7 +161,9 @@ export const interactiveProperties = defineProperties({
         visited: { selector: "&:visited" },
         activeLink: { selector: "&[aria-current=page]" },
         activeStep: { selector: "&[aria-current=step]" },
-        indeterminate: { selector: "&:indeterminate,&[aria-checked=mixed],&[data-indeterminate]" },
+        indeterminate: {
+            selector: "&:indeterminate,&[aria-checked=mixed],&[data-indeterminate]",
+        },
         groupHover: {
             selector:
                 "[role=group]:hover &,[role=group][data-hover] &,[data-group]:hover &,[data-group][data-hover] &,.group:hover &,.group[data-hover] &",
@@ -175,8 +178,12 @@ export const interactiveProperties = defineProperties({
         peerFocus: {
             selector: "[data-peer]:focus ~ &, [data-peer][data-focus] ~ &, .peer:focus ~ &, .peer[data-focus] ~ &",
         },
-        groupFocusVisible: { selector: "&[role=group]:focus-visible[data-group]:focus-visible.group:focus-visible" },
-        peerFocusVisible: { selector: "[data-peer]:focus-visible ~ &, .peer:focus-visible ~ &" },
+        groupFocusVisible: {
+            selector: "&[role=group]:focus-visible[data-group]:focus-visible.group:focus-visible",
+        },
+        peerFocusVisible: {
+            selector: "[data-peer]:focus-visible ~ &, .peer:focus-visible ~ &",
+        },
         groupActive: {
             selector:
                 "[role=group]:active &,[role=group][data-active] &,[data-group]:active &,[data-group][data-active] &,.group:active &,.group[data-active] &",
@@ -211,8 +218,12 @@ export const interactiveProperties = defineProperties({
         groupFocusWithin: {
             selector: "&[role=group]:focus-within &, [data-group]:focus-within &, .group:focus-within &",
         },
-        peerFocusWithin: { selector: "&[data-peer]:focus-within ~ &,.peer:focus-within ~ &" },
-        peerPlaceholderShown: { selector: "&[data-peer]::placeholder-shown ~ &,.peer::placeholder-shown ~ &" },
+        peerFocusWithin: {
+            selector: "&[data-peer]:focus-within ~ &,.peer:focus-within ~ &",
+        },
+        peerPlaceholderShown: {
+            selector: "&[data-peer]::placeholder-shown ~ &,.peer::placeholder-shown ~ &",
+        },
         _placeholder: { selector: "&::placeholder" },
         _placeholderShown: { selector: "&::placeholder-shown" },
         _fullScreen: { selector: "&:fullscreen" },
@@ -226,11 +237,10 @@ export const interactiveProperties = defineProperties({
     },
     defaultCondition: "default",
     properties: {
-        boxShadow: theme.shadows,
-        textShadow: theme.shadows,
+        boxShadow: vars.shadows,
+        textShadow: vars.shadows,
         opacity: {
             "0": "0",
-            disabled: "var(--vtmn-opacity_disabled-state)",
             "0.4": "0.6",
             "0.6": "0.6",
             "1": "1",
@@ -239,15 +249,15 @@ export const interactiveProperties = defineProperties({
         pointerEvents: ["inherit", "all", "none"],
         userSelect: ["inherit", "none", "text", "all"],
         //
-        fontFamily: theme.typography.fonts,
-        fontSize: theme.typography.fontSizes,
-        fontWeight: theme.typography.fontWeights,
-        lineHeight: theme.typography.lineHeights,
-        letterSpacing: theme.typography.letterSpacings,
+        fontFamily: vars.typography.fonts,
+        fontSize: vars.typography.fontSizes,
+        fontWeight: vars.typography.fontWeights,
+        lineHeight: vars.typography.lineHeights,
+        letterSpacing: vars.typography.letterSpacings,
         textAlign: ["inherit", "left", "center", "right"],
         fontStyle: ["normal", "italic"],
         textTransform: ["inherit", "uppercase", "lowercase", "capitalize", "none"],
-        textDecoration: ["none", "underline", "line-through", "underline"],
+        textDecoration: ["none", "underline", "line-through"],
         //
         position: ["absolute", "relative", "fixed", "sticky"],
         display: ["none", "flex", "inline-flex", "block", "inline"],
@@ -279,6 +289,8 @@ export const interactiveProperties = defineProperties({
         visibility: ["unset", "hidden", "visible"],
         verticalAlign: ["baseline", "top", "middle", "bottom", "text-top", "text-bottom"],
         // spacing props
+        // TODO negative values
+        // https://github.com/vanilla-extract-css/vanilla-extract/blob/master/site/src/system/styles/sprinkles.css.ts
         gap: space,
         rowGap: space,
         columnGap: space,
@@ -296,24 +308,37 @@ export const interactiveProperties = defineProperties({
         marginRight: space,
         marginInlineStart: space,
         marginInlineEnd: space,
-        border: theme.borders,
-        borderWidth: theme.borders,
-        borderTop: theme.borders,
-        borderBottom: theme.borders,
-        borderLeft: theme.borders,
-        borderRight: theme.borders,
-        borderRadius: theme.radii,
-        outline: theme.borders,
+        border: vars.borders,
+        borderWidth: vars.borders,
+        borderTopWidth: vars.borders,
+        borderRightWidth: vars.borders,
+        borderBottomWidth: vars.borders,
+        borderLeftWidth: vars.borders,
+        borderTop: vars.borders,
+        borderBottom: vars.borders,
+        borderLeft: vars.borders,
+        borderRight: vars.borders,
+        borderRadius: vars.radii,
+        borderTopLeftRadius: vars.radii,
+        borderTopRightRadius: vars.radii,
+        borderBottomLeftRadius: vars.radii,
+        borderBottomRightRadius: vars.radii,
+        outline: vars.borders,
         // colors props
-        color: flatColors,
-        background: flatColors,
-        backgroundColor: flatColors,
-        borderColor: flatColors,
-        borderTopColor: flatColors,
-        borderBottomColor: flatColors,
-        borderLeftColor: flatColors,
-        borderRightColor: flatColors,
-        outlineColor: flatColors,
+        color: colorPalette,
+        background: colorPalette,
+        backgroundColor: colorPalette,
+        borderColor: colorPalette,
+        borderTopColor: colorPalette,
+        borderBottomColor: colorPalette,
+        borderLeftColor: colorPalette,
+        borderRightColor: colorPalette,
+        outlineColor: colorPalette,
+        fill: colorPalette,
+        stroke: colorPalette,
+        // transform props
+        transform: ["none"],
+        transformOrigin: ["center"],
     },
     shorthands: {
         // base props

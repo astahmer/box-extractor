@@ -243,7 +243,7 @@ const colors = {
     },
 };
 
-export const flatColorsMap = flatMapColorsWithVariants(colors);
+export const colorPalette = flatMapColorsWithVariants(colors);
 
 type ChakraThemeColors = typeof colors;
 

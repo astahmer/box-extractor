@@ -103,7 +103,9 @@ export const mutateContextByKeepingUsedRulesOnly = ({
         const usedRules = css.filter((rule) => {
             if (rule.type !== "local") return true;
 
-            const isSelectorUsed = usedClassNameList.has(rule.selector) || !sprinklesClassNames.has(rule.selector);
+            const isClassNameUsed = usedClassNameList.has(rule.selector);
+            const isSprinklesClassName = sprinklesClassNames.has(rule.selector);
+            const isSelectorUsed = isClassNameUsed || !isSprinklesClassName;
 
             if (!isSelectorUsed) {
                 context.localClassNames.delete(rule.selector);
@@ -167,7 +169,6 @@ export function getCompiledSprinklePropertyByDebugIdPairMap(evalResult: Record<s
 
             if ("values" in compiledSprinkle) {
                 Object.entries(compiledSprinkle.values).forEach(([valueName, value]) => {
-                    // console.log({ value, propName, valueName });
                     sprinklesClassNames.add(value.defaultClass);
 
                     if (value.conditions) {

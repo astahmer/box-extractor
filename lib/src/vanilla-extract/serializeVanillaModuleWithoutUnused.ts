@@ -35,8 +35,8 @@ export function serializeVanillaModuleWithoutUnused(
     });
 
     const outputCode = [...cssImports, ...Array.from(recipeImports), ...moduleExports];
-    // console.log(outputCode);
 
+    // console.dir({ usedValuesMap, outputCode }, { depth: null });
     return outputCode.join("\n");
 }
 
