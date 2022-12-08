@@ -17,7 +17,8 @@ const base = defineProperties({
         },
         backgroundColor: {
             main: "green",
-            secondary: "brown",
+            secondary: "blue",
+            third: "pink",
         },
     },
     shorthands: {
@@ -32,32 +33,32 @@ const makeResponsive = (min: number, max: number) => ({
         .join(" and "),
 });
 
-const responsive = defineProperties({
-    conditions: {
-        default: {},
-        mobile: makeResponsive(0, 767),
-        tablet: makeResponsive(768, 1023),
-        desktop: makeResponsive(1024, 1439),
-    },
-    defaultCondition: "mobile",
-    properties: {
-        display: ["block", "inline-block", "flex", "inline-flex"],
-        position: ["relative", "absolute"],
-        color: {
-            // brand: vars.color.brand,
-            brand: "red",
-            other: "blue",
-        },
-        backgroundColor: {
-            main: "green",
-            secondary: "brown",
-        },
-    },
-    shorthands: {
-        p: ["position"],
-        d: ["display"],
-    },
-});
+// const responsive = defineProperties({
+//     conditions: {
+//         default: {},
+//         mobile: makeResponsive(0, 767),
+//         tablet: makeResponsive(768, 1023),
+//         desktop: makeResponsive(1024, 1439),
+//     },
+//     defaultCondition: "mobile",
+//     properties: {
+//         display: ["block", "inline-block", "flex", "inline-flex"],
+//         position: ["relative", "absolute"],
+//         color: {
+//             // brand: vars.color.brand,
+//             brand: "red",
+//             other: "blue",
+//         },
+//         backgroundColor: {
+//             main: "green",
+//             secondary: "brown",
+//         },
+//     },
+//     shorthands: {
+//         p: ["position"],
+//         d: ["display"],
+//     },
+// });
 
-export const minimalSprinkles = createSprinkles(base, responsive);
+export const minimalSprinkles = createSprinkles(base);
 export type MinimalSprinkles = Parameters<typeof minimalSprinkles>[0];
