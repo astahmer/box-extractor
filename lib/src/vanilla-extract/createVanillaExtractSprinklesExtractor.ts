@@ -53,6 +53,7 @@ export const createVanillaExtractSprinklesExtractor = ({
 
     const extractCacheById = new Map<string, { hashed: string; serialized: OnExtractedArgs["extracted"] }>();
     const compiledByFilePath = new Map<string, ReturnType<typeof getCompiledSprinklePropertyByDebugIdPairMap>>();
+    const usedDebugIdList = new Set<string>();
 
     return [
         createViteBoxRefUsageFinder({ ...options, components, functions }),
@@ -90,6 +91,26 @@ export const createVanillaExtractSprinklesExtractor = ({
                     return;
                 }
 
+                const sizeBefore = usedDebugIdList.size;
+                args.used.forEach((usedStyles, name) => {
+                    usedStyles.properties.forEach((values, propName) =>
+                        values.forEach((value) => usedDebugIdList.add(`${name}_${propName}_${value}`))
+                    );
+                    usedStyles.conditionalProperties.forEach((conditions, conditionName) =>
+                        conditions.forEach((values, propName) =>
+                            values.forEach((value) =>
+                                usedDebugIdList.add(`${name}_${conditionName}_${propName}_${value}`)
+                            )
+                        )
+                    );
+                });
+
+                // this file (args.id) changed but we already extracted those styles before, so we don't need to invalidate
+                if (sizeBefore === usedDebugIdList.size) {
+                    console.log("nothing new, already extracted those styles previously", { isSsr: args.isSsr });
+                    return;
+                }
+
                 const moduleGraph = server.moduleGraph;
                 moduleGraph.invalidateAll(); // TODO rm
 
@@ -103,8 +124,10 @@ export const createVanillaExtractSprinklesExtractor = ({
                         console.log("invalidate css");
                         moduleGraph.safeModulesPath.forEach((mod) => {
                             // TODO only invalidate css.ts impacted by the extract change
-                            // AND if the args.used has changed overally
-                            // -> (no need to invalidate if we already include it ? since we're always adding styles in dev)
+                            // ex: we now use `<Box color="red.100" />` in `src/home.tsx`
+                            // we need to check where does `red.100` come from (Box)
+                            // and then where does Box gets its styles from (src/theme/sprinkles.css.ts)
+                            // and then invalidate src/theme/sprinkles.css.ts (and not src/theme/vars.css.ts or src/theme/color-modes.css.ts)
                             if (mod.includes(".css.ts")) {
                                 const module = moduleGraph.getModuleById(getAbsoluteFileId(mod));
                                 if (module) {
