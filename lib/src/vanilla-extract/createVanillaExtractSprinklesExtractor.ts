@@ -1,7 +1,7 @@
 import path from "node:path";
 
 import type { AdapterContext } from "@vanilla-extract/integration";
-import { parseFileScope, hash, defaultSerializeVanillaModule } from "@vanilla-extract/integration";
+import { hash, defaultSerializeVanillaModule } from "@vanilla-extract/integration";
 import { vanillaExtractPlugin, VanillaExtractPluginOptions } from "@vanilla-extract/vite-plugin";
 import type { Plugin, ResolvedConfig, ViteDevServer } from "vite";
 import { normalizePath } from "vite";
@@ -17,10 +17,7 @@ import {
 import { serializeVanillaModuleWithoutUnused } from "./serializeVanillaModuleWithoutUnused";
 import { createViteBoxRefUsageFinder } from "../createViteBoxRefUsageFinder";
 import { hash as objectHash } from "pastable";
-import diff from "microdiff";
-
-const virtualExtCss = ".vanilla.css";
-const virtualExtJs = ".vanilla.js";
+// import diff from "microdiff";
 
 type OnAfterEvaluateMutation = {
     filePath: string;
@@ -54,6 +51,7 @@ export const createVanillaExtractSprinklesExtractor = ({
     const extractCacheById = new Map<string, { hashed: string; serialized: OnExtractedArgs["extracted"] }>();
     const compiledByFilePath = new Map<string, ReturnType<typeof getCompiledSprinklePropertyByDebugIdPairMap>>();
     const usedDebugIdList = new Set<string>();
+    const sourceByPath = new Map<string, string>();
 
     return [
         createViteBoxRefUsageFinder({ ...options, components, functions }),
@@ -149,23 +147,27 @@ export const createVanillaExtractSprinklesExtractor = ({
             serializeVanillaModule: (cssImports, exports, context, filePath) => {
                 const compiled = compiledByFilePath.get(filePath);
                 // we only care about .css.ts with sprinkles
-                if (!compiled || compiled.sprinkleConfigs.size === 0)
+                if (!compiled || compiled.sprinkleConfigs.size === 0) {
                     return defaultSerializeVanillaModule(cssImports, exports, context);
+                }
 
-                console.dir({ serializeVanillaModule: true, filePath }, { depth: null });
+                // console.dir({ serializeVanillaModule: true, filePath }, { depth: null });
                 return serializeVanillaModuleWithoutUnused(cssImports, exports, context, usedComponents, compiled);
             },
             ...vanillaExtractOptions,
-            onEvaluated: (context, evalResult, filePath) => {
-                vanillaExtractOptions?.onEvaluated?.(context, evalResult, filePath);
-                // console.log({ onEvaluated: true, filePath });
-                // console.log({ filePath, fileScope: Array.from(context.cssByFileScope.keys()) });
-                // TODO : map prop+value -> className -> context.cssByFileScope[x].rule.selector -> context.cssByFileScope[fileScope] -> fileScope
-                // fileScope = css.ts used by an arg of createSprinkles (result of defineProperties)
-                // filePath = path direct to a createSprinkles usage
-                // so we can invalidate (using server.reloadModule, in the onExtracted callback) precisely the css.ts files impacting the classNames used
+            onEvaluated: (args) => {
+                const { source, context, evalResult, filePath } = args;
+                vanillaExtractOptions?.onEvaluated?.(args);
 
-                const compiled = getCompiledSprinklePropertyByDebugIdPairMap(evalResult);
+                // re-use the same compiled object if the file didn't change
+                if (source !== sourceByPath.get(filePath)) {
+                    compiledByFilePath.delete(filePath);
+                }
+
+                sourceByPath.set(filePath, source);
+
+                const compiled =
+                    compiledByFilePath.get(filePath) ?? getCompiledSprinklePropertyByDebugIdPairMap(evalResult);
                 if (compiled.sprinkleConfigs.size === 0) return;
 
                 compiledByFilePath.set(filePath, compiled);
@@ -203,39 +205,3 @@ export const createVanillaExtractSprinklesExtractor = ({
         }) as any,
     ];
 };
-
-const serializeValue = <T = unknown>(
-    value: T
-): T extends Map<infer Key, infer Value>
-    ? Key extends string | number | symbol
-        ? Record<Key, Value>
-        : never
-    : T extends Set<infer Item>
-    ? Item[]
-    : T => {
-    if (value == undefined) {
-        // @ts-expect-error
-        return value;
-    }
-
-    if (value instanceof Set) {
-        return Array.from(value).map((item) => serializeValue(item)) as any;
-    }
-
-    if (value instanceof Map) {
-        return Object.fromEntries(Array.from(value.entries()).map(([key, value]) => [key, serializeValue(value)]));
-    }
-
-    if (Array.isArray(value)) {
-        return value.map((item) => serializeValue(item)) as any;
-    }
-
-    if (typeof value === "object" && value !== null) {
-        return Object.fromEntries(Object.entries(value).map(([key, value]) => [key, serializeValue(value)])) as any;
-    }
-
-    // @ts-expect-error
-    return value;
-};
-
-const styleUpdateEvent = (fileId: string) => `vanilla-extract-style-update:${fileId}`;
