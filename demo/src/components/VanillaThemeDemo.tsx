@@ -1,5 +1,5 @@
-import { themeSprinkles } from "../theme/sprinkles.css";
+import { DessertBox } from "../theme/DessertBox";
 
 export const VanillaThemeDemo = () => {
-    return <div className={themeSprinkles({ top: "0", left: "0", backgroundColor: "orange.300" })}>top.0 / left.0</div>;
+    return <DessertBox color="blue.100">just a blue box</DessertBox>;
 };
