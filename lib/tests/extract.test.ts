@@ -1549,7 +1549,7 @@ it("extract JsxAttribute > JsxExpression > ConditionalExpression > StringLiteral
     );
 });
 
-it.only("extract JsxAttribute > JsxExpression > reversed", () => {
+it("extract JsxAttribute > JsxExpression > reversed", () => {
     expect(
         extractFromCode(`
             <ColorBox mobile={{ color: "sky.100", tablet: "sky.200", desktop: "sky.300" }} />
@@ -1572,3 +1572,7 @@ it.only("extract JsxAttribute > JsxExpression > reversed", () => {
       ]
     `);
 });
+
+// TODO valueOrNullable ?? fallback
+// TODO valueOrNullable ?? fallback ?? fallback
+// TODO valueOrFalsy ?? fallback
