@@ -5,7 +5,7 @@ import { defineConfig } from "vite";
 import {
     createVanillaExtractSprinklesExtractor,
     // } from "vite-box-extractor";
-} from "../lib";
+} from "../packages/box-extractor";
 
 // https://vitejs.dev/config/
 export default defineConfig((env) => ({
