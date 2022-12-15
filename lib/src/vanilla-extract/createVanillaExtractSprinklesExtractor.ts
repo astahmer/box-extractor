@@ -94,13 +94,15 @@ export const createVanillaExtractSprinklesExtractor = ({
                     usedStyles.properties.forEach((values, propName) =>
                         values.forEach((value) => usedDebugIdList.add(`${name}_${propName}_${value}`))
                     );
-                    usedStyles.conditionalProperties.forEach((conditions, conditionName) =>
-                        conditions.forEach((values, propName) =>
+                    usedStyles.conditionalProperties.forEach((properties, propNameOrShorthand) => {
+                        const propNameOrConditionName =
+                            propNameOrShorthand[0] === "_" ? propNameOrShorthand.slice(1) : propNameOrShorthand;
+                        properties.forEach((values, condNameOrPropName) =>
                             values.forEach((value) =>
-                                usedDebugIdList.add(`${name}_${conditionName}_${propName}_${value}`)
+                                usedDebugIdList.add(`${name}_${propNameOrConditionName}_${condNameOrPropName}_${value}`)
                             )
-                        )
-                    );
+                        );
+                    });
                 });
 
                 // this file (args.id) changed but we already extracted those styles before, so we don't need to invalidate
@@ -110,16 +112,18 @@ export const createVanillaExtractSprinklesExtractor = ({
                 }
 
                 const moduleGraph = server.moduleGraph;
-                moduleGraph.invalidateAll(); // TODO rm
 
                 if (hasCache) {
                     // const extractDiff = diff(cached!.serialized, serialized);
                     console.log("has cache & different", { isSsr: args.isSsr });
 
                     if (args.isSsr) {
+                        moduleGraph.invalidateAll(); // TODO rm
                         server.ws.send({ type: "full-reload", path: args.id });
                     } else {
-                        console.log("invalidate css");
+                        const invalidated = new Set<string>();
+                        const timestamp = Date.now();
+
                         moduleGraph.safeModulesPath.forEach((mod) => {
                             // TODO only invalidate css.ts impacted by the extract change
                             // ex: we now use `<Box color="red.100" />` in `src/home.tsx`
@@ -129,9 +133,19 @@ export const createVanillaExtractSprinklesExtractor = ({
                             if (mod.includes(".css.ts")) {
                                 const module = moduleGraph.getModuleById(getAbsoluteFileId(mod));
                                 if (module) {
-                                    console.log(module.id);
+                                    invalidated.add(module.id!);
+                                    // console.log(module.id);
                                     moduleGraph.invalidateModule(module);
-                                    module.lastHMRTimestamp = (module as any).lastInvalidationTimestamp || Date.now();
+                                    module.lastHMRTimestamp = timestamp;
+
+                                    module.importers.forEach((mod) => {
+                                        if (mod.id && !invalidated.has(mod.id)) {
+                                            invalidated.add(mod.id);
+
+                                            moduleGraph.invalidateModule(mod);
+                                            mod.lastHMRTimestamp = timestamp;
+                                        }
+                                    });
                                 }
                             }
                         });

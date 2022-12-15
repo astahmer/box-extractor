@@ -74,21 +74,54 @@ function mergeUsedValues(
             }
         });
 
-        style.conditionalProperties.forEach((values, propNameOrShorthand) => {
-            const registerConditionalPropName = (propName: string) => {
-                if (!mergedMap.has(propName)) {
-                    mergedMap.set(propName, {
-                        properties: new Set(),
-                        conditionalProperties: new Map(values),
-                        allProperties: new Set(Array.from(values.values()).flatMap((set) => Array.from(set))),
+        style.conditionalProperties.forEach((properties, conditionalPropOrShorthand) => {
+            const registerConditionalPropName = (propNameOrShorthand: string) => {
+                const isReversedConditionProp = propNameOrShorthand[0] === "_" && propNameOrShorthand[1] !== "_";
+                if (!isReversedConditionProp) {
+                    if (!mergedMap.has(propNameOrShorthand)) {
+                        mergedMap.set(propNameOrShorthand, {
+                            properties: new Set(),
+                            conditionalProperties: new Map(properties),
+                            allProperties: new Set(Array.from(properties.values()).flatMap((set) => Array.from(set))),
+                        });
+                        return;
+                    }
+
+                    const currentConditionalValues = mergedMap.get(propNameOrShorthand)!.conditionalProperties;
+                    const allPropValues = mergedMap.get(propNameOrShorthand)!.allProperties;
+
+                    properties.forEach((values, conditionName) => {
+                        if (!currentConditionalValues.has(conditionName)) {
+                            currentConditionalValues.set(conditionName, new Set(values));
+                            values.forEach((value) => allPropValues.add(value));
+                            return;
+                        }
+
+                        const currentConditionValues = currentConditionalValues.get(conditionName)!;
+                        values.forEach((value) => {
+                            currentConditionValues.add(value);
+                            allPropValues.add(value);
+                        });
                     });
+
                     return;
                 }
 
-                const currentConditionalValues = mergedMap.get(propName)!.conditionalProperties;
-                const allPropValues = mergedMap.get(propName)!.allProperties;
+                const conditionName = propNameOrShorthand.slice(1);
+                // console.log({ propName, propNameOrShorthand, properties });
+                properties.forEach((values, propName) => {
+                    if (!mergedMap.has(propName)) {
+                        mergedMap.set(propName, {
+                            properties: new Set(),
+                            conditionalProperties: new Map([[conditionName, new Set(values)]]),
+                            allProperties: new Set(values),
+                        });
+                        return;
+                    }
 
-                values.forEach((values, conditionName) => {
+                    const currentConditionalValues = mergedMap.get(propName)!.conditionalProperties;
+                    const allPropValues = mergedMap.get(propName)!.allProperties;
+
                     if (!currentConditionalValues.has(conditionName)) {
                         currentConditionalValues.set(conditionName, new Set(values));
                         values.forEach((value) => allPropValues.add(value));
@@ -103,12 +136,14 @@ function mergeUsedValues(
                 });
             };
 
-            registerConditionalPropName(propNameOrShorthand);
-            if (shorthandsMap.has(propNameOrShorthand)) {
-                (shorthandsMap.get(propNameOrShorthand) ?? []).forEach(registerConditionalPropName);
+            registerConditionalPropName(conditionalPropOrShorthand);
+            if (shorthandsMap.has(conditionalPropOrShorthand)) {
+                (shorthandsMap.get(conditionalPropOrShorthand) ?? []).forEach(registerConditionalPropName);
             }
         });
     });
+
+    // console.dir(mergedMap, { depth: null });
 
     return mergedMap;
 }
@@ -149,18 +184,29 @@ function stringifyExports(
                                                 const updated = {
                                                     defaultClass: propValueMap.defaultClass,
                                                 } as typeof propValueMap;
-                                                if (
-                                                    propValueMap.conditions &&
-                                                    propUsedValues.conditionalProperties.size > 0
-                                                ) {
-                                                    const usedConditionsValues = Object.entries(
-                                                        propValueMap.conditions
-                                                    ).filter(
-                                                        ([conditionName]) =>
-                                                            propUsedValues.conditionalProperties.has(conditionName) &&
-                                                            propUsedValues.conditionalProperties
-                                                                .get(conditionName)!
-                                                                .has(valueName)
+
+                                                const conditions = propValueMap.conditions;
+                                                if (conditions && propUsedValues.conditionalProperties.size > 0) {
+                                                    const usedConditionsValues = Object.entries(conditions).filter(
+                                                        function ([conditionName]) {
+                                                            const isPropUsedInDefaultCondition =
+                                                                (propUsedValues.properties.has(valueName) &&
+                                                                    propValueMap.defaultClass ===
+                                                                        conditions[conditionName]) ??
+                                                                false;
+
+                                                            const isPropUsedByCondition =
+                                                                propUsedValues.conditionalProperties.has(
+                                                                    conditionName
+                                                                ) &&
+                                                                propUsedValues.conditionalProperties
+                                                                    .get(conditionName)!
+                                                                    .has(valueName);
+
+                                                            return (
+                                                                isPropUsedInDefaultCondition || isPropUsedByCondition
+                                                            );
+                                                        }
                                                     );
 
                                                     if (usedConditionsValues.length > 0) {
@@ -177,7 +223,7 @@ function stringifyExports(
                 );
 
                 if (!isUsingAnyCondition) {
-                    value.conditions = undefined;
+                    // value.conditions = undefined;
                 }
 
                 // console.dir({ usedStyles, value });

@@ -1,6 +1,7 @@
-import { createSprinkles } from "@vanilla-extract/sprinkles";
+// import { createSprinkles } from "@vanilla-extract/sprinkles";
 
-import { interactiveProperties, responsiveProperties, staticProperties } from "./base.css";
+import { interactiveProperties, staticProperties } from "./base.css";
+import { createBoxSprinkles } from "./createBoxSprinkles";
 
-export const themeSprinkles = createSprinkles(staticProperties, responsiveProperties, interactiveProperties);
+export const themeSprinkles = createBoxSprinkles(staticProperties, interactiveProperties);
 export type ThemeSprinkles = Parameters<typeof themeSprinkles>[0];
