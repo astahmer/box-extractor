@@ -6,8 +6,13 @@ import { vanillaExtractPlugin, VanillaExtractPluginOptions } from "@vanilla-extr
 import type { Plugin, ResolvedConfig, ViteDevServer } from "vite";
 import { normalizePath } from "vite";
 
-import { createViteBoxExtractor, CreateViteBoxExtractorOptions, OnExtractedArgs } from "../createViteBoxExtractor";
-import type { UsedComponentsMap } from "../extractor/types";
+import {
+    createViteBoxExtractor,
+    createViteBoxRefUsageFinder,
+    CreateViteBoxExtractorOptions,
+    OnExtractedArgs,
+} from "@box-extractor/core";
+import type { UsedComponentsMap } from "@box-extractor/core";
 import {
     cloneAdapterContext,
     getCompiledSprinklePropertyByDebugIdPairMap,
@@ -15,7 +20,6 @@ import {
     mutateContextByKeepingUsedRulesOnly,
 } from "./onEvaluated";
 import { serializeVanillaModuleWithoutUnused } from "./serializeVanillaModuleWithoutUnused";
-import { createViteBoxRefUsageFinder } from "../createViteBoxRefUsageFinder";
 import { hash as objectHash } from "pastable";
 // import diff from "microdiff";
 
@@ -29,7 +33,7 @@ type OnAfterEvaluateMutation = {
     usedComponents: UsedComponentsMap;
 };
 
-export const createVanillaExtractSprinklesExtractor = ({
+export const createViteVanillaExtractSprinklesExtractor = ({
     components,
     functions = {},
     onExtracted,

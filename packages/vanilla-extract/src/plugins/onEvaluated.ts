@@ -1,7 +1,7 @@
 import type { AdapterContext } from "@vanilla-extract/integration";
 import { castAsArray, isDefined, isObject } from "pastable";
 
-import type { UsedComponentsMap } from "../extractor/types";
+import type { UsedComponentsMap } from "@box-extractor/core";
 import { getSprinklesMap } from "./getSprinklesMap";
 
 type Conditions = {

@@ -18,7 +18,7 @@
     },
     "dependencies": {
         "@box-extractor/core": "workspace:*",
-        "@box-extractor/vanilla-extract": "workspace:^0.0.1",
+        "@box-extractor/vanilla-extract": "workspace:*",
         "@dessert-box/react": "^0.4.0",
         "@vanilla-extract/css": "^1.9.2",
         "@vanilla-extract/sprinkles": "^1.5.0",
