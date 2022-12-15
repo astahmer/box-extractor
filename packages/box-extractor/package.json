@@ -1,25 +1,21 @@
 {
-    "name": "vite-box-extractor",
+    "name": "@box-extractor/core",
     "version": "0.0.1",
     "repository": {
         "type": "git",
         "url": "https://github.com/astahmer/vite-box-extractor.git"
     },
     "author": "Alexandre Stahmer <alexandre.stahmer@gmail.com>",
-    "main": "dist/vite-box-extractor.cjs.js",
-    "module": "dist/vite-box-extractor.esm.js",
+    "main": "dist/box-extractor-core.cjs.js",
+    "module": "dist/box-extractor-core.esm.js",
     "scripts": {
-        "dev": "preconstruct watch",
-        "build": "preconstruct build",
-        "postinstall": "preconstruct dev",
         "test": "vitest",
         "lint:ts": "tsc --noEmit",
-        "lint": "eslint -c .eslintrc.build.js './src/**/*.ts' --cache --format=pretty",
-        "lint:fix": "eslint -c .eslintrc.build.js './src/**/*.ts' --cache --format=pretty --fix"
+        "lint": "../../node_modules/.bin/eslint './src/**/*.ts' --cache --format=pretty",
+        "lint:fix": "../../node_modules/.bin/eslint './src/**/*.ts' --cache --format=pretty --fix"
     },
     "license": "ISC",
     "dependencies": {
-        "@babel/core": "^7.20.2",
         "@phenomnomnominal/tsquery": "^5.0.0",
         "@vanilla-extract/integration": "link:/Users/astahmer/dev/open-source/vanilla-extract/packages/integration",
         "@vanilla-extract/vite-plugin": "link:/Users/astahmer/dev/open-source/vanilla-extract/packages/vite-plugin",
@@ -35,24 +31,14 @@
         "vite": "^3.2.3"
     },
     "devDependencies": {
-        "@astahmer/eslint-config-ts": "^0.1.5",
-        "@babel/preset-env": "^7.20.2",
-        "@babel/preset-typescript": "^7.18.6",
-        "@preconstruct/cli": "^2.2.2",
-        "@types/prettier": "^2.7.1",
         "@types/react": "^18.0.15",
         "@types/react-dom": "^18.0.6",
-        "@typescript-eslint/eslint-plugin": "^5.42.1",
         "@vanilla-extract/sprinkles": "link:/Users/astahmer/dev/open-source/vanilla-extract/packages/sprinkles",
-        "eslint": "^8.27.0",
-        "eslint-formatter-pretty": "^4.1.0",
         "prettier": "^2.7.1",
         "ts-toolbelt": "^9.6.0",
-        "type-fest": "^3.2.0",
         "typescript": "^4.7.4",
-        "vite": "^3.2.3",
-        "vite-plugin-inspect": "^0.7.7",
-        "vitest": "^0.25.2"
+        "vite": "^3.0.4",
+        "vitest": "^0.25.8"
     },
     "preconstruct": {
         "entrypoints": [
@@ -64,7 +50,18 @@
         "dist",
         "../README.md"
     ],
-    "keywords": [],
+    "keywords": [
+        "box",
+        "extractor",
+        "ast",
+        "static",
+        "prop",
+        "jsx",
+        "tsx",
+        "typescript",
+        "vite",
+        "vanilla-extract"
+    ],
     "sideEffects": false,
     "publishConfig": {
         "access": "public"
