@@ -1,7 +1,7 @@
 import type { PropsWithChildren } from "react";
-import type { AnySprinklesFn, SprinkleConditionsNames } from "../theme/createBoxSprinklesInternal";
+import type { AnySprinklesFn, SprinkleConditionsNames } from "@box-extractor/vanilla-extract";
+import { getBoxProps } from "@box-extractor/vanilla-extract";
 import { ThemeSprinkles, themeSprinkles } from "../theme/sprinkles.css";
-import { getBoxProps } from "./getBoxProps";
 
 const defaultElement = "div";
 

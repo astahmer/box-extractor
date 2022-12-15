@@ -9,7 +9,7 @@ export function createBoxSprinkles<Configs extends readonly SprinklesProperties[
     const sprinklesFn: typeof original = (props) => original(props);
 
     return addFunctionSerializer(sprinklesFn, {
-        importPath: "./createRuntimeBoxSprinkles",
+        importPath: "@box-extractor/vanilla-extract/createRuntimeBoxSprinkles",
         importName: "createRuntimeBoxSprinkles",
         args: definePropsFn,
     });
