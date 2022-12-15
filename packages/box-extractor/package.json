@@ -36,6 +36,7 @@
         "@vanilla-extract/sprinkles": "link:/Users/astahmer/dev/open-source/vanilla-extract/packages/sprinkles",
         "prettier": "^2.7.1",
         "ts-toolbelt": "^9.6.0",
+        "typescript": "^4.7.4",
         "vite": "^3.0.4",
         "vitest": "^0.25.8"
     },
