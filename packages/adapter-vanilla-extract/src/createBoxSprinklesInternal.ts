@@ -28,8 +28,6 @@ export type Conditions = {
     conditions: undefined | ConditionItem;
 };
 
-// type InferConditions<T> = T extends { conditions: infer C } ? C : never;
-// type conditions = InferConditions<typeof responsiveProperties>;
 type IsNever<T> = [T] extends [never] ? true : false;
 
 type SprinklesConditions<T extends readonly unknown[], Acc extends readonly unknown[] = []> = T extends [

@@ -1,0 +1,4 @@
+{
+    "main": "dist/box-extractor-vanilla-extract-createRuntimeBoxSprinkles.cjs.js",
+    "module": "dist/box-extractor-vanilla-extract-createRuntimeBoxSprinkles.esm.js"
+}

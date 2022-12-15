@@ -1,6 +1,6 @@
 // adapted from https://github.com/TheMightyPenguin/dessert-box/blob/e39aa98c535f6ef086f7d32c0a03bfbf1be75b86/packages/core/src/index.tsx
 
-import type { AnySprinklesFn } from "../theme/createBoxSprinklesInternal";
+import type { AnySprinklesFn } from "./createBoxSprinklesInternal";
 
 export function composeClassNames(...classNames: Array<string | undefined>) {
     const classes = classNames
@@ -20,7 +20,6 @@ export function getBoxProps<SprinklesFn extends AnySprinklesFn>(
 ) {
     const sprinklesProps: Record<string, unknown> = {};
     const sprinklesEscapeHatchProps: Record<string, unknown> = {};
-    // const sprinkleReverseConditionProps: Record<string, unknown> = {};
     const otherProps: Record<string, unknown> = {};
 
     let hasSprinklesProps = false;
