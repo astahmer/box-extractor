@@ -2,6 +2,7 @@ import { defineProperties } from "@vanilla-extract/sprinkles";
 import { colorPalette } from "./color-palette";
 import { vars } from "./vars";
 
+// TODO theme vars ?
 const absPos = ["auto", "0", "-50%", "0%", "50%", "100%"] as const;
 const size = ["auto", "0", "0%", "25%", "50%", "75%", "100%", "100vh", "100vw"] as const;
 const flexAlign = ["stretch", "flex-start", "center", "flex-end", "space-around", "space-between"] as const;
@@ -34,98 +35,12 @@ const twBreakpointsToAppBreakpoints = (breakpointsMap: TwResponsiveBreakpointsMa
     ) as Record<TwResponsiveBreakpoints, Condition>;
 
 const overflow = ["auto", "hidden", "scroll", "visible"] as const;
-export const responsiveProperties = defineProperties({
-    conditions: twBreakpointsToAppBreakpoints(screens),
-    defaultCondition: "desktop",
-    // responsiveArray: ["mobile", "tablet", "small-desktop", "medium-desktop"],
-    properties: {
-        fontFamily: vars.typography.fonts,
-        fontSize: vars.typography.fontSizes,
-        fontWeight: vars.typography.fontWeights,
-        lineHeight: vars.typography.lineHeights,
-        letterSpacing: vars.typography.letterSpacings,
-        textAlign: ["inherit", "left", "center", "right"],
-        fontStyle: ["normal", "italic"],
-        textTransform: ["inherit", "uppercase", "lowercase", "capitalize", "none"],
-        textDecoration: ["none", "underline", "line-through"],
-        //
-        position: ["absolute", "relative", "fixed", "sticky"],
-        display: ["none", "flex", "inline-flex", "block", "inline"],
-        flexDirection: ["row", "column", "row-reverse"],
-        flexShrink: [0, 1] as const,
-        flexGrow: [0, 1] as const,
-        flex: [0, 1] as const,
-        flexWrap: ["wrap", "nowrap", "revert", "wrap-reverse"],
-        justifyContent: flexAlign,
-        justifySelf: flexAlign,
-        alignItems: flexAlign,
-        alignSelf: flexAlign,
-        top: absPos,
-        bottom: absPos,
-        left: absPos,
-        right: absPos,
-        inset: absPos,
-        //
-        width: size,
-        minWidth: size,
-        maxWidth: size,
-        height: size,
-        minHeight: size,
-        maxHeight: size,
-        whiteSpace: ["nowrap", "unset"],
-        textOverflow: ["ellipsis", "clip", "unset"],
-        overflow: overflow,
-        overflowX: overflow,
-        overflowY: overflow,
-        visibility: ["unset", "hidden", "visible"],
-        verticalAlign: ["baseline", "top", "middle", "bottom", "text-top", "text-bottom"],
-    },
-    // Inspired from https://chakra-ui.com/docs/features/style-props
-    shorthands: {
-        d: ["display"],
-        pos: ["position"],
-        t: ["top"],
-        b: ["bottom"],
-        l: ["left"],
-        r: ["right"],
-        boxSize: ["width", "height"],
-        w: ["width"],
-        h: ["height"],
-        minW: ["minWidth"],
-        maxW: ["maxWidth"],
-        minH: ["minHeight"],
-        maxH: ["maxHeight"],
-        placeItems: ["justifyContent", "alignItems"],
-        ta: ["textAlign"],
-        tt: ["textTransform"],
-        fs: ["fontSize"],
-        fw: ["fontWeight"],
-    },
-});
-
-export const staticProperties = defineProperties({
-    properties: {
-        zIndex: vars.zIndices,
-        transition: {
-            none: "none",
-            slow: "all .3s ease, opacity .3s ease",
-            fast: "all .15s ease, opacity .15s ease",
-        },
-        backgroundSize: ["cover", "contain"],
-        backgroundRepeat: ["no-repeat", "repeat"],
-        backgroundPosition: ["center", "top", "bottom", "left", "right"],
-        backgroundAttachment: ["fixed", "scroll"],
-        wordBreak: ["break-all", "break-word", "normal"],
-        objectFit: ["cover", "contain"],
-        objectPosition: ["center", "top", "bottom", "left", "right"],
-    },
-});
-
 const space = vars.space as Record<keyof typeof vars.space | `${keyof typeof vars.space}`, string>;
 
 /** https://chakra-ui.com/docs/styled-system/style-props#pseudo */
 export const interactiveProperties = defineProperties({
     conditions: {
+        ...twBreakpointsToAppBreakpoints(screens),
         default: {},
         hover: { selector: "&:hover,&[data-hover]" },
         active: { selector: "&:active,&[data-active]" },
@@ -224,16 +139,16 @@ export const interactiveProperties = defineProperties({
         peerPlaceholderShown: {
             selector: "&[data-peer]::placeholder-shown ~ &,.peer::placeholder-shown ~ &",
         },
-        _placeholder: { selector: "&::placeholder" },
-        _placeholderShown: { selector: "&::placeholder-shown" },
-        _fullScreen: { selector: "&:fullscreen" },
-        _selection: { selector: "&::selection" },
-        _rtl: { selector: "&[dir=rtl] &,&[dir=rtl]" },
-        _ltr: { selector: "&[dir=ltr] &,&[dir=ltr]" },
-        _mediaDark: { "@media": "(prefers-color-scheme: dark)" },
+        placeholder: { selector: "&::placeholder" },
+        placeholderShown: { selector: "&::placeholder-shown" },
+        fullScreen: { selector: "&:fullscreen" },
+        selection: { selector: "&::selection" },
+        rtl: { selector: "&[dir=rtl] &,&[dir=rtl]" },
+        ltr: { selector: "&[dir=ltr] &,&[dir=ltr]" },
+        mediaDark: { "@media": "(prefers-color-scheme: dark)" },
         mediaReduceMotion: { "@media": "(prefers-reduced-motion: reduce)" },
-        _dark: { selector: "&[data-theme=dark] &,&[data-theme=dark]" },
-        _light: { selector: "&[data-theme=light] &,&[data-theme=light]" },
+        dark: { selector: "&[data-theme=dark] &,&[data-theme=dark]" },
+        light: { selector: "&[data-theme=light] &,&[data-theme=light]" },
     },
     defaultCondition: "default",
     properties: {
@@ -283,6 +198,7 @@ export const interactiveProperties = defineProperties({
         minHeight: size,
         maxHeight: size,
         whiteSpace: ["nowrap", "unset"],
+        textOverflow: ["ellipsis", "clip", "unset"],
         overflow: overflow,
         overflowX: overflow,
         overflowY: overflow,
@@ -392,5 +308,23 @@ export const interactiveProperties = defineProperties({
         bg: ["background"],
         bgColor: ["backgroundColor"],
         borderXColor: ["borderLeftColor", "borderRightColor"],
+    },
+});
+
+export const staticProperties = defineProperties({
+    properties: {
+        zIndex: vars.zIndices,
+        transition: {
+            none: "none",
+            slow: "all .3s ease, opacity .3s ease",
+            fast: "all .15s ease, opacity .15s ease",
+        },
+        backgroundSize: ["cover", "contain"],
+        backgroundRepeat: ["no-repeat", "repeat"],
+        backgroundPosition: ["center", "top", "bottom", "left", "right"],
+        backgroundAttachment: ["fixed", "scroll"],
+        wordBreak: ["break-all", "break-word", "normal"],
+        objectFit: ["cover", "contain"],
+        objectPosition: ["center", "top", "bottom", "left", "right"],
     },
 });

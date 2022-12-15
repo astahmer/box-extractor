@@ -63,14 +63,19 @@ export function getUsedClassNameFromCompiledSprinkles(
         });
 
         usedStyles.conditionalProperties.forEach((properties, propNameOrShorthand) => {
-            properties.forEach((values, conditionName) => {
+            const isReversedConditionProp = propNameOrShorthand[0] === "_" && propNameOrShorthand[1] !== "_";
+            properties.forEach((values, condNameOrPropName) => {
+                const conditionName = isReversedConditionProp ? propNameOrShorthand.slice(1) : condNameOrPropName;
+
                 values.forEach((value) => {
                     const propName = shorthandsMap.has(propNameOrShorthand)
                         ? shorthandsMap.get(propNameOrShorthand)!.at(0)!
+                        : isReversedConditionProp
+                        ? condNameOrPropName
                         : propNameOrShorthand;
                     const debugId = getDebugId(propName, value);
-                    const className = compiledMap.get(debugId)?.conditions?.[conditionName];
-                    // console.log({ propNameOrShorthand, propName, value, debugId, className })
+                    const propValue = compiledMap.get(debugId);
+                    const className = propValue?.conditions?.[conditionName];
                     if (className) {
                         usedClassNameList.add(className);
                     }

@@ -1,7 +1,8 @@
 import "./App.css";
-import { VanillaThemeDemo } from "./components/VanillaThemeDemo";
+// import { VanillaThemeDemo } from "./components/VanillaThemeDemo";
 // import { Demo } from "./components/Demo";
 // import { MinimalSprinklesDemo } from "./components/MinimalSprinklesDemo";
+import { BoxDemo } from "./components/BoxDemo";
 
 function App() {
     return (
@@ -11,7 +12,8 @@ function App() {
                     <div style={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
                         {/* <Demo /> */}
                         {/* <MinimalSprinklesDemo /> */}
-                        <VanillaThemeDemo />
+                        {/* <VanillaThemeDemo /> */}
+                        <BoxDemo />
                     </div>
                 </div>
             </div>
