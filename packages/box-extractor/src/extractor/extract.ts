@@ -23,6 +23,7 @@ export const extract = ({ ast, components: _components, functions: _functions, u
         : _functions;
 
     const componentPropValues: ExtractedComponentProperties[] = [];
+    console.log({ components });
 
     Object.entries(components).forEach(([componentName, component]) => {
         const propNameList = component.properties;
@@ -46,6 +47,11 @@ export const extract = ({ ast, components: _components, functions: _functions, u
         //           ^^^^^           ^^^^^^^^^^^^^^^
 
         const identifierNodesFromJsxAttribute = query<Identifier>(ast, propSelector) ?? [];
+        console.log({
+            propSelector,
+            identifierNodesFromJsxAttribute,
+            text: ast.getDescendants().map((c) => c.getKindName()),
+        });
         identifierNodesFromJsxAttribute.forEach((node) => {
             const propName = node.getText();
 
@@ -61,7 +67,7 @@ export const extract = ({ ast, components: _components, functions: _functions, u
             }
 
             const extracted = extractJsxAttributeIdentifierValue(node);
-            console.log({ propName, extracted });
+            // console.log({ propName, extracted });
             const extractedValues = castAsArray(extracted).filter(isNotNullish);
             extractedValues.forEach((value) => {
                 if (typeof value === "string") {

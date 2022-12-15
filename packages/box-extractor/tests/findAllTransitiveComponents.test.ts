@@ -4,7 +4,6 @@ import {
     findAllTransitiveComponents,
     FindAllTransitiveComponentsOptions,
 } from "../src/extractor/findAllTransitiveComponents";
-import type { ExtractOptions } from "../src/extractor/types";
 import { default as ExtractSample } from "./ExtractSample?raw";
 
 const createProject = () => {
@@ -52,7 +51,7 @@ const findInCode = (code: string) => {
     return transitiveMap;
 };
 
-it("findAllTransitiveComponents", () => {
+it.skip("findAllTransitiveComponents", () => {
     expect(findInCode(ExtractSample)).toMatchInlineSnapshot(`
       {
           ColorBox: {

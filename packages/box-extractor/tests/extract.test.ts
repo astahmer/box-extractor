@@ -10,6 +10,7 @@ const createProject = () => {
             jsx: ts.JsxEmit.React,
             jsxFactory: "React.createElement",
             jsxFragmentFactory: "React.Fragment",
+            jsxImportSource: "react",
             module: ts.ModuleKind.ESNext,
             target: ts.ScriptTarget.ESNext,
             noUnusedParameters: false,
@@ -138,7 +139,7 @@ it("extract it all", () => {
     `);
 });
 
-it("extract JsxAttribute > StringLiteral (multiple)", () => {
+it.only("extract JsxAttribute > StringLiteral (multiple)", () => {
     expect(extractFromCode(`<ColorBox color="red.200" backgroundColor="blackAlpha.100"></ColorBox>`))
         .toMatchInlineSnapshot(`
           [

@@ -12,8 +12,8 @@ export default defineConfig((env) => ({
     build: { outDir: "./dist", sourcemap: true },
     plugins: [
         createVanillaExtractSprinklesExtractor({
-            components: ["ColorBox", "DessertBox", "Box"],
-            functions: ["colorSprinkles", "themeSprinkles", "minimalSprinkles"],
+            components: ["Box"],
+            // functions: ["themeSprinkles"],
             // onExtracted: (args) => console.dir(args.ast.getFullText(), { depth: null }),
             vanillaExtractOptions: {
                 onAfterEvaluateMutation: (args) => console.dir(args.usedComponents.get("Box"), { depth: null }),

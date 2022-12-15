@@ -18,8 +18,8 @@
         "lint:debug": "TIMING=1 eslint './{src,tests}/**/*.ts'"
     },
     "dependencies": {
+        "@box-extractor/core": "workspace:*",
         "@dessert-box/react": "^0.4.0",
-        "@unocss/preset-icons": "^0.46.4",
         "@vanilla-extract/css": "^1.9.2",
         "@vanilla-extract/recipes": "^0.2.5",
         "@vanilla-extract/sprinkles": "^1.5.0",
@@ -30,10 +30,7 @@
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
         "react-error-boundary": "^3.1.4",
-        "ts-morph": "^16.0.0",
-        "ts-pattern": "^4.0.5",
-        "unocss": "^0.46.4",
-        "@box-extractor/core": "workspace:*"
+        "ts-pattern": "^4.0.5"
     },
     "devDependencies": {
         "@astahmer/eslint-config-react": "^0.1.5",
