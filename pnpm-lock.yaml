@@ -54,7 +54,7 @@ importers:
       vite: ^3.0.4
     dependencies:
       '@box-extractor/core': link:../../packages/box-extractor
-      '@box-extractor/vanilla-extract': link:../../packages/adapter-vanilla-extract
+      '@box-extractor/vanilla-extract': link:../../packages/vanilla-extract
       '@dessert-box/react': 0.4.0_react@18.2.0
       '@vanilla-extract/css': 1.9.2
       '@vanilla-extract/sprinkles': 1.5.1_@vanilla-extract+css@1.9.2
@@ -73,31 +73,6 @@ importers:
       ts-toolbelt: 9.6.0
       typescript: 4.8.4
       vite: 3.2.3
-
-  packages/adapter-vanilla-extract:
-    specifiers:
-      '@vanilla-extract/css': ^1.9.2
-      '@vanilla-extract/integration': link:/Users/astahmer/dev/open-source/vanilla-extract/packages/integration
-      '@vanilla-extract/sprinkles': link:/Users/astahmer/dev/open-source/vanilla-extract/packages/sprinkles
-      '@vanilla-extract/vite-plugin': link:/Users/astahmer/dev/open-source/vanilla-extract/packages/vite-plugin
-      pastable: ^2.0.10
-      prettier: ^2.7.1
-      ts-toolbelt: ^9.6.0
-      typescript: ^4.7.4
-      vite: ^3.0.4
-      vitest: ^0.25.8
-    dependencies:
-      '@vanilla-extract/css': 1.9.2
-      '@vanilla-extract/integration': link:../../../../open-source/vanilla-extract/packages/integration
-      '@vanilla-extract/vite-plugin': link:../../../../open-source/vanilla-extract/packages/vite-plugin
-      pastable: 2.0.13
-    devDependencies:
-      '@vanilla-extract/sprinkles': link:../../../../open-source/vanilla-extract/packages/sprinkles
-      prettier: 2.7.1
-      ts-toolbelt: 9.6.0
-      typescript: 4.8.4
-      vite: 3.2.3
-      vitest: 0.25.8
 
   packages/box-extractor:
     specifiers:
@@ -121,7 +96,7 @@ importers:
       vite: ^3.0.4
       vitest: ^0.25.8
     dependencies:
-      '@box-extractor/vanilla-extract': link:../adapter-vanilla-extract
+      '@box-extractor/vanilla-extract': link:../vanilla-extract
       '@phenomnomnominal/tsquery': 5.0.0_typescript@4.8.4
       '@vanilla-extract/integration': link:../../../../open-source/vanilla-extract/packages/integration
       '@vanilla-extract/vite-plugin': link:../../../../open-source/vanilla-extract/packages/vite-plugin
@@ -136,6 +111,31 @@ importers:
       '@types/react': 18.0.25
       '@types/react-dom': 18.0.8
       '@vanilla-extract/sprinkles': link:../../../../open-source/vanilla-extract/packages/sprinkles
+      prettier: 2.7.1
+      ts-toolbelt: 9.6.0
+      typescript: 4.8.4
+      vite: 3.2.3
+      vitest: 0.25.8
+
+  packages/vanilla-extract:
+    specifiers:
+      '@vanilla-extract/css': ^1.9.2
+      '@vanilla-extract/integration': link:/Users/astahmer/dev/open-source/vanilla-extract/packages/integration
+      '@vanilla-extract/sprinkles': link:/Users/astahmer/dev/open-source/vanilla-extract/packages/sprinkles
+      '@vanilla-extract/vite-plugin': link:/Users/astahmer/dev/open-source/vanilla-extract/packages/vite-plugin
+      pastable: ^2.0.10
+      prettier: ^2.7.1
+      ts-toolbelt: ^9.6.0
+      typescript: ^4.7.4
+      vite: ^3.0.4
+      vitest: ^0.25.8
+    dependencies:
+      '@vanilla-extract/css': 1.9.2
+      '@vanilla-extract/integration': link:../../../../open-source/vanilla-extract/packages/integration
+      '@vanilla-extract/sprinkles': link:../../../../open-source/vanilla-extract/packages/sprinkles
+      '@vanilla-extract/vite-plugin': link:../../../../open-source/vanilla-extract/packages/vite-plugin
+      pastable: 2.0.13
+    devDependencies:
       prettier: 2.7.1
       ts-toolbelt: 9.6.0
       typescript: 4.8.4
