@@ -61,7 +61,7 @@ export const extract = ({ ast, components: _components, functions: _functions, u
             }
 
             const extracted = extractJsxAttributeIdentifierValue(node);
-            // console.log({ propName, extracted });
+            console.log({ propName, extracted });
             const extractedValues = castAsArray(extracted).filter(isNotNullish);
             extractedValues.forEach((value) => {
                 if (typeof value === "string") {

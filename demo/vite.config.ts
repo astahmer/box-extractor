@@ -2,10 +2,8 @@ import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 // import { vanillaExtractPlugin } from "@vanilla-extract/vite-plugin";
 
-import {
-    createVanillaExtractSprinklesExtractor,
-    // } from "vite-box-extractor";
-} from "../lib";
+// import { createVanillaExtractSprinklesExtractor } from "@box-extractor/core";
+import { createVanillaExtractSprinklesExtractor } from "../packages/box-extractor";
 
 // https://vitejs.dev/config/
 export default defineConfig((env) => ({
@@ -16,6 +14,7 @@ export default defineConfig((env) => ({
         createVanillaExtractSprinklesExtractor({
             components: ["ColorBox", "DessertBox", "Box"],
             functions: ["colorSprinkles", "themeSprinkles", "minimalSprinkles"],
+            // onExtracted: (args) => console.dir(args.ast.getFullText(), { depth: null }),
             vanillaExtractOptions: {
                 onAfterEvaluateMutation: (args) => console.dir(args.usedComponents.get("Box"), { depth: null }),
             },

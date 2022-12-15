@@ -24,6 +24,7 @@ export type OnExtractedArgs = {
     id: string;
     isSsr?: boolean;
     used: UsedComponentsMap;
+    ast: SourceFile;
 };
 export type CreateViteBoxExtractorOptions = Pick<ExtractOptions, "components" | "functions" | "used"> & {
     onExtracted?: (args: OnExtractedArgs) => void;
@@ -39,7 +40,7 @@ export const createViteBoxExtractor = ({
     const isExtractableFile = options.isExtractableFile ?? defaultIsExtractableFile;
 
     let project: Project;
-    console.log("createViteBoxExtractor", components);
+    console.log("createViteBoxExtractor 2222", components);
     // TODO arg like include: ["./src/**/*.{ts,tsx}"],
     // rollup createFilter
 
@@ -49,6 +50,7 @@ export const createViteBoxExtractor = ({
         configResolved(config) {
             const root = ensureAbsolute("", config.root);
             const tsConfigPath = ensureAbsolute(tsConfigFilePath, root);
+            console.log({ tsConfigPath });
             project = new Project({
                 compilerOptions: {
                     jsx: ts.JsxEmit.React,
@@ -81,7 +83,7 @@ export const createViteBoxExtractor = ({
             // @ts-expect-error
             if (sourceFile && isExtractableFile(id)) {
                 const extracted = extract({ ast: sourceFile!, components, functions, used });
-                onExtracted?.({ extracted, id, isSsr: Boolean(options?.ssr), used });
+                onExtracted?.({ ast: sourceFile!, extracted, id, isSsr: Boolean(options?.ssr), used });
                 // console.dir({ id, extracted }, { depth: null });
                 // TODO clean relevant part in used map if file is removed
                 // which means we have to track what was added in usedMap by file id ?

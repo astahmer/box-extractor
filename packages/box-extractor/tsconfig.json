@@ -1,9 +1,8 @@
 {
-    "extends": "../tsconfig.json",
+    "extends": "../../tsconfig.json",
     "compilerOptions": {
         "isolatedModules": true, // https://preconstruct.tools/guides/building-typescript-packages
         "noEmit": true,
-        "jsx": "react-jsx",
         "types": ["vite/client"],
         "noImplicitReturns": false,
         "target": "ES2019",
