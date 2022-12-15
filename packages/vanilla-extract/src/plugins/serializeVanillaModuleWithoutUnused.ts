@@ -3,7 +3,7 @@ import { hash } from "@vanilla-extract/integration";
 import { stringify } from "javascript-stringify";
 import { isObject } from "pastable";
 
-import type { UsedComponentsMap } from "../extractor/types";
+import type { UsedComponentsMap } from "@box-extractor/core";
 import { getCompiledSprinklePropertyByDebugIdPairMap, isCompiledSprinkle } from "./onEvaluated";
 
 type UsedValuesMap = Map<
