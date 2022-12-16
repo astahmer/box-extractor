@@ -117,12 +117,15 @@ export const createViteVanillaExtractSprinklesExtractor = ({
 
                 const moduleGraph = server.moduleGraph;
 
+                if (args.isSsr) {
+                    moduleGraph.invalidateAll(); // TODO rm
+                }
+
                 if (hasCache) {
                     // const extractDiff = diff(cached!.serialized, serialized);
                     console.log("has cache & different", { isSsr: args.isSsr });
 
                     if (args.isSsr) {
-                        moduleGraph.invalidateAll(); // TODO rm
                         server.ws.send({ type: "full-reload", path: args.id });
                     } else {
                         const invalidated = new Set<string>();
