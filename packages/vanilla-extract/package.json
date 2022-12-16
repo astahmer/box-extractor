@@ -3,9 +3,30 @@
     "version": "0.0.1",
     "main": "dist/box-extractor-vanilla-extract.cjs.js",
     "module": "dist/box-extractor-vanilla-extract.esm.js",
+    "types": "dist/box-extractor-vanilla-extract.cjs.d.ts",
+    "exports": {
+        "./package.json": "./package.json",
+        ".": {
+            "module": "./dist/box-extractor-vanilla-extract.esm.js",
+            "default": "./dist/box-extractor-vanilla-extract.cjs.js"
+        },
+        "./createRuntimeBoxSprinkles": {
+            "module": "./createRuntimeBoxSprinkles/dist/box-extractor-vanilla-extract-createRuntimeBoxSprinkles.esm.js",
+            "default": "./createRuntimeBoxSprinkles/dist/box-extractor-vanilla-extract-createRuntimeBoxSprinkles.cjs.js"
+        },
+        "./vite-plugin": {
+            "module": "./vite-plugin/dist/box-extractor-vanilla-extract-vite.esm.js",
+            "default": "./vite-plugin/dist/box-extractor-vanilla-extract-vite.cjs.js"
+        },
+        "./esbuild-plugin": {
+            "module": "./esbuild-plugin/dist/box-extractor-vanilla-extract-esbuild-plugin.esm.js",
+            "default": "./esbuild-plugin/dist/box-extractor-vanilla-extract-esbuild-plugin.cjs.js"
+        }
+    },
     "repository": {
         "type": "git",
-        "url": "https://github.com/astahmer/vite-box-extractor.git"
+        "url": "https://github.com/astahmer/vite-box-extractor.git",
+        "directory": "packages/vanilla-extract"
     },
     "author": "Alexandre Stahmer <alexandre.stahmer@gmail.com>",
     "scripts": {
@@ -19,6 +40,7 @@
         "@box-extractor/core": "workspace:*",
         "@vanilla-extract/css": "^1.9.2",
         "@vanilla-extract/integration": "link:/Users/astahmer/dev/open-source/vanilla-extract/packages/integration",
+        "@vanilla-extract/esbuild-plugin": "link:/Users/astahmer/dev/open-source/vanilla-extract/packages/esbuild-plugin",
         "@vanilla-extract/sprinkles": "link:/Users/astahmer/dev/open-source/vanilla-extract/packages/sprinkles",
         "@vanilla-extract/vite-plugin": "link:/Users/astahmer/dev/open-source/vanilla-extract/packages/vite-plugin",
         "eval": "^0.1.8",
@@ -29,6 +51,7 @@
         "vite": "^3.2.3"
     },
     "devDependencies": {
+        "esbuild": "^0.16.7",
         "prettier": "^2.7.1",
         "ts-toolbelt": "^9.6.0",
         "typescript": "^4.7.4",
@@ -39,14 +62,17 @@
         "entrypoints": [
             "index.ts",
             "createRuntimeBoxSprinkles.ts",
-            "vite.ts"
-        ]
+            "vite-plugin.ts",
+            "esbuild-plugin.ts"
+        ],
+        "exports": true
     },
     "files": [
         "src",
         "dist",
         "createRuntimeBoxSprinkles",
-        "vite",
+        "vite-plugin",
+        "esbuild-plugin",
         "../README.md"
     ],
     "keywords": [

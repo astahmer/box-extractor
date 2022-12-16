@@ -11,7 +11,6 @@ import {
 } from "./extractor/findAllTransitiveComponents";
 
 // https://github.com/qmhc/vite-plugin-dts/blob/main/src/plugin.ts
-const tsConfigFilePath = "tsconfig.json"; // TODO
 
 // Components
 // :matches(JsxOpeningElement, JsxSelfClosingElement):has(Identifier[name="ColorBox"]) JsxAttribute > Identifier[name=/color|backgroundColor/] ~ StringLiteral
@@ -21,14 +20,21 @@ const tsConfigFilePath = "tsconfig.json"; // TODO
 
 // TODO use unplugin to get a bundler-agnostic plugin https://github.com/unjs/unplugin
 
-// TODO functions
 // TODO logs with debug
 
 export const createViteBoxRefUsageFinder = ({
-    components,
-    functions = {},
+    components: _components,
+    functions: _functions,
+    tsConfigFilePath = "tsconfig.json",
     ...options
 }: Omit<CreateViteBoxExtractorOptions, "used" | "onExtracted">): Plugin => {
+    const components = Array.isArray(_components)
+        ? Object.fromEntries(_components.map((name) => [name, { properties: "all" }]))
+        : _components;
+    // TODO functions
+    const functions = Array.isArray(_functions)
+        ? Object.fromEntries(_functions.map((name) => [name, { properties: "all" }]))
+        : _functions;
     const isExtractableFile = options.isExtractableFile ?? defaultIsExtractableFile;
 
     let project: Project;

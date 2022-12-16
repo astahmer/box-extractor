@@ -1,4 +1,3 @@
-export { createViteVanillaExtractSprinklesExtractor } from "./plugins/createViteVanillaExtractSprinklesExtractor";
 export {
     cloneAdapterContext,
     getCompiledSprinklePropertyByDebugIdPairMap,

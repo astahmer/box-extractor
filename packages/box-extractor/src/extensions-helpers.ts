@@ -1,11 +1,10 @@
 import { isAbsolute, resolve } from "node:path";
 
-const tsRE = /\.tsx?$/;
-
+export const tsRE = /\.tsx?$/;
 export const defaultIsExtractableFile = (id: string) => tsRE.test(id);
 
 export type AllowedExtensionOptions = {
-    shouldAddFileToProject?: (id: string) => boolean;
+    // TODO just use regex above
     isExtractableFile?: (id: string) => boolean;
 };
 

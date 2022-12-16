@@ -1,7 +1,7 @@
 import react from "@vitejs/plugin-react";
 import ssr from "vite-plugin-ssr/plugin";
 import type { UserConfig } from "vite";
-import { createViteVanillaExtractSprinklesExtractor } from "@box-extractor/vanilla-extract/vite";
+import { createViteVanillaExtractSprinklesExtractor } from "@box-extractor/vanilla-extract/vite-plugin";
 // import { vanillaExtractPlugin } from "@vanilla-extract/vite-plugin";
 import mdx from "@mdx-js/rollup";
 

@@ -194,7 +194,11 @@ export const createViteVanillaExtractSprinklesExtractor = ({
                 compiledByFilePath.set(filePath, compiled);
 
                 const usedClassNameList = getUsedClassNameFromCompiledSprinkles(compiled, usedComponents);
-                const original = cloneAdapterContext(context);
+
+                let original: AdapterContext;
+                if (vanillaExtractOptions?.onAfterEvaluateMutation) {
+                    original = cloneAdapterContext(context);
+                }
 
                 // console.log({
                 //     filePath,
@@ -217,6 +221,7 @@ export const createViteVanillaExtractSprinklesExtractor = ({
                     filePath,
                     compiled,
                     usedClassNameList,
+                    // @ts-expect-error
                     original,
                     context,
                     evalResult,

@@ -1,0 +1,4 @@
+{
+    "main": "dist/box-extractor-vanilla-extract-vite-plugin.cjs.js",
+    "module": "dist/box-extractor-vanilla-extract-vite-plugin.esm.js"
+}

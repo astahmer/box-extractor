@@ -8,6 +8,14 @@
     "author": "Alexandre Stahmer <alexandre.stahmer@gmail.com>",
     "main": "dist/box-extractor-core.cjs.js",
     "module": "dist/box-extractor-core.esm.js",
+    "types": "dist/box-extractor-core.cjs.d.ts",
+    "exports": {
+        "./package.json": "./package.json",
+        ".": {
+            "module": "./dist/box-extractor-core.esm.js",
+            "default": "./dist/box-extractor-core.cjs.js"
+        }
+    },
     "scripts": {
         "test": "vitest",
         "lint:ts": "tsc --noEmit",
@@ -31,6 +39,7 @@
         "@types/react": "^18.0.15",
         "@types/react-dom": "^18.0.6",
         "@vanilla-extract/sprinkles": "^1.5.1",
+        "esbuild": "^0.16.7",
         "prettier": "^2.7.1",
         "ts-toolbelt": "^9.6.0",
         "typescript": "^4.7.4",

@@ -9,7 +9,6 @@ import { extract } from "./extractor/extract";
 import type { ExtractOptions, UsedComponentsMap } from "./extractor/types";
 
 // https://github.com/qmhc/vite-plugin-dts/blob/main/src/plugin.ts
-const tsConfigFilePath = "tsconfig.json"; // TODO
 
 // Components
 // :matches(JsxOpeningElement, JsxSelfClosingElement):has(Identifier[name="ColorBox"]) JsxAttribute > Identifier[name=/color|backgroundColor/] ~ StringLiteral
@@ -27,6 +26,7 @@ export type OnExtractedArgs = {
 };
 export type CreateViteBoxExtractorOptions = Pick<ExtractOptions, "components" | "functions" | "used"> & {
     onExtracted?: (args: OnExtractedArgs) => void;
+    tsConfigFilePath?: string;
 } & AllowedExtensionOptions;
 
 export const createViteBoxExtractor = ({
@@ -34,6 +34,7 @@ export const createViteBoxExtractor = ({
     functions = {},
     used,
     onExtracted,
+    tsConfigFilePath = "tsconfig.json",
     ...options
 }: CreateViteBoxExtractorOptions): VitePlugin => {
     const isExtractableFile = options.isExtractableFile ?? defaultIsExtractableFile;
