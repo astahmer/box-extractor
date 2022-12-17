@@ -1,7 +1,7 @@
 import type { PropsWithChildren } from "react";
-import type { AnySprinklesFn, SprinkleConditionsNames } from "@box-extractor/vanilla-extract";
 import { getBoxProps } from "@box-extractor/vanilla-extract";
-import { ThemeSprinkles, themeSprinkles } from "../theme/sprinkles.css";
+import { ThemeSprinkles, themeSprinkles } from "@box-extractor/vanilla-theme/css";
+import type { EscapeHatchProps, ReversedConditionsProps } from "@box-extractor/vanilla-theme";
 
 const defaultElement = "div";
 
@@ -28,34 +28,3 @@ type AsProp<TType extends React.ElementType = React.ElementType> = {
 type PolymorphicComponentProps<Props, TType extends React.ElementType> = Props &
     AsProp<TType> &
     Omit<React.ComponentProps<TType>, keyof AsProp | keyof Props>;
-
-type EscapeHatchProps<T> = {
-    [K in keyof T as K extends keyof React.CSSProperties ? `__${K}` : number]: Exclude<T[K], object> | (string & {});
-};
-
-type Tokens<SprinklesFn extends AnySprinklesFn> = Parameters<SprinklesFn>[0];
-
-type ReversedConditionsProps<SprinklesFn> = SprinklesFn extends AnySprinklesFn
-    ? {
-          [ConditionName in SprinkleConditionsNames<
-              SprinklesFn["conditions"]
-          >[number] as `_${ConditionName}`]?: ConditionPropsByName<SprinklesFn, ConditionName>;
-      }
-    : never;
-
-type ConditionPropsByName<
-    SprinklesFn extends AnySprinklesFn,
-    ConditionName extends string,
-    TTokens = Tokens<SprinklesFn>
-> = Partial<
-    PickDefined<{
-        [PropName in keyof TTokens]-?: IsDefined<Extract<TTokens[PropName], object>> extends true
-            ? Extract<TTokens[PropName], object> extends { [K in ConditionName]?: infer PropValue }
-                ? PropValue
-                : never
-            : never;
-    }>
->;
-
-type IsDefined<T> = [T] extends [never] ? false : true;
-type PickDefined<T> = Pick<T, { [K in keyof T]: T[K] extends never ? never : K }[keyof T]>;

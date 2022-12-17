@@ -11,8 +11,10 @@ export function createBoxSprinklesInternal<Configs extends readonly SprinklesPro
 export type AnySprinklesFn = {
     (...args: any): string;
     properties: Set<string>;
-    conditions: readonly ConditionItem[];
-    shorthands: Map<string, string[]>;
+    /** only defined if using createBoxSprinkles */
+    conditions?: readonly ConditionItem[];
+    /** only defined if using createBoxSprinkles */
+    shorthands?: Map<string, string[]>;
 };
 
 type VarargParameters<T extends (args: any) => any> = T extends (args: infer P) => any ? P : never;

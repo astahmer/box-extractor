@@ -37,7 +37,6 @@ export function getBoxProps<SprinklesFn extends AnySprinklesFn>(
             // _hover={{ color: "red.100" }}
         } else if (
             isReversedConditionProp(props, key) &&
-            // sprinklesFn.conditions.has(key.substring(1)) &&
             Object.keys(value ?? {}).some((prop) => sprinklesFn.properties.has(prop))
         ) {
             const propsByCondition = value as Record<string, unknown>;
@@ -45,7 +44,7 @@ export function getBoxProps<SprinklesFn extends AnySprinklesFn>(
 
             Object.keys(propsByCondition).forEach((prop) => {
                 const conditionName = key.slice(1);
-                const conditionItem = sprinklesFn.conditions.find((c) => c.conditionNames.includes(conditionName));
+                const conditionItem = sprinklesFn.conditions?.find((c) => c.conditionNames.includes(conditionName));
 
                 const propValue = propsByCondition[prop];
                 const currentValue = sprinklesProps[prop] as Record<string, unknown> | string | undefined;

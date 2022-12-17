@@ -1,6 +1,9 @@
 import { defineProperties } from "@vanilla-extract/sprinkles";
-import { colorPalette } from "./color-palette";
-import { vars } from "./vars";
+import { flatColors } from "../flat-colors";
+import { tokens } from "../tokens";
+import { colorModeVars } from "./color-mode.css";
+
+const colors = { ...flatColors, main: colorModeVars.color.primary, secondary: colorModeVars.color.primary };
 
 // TODO theme vars ?
 const absPos = ["auto", "0", "-50%", "0%", "50%", "100%"] as const;
@@ -35,7 +38,7 @@ const twBreakpointsToAppBreakpoints = (breakpointsMap: TwResponsiveBreakpointsMa
     ) as Record<TwResponsiveBreakpoints, Condition>;
 
 const overflow = ["auto", "hidden", "scroll", "visible"] as const;
-const space = vars.space as Record<keyof typeof vars.space | `${keyof typeof vars.space}`, string>;
+const space = tokens.space as Record<keyof typeof tokens.space | `${keyof typeof tokens.space}`, string>;
 
 /** https://chakra-ui.com/docs/styled-system/style-props#pseudo */
 export const interactiveProperties = defineProperties({
@@ -152,8 +155,8 @@ export const interactiveProperties = defineProperties({
     },
     defaultCondition: "default",
     properties: {
-        boxShadow: vars.shadows,
-        textShadow: vars.shadows,
+        boxShadow: tokens.shadows,
+        textShadow: tokens.shadows,
         opacity: {
             "0": "0",
             "0.4": "0.6",
@@ -164,11 +167,11 @@ export const interactiveProperties = defineProperties({
         pointerEvents: ["inherit", "all", "none"],
         userSelect: ["inherit", "none", "text", "all"],
         //
-        fontFamily: vars.typography.fonts,
-        fontSize: vars.typography.fontSizes,
-        fontWeight: vars.typography.fontWeights,
-        lineHeight: vars.typography.lineHeights,
-        letterSpacing: vars.typography.letterSpacings,
+        fontFamily: tokens.typography.fonts,
+        fontSize: tokens.typography.fontSizes,
+        fontWeight: tokens.typography.fontWeights,
+        lineHeight: tokens.typography.lineHeights,
+        letterSpacing: tokens.typography.letterSpacings,
         textAlign: ["inherit", "left", "center", "right"],
         fontStyle: ["normal", "italic"],
         textTransform: ["inherit", "uppercase", "lowercase", "capitalize", "none"],
@@ -224,34 +227,34 @@ export const interactiveProperties = defineProperties({
         marginRight: space,
         marginInlineStart: space,
         marginInlineEnd: space,
-        border: vars.borders,
-        borderWidth: vars.borders,
-        borderTopWidth: vars.borders,
-        borderRightWidth: vars.borders,
-        borderBottomWidth: vars.borders,
-        borderLeftWidth: vars.borders,
-        borderTop: vars.borders,
-        borderBottom: vars.borders,
-        borderLeft: vars.borders,
-        borderRight: vars.borders,
-        borderRadius: vars.radii,
-        borderTopLeftRadius: vars.radii,
-        borderTopRightRadius: vars.radii,
-        borderBottomLeftRadius: vars.radii,
-        borderBottomRightRadius: vars.radii,
-        outline: vars.borders,
+        border: tokens.borders,
+        borderWidth: tokens.borders,
+        borderTopWidth: tokens.borders,
+        borderRightWidth: tokens.borders,
+        borderBottomWidth: tokens.borders,
+        borderLeftWidth: tokens.borders,
+        borderTop: tokens.borders,
+        borderBottom: tokens.borders,
+        borderLeft: tokens.borders,
+        borderRight: tokens.borders,
+        borderRadius: tokens.radii,
+        borderTopLeftRadius: tokens.radii,
+        borderTopRightRadius: tokens.radii,
+        borderBottomLeftRadius: tokens.radii,
+        borderBottomRightRadius: tokens.radii,
+        outline: tokens.borders,
         // colors props
-        color: colorPalette,
-        background: colorPalette,
-        backgroundColor: colorPalette,
-        borderColor: colorPalette,
-        borderTopColor: colorPalette,
-        borderBottomColor: colorPalette,
-        borderLeftColor: colorPalette,
-        borderRightColor: colorPalette,
-        outlineColor: colorPalette,
-        fill: colorPalette,
-        stroke: colorPalette,
+        color: colors,
+        background: colors,
+        backgroundColor: colors,
+        borderColor: colors,
+        borderTopColor: colors,
+        borderBottomColor: colors,
+        borderLeftColor: colors,
+        borderRightColor: colors,
+        outlineColor: colors,
+        fill: colors,
+        stroke: colors,
         // transform props
         transform: ["none"],
         transformOrigin: ["center"],
@@ -313,7 +316,7 @@ export const interactiveProperties = defineProperties({
 
 export const staticProperties = defineProperties({
     properties: {
-        zIndex: vars.zIndices,
+        zIndex: tokens.zIndices,
         transition: {
             none: "none",
             slow: "all .3s ease, opacity .3s ease",
