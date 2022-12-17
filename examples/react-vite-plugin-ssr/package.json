@@ -12,6 +12,7 @@
     "dependencies": {
         "@box-extractor/core": "workspace:*",
         "@box-extractor/vanilla-extract": "workspace:*",
+        "@box-extractor/vanilla-theme": "workspace:*",
         "@vanilla-extract/css": "^1.9.2",
         "@vanilla-extract/sprinkles": "^1.5.1",
         "@vitejs/plugin-react": "^2.0.1",

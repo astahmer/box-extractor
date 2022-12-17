@@ -1,4 +1,4 @@
-import { colorMode } from "../theme/color-mode.css";
+import { lightMode, darkMode } from "@box-extractor/vanilla-theme/css";
 import { Box } from "./Box";
 
 export function BoxDemo() {
@@ -6,10 +6,10 @@ export function BoxDemo() {
         <Box backgroundColor="gray.200" p="4" borderRadius="2xl">
             <Box color="green.500">green.500</Box>
             <Box color="orange.400">orange.400</Box>
-            <div className={colorMode.light}>
+            <div className={lightMode}>
                 <Box color="main">lightmode using theme+var</Box>
             </div>
-            <div className={colorMode.dark}>
+            <div className={darkMode}>
                 <Box color="main">darkmode using theme+var</Box>
             </div>
 

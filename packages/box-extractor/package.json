@@ -49,7 +49,10 @@
     "preconstruct": {
         "entrypoints": [
             "index.ts"
-        ]
+        ],
+        "___experimentalFlags_WILL_CHANGE_IN_PATCH": {
+            "exports": true
+        }
     },
     "files": [
         "src",

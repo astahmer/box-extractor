@@ -1,0 +1,36 @@
+{
+    "name": "@box-extractor/vanilla-theme",
+    "main": "dist/box-extractor-vanilla-theme.cjs.js",
+    "module": "dist/box-extractor-vanilla-theme.esm.js",
+    "types": "dist/box-extractor-vanilla-theme.cjs.d.ts",
+    "exports": {
+        "./package.json": "./package.json",
+        ".": {
+            "module": "./dist/box-extractor-vanilla-theme.esm.js",
+            "default": "./dist/box-extractor-vanilla-theme.cjs.js"
+        },
+        "./css": {
+            "module": "./src/css/index.ts",
+            "default": "./src/css/index.ts"
+        }
+    },
+    "dependencies": {
+        "@box-extractor/vanilla-extract": "workspace:*",
+        "@vanilla-extract/css": "^1.9.2",
+        "@vanilla-extract/esbuild-plugin": "^2.2.0",
+        "@vanilla-extract/sprinkles": "^1.5.1"
+    },
+    "devDependencies": {
+        "pastable": "^2.0.13",
+        "ts-toolbelt": "^9.6.0",
+        "tsup": "^6.5.0"
+    },
+    "preconstruct": {
+        "entrypoints": [
+            "index.ts"
+        ],
+        "___experimentalFlags_WILL_CHANGE_IN_PATCH": {
+            "exports": true
+        }
+    }
+}

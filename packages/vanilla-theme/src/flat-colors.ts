@@ -1,10 +1,10 @@
-import type { NonUndefined } from "pastable";
-import type tb from "ts-toolbelt";
-import { colorMode } from "./color-mode.css";
-import { vars } from "./vars";
+import type { NonUndefined } from "pastable/typings";
+import type { Keys } from "ts-toolbelt/out/Any/Keys";
+import type { KnownKeys } from "ts-toolbelt/out/Any/KnownKeys";
+import type { UnionOf } from "ts-toolbelt/out/Object/UnionOf";
+import { colors } from "./color-palette";
 
-const colors = { ...vars.colors, main: colorMode.vars.color.primary, secondary: colorMode.vars.color.primary };
-export const colorPalette = flatMapColorsWithVariants(colors);
+export const flatColors = flatMapColorsWithVariants(colors);
 
 type ChakraThemeColors = typeof colors;
 
@@ -18,12 +18,12 @@ type SimpleColors = NonObjectKeys<ChakraThemeColors>;
 type ColorsWithVariants = NonStringKeys<ChakraThemeColors>;
 
 type ColorsMapWithTheirVariants = {
-    [Prop in ColorsWithVariants]: Exclude<tb.Any.KnownKeys<ChakraThemeColors[Prop]>, "DEFAULT">;
+    [Prop in ColorsWithVariants]: Exclude<KnownKeys<ChakraThemeColors[Prop]>, "DEFAULT">;
 };
 type ColorsMapWithTheirVariantsAndDefault = {
-    [Color in tb.Any.Keys<ColorsMapWithTheirVariants>]: `${Color}.${ColorsMapWithTheirVariants[Color]}`;
+    [Color in Keys<ColorsMapWithTheirVariants>]: `${Color}.${ColorsMapWithTheirVariants[Color]}`;
 };
-type PossibleColorWithVariants = tb.Object.UnionOf<ColorsMapWithTheirVariantsAndDefault>;
+type PossibleColorWithVariants = UnionOf<ColorsMapWithTheirVariantsAndDefault>;
 
 // Inspired by https://github.com/kesne/vanilla-tailwind/blob/main/src/theme.css.ts
 function chakraColorVariantsToRecordOfAppThemeColorKeys<T extends keyof ColorsMapWithTheirVariantsAndDefault>(name: T) {

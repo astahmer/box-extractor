@@ -19,6 +19,7 @@
     "dependencies": {
         "@box-extractor/core": "workspace:*",
         "@box-extractor/vanilla-extract": "workspace:*",
+        "@box-extractor/vanilla-theme": "workspace:*",
         "@dessert-box/react": "^0.4.0",
         "@vanilla-extract/css": "^1.9.2",
         "@vanilla-extract/sprinkles": "^1.5.0",
@@ -32,6 +33,7 @@
         "@astahmer/eslint-config-react": "^0.1.5",
         "@types/react": "^18.0.15",
         "@types/react-dom": "^18.0.6",
+        "@vanilla-extract/vite-plugin": "link:/Users/astahmer/dev/open-source/vanilla-extract/packages/vite-plugin",
         "@vitejs/plugin-react": "^2.0.0",
         "eslint": "^8.27.0",
         "prettier": "^2.7.1",

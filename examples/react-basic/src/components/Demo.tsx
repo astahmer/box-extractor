@@ -1,8 +1,7 @@
 /* eslint-disable unicorn/no-abusive-eslint-disable */
 /* eslint-disable */
 import { PropsWithChildren, useState } from "react";
-import { themeSprinkles } from "../theme/sprinkles.css";
-// import { DessertBox } from "../theme/DessertBox";
+import { themeSprinkles } from "@box-extractor/vanilla-theme/css";
 
 const staticColor = "gray.100" as const;
 const staticColor2 = "gray.200" as any;

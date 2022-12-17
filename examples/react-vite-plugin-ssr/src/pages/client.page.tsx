@@ -1,6 +1,5 @@
 import { Box } from "../theme/Box";
-import { colorMode } from "../theme/color-mode.css";
-import { themeSprinkles } from "../theme/sprinkles.css";
+import { lightMode, darkMode, themeSprinkles } from "@box-extractor/vanilla-theme/css";
 import { Counter } from "./Counter";
 
 export function Page() {
@@ -8,10 +7,10 @@ export function Page() {
         <>
             <Counter />
             <Box color="orange.400">boxboxbox</Box>
-            <div className={colorMode.light}>
+            <div className={lightMode}>
                 <div className={themeSprinkles({ backgroundColor: "main" })}>light</div>
             </div>
-            <div className={colorMode.dark}>
+            <div className={darkMode}>
                 <div className={themeSprinkles({ backgroundColor: "secondary" })}>dark</div>
             </div>
         </>
