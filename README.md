@@ -1,5 +1,7 @@
 # box-extractor
 
+this CANT work without [this PR to VE](https://github.com/vanilla-extract-css/vanilla-extract/pull/942) btw, i'll include a fork as .tgz to make it work asap in the meantime
+
 https://twitter.com/astahmer_dev/status/1601244606133567488
 
 ![Screenshot 2022-12-18 at 11 35 31](https://user-images.githubusercontent.com/47224540/208293575-811808ac-db7f-4443-b977-323a9cf25ac9.png)
