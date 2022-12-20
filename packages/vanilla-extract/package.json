@@ -1,6 +1,6 @@
 {
     "name": "@box-extractor/vanilla-extract",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "main": "dist/box-extractor-vanilla-extract.cjs.js",
     "module": "dist/box-extractor-vanilla-extract.esm.js",
     "types": "dist/box-extractor-vanilla-extract.cjs.d.ts",
@@ -39,10 +39,10 @@
     "dependencies": {
         "@box-extractor/core": "workspace:*",
         "@vanilla-extract/css": "^1.9.2",
-        "@vanilla-extract/esbuild-plugin": "file:../../ve-fork-tgz/vanilla-extract-esbuild-plugin-2.2.0.tgz",
-        "@vanilla-extract/integration": "file:../../ve-fork-tgz/vanilla-extract-integration-6.0.1.tgz",
-        "@vanilla-extract/sprinkles": "file:../../ve-fork-tgz/vanilla-extract-sprinkles-1.5.1.tgz",
-        "@vanilla-extract/vite-plugin": "file:../../ve-fork-tgz/vanilla-extract-vite-plugin-3.7.0.tgz",
+        "@vanilla-extract/esbuild-plugin": "file:./ve-fork-tgz/vanilla-extract-esbuild-plugin-2.2.0.tgz",
+        "@vanilla-extract/integration": "file:./ve-fork-tgz/vanilla-extract-integration-6.0.1.tgz",
+        "@vanilla-extract/sprinkles": "file:./ve-fork-tgz/vanilla-extract-sprinkles-1.5.1.tgz",
+        "@vanilla-extract/vite-plugin": "file:./ve-fork-tgz/vanilla-extract-vite-plugin-3.7.0.tgz",
         "esbuild": "^0.16.7",
         "eval": "^0.1.8",
         "javascript-stringify": "^2.1.0",
@@ -76,6 +76,7 @@
         "createRuntimeBoxSprinkles",
         "vite-plugin",
         "esbuild-plugin",
+        "ve-fork-tgz",
         "../../README.md"
     ],
     "keywords": [

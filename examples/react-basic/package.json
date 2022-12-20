@@ -33,7 +33,6 @@
         "@astahmer/eslint-config-react": "^0.1.5",
         "@types/react": "^18.0.15",
         "@types/react-dom": "^18.0.6",
-        "@vanilla-extract/vite-plugin": "file:../../ve-fork-tgz/vanilla-extract-vite-plugin-3.7.0.tgz",
         "@vitejs/plugin-react": "^2.0.0",
         "eslint": "^8.27.0",
         "prettier": "^2.7.1",
