@@ -79,6 +79,7 @@
         "vite-plugin",
         "esbuild-plugin",
         "ve-fork-tgz",
+        "scripts",
         "../../README.md"
     ],
     "keywords": [
