@@ -10,7 +10,9 @@
     "scripts": {
         "dev": "preconstruct watch",
         "build": "preconstruct build",
-        "postinstall": "preconstruct dev"
+        "postinstall": "preconstruct dev",
+        "test": "pnpm --filter @box-extractor/core test:ci",
+        "release": "pnpm changeset publish"
     },
     "dependencies": {
         "@babel/core": "^7.20.2"

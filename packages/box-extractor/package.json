@@ -18,6 +18,7 @@
     },
     "scripts": {
         "test": "vitest",
+        "test:ci": "vitest run",
         "lint:ts": "tsc --noEmit",
         "lint": "../../node_modules/.bin/eslint './src/**/*.ts' --cache --format=pretty",
         "lint:fix": "../../node_modules/.bin/eslint './src/**/*.ts' --cache --format=pretty --fix"
