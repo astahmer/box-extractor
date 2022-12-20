@@ -1,6 +1,6 @@
 {
     "name": "@box-extractor/vanilla-theme",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "main": "dist/box-extractor-vanilla-theme.cjs.js",
     "module": "dist/box-extractor-vanilla-theme.esm.js",
     "types": "dist/box-extractor-vanilla-theme.cjs.d.ts",
