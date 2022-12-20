@@ -32,5 +32,30 @@
         "___experimentalFlags_WILL_CHANGE_IN_PATCH": {
             "exports": true
         }
+    },
+    "files": [
+        "src",
+        "dist",
+        "css",
+        "../../README.md"
+    ],
+    "keywords": [
+        "box",
+        "extractor",
+        "ast",
+        "static",
+        "prop",
+        "jsx",
+        "tsx",
+        "typescript",
+        "vite",
+        "vanilla-extract",
+        "esbuild",
+        "sprinkles",
+        "vanilla-theme"
+    ],
+    "sideEffects": false,
+    "publishConfig": {
+        "access": "public"
     }
 }
