@@ -1,6 +1,6 @@
 {
     "name": "@box-extractor/vanilla-extract",
-    "version": "0.1.4",
+    "version": "0.1.5",
     "main": "dist/box-extractor-vanilla-extract.cjs.js",
     "module": "dist/box-extractor-vanilla-extract.esm.js",
     "types": "dist/box-extractor-vanilla-extract.cjs.d.ts",
@@ -34,7 +34,7 @@
         "lint:ts": "tsc --noEmit",
         "lint": "../../node_modules/.bin/eslint './src/**/*.ts' --cache --format=pretty",
         "lint:fix": "../../node_modules/.bin/eslint './src/**/*.ts' --cache --format=pretty --fix",
-        "postinstall": "tsx scripts/copy-tgz-to-init-cwd"
+        "preinstall": "tsx scripts/copy-tgz-to-init-cwd"
     },
     "license": "ISC",
     "dependencies": {
