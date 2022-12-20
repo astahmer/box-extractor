@@ -1,6 +1,6 @@
 {
     "name": "@box-extractor/vanilla-extract",
-    "version": "0.1.2",
+    "version": "0.1.3",
     "main": "dist/box-extractor-vanilla-extract.cjs.js",
     "module": "dist/box-extractor-vanilla-extract.esm.js",
     "types": "dist/box-extractor-vanilla-extract.cjs.d.ts",
@@ -33,7 +33,8 @@
         "test": "vitest",
         "lint:ts": "tsc --noEmit",
         "lint": "../../node_modules/.bin/eslint './src/**/*.ts' --cache --format=pretty",
-        "lint:fix": "../../node_modules/.bin/eslint './src/**/*.ts' --cache --format=pretty --fix"
+        "lint:fix": "../../node_modules/.bin/eslint './src/**/*.ts' --cache --format=pretty --fix",
+        "postinstall": "tsx scripts/copy-tgz-to-init-cwd"
     },
     "license": "ISC",
     "dependencies": {
@@ -55,6 +56,7 @@
     "devDependencies": {
         "prettier": "^2.7.1",
         "ts-toolbelt": "^9.6.0",
+        "tsx": "^3.12.1",
         "typescript": "^4.7.4",
         "vite": "^3.0.4",
         "vitest": "^0.25.8"
