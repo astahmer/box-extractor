@@ -75,7 +75,7 @@
         "createRuntimeBoxSprinkles",
         "vite-plugin",
         "esbuild-plugin",
-        "../README.md"
+        "../../README.md"
     ],
     "keywords": [
         "box",
@@ -87,7 +87,9 @@
         "tsx",
         "typescript",
         "vite",
-        "vanilla-extract"
+        "vanilla-extract",
+        "esbuild",
+        "sprinkles"
     ],
     "sideEffects": false,
     "publishConfig": {
