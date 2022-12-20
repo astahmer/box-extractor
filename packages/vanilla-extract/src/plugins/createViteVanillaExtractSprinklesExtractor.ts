@@ -2,9 +2,15 @@ import path from "node:path";
 
 import type { AdapterContext } from "@vanilla-extract/integration";
 import { hash, defaultSerializeVanillaModule } from "@vanilla-extract/integration";
-import { vanillaExtractPlugin, VanillaExtractPluginOptions } from "@vanilla-extract/vite-plugin";
+
+// needed for error TS2742: The inferred type of 'createViteVanillaExtractSprinklesExtractor' cannot be named without a reference to '.pnpm/esbuild@0.11.23/node_modules/esbuild'.
+// This is likely not portable. A type annotation is necessary.
+import type { VanillaExtractPluginOptions } from "@vanilla-extract/vite-plugin";
+
+import { vanillaExtractPlugin } from "./ve-vite-plugin";
 import type { Plugin, ResolvedConfig, ViteDevServer } from "vite";
 import { normalizePath } from "vite";
+import type {} from "esbuild";
 
 import {
     createViteBoxExtractor,
