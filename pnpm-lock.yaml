@@ -46,7 +46,6 @@ importers:
       '@types/react-dom': ^18.0.6
       '@vanilla-extract/css': ^1.9.2
       '@vanilla-extract/sprinkles': ^1.5.0
-      '@vanilla-extract/vite-plugin': file:../../ve-fork-tgz/vanilla-extract-vite-plugin-3.7.0.tgz
       '@vitejs/plugin-react': ^2.0.0
       eslint: ^8.27.0
       pastable: ^2.0.10
@@ -74,7 +73,6 @@ importers:
       '@astahmer/eslint-config-react': 0.1.5_pcit6nykmxit3vv6c7deq76n7y
       '@types/react': 18.0.25
       '@types/react-dom': 18.0.8
-      '@vanilla-extract/vite-plugin': file:ve-fork-tgz/vanilla-extract-vite-plugin-3.7.0.tgz_vite@3.2.3
       '@vitejs/plugin-react': 2.2.0_vite@3.2.3
       eslint: 8.27.0
       prettier: 2.7.1
@@ -98,9 +96,7 @@ importers:
       '@types/react-dom': ^18.0.9
       '@types/react-syntax-highlighter': ^15.5.5
       '@vanilla-extract/css': ^1.9.2
-      '@vanilla-extract/integration': file:../../ve-fork-tgz/vanilla-extract-integration-6.0.1.tgz
       '@vanilla-extract/sprinkles': ^1.5.1
-      '@vanilla-extract/vite-plugin': file:../../ve-fork-tgz/vanilla-extract-vite-plugin-3.7.0.tgz
       '@vitejs/plugin-react': ^2.0.1
       compression: ^1.7.4
       cross-env: ^7.0.3
@@ -148,8 +144,6 @@ importers:
       '@types/react': 18.0.26
       '@types/react-dom': 18.0.9
       '@types/react-syntax-highlighter': 15.5.5
-      '@vanilla-extract/integration': file:ve-fork-tgz/vanilla-extract-integration-6.0.1.tgz
-      '@vanilla-extract/vite-plugin': file:ve-fork-tgz/vanilla-extract-vite-plugin-3.7.0.tgz_vite@3.2.3
       fs-extra: 11.1.0
       prettier: 2.8.1
       rehype-slug: 5.1.0
@@ -196,10 +190,10 @@ importers:
     specifiers:
       '@box-extractor/core': workspace:*
       '@vanilla-extract/css': ^1.9.2
-      '@vanilla-extract/esbuild-plugin': file:../../ve-fork-tgz/vanilla-extract-esbuild-plugin-2.2.0.tgz
-      '@vanilla-extract/integration': file:../../ve-fork-tgz/vanilla-extract-integration-6.0.1.tgz
-      '@vanilla-extract/sprinkles': file:../../ve-fork-tgz/vanilla-extract-sprinkles-1.5.1.tgz
-      '@vanilla-extract/vite-plugin': file:../../ve-fork-tgz/vanilla-extract-vite-plugin-3.7.0.tgz
+      '@vanilla-extract/esbuild-plugin': file:./ve-fork-tgz/vanilla-extract-esbuild-plugin-2.2.0.tgz
+      '@vanilla-extract/integration': file:./ve-fork-tgz/vanilla-extract-integration-6.0.1.tgz
+      '@vanilla-extract/sprinkles': file:./ve-fork-tgz/vanilla-extract-sprinkles-1.5.1.tgz
+      '@vanilla-extract/vite-plugin': file:./ve-fork-tgz/vanilla-extract-vite-plugin-3.7.0.tgz
       esbuild: ^0.16.7
       eval: ^0.1.8
       javascript-stringify: ^2.1.0
@@ -213,10 +207,10 @@ importers:
     dependencies:
       '@box-extractor/core': link:../box-extractor
       '@vanilla-extract/css': 1.9.2
-      '@vanilla-extract/esbuild-plugin': file:ve-fork-tgz/vanilla-extract-esbuild-plugin-2.2.0.tgz
-      '@vanilla-extract/integration': file:ve-fork-tgz/vanilla-extract-integration-6.0.1.tgz
-      '@vanilla-extract/sprinkles': file:ve-fork-tgz/vanilla-extract-sprinkles-1.5.1.tgz_@vanilla-extract+css@1.9.2
-      '@vanilla-extract/vite-plugin': file:ve-fork-tgz/vanilla-extract-vite-plugin-3.7.0.tgz_vite@3.2.3
+      '@vanilla-extract/esbuild-plugin': file:packages/vanilla-extract/ve-fork-tgz/vanilla-extract-esbuild-plugin-2.2.0.tgz
+      '@vanilla-extract/integration': file:packages/vanilla-extract/ve-fork-tgz/vanilla-extract-integration-6.0.1.tgz
+      '@vanilla-extract/sprinkles': file:packages/vanilla-extract/ve-fork-tgz/vanilla-extract-sprinkles-1.5.1.tgz_@vanilla-extract+css@1.9.2
+      '@vanilla-extract/vite-plugin': file:packages/vanilla-extract/ve-fork-tgz/vanilla-extract-vite-plugin-3.7.0.tgz_vite@3.2.3
       esbuild: 0.16.7
       eval: 0.1.8
       javascript-stringify: 2.1.0
@@ -1730,6 +1724,7 @@ packages:
 
   /@emotion/hash/0.9.0:
     resolution: {integrity: sha512-14FtKiHhy2QoPIzdTcvh//8OyBlknNs2nXRwIhG904opCby3l+9Xaf/wuPvICBF0rc1ZCNBd3nKe9cd2mecVkQ==}
+    dev: false
 
   /@esbuild-kit/cjs-loader/2.4.1:
     resolution: {integrity: sha512-lhc/XLith28QdW0HpHZvZKkorWgmCNT7sVelMHDj3HFdTfdqkwEKvT+aXVQtNAmCC39VJhunDkWhONWB7335mg==}
@@ -2737,6 +2732,7 @@ packages:
       '@babel/core': 7.20.2
     transitivePeerDependencies:
       - supports-color
+    dev: false
 
   /@vanilla-extract/css/1.9.2:
     resolution: {integrity: sha512-CE5+R89LOl9XG5dRwEIvVyl/YcS2GkqjdE/XnGJ+p7Fp6Exu08fifv7tY87XxFeCIRAbc9psM+h4lF+wC3Y0fg==}
@@ -2752,6 +2748,7 @@ packages:
       deepmerge: 4.2.2
       media-query-parser: 2.0.2
       outdent: 0.8.0
+    dev: false
 
   /@vanilla-extract/esbuild-plugin/2.2.0:
     resolution: {integrity: sha512-WlnSbqD2/7OryWj1JEef9a5nLpWbv828J4cOBGqi5G1kAo0e8aKTT3+pLhFmDU0bdnpPYVw1lBz+xJrxT/FQQA==}
@@ -2776,9 +2773,11 @@ packages:
       outdent: 0.8.0
     transitivePeerDependencies:
       - supports-color
+    dev: false
 
   /@vanilla-extract/private/1.0.3:
     resolution: {integrity: sha512-17kVyLq3ePTKOkveHxXuIJZtGYs+cSoev7BlP+Lf4916qfDhk/HBjvlYDe8egrea7LNPHKwSZJK/bzZC+Q6AwQ==}
+    dev: false
 
   /@vanilla-extract/sprinkles/1.5.1:
     resolution: {integrity: sha512-xPYpeEZEC1mhiPqWCBPGdIHkpFaaQIbaAfG9W2JyIW0byqTP7CoaxdYNMPjhZuoV5lkTI14SJg8Bt+fZqmV5yQ==}
@@ -2840,6 +2839,7 @@ packages:
 
   /ahocorasick/1.0.2:
     resolution: {integrity: sha512-hCOfMzbFx5IDutmWLAt6MZwOUjIfSM9G9FyVxytmE4Rs/5YDPWQrD/+IR1w+FweD9H2oOZEnv36TmkjhNURBVA==}
+    dev: false
 
   /ajv/6.12.6:
     resolution: {integrity: sha512-j3fVLgvTo527anyYyJOGTYJbG+vnnQYvE0m5mmkc1TK+nxAppkCLMIL0aZ4dblVCNoGShhm+kzE4ZUykBoMg4g==}
@@ -3407,11 +3407,13 @@ packages:
   /css-what/5.1.0:
     resolution: {integrity: sha512-arSMRWIIFY0hV8pIxZMEfmMI47Wj3R/aWpZDDxWYCPEiOMv6tfOrnpDtgxBYPEQD4V0Y/958+1TdC3iWTFcUPw==}
     engines: {node: '>= 6'}
+    dev: false
 
   /cssesc/3.0.0:
     resolution: {integrity: sha512-/Tb/JcjK111nNScGob5MNtsntNM1aCNUDipB/TkwZFhyDrrE47SOx/18wF2bbjgc3ZzCSKW1T5nt5EbFoAz/Vg==}
     engines: {node: '>=4'}
     hasBin: true
+    dev: false
 
   /csstype/3.1.1:
     resolution: {integrity: sha512-DJR/VvkAvSZW9bTouZue2sSxDwdTN92uHjqeKVm+0dAqdfNykRzQ95tay8aXMBAAPpUiq4Qcug2L7neoRh2Egw==}
@@ -3510,6 +3512,7 @@ packages:
 
   /deep-object-diff/1.1.9:
     resolution: {integrity: sha512-Rn+RuwkmkDwCi2/oXOFS9Gsr5lJZu/yTGpK7wAaAIE75CC+LCGEZHpY6VQJa/RoJcrmaA/docWJZvYohlNkWPA==}
+    dev: false
 
   /deepmerge/4.2.2:
     resolution: {integrity: sha512-FJ3UgI4gIl+PHZm53knsuSFpE+nESMr7M4v9QcgB7S63Kj/6WqMiFQJpBBYz1Pt+66bZpP3Q7Lye0Oo9MPKEdg==}
@@ -3835,6 +3838,7 @@ packages:
     resolution: {integrity: sha512-iaiZZ9vUF5wJV8ob1tl+5aJTrwDczlvGP0JoMmnpC2B0ppiMCu8n8gmy5ZTGl5bcG081XBVn+U+jP+mPFm5T5Q==}
     hasBin: true
     requiresBuild: true
+    dev: false
 
   /esbuild/0.15.16:
     resolution: {integrity: sha512-o6iS9zxdHrrojjlj6pNGC2NAg86ECZqIETswTM5KmJitq+R1YmahhWtMumeQp9lHqJaROGnsBi2RLawGnfo5ZQ==}
@@ -4360,6 +4364,7 @@ packages:
     engines: {node: '>= 0.8'}
     dependencies:
       require-like: 0.1.2
+    dev: false
 
   /eval/0.1.8:
     resolution: {integrity: sha512-EzV94NYKoO09GLXGjXj9JIlXijVck4ONSr5wiCWDvhsvj5jxSrzTmRU/9C1DyB6uToszLs8aifA6NQ7lEQdvFw==}
@@ -5179,6 +5184,7 @@ packages:
 
   /javascript-stringify/2.1.0:
     resolution: {integrity: sha512-JVAfqNPTvNq3sB/VHQJAFxN/sPgKnsKrCwyRt15zwNCdrMMJDdcEOdubuy+DuJYYdm0ox1J4uzEuYKkN+9yhVg==}
+    dev: false
 
   /jest-worker/26.6.2:
     resolution: {integrity: sha512-KWYVV1c4i+jbMpaBC+U++4Va0cp8OisU185o73T1vo99hqi7w8tSJfUXYswwqqrjzwxa6KpRK54WhPvwf5w6PQ==}
@@ -5593,6 +5599,7 @@ packages:
     resolution: {integrity: sha512-1N4qp+jE0pL5Xv4uEcwVUhIkwdUO3S/9gML90nqKA7v7FcOS5vUtatfzok9S9U1EJU8dHWlcv95WLnKmmxZI9w==}
     dependencies:
       '@babel/runtime': 7.20.1
+    dev: false
 
   /media-typer/0.3.0:
     resolution: {integrity: sha1-hxDXrwqmJvj/+hzgAWhUUmMlV0g=}
@@ -6294,6 +6301,7 @@ packages:
 
   /outdent/0.8.0:
     resolution: {integrity: sha512-KiOAIsdpUTcAXuykya5fnVVT+/5uS0Q1mrkRHcF89tpieSmY33O/tmc54CqwA+bfhbtEfZUNLHaPUiB9X3jt1A==}
+    dev: false
 
   /p-filter/2.1.0:
     resolution: {integrity: sha512-ZBxxZ5sL2HghephhpGAQdoskxplTwr7ICaehZwLIlfL6acuVgZPm8yBNuRAFBGEqtD/hmUeq9eqLg2ys9Xr/yw==}
@@ -6528,6 +6536,7 @@ packages:
       lilconfig: 2.0.6
       postcss: 8.4.19
       yaml: 1.10.2
+    dev: false
 
   /postcss/8.4.19:
     resolution: {integrity: sha512-h+pbPsyhlYj6N2ozBmHhHrs9DzGmbaarbLvWipMRO7RLS+v4onj26MPFXA5OBYFxyqYhUJK456SwDcY9H2/zsA==}
@@ -6842,6 +6851,7 @@ packages:
 
   /require-like/0.1.2:
     resolution: {integrity: sha512-oyrU88skkMtDdauHDuKVrgR+zuItqr6/c//FXzvmxRGMexSDc6hNvJInGW3LL46n+8b50RykrvwSUIIQH2LQ5A==}
+    dev: false
 
   /require-main-filename/2.0.0:
     resolution: {integrity: sha512-NKN5kMDylKuldxYLSUfrbo5Tuzh4hd+2E8NPPX02mZtn1VuREQToYe/ZdlJy+J3uCpfaiGF05e7B8W0iXbQHmg==}
@@ -8061,8 +8071,8 @@ packages:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
     dev: true
 
-  file:ve-fork-tgz/vanilla-extract-esbuild-plugin-2.2.0.tgz:
-    resolution: {integrity: sha512-MmxMCKiiGxx1c6QlqaRuqQb6qpgXtgfhSF4ZQAkKM+U1TZBMVAiXqF23/SCbI6v3ZLRUyFS4S7SADJ40sA1Auw==, tarball: file:ve-fork-tgz/vanilla-extract-esbuild-plugin-2.2.0.tgz}
+  file:packages/vanilla-extract/ve-fork-tgz/vanilla-extract-esbuild-plugin-2.2.0.tgz:
+    resolution: {integrity: sha512-MmxMCKiiGxx1c6QlqaRuqQb6qpgXtgfhSF4ZQAkKM+U1TZBMVAiXqF23/SCbI6v3ZLRUyFS4S7SADJ40sA1Auw==, tarball: file:packages/vanilla-extract/ve-fork-tgz/vanilla-extract-esbuild-plugin-2.2.0.tgz}
     name: '@vanilla-extract/esbuild-plugin'
     version: 2.2.0
     dependencies:
@@ -8071,8 +8081,8 @@ packages:
       - supports-color
     dev: false
 
-  file:ve-fork-tgz/vanilla-extract-integration-6.0.1.tgz:
-    resolution: {integrity: sha512-wk1iWdIrLTfz3to85QTa9/cP+me3nxoZuDRo7k4pPhGkQzdDYtrRwhcANKT4x4P+Ld9uDWF5NHiRxD3eux2mxA==, tarball: file:ve-fork-tgz/vanilla-extract-integration-6.0.1.tgz}
+  file:packages/vanilla-extract/ve-fork-tgz/vanilla-extract-integration-6.0.1.tgz:
+    resolution: {integrity: sha512-wk1iWdIrLTfz3to85QTa9/cP+me3nxoZuDRo7k4pPhGkQzdDYtrRwhcANKT4x4P+Ld9uDWF5NHiRxD3eux2mxA==, tarball: file:packages/vanilla-extract/ve-fork-tgz/vanilla-extract-integration-6.0.1.tgz}
     name: '@vanilla-extract/integration'
     version: 6.0.1
     dependencies:
@@ -8088,10 +8098,11 @@ packages:
       outdent: 0.8.0
     transitivePeerDependencies:
       - supports-color
+    dev: false
 
-  file:ve-fork-tgz/vanilla-extract-sprinkles-1.5.1.tgz_@vanilla-extract+css@1.9.2:
-    resolution: {integrity: sha512-2kd0R09KHR2tCL4HOTXtxl8u4k2q2D8kgwzsfDHUCxdn30DVEue1h0T6SQrTAYjXNDXFNjZiMdPJjPxbvDpULA==, tarball: file:ve-fork-tgz/vanilla-extract-sprinkles-1.5.1.tgz}
-    id: file:ve-fork-tgz/vanilla-extract-sprinkles-1.5.1.tgz
+  file:packages/vanilla-extract/ve-fork-tgz/vanilla-extract-sprinkles-1.5.1.tgz_@vanilla-extract+css@1.9.2:
+    resolution: {integrity: sha512-2kd0R09KHR2tCL4HOTXtxl8u4k2q2D8kgwzsfDHUCxdn30DVEue1h0T6SQrTAYjXNDXFNjZiMdPJjPxbvDpULA==, tarball: file:packages/vanilla-extract/ve-fork-tgz/vanilla-extract-sprinkles-1.5.1.tgz}
+    id: file:packages/vanilla-extract/ve-fork-tgz/vanilla-extract-sprinkles-1.5.1.tgz
     name: '@vanilla-extract/sprinkles'
     version: 1.5.1
     peerDependencies:
@@ -8100,9 +8111,9 @@ packages:
       '@vanilla-extract/css': 1.9.2
     dev: false
 
-  file:ve-fork-tgz/vanilla-extract-vite-plugin-3.7.0.tgz_vite@3.2.3:
-    resolution: {integrity: sha512-tuUIxzxFQvO+fZsRkIkkou7qoQ8CW8kuhIjmAdCIwJpJ8BZhbt3ThImsfzAzMQbMKh6tIqUwaL6thGu/ohnYEg==, tarball: file:ve-fork-tgz/vanilla-extract-vite-plugin-3.7.0.tgz}
-    id: file:ve-fork-tgz/vanilla-extract-vite-plugin-3.7.0.tgz
+  file:packages/vanilla-extract/ve-fork-tgz/vanilla-extract-vite-plugin-3.7.0.tgz_vite@3.2.3:
+    resolution: {integrity: sha512-tuUIxzxFQvO+fZsRkIkkou7qoQ8CW8kuhIjmAdCIwJpJ8BZhbt3ThImsfzAzMQbMKh6tIqUwaL6thGu/ohnYEg==, tarball: file:packages/vanilla-extract/ve-fork-tgz/vanilla-extract-vite-plugin-3.7.0.tgz}
+    id: file:packages/vanilla-extract/ve-fork-tgz/vanilla-extract-vite-plugin-3.7.0.tgz
     name: '@vanilla-extract/vite-plugin'
     version: 3.7.0
     peerDependencies:
@@ -8116,3 +8127,4 @@ packages:
     transitivePeerDependencies:
       - supports-color
       - ts-node
+    dev: false
