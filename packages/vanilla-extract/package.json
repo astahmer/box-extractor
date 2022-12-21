@@ -1,6 +1,6 @@
 {
     "name": "@box-extractor/vanilla-extract",
-    "version": "0.1.10",
+    "version": "0.1.11",
     "main": "dist/box-extractor-vanilla-extract.cjs.js",
     "module": "dist/box-extractor-vanilla-extract.esm.js",
     "types": "dist/box-extractor-vanilla-extract.cjs.d.ts",
@@ -33,17 +33,16 @@
         "test": "vitest",
         "lint:ts": "tsc --noEmit",
         "lint": "../../node_modules/.bin/eslint './src/**/*.ts' --cache --format=pretty",
-        "lint:fix": "../../node_modules/.bin/eslint './src/**/*.ts' --cache --format=pretty --fix",
-        "preinstall": "tsx scripts/copy-tgz-to-init-cwd"
+        "lint:fix": "../../node_modules/.bin/eslint './src/**/*.ts' --cache --format=pretty --fix"
     },
     "license": "ISC",
     "dependencies": {
         "@box-extractor/core": "workspace:*",
         "@vanilla-extract/css": "^1.9.2",
-        "@vanilla-extract/esbuild-plugin": "file:./ve-fork-tgz/vanilla-extract-esbuild-plugin-2.2.0.tgz",
-        "@vanilla-extract/integration": "file:./ve-fork-tgz/vanilla-extract-integration-6.0.1.tgz",
-        "@vanilla-extract/sprinkles": "file:./ve-fork-tgz/vanilla-extract-sprinkles-1.5.1.tgz",
-        "@vanilla-extract/vite-plugin": "file:./ve-fork-tgz/vanilla-extract-vite-plugin-3.7.0.tgz",
+        "@vanilla-extract/integration": "link:/Users/astahmer/dev/open-source/vanilla-extract/packages/integration",
+        "@vanilla-extract/esbuild-plugin": "link:/Users/astahmer/dev/open-source/vanilla-extract/packages/esbuild-plugin",
+        "@vanilla-extract/sprinkles": "link:/Users/astahmer/dev/open-source/vanilla-extract/packages/sprinkles",
+        "@vanilla-extract/vite-plugin": "link:/Users/astahmer/dev/open-source/vanilla-extract/packages/vite-plugin",
         "esbuild": "^0.16.7",
         "eval": "^0.1.8",
         "javascript-stringify": "^2.1.0",
