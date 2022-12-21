@@ -18,7 +18,7 @@ function readPackage(pkg, context) {
         Object.entries(pkg.dependencies).forEach(([key, value]) => {
             if (value.includes("link:")) {
                 const packageName = key.split("/").pop();
-                pkg.dependencies[key] = baseUrl + packageName;
+                pkg.dependencies[key] = baseUrl + packageName + ".tgz";
 
                 context.log(`[tmp]: Replaced ${key} dependency with ${pkg.dependencies[key]}}`);
             }
