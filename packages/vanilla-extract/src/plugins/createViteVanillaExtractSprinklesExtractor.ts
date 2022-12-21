@@ -1,20 +1,21 @@
 import path from "node:path";
 
-import type { AdapterContext } from "@vanilla-extract/integration";
-import { hash, defaultSerializeVanillaModule } from "@vanilla-extract/integration";
+import { AdapterContext, defaultSerializeVanillaModule, hash, parseFileScope } from "@vanilla-extract/integration";
 
 import { vanillaExtractPlugin, VanillaExtractPluginOptions } from "@vanilla-extract/vite-plugin";
 
 import type { Plugin, ResolvedConfig, ViteDevServer } from "vite";
 import { normalizePath } from "vite";
 
+import type { UsedComponentsMap } from "@box-extractor/core";
 import {
     createViteBoxExtractor,
-    createViteBoxRefUsageFinder,
     CreateViteBoxExtractorOptions,
+    createViteBoxRefUsageFinder,
     OnExtractedArgs,
 } from "@box-extractor/core";
-import type { UsedComponentsMap } from "@box-extractor/core";
+import debug from "debug";
+import { hash as objectHash } from "pastable";
 import {
     cloneAdapterContext,
     getCompiledSprinklePropertyByDebugIdPairMap,
@@ -22,7 +23,6 @@ import {
     mutateContextByKeepingUsedRulesOnly,
 } from "./onEvaluated";
 import { serializeVanillaModuleWithoutUnused } from "./serializeVanillaModuleWithoutUnused";
-import { hash as objectHash } from "pastable";
 // import diff from "microdiff";
 
 type OnAfterEvaluateMutation = {
@@ -34,6 +34,8 @@ type OnAfterEvaluateMutation = {
     evalResult: Record<string, unknown>;
     usedComponents: UsedComponentsMap;
 };
+
+const logger = debug("box-ex:ve");
 
 export const createViteVanillaExtractSprinklesExtractor = ({
     components,
@@ -80,18 +82,18 @@ export const createViteVanillaExtractSprinklesExtractor = ({
                 if (!server) return;
 
                 const serialized = args.extracted.filter(([_name, values]) => values.length > 0);
-                // console.dir({ serialized }, { depth: null });
+                logger({ id: args.id, serialized });
                 const hashed = hash(objectHash(serialized));
                 const cached = extractCacheById.get(args.id);
                 const hasCache = Boolean(cached);
 
                 if (serialized.length === 0 && !cached) {
-                    // console.log("nothing extracted & no cache");
+                    logger("nothing extracted & no cache");
                     return;
                 }
 
                 if (hasCache && cached?.hashed === hashed) {
-                    console.log("same as last time", { isSsr: args.isSsr });
+                    logger("same as last time", { isSsr: args.isSsr });
                     return;
                 }
 
@@ -113,7 +115,7 @@ export const createViteVanillaExtractSprinklesExtractor = ({
 
                 // this file (args.id) changed but we already extracted those styles before, so we don't need to invalidate
                 if (sizeBefore === usedDebugIdList.size) {
-                    console.log("nothing new, already extracted those styles previously", { isSsr: args.isSsr });
+                    logger("nothing new, already extracted those styles previously", { isSsr: args.isSsr });
                     return;
                 }
 
@@ -125,7 +127,7 @@ export const createViteVanillaExtractSprinklesExtractor = ({
 
                 if (hasCache) {
                     // const extractDiff = diff(cached!.serialized, serialized);
-                    console.log("has cache & different", { isSsr: args.isSsr });
+                    logger("has cache & different", { isSsr: args.isSsr });
 
                     if (args.isSsr) {
                         server.ws.send({ type: "full-reload", path: args.id });
@@ -143,7 +145,7 @@ export const createViteVanillaExtractSprinklesExtractor = ({
                                 const module = moduleGraph.getModuleById(getAbsoluteFileId(mod));
                                 if (module) {
                                     invalidated.add(module.id!);
-                                    // console.log(module.id);
+                                    // logger(module.id);
                                     moduleGraph.invalidateModule(module);
                                     module.lastHMRTimestamp = timestamp;
 
@@ -162,7 +164,7 @@ export const createViteVanillaExtractSprinklesExtractor = ({
                 }
 
                 extractCacheById.set(args.id, { hashed, serialized });
-                console.log("extracted", { id: args.id, serialized, isSsr: args.isSsr });
+                logger("extracted", { id: args.id, serialized, isSsr: args.isSsr });
             },
         }),
         vanillaExtractPlugin({
@@ -174,7 +176,7 @@ export const createViteVanillaExtractSprinklesExtractor = ({
                     return defaultSerializeVanillaModule(cssImports, exports, context);
                 }
 
-                // console.dir({ serializeVanillaModule: true, filePath }, { depth: null });
+                // logger({ serializeVanillaModule: true, filePath });
                 return serializeVanillaModuleWithoutUnused(cssImports, exports, context, usedComponents, compiled);
             },
             ...vanillaExtractOptions,
@@ -202,21 +204,21 @@ export const createViteVanillaExtractSprinklesExtractor = ({
                     original = cloneAdapterContext(context);
                 }
 
-                // console.log({
-                //     filePath,
-                //     fileScope: Array.from(context.cssByFileScope.keys()).map((scope) =>
-                //         getAbsoluteFileId(parseFileScope(scope).filePath)
-                //     ),
-                //     sprinkles: Array.from(compiled.sprinkleConfigs.keys()),
-                // });
-                // console.dir({ compiled, usedClassNameList }, { depth: null });
+                logger({
+                    filePath,
+                    fileScope: Array.from(context.cssByFileScope.keys()).map((scope) =>
+                        getAbsoluteFileId(parseFileScope(scope).filePath)
+                    ),
+                    sprinkles: Array.from(compiled.sprinkleConfigs.keys()),
+                });
+                logger({ usedClassNameList });
 
                 mutateContextByKeepingUsedRulesOnly({
                     context,
                     usedClassNameList,
                     sprinklesClassNames: compiled.sprinklesClassNames,
                     onMutate: ({ before, after, fileScope }) => {
-                        console.log({ before: before.length, after: after.length, fileScope, filePath });
+                        logger({ before: before.length, after: after.length, fileScope, filePath });
                     },
                 });
                 vanillaExtractOptions?.onAfterEvaluateMutation?.({
