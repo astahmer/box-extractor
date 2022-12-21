@@ -1,3 +1,4 @@
 {
+    "name": "@box-extractor/vanilla-theme-css",
     "main": "../src/css/index.ts"
 }
