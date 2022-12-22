@@ -12,13 +12,19 @@ https://twitter.com/astahmer_dev/status/1601246126396428289
 
 ## core
 
-if you need the static analysis on components props/functions args: 
-`pnpm add @box-extractor/core`
+if you need the static analysis (using [ts-morph](https://github.com/dsherret/ts-morph) + [tsquery](https://github.com/phenomnomnominal/tsquery/)) on components props/functions args: 
 
-## @vanilla-extract/sprinkles adapter
+```ts
+`pnpm add @box-extractor/core`
+```
+
+## [@vanilla-extract/sprinkles](https://vanilla-extract.style/documentation/packages/sprinkles/) adapter
 
 if you need the `@vanilla-extract/sprinkles` adapter to remove any unused css classes and make your own <Box /> : 
-`pnpm add @box-extractor/vanilla-extract`
+
+```ts
+pnpm add @box-extractor/vanilla-extract
+```
 
 then in your `vite.config.ts` add the plugin and list your sprinkles fn + your root component using a sprinkles fn.
 a root component using a sprinkles fn could look like this: 
@@ -47,7 +53,7 @@ const config: UserConfig = {
 export default config;
 ```
 
-### vite-plugin-sr
+### [vite-plugin-ssr](https://vite-plugin-ssr.com/)
 
 // vite.plugin.ts
 ```ts
