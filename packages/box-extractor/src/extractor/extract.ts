@@ -24,7 +24,7 @@ export const extract = ({ ast, components: _components, functions: _functions, u
 
     const componentPropValues: ExtractedComponentProperties[] = [];
 
-    Object.entries(components).forEach(([componentName, component]) => {
+    Object.entries(components ?? {}).forEach(([componentName, component]) => {
         const propNameList = component.properties;
         const canTakeAllProp = propNameList === "all";
 

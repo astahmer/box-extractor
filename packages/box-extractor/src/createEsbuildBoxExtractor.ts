@@ -5,10 +5,8 @@ import { Project, ts } from "ts-morph";
 import * as fs from "node:fs";
 import { extract } from "./extractor/extract";
 
-const boxExtractorNamespace = "box-extractor-ns";
-
 export function createEsbuildBoxExtractor({
-    components,
+    components = {},
     functions = {},
     used,
     onExtracted,
@@ -49,15 +47,12 @@ export function createEsbuildBoxExtractor({
                     scriptKind: ts.ScriptKind.TSX,
                 });
 
-                const extracted = extract({ ast: sourceFile!, components, functions, used });
+                const extracted = extract({ ast: sourceFile, components, functions, used });
                 onExtracted?.({ extracted, id: path, isSsr: true, used });
                 // console.dir({ id, extracted }, { depth: null });
 
+                // eslint-disable-next-line unicorn/no-useless-undefined
                 return undefined;
-                // return {
-                //     loader: "tsx",
-                //     contents: code,
-                // };
             });
         },
     };

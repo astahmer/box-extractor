@@ -30,7 +30,7 @@ export type CreateViteBoxExtractorOptions = Pick<ExtractOptions, "components" | 
 } & AllowedExtensionOptions;
 
 export const createViteBoxExtractor = ({
-    components,
+    components = {},
     functions = {},
     used,
     onExtracted,
