@@ -1,9 +1,10 @@
+import type { SprinklesProperties } from "./types";
 import { createBoxSprinklesInternal } from "./createBoxSprinklesInternal";
+import type { SprinklesFn } from "./sprinkle-types";
 
-type VarargParameters<T extends (args: any) => any> = T extends (args: infer P) => any ? P : never;
-type SprinklesProperties = VarargParameters<typeof createBoxSprinklesInternal>;
-
-export function createRuntimeBoxSprinkles<Configs extends readonly SprinklesProperties[]>(...configs: Configs) {
+export function createRuntimeBoxSprinkles<Configs extends readonly SprinklesProperties[]>(
+    ...configs: Configs
+): SprinklesFn<Configs> {
     // console.log("createRuntimeBoxSprinkles", { configs });
     return Object.assign(createBoxSprinklesInternal(...configs));
 }

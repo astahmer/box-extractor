@@ -1,3 +1,5 @@
 export { createBoxSprinkles } from "./createBoxSprinkles";
-export type { AnySprinklesFn, SprinkleConditionsNames } from "./createBoxSprinklesInternal";
+export { createBoxSprinklesInternal } from "./createBoxSprinklesInternal";
 export { getBoxProps } from "./getBoxProps";
+export type { SprinkleConditionsNames } from "./sprinkle-types";
+export type { AnySprinklesFn } from "./types";

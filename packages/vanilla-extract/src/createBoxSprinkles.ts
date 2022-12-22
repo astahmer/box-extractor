@@ -1,5 +1,6 @@
 import { addFunctionSerializer } from "@vanilla-extract/css/functionSerializer";
-import { createBoxSprinklesInternal, SprinklesProperties } from "./createBoxSprinklesInternal";
+import { createBoxSprinklesInternal } from "./createBoxSprinklesInternal";
+import type { SprinklesProperties } from "./types";
 
 export function createBoxSprinkles<Configs extends readonly SprinklesProperties[]>(...definePropsFn: Configs) {
     // console.log("createBoxSprinkles");
