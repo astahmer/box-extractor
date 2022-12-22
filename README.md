@@ -1,50 +1,77 @@
 # box-extractor
 
--   this CANT work without [this PR to VE](https://github.com/vanilla-extract-css/vanilla-extract/pull/942)
-
-in the meantime, you can still use it but it needs extra steps:
-
--   before adding the `@box-extractor/vanilla-extract` dep, add this `.pnpmfile.cjs` in your package root (next to your `pnpm-lock.yaml`)
-
-```js
-const baseUrl =
-    "https://github.com/astahmer/box-extractor/raw/main/packages/vanilla-extract/ve-fork-tgz/vanilla-extract-";
-
-function readPackage(pkg, context) {
-    // Override the manifest of @box-extractor/vanilla-extract" after downloading it from the registry
-    if (pkg.name === "@box-extractor/vanilla-extract") {
-        context.log("[tmp]: Replacing @box-extractor/vanilla-extract file dependencies");
-
-        Object.entries(pkg.dependencies).forEach(([key, value]) => {
-            if (value.includes("link:")) {
-                const packageName = key.split("/").pop();
-                pkg.dependencies[key] = baseUrl + packageName + ".tgz";
-
-                context.log(`[tmp]: Replaced ${key} dependency with ${pkg.dependencies[key]}}`);
-            }
-        });
-    }
-
-    return pkg;
-}
-
-module.exports = {
-    hooks: {
-        readPackage,
-    },
-};
-```
-
-this replace the file dependencies (which are forked vanilla-extract packages) of `@box-extractor/vanilla-extract` (`file:xxx`) [by the forks included in `box-extractor repo as .tgz](https://github.com/astahmer/box-extractor/raw/main/packages/vanilla-extract/ve-fork-tgz/) BEFORE the installation process happens
-
--   atm it doesn't work with vite 4 (since [VE doesn't support it yet](https://github.com/vanilla-extract-css/vanilla-extract/issues/945) and I tested the plugin while on v3 only)
--   atm it doesn't work with typescript 4.9+ (since our version of tsmorph doesn't support it yet, I'll update it at some point, not prio)
+# What is this
 
 https://twitter.com/astahmer_dev/status/1601244606133567488
 
 ![Screenshot 2022-12-18 at 11 35 31](https://user-images.githubusercontent.com/47224540/208293575-811808ac-db7f-4443-b977-323a9cf25ac9.png)
 
 https://twitter.com/astahmer_dev/status/1601246126396428289
+
+# Installation
+
+## core
+
+if you need the static analysis on components props/functions args: 
+`pnpm add @box-extractor/core`
+
+## @vanilla-extract/sprinkles adapter
+
+if you need the `@vanilla-extract/sprinkles` adapter to remove any unused css classes and make your own <Box /> : 
+`pnpm add @box-extractor/vanilla-extract`
+
+then in your `vite.config.ts` add the plugin and list your sprinkles fn + your root component using a sprinkles fn.
+a root component using a sprinkles fn could look like this: 
+
+// Box.ts
+```ts
+const Box = ({ children, ...props}) => <div className={themeSprinkles(props)}>{children}</div>
+```
+
+// vite.plugin.ts
+```ts
+import react from "@vitejs/plugin-react";
+import type { UserConfig } from "vite";
+import { createViteVanillaExtractSprinklesExtractor } from "@box-extractor/vanilla-extract/vite-plugin";
+
+const config: UserConfig = {
+    plugins: [
+        createViteVanillaExtractSprinklesExtractor({
+            components: ["Box"],
+            functions: ["themeSprinkles"],
+        }),
+        react(),
+    ],
+};
+
+export default config;
+```
+
+### vite-plugin-sr
+
+// vite.plugin.ts
+```ts
+import react from "@vitejs/plugin-react";
+import ssr from "vite-plugin-ssr/plugin";
+import type { UserConfig } from "vite";
+import { createViteVanillaExtractSprinklesExtractor } from "@box-extractor/vanilla-extract/vite-plugin";
+
+const config: UserConfig = {
+    plugins: [
+        createViteVanillaExtractSprinklesExtractor({
+            components: ["Box"],
+            functions: ["themeSprinkles"],
+            vanillaExtractOptions: {
+                forceEmitCssInSsrBuild: true,
+            },
+        }),
+        react(),
+        ssr({ includeAssetsImportedByServer: true }),
+    ],
+};
+
+export default config;
+```
 
 ## TODO
 
@@ -58,6 +85,9 @@ this is a WIP, even tho most features are done, there are some TODO's. some thin
 ### others
 
 -   tsup/esbuild example
--   logs debug (instead of all those commented console.log)
--   changeset for versioning
--   include VE's fork (as tgz) for their packages: vite-plugin / esbuild-plugin / integration / sprinkles while waiting for the PR I made to VE https://github.com/vanilla-extract-css/vanilla-extract/pull/942 to be merged
+-   logs debug (instead of all those commented console.log in src)
+
+# Caveats
+-   atm it doesn't work with vite 4 (since [VE doesn't support it yet](https://github.com/vanilla-extract-css/vanilla-extract/issues/945) and I tested the plugin while on v3 only)
+-   atm it doesn't work with typescript 4.9+ (since our version of tsmorph doesn't support it yet, I'll update it at some point, not prio)
+-   `@box-extractor/vanilla-theme/css` entrypoint (which ships a preconfigured theme sprinkles as .css.ts) only works when using `link:/xxx` dependency in package.json, for some reasons [it's not working when installed from npm](https://twitter.com/astahmer_dev/status/1605856522583539718), not sure why yet, it MIGHT be because we include VE's fork (as tgz) for their packages: vite-plugin / esbuild-plugin / integration / sprinkles while waiting for the PR I made to VE https://github.com/vanilla-extract-css/vanilla-extract/pull/942 to be merged, needs more investigation
