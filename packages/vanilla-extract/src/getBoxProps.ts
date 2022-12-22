@@ -1,6 +1,6 @@
 // adapted from https://github.com/TheMightyPenguin/dessert-box/blob/e39aa98c535f6ef086f7d32c0a03bfbf1be75b86/packages/core/src/index.tsx
 
-import type { AnySprinklesFn } from "./createBoxSprinklesInternal";
+import type { AnySprinklesFn } from "./types";
 
 export function composeClassNames(...classNames: Array<string | undefined>) {
     const classes = classNames
