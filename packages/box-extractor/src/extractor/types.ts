@@ -19,7 +19,7 @@ export type ExtractedPropMap = Record<string, string | string[]>;
 export type ListOrAll = "all" | string[];
 export type ExtractOptions = {
     ast: SourceFile;
-    components: Record<string, { properties: ListOrAll }> | string[];
+    components?: Record<string, { properties: ListOrAll }> | string[];
     functions?: Record<string, { properties: ListOrAll }> | string[];
     used: UsedComponentsMap;
 };

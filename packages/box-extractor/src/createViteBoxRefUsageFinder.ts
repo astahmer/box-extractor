@@ -23,8 +23,8 @@ import {
 // TODO logs with debug
 
 export const createViteBoxRefUsageFinder = ({
-    components: _components,
-    functions: _functions,
+    components: _components = {},
+    functions: _functions = {},
     tsConfigFilePath = "tsconfig.json",
     ...options
 }: Omit<CreateViteBoxExtractorOptions, "used" | "onExtracted">): Plugin => {
