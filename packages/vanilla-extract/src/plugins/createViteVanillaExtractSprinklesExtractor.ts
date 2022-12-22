@@ -121,9 +121,7 @@ export const createViteVanillaExtractSprinklesExtractor = ({
 
                 const moduleGraph = server.moduleGraph;
 
-                if (args.isSsr) {
-                    moduleGraph.invalidateAll(); // TODO rm
-                }
+                moduleGraph.invalidateAll();
 
                 if (hasCache) {
                     // const extractDiff = diff(cached!.serialized, serialized);
