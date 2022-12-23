@@ -38,7 +38,7 @@ type OnAfterEvaluateMutation = {
 const logger = debug("box-ex:ve");
 
 export const createViteVanillaExtractSprinklesExtractor = ({
-    components,
+    components = {},
     functions = {},
     onExtracted,
     vanillaExtractOptions,
