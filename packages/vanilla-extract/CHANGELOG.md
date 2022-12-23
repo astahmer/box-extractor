@@ -1,5 +1,12 @@
 # @box-extractor/vanilla-extract
 
+## 0.1.19
+
+### Patch Changes
+
+-   [#6](https://github.com/astahmer/box-extractor/pull/6) [`9d99bce`](https://github.com/astahmer/box-extractor/commit/9d99bcecfa5b4549ddb7cdb9b3ea4c563a8dcf31) Thanks [@astahmer](https://github.com/astahmer)! - fix HMR for SSR after initial load (SSS -> CSR like nextjs) / when using export maps (re-exports in index.ts)
+    fix createBoxSprinklesInternal typings (for ReversedConditionsProps) after inlining VE's types (which fixed the .d.ts generated output)
+
 ## 0.1.0
 
 ### Minor Changes
