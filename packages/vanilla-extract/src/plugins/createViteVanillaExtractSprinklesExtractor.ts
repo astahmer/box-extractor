@@ -4,7 +4,7 @@ import { AdapterContext, defaultSerializeVanillaModule, hash, parseFileScope } f
 
 import { vanillaExtractPlugin, VanillaExtractPluginOptions } from "@vanilla-extract/vite-plugin";
 
-import type { Plugin, ResolvedConfig, ViteDevServer } from "vite";
+import type { ModuleNode, Plugin, ResolvedConfig, ViteDevServer } from "vite";
 import { normalizePath } from "vite";
 
 import type { UsedComponentsMap } from "@box-extractor/core";
@@ -35,7 +35,8 @@ type OnAfterEvaluateMutation = {
     usedComponents: UsedComponentsMap;
 };
 
-const logger = debug("box-ex:ve");
+const loggerEval = debug("box-ex:ve:eval");
+const loggerExtract = debug("box-ex:ve:extract");
 
 export const createViteVanillaExtractSprinklesExtractor = ({
     components = {},
@@ -82,18 +83,18 @@ export const createViteVanillaExtractSprinklesExtractor = ({
                 if (!server) return;
 
                 const serialized = args.extracted.filter(([_name, values]) => values.length > 0);
-                logger({ id: args.id, serialized });
+                loggerExtract({ id: args.id, serialized });
                 const hashed = hash(objectHash(serialized));
                 const cached = extractCacheById.get(args.id);
                 const hasCache = Boolean(cached);
 
                 if (serialized.length === 0 && !cached) {
-                    logger("nothing extracted & no cache");
+                    loggerExtract("nothing extracted & no cache");
                     return;
                 }
 
                 if (hasCache && cached?.hashed === hashed) {
-                    logger("same as last time", { isSsr: args.isSsr });
+                    loggerExtract("same as last time", { isSsr: args.isSsr });
                     return;
                 }
 
@@ -115,7 +116,7 @@ export const createViteVanillaExtractSprinklesExtractor = ({
 
                 // this file (args.id) changed but we already extracted those styles before, so we don't need to invalidate
                 if (sizeBefore === usedDebugIdList.size) {
-                    logger("nothing new, already extracted those styles previously", { isSsr: args.isSsr });
+                    loggerExtract("nothing new, already extracted those styles previously", { isSsr: args.isSsr });
                     return;
                 }
 
@@ -125,44 +126,41 @@ export const createViteVanillaExtractSprinklesExtractor = ({
 
                 if (hasCache) {
                     // const extractDiff = diff(cached!.serialized, serialized);
-                    logger("has cache & different", { isSsr: args.isSsr });
+                    loggerExtract("has cache & different", { isSsr: args.isSsr });
 
                     if (args.isSsr) {
                         server.ws.send({ type: "full-reload", path: args.id });
                     } else {
                         const invalidated = new Set<string>();
                         const timestamp = Date.now();
+                        const invalidate = (mod: ModuleNode | undefined) => {
+                            if (!mod?.id) return;
+                            if (invalidated.has(mod.id)) return;
 
-                        moduleGraph.safeModulesPath.forEach((mod) => {
+                            loggerExtract("invalidated", mod.id);
+                            invalidated.add(mod.id);
+                            moduleGraph.invalidateModule(mod);
+                            mod.lastHMRTimestamp = timestamp;
+
+                            mod.importers.forEach((nested) => invalidate(nested));
+                        };
+
+                        moduleGraph.safeModulesPath.forEach((modPath) => {
                             // TODO only invalidate css.ts impacted by the extract change
                             // ex: we now use `<Box color="red.100" />` in `src/home.tsx`
                             // we need to check where does `red.100` come from (Box)
                             // and then where does Box gets its styles from (src/theme/sprinkles.css.ts)
                             // and then invalidate src/theme/sprinkles.css.ts (and not src/theme/vars.css.ts or src/theme/color-modes.css.ts)
-                            if (mod.includes(".css.ts")) {
-                                const module = moduleGraph.getModuleById(getAbsoluteFileId(mod));
-                                if (module) {
-                                    invalidated.add(module.id!);
-                                    // logger(module.id);
-                                    moduleGraph.invalidateModule(module);
-                                    module.lastHMRTimestamp = timestamp;
-
-                                    module.importers.forEach((mod) => {
-                                        if (mod.id && !invalidated.has(mod.id)) {
-                                            invalidated.add(mod.id);
-
-                                            moduleGraph.invalidateModule(mod);
-                                            mod.lastHMRTimestamp = timestamp;
-                                        }
-                                    });
-                                }
+                            if (modPath.includes(".css.ts")) {
+                                const maybeModule = moduleGraph.getModuleById(getAbsoluteFileId(modPath));
+                                invalidate(maybeModule);
                             }
                         });
                     }
                 }
 
                 extractCacheById.set(args.id, { hashed, serialized });
-                logger("extracted", { id: args.id, serialized, isSsr: args.isSsr });
+                loggerExtract("extracted", { id: args.id, serialized, isSsr: args.isSsr });
             },
         }),
         vanillaExtractPlugin({
@@ -202,21 +200,21 @@ export const createViteVanillaExtractSprinklesExtractor = ({
                     original = cloneAdapterContext(context);
                 }
 
-                logger({
+                loggerEval({
                     filePath,
                     fileScope: Array.from(context.cssByFileScope.keys()).map((scope) =>
                         getAbsoluteFileId(parseFileScope(scope).filePath)
                     ),
                     sprinkles: Array.from(compiled.sprinkleConfigs.keys()),
                 });
-                logger({ usedClassNameList });
+                loggerEval({ usedClassNameList });
 
                 mutateContextByKeepingUsedRulesOnly({
                     context,
                     usedClassNameList,
                     sprinklesClassNames: compiled.sprinklesClassNames,
                     onMutate: ({ before, after, fileScope }) => {
-                        logger({ before: before.length, after: after.length, fileScope, filePath });
+                        loggerEval({ before: before.length, after: after.length, fileScope, filePath });
                     },
                 });
                 vanillaExtractOptions?.onAfterEvaluateMutation?.({
