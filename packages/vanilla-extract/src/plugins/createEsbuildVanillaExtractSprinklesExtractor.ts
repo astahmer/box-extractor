@@ -1,7 +1,6 @@
 import { defaultSerializeVanillaModule } from "@vanilla-extract/integration";
 import { vanillaExtractPlugin } from "@vanilla-extract/esbuild-plugin";
-// import type { VanillaExtractPluginOptions } from "@vanilla-extract/vite-plugin";
-import type { VanillaExtractPluginOptions } from "./ve-vite-plugin";
+import type { VanillaExtractPluginOptions } from "@vanilla-extract/vite-plugin";
 import type { Plugin } from "esbuild";
 
 import { createEsbuildBoxExtractor, UsedComponentsMap } from "@box-extractor/core";
@@ -14,7 +13,7 @@ import {
 import { serializeVanillaModuleWithoutUnused } from "./serializeVanillaModuleWithoutUnused";
 
 export const createEsbuildVanillaExtractSprinklesExtractor = ({
-    components,
+    components = {},
     functions = {},
     onExtracted,
     vanillaExtractOptions,
