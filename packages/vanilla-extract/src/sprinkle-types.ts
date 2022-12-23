@@ -2,6 +2,7 @@ import type {
     ConditionalProperty,
     ConditionalPropertyValue,
     ConditionalWithResponsiveArrayProperty,
+    ConditionItem,
     ResponsiveArrayByMaxLength,
     ShorthandProperty,
     SprinklesProperties,
@@ -54,6 +55,10 @@ type SprinkleProps<Args extends readonly any[]> = Args extends [infer L, ...infe
 
 export type SprinklesFn<Args extends readonly SprinklesProperties[]> = ((props: SprinkleProps<Args>) => string) & {
     properties: Set<keyof SprinkleProps<Args>>;
+    /** only defined if using createBoxSprinkles */
+    conditions?: readonly ConditionItem[];
+    /** only defined if using createBoxSprinkles */
+    shorthands?: Map<string, string[]>;
 };
 // end of code taken from vanilla-extract
 
