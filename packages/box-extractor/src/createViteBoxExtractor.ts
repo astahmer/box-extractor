@@ -88,7 +88,7 @@ export const createViteBoxExtractor = ({
             // console.log({ id });
             if (!isIncluded(id)) return null;
             if (cacheMap.has(id) && cacheMap.get(id) === code) {
-                logger("source hasnt changed", id);
+                logger("[CACHED] no diff", id);
                 return null;
             }
 
