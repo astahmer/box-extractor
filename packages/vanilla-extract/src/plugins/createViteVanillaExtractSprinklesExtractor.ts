@@ -1,4 +1,5 @@
 import path from "node:path";
+// import fs from "node:fs";
 
 import { AdapterContext, defaultSerializeVanillaModule, hash, parseFileScope } from "@vanilla-extract/integration";
 
@@ -37,6 +38,7 @@ type OnAfterEvaluateMutation = {
 
 const loggerEval = debug("box-ex:ve:eval");
 const loggerExtract = debug("box-ex:ve:extract");
+const loggerSerialize = debug("box-ex:ve:serialize");
 
 export const createViteVanillaExtractSprinklesExtractor = ({
     components = {},
@@ -63,17 +65,27 @@ export const createViteVanillaExtractSprinklesExtractor = ({
     const compiledByFilePath = new Map<string, ReturnType<typeof getCompiledSprinklePropertyByDebugIdPairMap>>();
     const usedDebugIdList = new Set<string>();
     const sourceByPath = new Map<string, string>();
+    const wasInvalidatedButDidntChange = new Set<string>();
+
+    const vanillaModuleCache = new Map<string, string>();
+    const vanillaModulePreviousTimeAtPath = new Map<string, { source: string; usedClassNameList: Set<string> }>();
+    const usedClassNameListByPath = new Map<string, Set<string>>();
 
     return [
         createViteBoxRefUsageFinder({ ...options, components, functions }),
         {
             name: "vite-box-extractor-ve-adapter",
+            enforce: "pre",
             configResolved(resolvedConfig) {
                 config = resolvedConfig;
             },
             configureServer(_server) {
                 server = _server;
             },
+            // transform(code, id, options) {
+            //     // TODO debug default.page.server
+            //     // console.log("ON TRANSFORM", { id, ssr: options?.ssr });
+            // },
         },
         createViteBoxExtractor({
             ...options,
@@ -82,7 +94,14 @@ export const createViteVanillaExtractSprinklesExtractor = ({
             used: usedComponents,
             onExtracted(args) {
                 onExtracted?.(args);
+                console.log("ON EXTRACTED", { id: args.id, ssr: args.isSsr });
                 if (!server) return;
+                if (wasInvalidatedButDidntChange.has(args.id)) {
+                    wasInvalidatedButDidntChange.delete(args.id);
+                    return;
+                }
+
+                if (args.id.endsWith(".css.ts")) return;
 
                 const serialized = args.extracted.filter(([_name, values]) => values.length > 0);
                 loggerExtract({ id: args.id, serialized });
@@ -137,10 +156,12 @@ export const createViteVanillaExtractSprinklesExtractor = ({
                         const timestamp = Date.now();
                         const invalidate = (mod: ModuleNode | undefined) => {
                             if (!mod?.id) return;
-                            if (invalidated.has(mod.id)) return;
+                            // if (invalidated.has(mod.id) || args.id === mod.id) return;
+                            if (invalidated.has(mod.id) || args.id === mod.id) return;
 
                             loggerExtract("invalidated", mod.id);
                             invalidated.add(mod.id);
+                            wasInvalidatedButDidntChange.add(mod.id);
                             moduleGraph.invalidateModule(mod);
                             mod.lastHMRTimestamp = timestamp;
 
@@ -169,17 +190,55 @@ export const createViteVanillaExtractSprinklesExtractor = ({
             forceEmitCssInSsrBuild: true, // vite-plugin-ssr needs it, tropical too
             serializeVanillaModule: (cssImports, exports, context, filePath) => {
                 const compiled = compiledByFilePath.get(filePath);
-                // we only care about .css.ts with sprinkles
-                if (!compiled || compiled.sprinkleConfigs.size === 0) {
-                    return defaultSerializeVanillaModule(cssImports, exports, context);
+                const source = sourceByPath.get(filePath)!;
+                const usedClassNameList = usedClassNameListByPath.get(filePath) ?? new Set();
+
+                // just used to compare previous vanilla module string context with the new one
+                const previous = vanillaModulePreviousTimeAtPath.get(filePath);
+
+                // re-use the same vanilla module string if the file didn't change
+                // if (source !== sourceByPathLastTime.get(filePath) || !wasInvalidatedButDidntChange.has(filePath)) {
+                // if (previous && source !== previous.source && usedClassNameList.size !== previous.usedClassNameList.size) {
+                if (previous && usedClassNameList.size !== previous.usedClassNameList.size) {
+                    console.log("source changed, deleting cache", { filePath });
+                    vanillaModuleCache.delete(filePath);
+                } else if (vanillaModulePreviousTimeAtPath.has(filePath)) {
+                    // fs.writeFileSync(path.resolve(config.root, "tmp", filePath.split("/").pop()!), source);
+                    // fs.writeFileSync(
+                    //     path.resolve(config.root, "tmp", filePath.split("/").pop()! + ".lasttime"),
+                    //     sourceByPathLastTime.get(filePath)
+                    // );
+                    console.log("source didn't change, re-using cache", {
+                        filePath,
+                        wasInvalidatedButDidntChange: wasInvalidatedButDidntChange.has(filePath),
+                    });
                 }
 
-                // logger({ serializeVanillaModule: true, filePath });
-                return serializeVanillaModuleWithoutUnused(cssImports, exports, context, usedComponents, compiled);
+                vanillaModulePreviousTimeAtPath.set(filePath, { source, usedClassNameList });
+
+                console.log({ wasInvalidatedButDidntChange });
+                // we only care about .css.ts with sprinkles
+                if (!compiled || compiled.sprinkleConfigs.size === 0) {
+                    loggerSerialize("defaultSerializeVanillaModule");
+                    const result =
+                        vanillaModuleCache.get(filePath) ?? defaultSerializeVanillaModule(cssImports, exports, context);
+                    vanillaModuleCache.set(filePath, result);
+                    return result;
+                    // return defaultSerializeVanillaModule(cssImports, exports, context)
+                }
+
+                loggerSerialize({ serializeVanillaModule: true, filePath });
+                const result =
+                    vanillaModuleCache.get(filePath) ??
+                    serializeVanillaModuleWithoutUnused(cssImports, exports, context, usedComponents, compiled);
+                vanillaModuleCache.set(filePath, result);
+                return result;
+                // return serializeVanillaModuleWithoutUnused(cssImports, exports, context, usedComponents, compiled)
             },
             ...vanillaExtractOptions,
             onEvaluated: (args) => {
                 const { source, context, evalResult, filePath } = args;
+                // onEvaluatedArgsByPathMap.set(filePath, args);
                 vanillaExtractOptions?.onEvaluated?.(args);
 
                 // re-use the same compiled object if the file didn't change
@@ -189,6 +248,7 @@ export const createViteVanillaExtractSprinklesExtractor = ({
 
                 sourceByPath.set(filePath, source);
 
+                // getCompiledSprinklePropertyByDebugIdPairMap: 492.696ms = 1st time only pour big box
                 const compiled =
                     compiledByFilePath.get(filePath) ?? getCompiledSprinklePropertyByDebugIdPairMap(evalResult);
                 if (compiled.sprinkleConfigs.size === 0) return;
@@ -244,6 +304,7 @@ export const createViteVanillaExtractSprinklesExtractor = ({
                 }
 
                 const usedClassNameList = getUsedClassNameFromCompiledSprinkles(compiled, usedComponents);
+                usedClassNameListByPath.set(filePath, usedClassNameList);
 
                 let original: AdapterContext;
                 if (vanillaExtractOptions?.onAfterEvaluateMutation) {
@@ -259,6 +320,7 @@ export const createViteVanillaExtractSprinklesExtractor = ({
                 });
                 loggerEval({ usedClassNameList });
 
+                // mutateContextByKeepingUsedRulesOnly: 60-85.253ms
                 mutateContextByKeepingUsedRulesOnly({
                     context,
                     usedClassNameList,

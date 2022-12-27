@@ -81,8 +81,14 @@ export const createViteBoxExtractor = ({
 
             // @ts-expect-error
             if (sourceFile && isExtractableFile(id)) {
+                // TODO extract only on diff ?
+                console.time("extract + onExtracted" + id);
+                console.time("extract" + id);
                 const extracted = extract({ ast: sourceFile!, components, functions, used });
+                console.timeEnd("extract" + id);
+
                 onExtracted?.({ extracted, id, isSsr: Boolean(options?.ssr), used });
+                console.timeEnd("extract + onExtracted" + id);
                 // console.dir({ id, extracted }, { depth: null });
                 // TODO clean relevant part in used map if file is removed
                 // which means we have to track what was added in usedMap by file id ?
