@@ -41,10 +41,12 @@ const loggerExtract = debug("box-ex:ve:extract");
 export const createViteVanillaExtractSprinklesExtractor = ({
     components = {},
     functions = {},
+    mappedProps = {},
     onExtracted,
     vanillaExtractOptions,
     ...options
 }: Omit<CreateViteBoxExtractorOptions, "used"> & {
+    mappedProps?: Record<string, string[]>;
     vanillaExtractOptions?: VanillaExtractPluginOptions & {
         onAfterEvaluateMutation?: (args: OnAfterEvaluateMutation) => void;
     };
@@ -192,6 +194,54 @@ export const createViteVanillaExtractSprinklesExtractor = ({
                 if (compiled.sprinkleConfigs.size === 0) return;
 
                 compiledByFilePath.set(filePath, compiled);
+
+                if (mappedProps) {
+                    const mapped = mappedProps ?? {};
+                    usedComponents.forEach((usedStyle, _componentName) => {
+                        Object.entries(mapped).forEach(([mappedName, mappedValues]) => {
+                            if (usedStyle.properties.has(mappedName)) {
+                                const usedWithMappedName = usedStyle.properties.get(mappedName)!;
+                                mappedValues.forEach((mappedValue) => {
+                                    const current = usedStyle.properties.get(mappedValue);
+                                    // console.log({
+                                    //     _componentName,
+                                    //     mappedName,
+                                    //     mappedValue,
+                                    //     usedAsMapped: usedWithMappedName,
+                                    //     current,
+                                    // });
+                                    if (!current) {
+                                        usedStyle.properties.set(mappedValue, usedWithMappedName);
+                                        return;
+                                    }
+
+                                    usedWithMappedName.forEach((value) => current.add(value));
+                                });
+                            }
+
+                            if (usedStyle.conditionalProperties.has(mappedName)) {
+                                // const usedWithMappedName = usedStyle.conditionalProperties.get(mappedName)!;
+                                // mappedValues.forEach((mappedValue) => {
+                                //     const current = usedStyle.conditionalProperties.get(mappedValue);
+                                //     console.log({
+                                //         _componentName,
+                                //         mappedName,
+                                //         mappedValue,
+                                //         usedAsMapped: usedWithMappedName,
+                                //         current,
+                                //     });
+                                //     if (!current) {
+                                //         usedStyle.conditionalProperties.set(mappedValue, usedWithMappedName);
+                                //         return;
+                                //     }
+                                //     usedWithMappedName.forEach((value) => current.add(value));
+                                // });
+                            }
+                        });
+                    });
+
+                    // console.dir({ usedComponents }, { depth: null });
+                }
 
                 const usedClassNameList = getUsedClassNameFromCompiledSprinkles(compiled, usedComponents);
 
