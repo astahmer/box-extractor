@@ -6,7 +6,7 @@ import { evaluateNode, isEvalError, safeEvaluateNode } from "./evaluate";
 // eslint-disable-next-line import/no-cycle
 import { getIdentifierReferenceValue, maybeStringLiteral } from "./maybeLiteral";
 import type { ExtractedPropPair } from "./types";
-import { isNotNullish, parseType, unwrapExpression } from "./utils";
+import { isNotNullish, unwrapExpression } from "./utils";
 
 export const maybeObjectEntries = (node: Node): ExtractedPropPair[] | undefined => {
     if (Node.isObjectLiteralExpression(node)) {
@@ -96,20 +96,6 @@ const getObjectLiteralExpressionPropPairs = (expression: ObjectLiteralExpression
             if (isNotNullish(maybeValue)) {
                 extractedPropValues.push([propName, maybeValue]);
                 return;
-            }
-
-            const maybeType = parseType(expression.getType());
-            if (isNotNullish(maybeType)) {
-                if (typeof maybeType === "string") {
-                    extractedPropValues.push([propName, maybeType]);
-                    return;
-                }
-
-                if (!Array.isArray(maybeType)) return;
-
-                maybeType.forEach((possibleValue) => {
-                    extractedPropValues.push([propName, possibleValue]);
-                });
             }
         }
 
