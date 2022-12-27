@@ -152,9 +152,11 @@ importers:
   packages/box-extractor:
     specifiers:
       '@phenomnomnominal/tsquery': ^5.0.0
+      '@types/debug': ^4.1.7
       '@types/react': ^18.0.15
       '@types/react-dom': ^18.0.6
       '@vanilla-extract/sprinkles': ^1.5.1
+      debug: ^4.3.4
       esbuild: ^0.16.7
       microdiff: ^1.3.1
       pastable: ^2.0.10
@@ -168,6 +170,8 @@ importers:
       vitest: ^0.25.8
     dependencies:
       '@phenomnomnominal/tsquery': 5.0.0_typescript@4.8.4
+      '@types/debug': 4.1.7
+      debug: 4.3.4
       microdiff: 1.3.1
       pastable: 2.0.13
       ts-evaluator: 1.0.7_typescript@4.8.4
@@ -2327,7 +2331,6 @@ packages:
     resolution: {integrity: sha512-9AonUzyTjXXhEOa0DnqpzZi6VHlqKMswga9EXjpXnnqxwLtdvPPtlO8evrI5D9S6asFRCQ6v+wpiUKbw+vKqyg==}
     dependencies:
       '@types/ms': 0.7.31
-    dev: true
 
   /@types/eslint/7.29.0:
     resolution: {integrity: sha512-VNcvioYDH8/FxaeTKkM4/TiTwt6pBV9E3OfGmvaw8tPl0rrHCJ4Ll15HRT+pMiFAf/MLQvAzC+6RzUMEL9Ceng==}
@@ -2413,7 +2416,6 @@ packages:
 
   /@types/ms/0.7.31:
     resolution: {integrity: sha512-iiUgKzV9AuaEkZqkOLDIvlQiL6ltuZd9tGcW3gwpnX8JbuiuhFlEGmmFXEXkN50Cvq7Os88IY2v0dkDqXYWVgA==}
-    dev: true
 
   /@types/node/12.20.55:
     resolution: {integrity: sha512-J8xLz7q2OFulZ2cyGTLE1TbbZcjpno7FaN6zdJNrgAdrJ+DZzh/uFR6YrTb4C+nXakvud8Q4+rbhoIWlYQbUFQ==}

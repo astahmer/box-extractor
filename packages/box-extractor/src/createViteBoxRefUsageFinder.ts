@@ -1,16 +1,13 @@
-import type { SourceFile } from "ts-morph";
+import debug from "debug";
 import { Project, ts } from "ts-morph";
-import type { Plugin } from "vite";
-import { normalizePath } from "vite";
+import { createFilter, normalizePath, Plugin } from "vite";
 import type { CreateViteBoxExtractorOptions } from "./createViteBoxExtractor";
-import { defaultIsExtractableFile, ensureAbsolute } from "./extensions-helpers";
+import { ensureAbsolute } from "./extensions-helpers";
 
 import {
     findAllTransitiveComponents,
     FindAllTransitiveComponentsOptions,
 } from "./extractor/findAllTransitiveComponents";
-
-// https://github.com/qmhc/vite-plugin-dts/blob/main/src/plugin.ts
 
 // Components
 // :matches(JsxOpeningElement, JsxSelfClosingElement):has(Identifier[name="ColorBox"]) JsxAttribute > Identifier[name=/color|backgroundColor/] ~ StringLiteral
@@ -18,9 +15,7 @@ import {
 // Sprinkles fn
 // JsxAttributes CallExpression > Identifier[name=/colorSprinkles/]
 
-// TODO use unplugin to get a bundler-agnostic plugin https://github.com/unjs/unplugin
-
-// TODO logs with debug
+const logger = debug("box-ex:finder:vite");
 
 export const createViteBoxRefUsageFinder = ({
     components: _components = {},
@@ -35,10 +30,12 @@ export const createViteBoxRefUsageFinder = ({
     const functions = Array.isArray(_functions)
         ? Object.fromEntries(_functions.map((name) => [name, { properties: "all" }]))
         : _functions;
-    const isExtractableFile = options.isExtractableFile ?? defaultIsExtractableFile;
+
+    logger("createViteBoxRefUsageFinder", { components, functions });
 
     let project: Project;
-    // console.log('createViteBoxRefUsageFinder', components);
+    let isIncluded: ReturnType<typeof createFilter>;
+    const cacheMap = new Map<string, string>();
 
     return {
         enforce: "pre",
@@ -62,42 +59,69 @@ export const createViteBoxRefUsageFinder = ({
                 },
                 tsConfigFilePath: tsConfigPath,
             });
+
+            isIncluded = createFilter(
+                options.include ?? /\.[jt]sx?$/,
+                options.exclude ?? [/node_modules/, /\.css\.ts$/],
+                { resolve: root }
+            );
         },
         transform(code, id) {
             // console.log({ id });
-            let sourceFile: SourceFile;
 
-            // add ts file to project so that references can be resolved
-            if (isExtractableFile(id)) {
-                sourceFile = project.createSourceFile(id.endsWith(".tsx") ? id : id + ".tsx", code, {
-                    overwrite: true,
-                    scriptKind: ts.ScriptKind.TSX,
-                });
+            if (!isIncluded(id)) return null;
+            if (cacheMap.has(id) && cacheMap.get(id) === code) {
+                logger("source hasnt changed", id);
+                return null;
             }
 
-            // @ts-expect-error
-            if (sourceFile && isExtractableFile(id)) {
-                const transitiveMap: FindAllTransitiveComponentsOptions["transitiveMap"] = new Map();
-                findAllTransitiveComponents({ ast: sourceFile!, components: Object.keys(components), transitiveMap });
+            cacheMap.set(id, code);
 
-                // TODO callback ?
-                // console.log({ transitiveMap, components });
-                transitiveMap.forEach((value, componentName) => {
-                    value.refUsedWithSpread.forEach((transitiveName) => {
-                        const config = components[value.from ?? componentName];
-                        if (config) {
-                            components[transitiveName] = config;
-                        }
-                    });
-                });
-                // console.log("after", { components });
+            let isUsingExtractableProps = false;
+            const componentNames = Array.isArray(components) ? components : Object.keys(components);
+            componentNames.forEach((component) => {
+                if (code.includes("<" + component)) {
+                    isUsingExtractableProps = true;
+                }
+            });
+
+            const functionNames = Array.isArray(functions) ? functions : Object.keys(functions);
+            functionNames.forEach((fn) => {
+                if (code.includes(fn + "(")) {
+                    isUsingExtractableProps = true;
+                }
+            });
+
+            if (!isUsingExtractableProps) {
+                logger("no used component/functions found", id);
+                return null;
             }
+
+            const sourceFile = project.createSourceFile(id.endsWith(".tsx") ? id : id + ".tsx", code, {
+                overwrite: true,
+                scriptKind: ts.ScriptKind.TSX,
+            });
+
+            const transitiveMap: FindAllTransitiveComponentsOptions["transitiveMap"] = new Map();
+            findAllTransitiveComponents({ ast: sourceFile, components: Object.keys(components), transitiveMap });
+
+            // TODO callback ?
+            // console.log({ transitiveMap, components });
+            transitiveMap.forEach((value, componentName) => {
+                value.refUsedWithSpread.forEach((transitiveName) => {
+                    const config = components[value.from ?? componentName];
+                    if (config) {
+                        components[transitiveName] = config;
+                    }
+                });
+            });
+            // console.log("after", { components });
 
             return null;
         },
         watchChange(id) {
             // console.log({ id, change });
-            if (isExtractableFile(id) && project) {
+            if (project && isIncluded(id)) {
                 const sourceFile = project.getSourceFile(normalizePath(id));
 
                 sourceFile && project.removeSourceFile(sourceFile);
