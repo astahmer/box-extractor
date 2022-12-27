@@ -3,7 +3,7 @@ import { Node } from "ts-morph";
 
 import { maybeLiteral } from "./maybeLiteral";
 import { maybeObjectEntries } from "./maybeObjectEntries";
-import { isNotNullish, parseType, unwrapExpression } from "./utils";
+import { isNotNullish, unwrapExpression } from "./utils";
 
 export const extractJsxAttributeIdentifierValue = (identifier: Identifier) => {
     // console.log(n.getText(), n.parent.getText());
@@ -30,9 +30,6 @@ export const extractJsxAttributeIdentifierValue = (identifier: Identifier) => {
         // = defineProperties.conditions
         const maybeValue = maybeLiteral(expression);
         if (isNotNullish(maybeValue)) return maybeValue;
-
-        const maybeType = parseType(expression.getType());
-        if (isNotNullish(maybeType)) return maybeType;
 
         const maybeObject = maybeObjectEntries(expression);
         // console.dir({ maybeObject }, { depth: null });

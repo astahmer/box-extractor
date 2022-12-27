@@ -14,7 +14,7 @@ import { safeEvaluateNode } from "./evaluate";
 // eslint-disable-next-line import/no-cycle
 import { maybeObjectEntries } from "./maybeObjectEntries";
 import type { ExtractedPropMap } from "./types";
-import { isNotNullish, parseType, unwrapExpression } from "./utils";
+import { isNotNullish, unwrapExpression } from "./utils";
 
 export function maybeLiteral(node: Node): string | string[] | ObjectLiteralExpression | ExtractedPropMap | undefined {
     // console.log("maybeLiteral", node.getKindName(), node.getText());
@@ -255,9 +255,6 @@ export const getIdentifierReferenceValue = (identifier: Identifier) => {
             const maybeValue = maybeLiteral(initializer);
             if (isNotNullish(maybeValue)) return maybeValue;
 
-            const maybeType = parseType(initializer.getType());
-            if (isNotNullish(maybeType)) return maybeType;
-
             if (Node.isObjectLiteralExpression(initializer)) {
                 return initializer;
             }
@@ -299,9 +296,6 @@ const tryUnwrapBinaryExpression = (node: BinaryExpression) => {
 const getElementAccessedExpressionValue = (
     expression: ElementAccessExpression
 ): string | string[] | ObjectLiteralExpression | ExtractedPropMap | undefined => {
-    const maybeType = parseType(expression.getType());
-    if (isNotNullish(maybeType)) return maybeType;
-
     const elementAccessed = unwrapExpression(expression.getExpression());
     const arg = unwrapExpression(expression.getArgumentExpressionOrThrow());
 
@@ -432,9 +426,6 @@ const getArrayElementValueAtIndex = (array: ArrayLiteralExpression, index: numbe
 };
 
 const getPropertyAccessedExpressionValue = (expression: PropertyAccessExpression) => {
-    const maybeType = parseType(expression.getType());
-    if (isNotNullish(maybeType)) return maybeType;
-
     const maybeValue = safeEvaluateNode<string | string[]>(expression);
     if (isNotNullish(maybeValue)) return maybeValue;
 
