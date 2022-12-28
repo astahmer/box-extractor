@@ -56,7 +56,7 @@
     },
     "peerDependencies": {
         "@vanilla-extract/css": ">= 1.9",
-        "typescript": ">= 4.6.3 <= 4.8.4",
+        "typescript": ">= 4.9.4",
         "vite": "^3"
     },
     "devDependencies": {
