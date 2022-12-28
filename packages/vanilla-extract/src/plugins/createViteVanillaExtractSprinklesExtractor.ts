@@ -241,13 +241,6 @@ export const createViteVanillaExtractSprinklesExtractor = ({
                                 const usedWithMappedName = usedStyle.properties.get(mappedName)!;
                                 mappedValues.forEach((mappedValue) => {
                                     const current = usedStyle.properties.get(mappedValue);
-                                    // console.log({
-                                    //     _componentName,
-                                    //     mappedName,
-                                    //     mappedValue,
-                                    //     usedAsMapped: usedWithMappedName,
-                                    //     current,
-                                    // });
                                     if (!current) {
                                         usedStyle.properties.set(mappedValue, usedWithMappedName);
                                         return;
@@ -258,27 +251,26 @@ export const createViteVanillaExtractSprinklesExtractor = ({
                             }
 
                             if (usedStyle.conditionalProperties.has(mappedName)) {
-                                // const usedWithMappedName = usedStyle.conditionalProperties.get(mappedName)!;
-                                // mappedValues.forEach((mappedValue) => {
-                                //     const current = usedStyle.conditionalProperties.get(mappedValue);
-                                //     console.log({
-                                //         _componentName,
-                                //         mappedName,
-                                //         mappedValue,
-                                //         usedAsMapped: usedWithMappedName,
-                                //         current,
-                                //     });
-                                //     if (!current) {
-                                //         usedStyle.conditionalProperties.set(mappedValue, usedWithMappedName);
-                                //         return;
-                                //     }
-                                //     usedWithMappedName.forEach((value) => current.add(value));
-                                // });
+                                const usedWithMappedName = usedStyle.conditionalProperties.get(mappedName)!;
+                                mappedValues.forEach((mappedValue) => {
+                                    const current = usedStyle.conditionalProperties.get(mappedValue);
+                                    if (!current) {
+                                        usedStyle.conditionalProperties.set(mappedValue, usedWithMappedName);
+                                        return;
+                                    }
+
+                                    usedWithMappedName.forEach((values, conditionFromMappedName) => {
+                                        if (current.has(conditionFromMappedName)) {
+                                            const currentValues = current.get(conditionFromMappedName)!;
+                                            values.forEach((value) => currentValues.add(value));
+                                        } else {
+                                            current.set(conditionFromMappedName, values);
+                                        }
+                                    });
+                                });
                             }
                         });
                     });
-
-                    // console.dir({ usedComponents }, { depth: null });
                 }
 
                 const usedClassNameList = getUsedClassNameFromCompiledSprinkles(compiled, usedComponents);
