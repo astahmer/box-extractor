@@ -1,5 +1,13 @@
 # @box-extractor/core
 
+## 0.1.8
+
+### Patch Changes
+
+-   [#14](https://github.com/astahmer/box-extractor/pull/14) [`123675d`](https://github.com/astahmer/box-extractor/commit/123675de07a5cfd3eae781f5ac028e2d2a16ef54) Thanks [@astahmer](https://github.com/astahmer)! - feat(core): add debug logs + rollup file filter
+    feat(core): use cacheMap + fast check with includes
+    to avoid AST-parsing when not needed (300ms gain x2 on small demo)
+
 ## 0.1.0
 
 ### Minor Changes
