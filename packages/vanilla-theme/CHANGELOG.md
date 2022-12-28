@@ -1,5 +1,12 @@
 # @box-extractor/vanilla-theme
 
+## 0.1.17
+
+### Patch Changes
+
+-   Updated dependencies [[`a59b8e8`](https://github.com/astahmer/box-extractor/commit/a59b8e8ef4380eb05bbe78ad799867632f7d0e0f)]:
+    -   @box-extractor/vanilla-extract@0.1.20
+
 ## 0.1.16
 
 ### Patch Changes
