@@ -10,8 +10,21 @@ export default defineConfig((_env) => ({
     build: { outDir: "./dist", sourcemap: true },
     plugins: [
         createViteVanillaExtractSprinklesExtractor({
-            components: ["ColorBox", "DessertBox", "Box"],
+            components: ["ColorBox", "DessertBox", "Box", "BoxWithCss"],
             functions: ["colorSprinkles", "themeSprinkles", "minimalSprinkles"],
+            include: ["./src/components/**/*.tsx"],
+            onExtracted(args) {
+                const BoxWithCss = args.used.get("BoxWithCss");
+                if (!BoxWithCss) return;
+
+                console.dir(BoxWithCss, { depth: null });
+                const css = BoxWithCss.conditionalProperties.get("css");
+                if (!css) return;
+
+                console.log(css);
+
+                // css.forEach(())
+            },
             // vanillaExtractOptions: {
             //     onAfterEvaluateMutation: (args) => console.dir(args.usedComponents.get("Box"), { depth: null }),
             // },

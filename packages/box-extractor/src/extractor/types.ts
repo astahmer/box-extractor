@@ -13,7 +13,7 @@ export type ComponentUsedPropertiesStyle = {
 export type UsedComponentsMap = Map<string, ComponentUsedPropertiesStyle>;
 
 export type ExtractedComponentProperties = [componentName: string, propPairs: ExtractedPropPair[]];
-export type ExtractedPropPair = [propName: string, propValue: string | string[]];
+export type ExtractedPropPair = [propName: string, propValue: string | string[] | ExtractedPropMap];
 export type ExtractedPropMap = Record<string, string | string[]>;
 
 export type ListOrAll = "all" | string[];

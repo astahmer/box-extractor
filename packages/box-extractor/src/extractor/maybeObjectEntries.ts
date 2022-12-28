@@ -1,14 +1,22 @@
-import { castAsArray, isObjectLiteral } from "pastable";
+import debug from "debug";
+import { isObjectLiteral } from "pastable";
 import type { ObjectLiteralElementLike, ObjectLiteralExpression } from "ts-morph";
 import { Node, ts } from "ts-morph";
 
 import { evaluateNode, isEvalError, safeEvaluateNode } from "./evaluate";
 // eslint-disable-next-line import/no-cycle
-import { getIdentifierReferenceValue, maybeStringLiteral } from "./maybeLiteral";
-import type { ExtractedPropPair } from "./types";
+import { getIdentifierReferenceValue, maybeLiteral, maybeStringLiteral } from "./maybeLiteral";
+import type { ExtractedPropMap, ExtractedPropPair } from "./types";
 import { isNotNullish, unwrapExpression } from "./utils";
 
-export const maybeObjectEntries = (node: Node): ExtractedPropPair[] | undefined => {
+const logger = debug("box-ex:extractor:object");
+// TODO return
+// { type: "object", value: ExtractedPropMap } instead of ExtractedPropMap
+// { type: "pairs", value: ExtractedPropPair[] } instead of ExtractedPropPair[]
+// { type: "literals", value: string[] } instead of string[]
+// etc
+
+export const maybeObjectEntries = (node: Node, propName?: string): ExtractedPropPair[] | undefined => {
     if (Node.isObjectLiteralExpression(node)) {
         return getObjectLiteralExpressionPropPairs(node);
     }
@@ -25,14 +33,40 @@ export const maybeObjectEntries = (node: Node): ExtractedPropPair[] | undefined 
     }
 
     // <ColorBox {...(xxx ? yyy : zzz)} />
+    // <ColorBox css={xxx ? yyy : zzz} />
     if (Node.isConditionalExpression(node)) {
         const maybeObject = evaluateNode(node);
 
         // fallback to both possible outcome
         if (isEvalError(maybeObject)) {
-            const whenTrue = maybeObjectEntries(node.getWhenTrue()) ?? [];
-            const whenFalse = maybeObjectEntries(node.getWhenFalse()) ?? [];
-            // console.log({ whenTrue, whenFalse });
+            const whenTrueExpr = unwrapExpression(node.getWhenTrue());
+            const whenFalseExpr = unwrapExpression(node.getWhenFalse());
+
+            let whenTrue = maybeObjectEntries(whenTrueExpr) ?? [];
+            let whenFalse = maybeObjectEntries(whenFalseExpr) ?? [];
+
+            if (whenTrue.length > 0 && whenFalse.length > 0) {
+                const merged = mergePossibleEntries(whenTrue, whenFalse);
+                if (merged.length > 0) return merged;
+            }
+
+            if (propName) {
+                if (whenTrue.length === 0) {
+                    const literal = maybeLiteral(whenTrueExpr);
+                    if (isNotNullish(literal)) {
+                        whenTrue = [[propName, literal]] as ExtractedPropPair[];
+                    }
+                }
+
+                if (whenFalse.length === 0) {
+                    const literal = maybeLiteral(whenFalseExpr);
+                    if (isNotNullish(literal)) {
+                        whenFalse = [[propName, literal]] as ExtractedPropPair[];
+                    }
+                }
+            }
+
+            logger({ whenTrue, whenFalse, propName, whenFalseLiteral: maybeStringLiteral(whenFalseExpr) });
             return mergePossibleEntries(whenTrue, whenFalse);
         }
 
@@ -53,6 +87,7 @@ export const maybeObjectEntries = (node: Node): ExtractedPropPair[] | undefined 
         }
     }
 
+    // <ColorBox {...fn()} />
     if (Node.isCallExpression(node)) {
         const maybeObject = safeEvaluateNode(node);
         if (!maybeObject) return [];
@@ -62,6 +97,7 @@ export const maybeObjectEntries = (node: Node): ExtractedPropPair[] | undefined 
         }
     }
 
+    // <ColorBox {...obj.prop} />
     if (Node.isPropertyAccessExpression(node)) {
         const maybeObject = safeEvaluateNode(node);
         if (!maybeObject) return [];
@@ -71,6 +107,7 @@ export const maybeObjectEntries = (node: Node): ExtractedPropPair[] | undefined 
         }
     }
 
+    // <ColorBox {...obj[element]} />
     if (Node.isElementAccessExpression(node)) {
         const maybeObject = safeEvaluateNode(node);
         if (!maybeObject) return [];
@@ -92,6 +129,23 @@ const getObjectLiteralExpressionPropPairs = (expression: ObjectLiteralExpression
 
             const initializer = unwrapExpression(propElement.getInitializerOrThrow());
             const maybeValue = maybeStringLiteral(initializer);
+
+            const maybeObject = maybeObjectEntries(initializer, propName);
+            if (isNotNullish(maybeObject) && maybeObject.length > 0) {
+                const pairs = [] as typeof maybeObject;
+                maybeObject.forEach(([name, value]) => {
+                    if (name === propName) {
+                        extractedPropValues.push([name, value]);
+                        return;
+                    }
+
+                    pairs.push([name, value]);
+                });
+                if (pairs.length === 0) return;
+
+                extractedPropValues.push([propName, Object.fromEntries(pairs) as ExtractedPropMap]);
+                return;
+            }
 
             if (isNotNullish(maybeValue)) {
                 extractedPropValues.push([propName, maybeValue]);
@@ -143,28 +197,38 @@ const getPropertyName = (property: ObjectLiteralElementLike) => {
  * merged: [ [ 'color', [ 'never.250', 'salmon.850', 'salmon.900' ] ] ]
  */
 const mergePossibleEntries = (whenTrue: ExtractedPropPair[], whenFalse: ExtractedPropPair[]) => {
-    const merged = new Map<string, Set<string>>();
+    const merged = new Map<string, Set<string | ExtractedPropMap>>();
 
-    whenTrue.forEach(([propName, propValues]) => {
+    whenTrue.forEach(([propName, _propValues]) => {
+        const propValues = (Array.isArray(_propValues) ? _propValues : [_propValues]) as Array<
+            string | ExtractedPropMap
+        >;
         const whenFalsePairWithPropName = whenFalse.find(([prop]) => prop === propName);
         if (whenFalsePairWithPropName) {
-            merged.set(propName, new Set([...castAsArray(propValues), ...castAsArray(whenFalsePairWithPropName[1])]));
+            const whenFalse = whenFalsePairWithPropName[1];
+            merged.set(propName, new Set([...propValues, ...(Array.isArray(whenFalse) ? whenFalse : [whenFalse])]));
             return;
         }
 
-        merged.set(propName, new Set(castAsArray(propValues)));
+        logger({ propName, propValues, whenTrue, whenFalse });
+        merged.set(propName, new Set(propValues));
     });
 
-    whenFalse.forEach(([propName, propValues]) => {
+    whenFalse.forEach(([propName, _propValues]) => {
         if (merged.has(propName)) return;
 
+        const propValues = (Array.isArray(_propValues) ? _propValues : [_propValues]) as Array<
+            string | ExtractedPropMap
+        >;
         const whenTruePairWithPropName = whenTrue.find(([prop]) => prop === propName);
         if (whenTruePairWithPropName) {
-            merged.set(propName, new Set([...castAsArray(propValues), ...castAsArray(whenTruePairWithPropName[1])]));
+            const whenTrue = whenTruePairWithPropName[1];
+            merged.set(propName, new Set([...propValues, ...(Array.isArray(whenTrue) ? whenTrue : [whenTrue])]));
             return;
         }
 
-        merged.set(propName, new Set(castAsArray(propValues)));
+        logger({ propName, propValues, whenTrue, whenFalse });
+        merged.set(propName, new Set(propValues));
     });
 
     return Array.from(merged.entries()).map(([propName, propValues]) => [

@@ -102,7 +102,7 @@ const maybeExpandConditionalExpression = (node: Node): string | string[] | Extra
         if (!isNotNullish(whenTrueValue)) {
             const maybeObject = maybeObjectEntries(whenTrueExpr);
             if (isNotNullish(maybeObject) && maybeObject.length > 0) {
-                whenTrueValue = Object.fromEntries(maybeObject);
+                whenTrueValue = Object.fromEntries(maybeObject) as ExtractedPropMap;
             }
         }
 
@@ -110,7 +110,7 @@ const maybeExpandConditionalExpression = (node: Node): string | string[] | Extra
         if (!isNotNullish(whenFalseValue)) {
             const maybeObject = maybeObjectEntries(whenFalseExpr);
             if (isNotNullish(maybeObject) && maybeObject.length > 0) {
-                whenFalseValue = Object.fromEntries(maybeObject);
+                whenFalseValue = Object.fromEntries(maybeObject) as ExtractedPropMap;
             }
         }
 

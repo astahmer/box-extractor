@@ -8,7 +8,7 @@
     },
     "author": "Alexandre Stahmer <alexandre.stahmer@gmail.com>",
     "scripts": {
-        "dev": "vite",
+        "dev": "DEBUG=box-ex:extractor:* vite",
         "build": "vite build",
         "preview": "vite preview",
         "format": "prettier --write \"./{src,tests}/**/*\"",

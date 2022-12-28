@@ -38,7 +38,9 @@ afterEach(() => {
 });
 
 const config: ExtractOptions["components"] = {
-    ColorBox: { properties: ["color", "backgroundColor", "zIndex", "mobile"] },
+    ColorBox: {
+        properties: ["color", "backgroundColor", "zIndex", "fontSize", "display", "mobile", "tablet", "desktop", "css"],
+    },
 };
 
 const extractFromCode = (code: string) => {
@@ -129,6 +131,7 @@ it("extract it all", () => {
                   ["color", "orange.100"],
                   ["backgroundColor", "twitter.200"],
                   ["color", "orange.200"],
+                  ["backgroundColor", "twitter.200"],
                   ["color", "orange.400"],
                   ["color", "telegram.300"],
                   ["backgroundColor", "telegram.400"],
@@ -1565,6 +1568,133 @@ it("extract JsxAttribute > JsxExpression > reversed", () => {
                           color: "sky.100",
                           tablet: "sky.200",
                           desktop: "sky.300",
+                      },
+                  ],
+              ],
+          ],
+      ]
+    `);
+});
+
+// TODO missing display.block
+it("extract JsxAttribute > ObjectLiteralExpression > css prop", () => {
+    expect(
+        extractFromCode(`
+        <ColorBox
+            css={{
+                backgroundColor: "sky.500",
+                __color: "##ff0",
+                // TODO missing display.block
+                mobile: { fontSize: "2xl", display: true ? "flex" : "block" },
+                zIndex: { desktop: "10" },
+            }}
+        >
+            css prop
+        </ColorBox>
+        `)
+    ).toMatchInlineSnapshot(`
+      [
+          [
+              "ColorBox",
+              [
+                  [
+                      "css",
+                      {
+                          backgroundColor: "sky.500",
+                          __color: "##ff0",
+                          mobile: {
+                              fontSize: "2xl",
+                              display: "flex",
+                          },
+                          zIndex: {
+                              desktop: "10",
+                          },
+                      },
+                  ],
+              ],
+          ],
+      ]
+    `);
+});
+
+// TODO missing display.block
+it("extract JsxAttribute > ObjectLiteralExpression > css prop > ConditionalExpression", () => {
+    expect(
+        extractFromCode(`
+        <ColorBox
+            css={true ? {
+                backgroundColor: "sky.600",
+                __color: "##ff0",
+                // TODO missing display.block
+                mobile: { fontSize: "2xl", display: true ? "flex" : "block" },
+                zIndex: { desktop: "10" },
+            } : "sky.700"}
+        >
+            css prop
+        </ColorBox>
+        `)
+    ).toMatchInlineSnapshot(`
+      [
+          [
+              "ColorBox",
+              [
+                  [
+                      "css",
+                      {
+                          backgroundColor: "sky.600",
+                          __color: "##ff0",
+                          mobile: {
+                              fontSize: "2xl",
+                              display: "flex",
+                          },
+                          zIndex: {
+                              desktop: "10",
+                          },
+                      },
+                  ],
+              ],
+          ],
+      ]
+    `);
+});
+
+// TODO missing crimson.900
+// TODO missing display.block
+it("extract JsxAttribute > ObjectLiteralExpression > css prop > PropertyAssignment > ConditionalExpression", () => {
+    expect(
+        extractFromCode(`
+        const [isShown] = useState(true);
+
+        <ColorBox
+            css={{
+                backgroundColor: isShown ? "sky.800" : "sky.900",
+                __color: "##ff0",
+                // TODO missing crimson.900
+                // TODO missing display.block
+                mobile: isShown ? { fontSize: "2xl", display: true ? "flex" : "block" } : "crimson.900",
+                zIndex: { desktop: "10" },
+            }}
+        >
+            css prop
+        </ColorBox>
+        `)
+    ).toMatchInlineSnapshot(`
+      [
+          [
+              "ColorBox",
+              [
+                  [
+                      "css",
+                      {
+                          backgroundColor: ["sky.800", "sky.900"],
+                          __color: "##ff0",
+                          mobile: {
+                              fontSize: ["2xl"],
+                              display: ["flex"],
+                          },
+                          zIndex: {
+                              desktop: "10",
+                          },
                       },
                   ],
               ],
