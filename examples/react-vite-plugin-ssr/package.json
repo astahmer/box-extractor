@@ -27,7 +27,7 @@
         "sirv": "^2.0.2",
         "ts-toolbelt": "^9.6.0",
         "tsx": "^3.12.1",
-        "typescript": "4.8.4",
+        "typescript": "4.9.4",
         "vite": "^3.0.9",
         "vite-plugin-ssr": "^0.4.54"
     },
