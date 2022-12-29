@@ -3,7 +3,7 @@ import { vanillaExtractPlugin } from "@vanilla-extract/esbuild-plugin";
 import type { VanillaExtractPluginOptions } from "@vanilla-extract/vite-plugin";
 import type { Plugin } from "esbuild";
 
-import { createEsbuildBoxExtractor, UsedComponentsMap } from "@box-extractor/core";
+import { createEsbuildBoxExtractor } from "@box-extractor/core";
 import type { CreateViteBoxExtractorOptions } from "@box-extractor/core";
 import {
     getCompiledSprinklePropertyByDebugIdPairMap,
@@ -17,18 +17,17 @@ export const createEsbuildVanillaExtractSprinklesExtractor = ({
     functions = {},
     onExtracted,
     vanillaExtractOptions,
+    used: usedComponents = new Map(),
     ...options
-}: Omit<CreateViteBoxExtractorOptions, "used"> & {
-    vanillaExtractOptions?: VanillaExtractPluginOptions;
-}): Plugin[] => {
-    const usedComponents = new Map() as UsedComponentsMap;
-
+}: Omit<CreateViteBoxExtractorOptions, "used"> &
+    Partial<Pick<CreateViteBoxExtractorOptions, "used">> & {
+        vanillaExtractOptions?: VanillaExtractPluginOptions;
+    }): Plugin[] => {
     // can probably delete those cache maps
     const compiledByFilePath = new Map<string, ReturnType<typeof getCompiledSprinklePropertyByDebugIdPairMap>>();
     const sourceByPath = new Map<string, string>();
 
     return [
-        // createViteBoxRefUsageFinder({ ...options, components, functions }),
         createEsbuildBoxExtractor({
             ...options,
             components,
