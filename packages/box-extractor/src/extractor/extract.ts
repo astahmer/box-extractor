@@ -5,13 +5,15 @@ import type { CallExpression, Identifier, JsxSpreadAttribute, Node } from "ts-mo
 import { extractCallExpressionValues } from "./extractCallExpressionIdentifierValues";
 import { extractJsxAttributeIdentifierValue } from "./extractJsxAttributeIdentifierValue";
 import { extractJsxSpreadAttributeValues } from "./extractJsxSpreadAttributeValues";
-import { maybeObjectEntriesReturnToMap } from "./maybeObjectEntries";
+import { castObjectLikeAsMapValue } from "./maybeObjectEntries";
+import { isPrimitiveType } from "./type-factory";
 import type {
     ComponentUsedPropertiesStyle,
     ExtractedComponentProperties,
     ExtractedPropPair,
     ExtractOptions,
     ListOrAll,
+    PrimitiveType,
 } from "./types";
 import { isNotNullish } from "./utils";
 
@@ -66,7 +68,7 @@ export const extract = ({ ast, components: _components, functions: _functions, u
             // console.log({ propName, extracted });
             const extractedValues = castAsArray(extracted).filter(isNotNullish);
             extractedValues.forEach((value) => {
-                if (typeof value === "string") {
+                if (isPrimitiveType(value)) {
                     propLiterals.add(value);
                 }
 
@@ -91,9 +93,9 @@ export const extract = ({ ast, components: _components, functions: _functions, u
 
         const spreadNodes = query<JsxSpreadAttribute>(ast, spreadSelector) ?? [];
         spreadNodes.forEach((node) => {
-            const extracted = Array.from(
-                maybeObjectEntriesReturnToMap(extractJsxSpreadAttributeValues(node)).entries()
-            ) as ExtractedPropPair[];
+            const raw = extractJsxSpreadAttributeValues(node);
+            console.log({ raw });
+            const extracted = Array.from(castObjectLikeAsMapValue(raw).entries()) as ExtractedPropPair[];
 
             return mergeSpreadEntries({
                 extracted,
@@ -133,7 +135,7 @@ export const extract = ({ ast, components: _components, functions: _functions, u
             // console.log({ extracted });
 
             return mergeSpreadEntries({
-                extracted: Array.from(maybeObjectEntriesReturnToMap().entries()) as ExtractedPropPair[],
+                extracted: Array.from(castObjectLikeAsMapValue().entries()) as ExtractedPropPair[],
                 propNameList,
                 componentMap,
                 extractedComponentPropValues,
@@ -160,7 +162,7 @@ function mergeSpreadEntries({
     componentMap: ComponentUsedPropertiesStyle;
     extractedComponentPropValues: ExtractedPropPair[];
 }) {
-    const foundPropList = new Set<string>();
+    const foundPropList = new Set<PrimitiveType>();
     const canTakeAllProp = maybePropNameList === "all";
     const propNameList = canTakeAllProp ? [] : maybePropNameList;
 
@@ -172,6 +174,7 @@ function mergeSpreadEntries({
         return true;
     });
 
+    console.dir({ extracted, entries }, { depth: null });
     // reverse again to keep the original order
     entries.reverse().forEach(([propName, propValue]) => {
         const propValues = componentMap.literals.get(propName) ?? new Set();
@@ -182,7 +185,7 @@ function mergeSpreadEntries({
 
         const extractedValues = castAsArray(propValue).filter(isNotNullish);
         extractedValues.forEach((value) => {
-            if (typeof value === "string") {
+            if (isPrimitiveType(value)) {
                 propValues.add(value);
                 extractedComponentPropValues.push([propName, value]);
             }
