@@ -1,6 +1,6 @@
 {
-    "name": "react-app",
-    "version": "0.0.4",
+    "name": "@box-extractor/examples-react-remix-kit",
+    "version": "0.0.1",
     "private": true,
     "sideEffects": false,
     "scripts": {
@@ -12,11 +12,14 @@
         "start": "remix-kit preview"
     },
     "dependencies": {
+        "@box-extractor/vanilla-theme": "workspace:^0.1.17",
         "@remix-kit/react": "^0.1.2",
         "@remix-kit/vite": "^0.1.2",
         "@remix-run/express": "^1.8.2",
         "@remix-run/node": "^1.8.2",
         "@remix-run/react": "^1.8.2",
+        "@vanilla-extract/css": "^1.9.2",
+        "@vanilla-extract/sprinkles": "^1.5.1",
         "compression": "^1.7.4",
         "cross-env": "^7.0.3",
         "express": "^4.18.2",
@@ -26,7 +29,10 @@
         "react-dom": "^18.2.0"
     },
     "devDependencies": {
+        "@box-extractor/core": "workspace:^0.1.8",
+        "@box-extractor/vanilla-extract": "workspace:^0.1.20",
         "@remix-kit/cli": "^0.1.2",
+        "@remix-kit/schema": "^0.1.2",
         "@remix-run/dev": "^1.8.2",
         "@remix-run/eslint-config": "^1.8.2",
         "@types/compression": "^1.7.2",
@@ -36,11 +42,16 @@
         "@types/react-dom": "^18.0.8",
         "autoprefixer": "^10.4.13",
         "dotenv": "^16.0.3",
+        "esbuild": "^0.16.7",
+        "esbuild-clean-plugin": "^1.0.0",
+        "esbuild-plugin-babel": "^0.2.3",
+        "esbuild-plugin-glob": "^2.2.0",
+        "esbuild-plugin-node-externals": "^1.0.1",
         "eslint": "^8.27.0",
         "nodemon": "^2.0.20",
         "npm-run-all": "^4.1.5",
         "postcss": "^8.4.19",
-        "tailwindcss": "^3.2.4",
+        "tsup": "^6.5.0",
         "typescript": "^4.8.4",
         "unbuild": "^1.0.2",
         "vite": "^4.0.1",

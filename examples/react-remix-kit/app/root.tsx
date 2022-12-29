@@ -2,7 +2,8 @@ import { ReactRefresh } from "@remix-kit/react";
 import type { MetaFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Links, Meta, Outlet, Scripts, useLoaderData } from "@remix-run/react";
-import stylesUrl from "./styles/tailwind.css?url";
+// import stylesUrl from "./styles/tailwind.css?url";
+import stylesUrl from "./styles/index.css?url";
 
 export const meta: MetaFunction = () => ({
     // eslint-disable-next-line unicorn/text-encoding-identifier-case
