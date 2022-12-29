@@ -5,8 +5,7 @@ import type { CallExpression, Identifier, JsxSpreadAttribute, Node } from "ts-mo
 import { extractCallExpressionValues } from "./extractCallExpressionIdentifierValues";
 import { extractJsxAttributeIdentifierValue } from "./extractJsxAttributeIdentifierValue";
 import { extractJsxSpreadAttributeValues } from "./extractJsxSpreadAttributeValues";
-import { castObjectLikeAsMapValue } from "./maybeObjectEntries";
-import { isPrimitiveType } from "./type-factory";
+import { castObjectLikeAsMapValue, isPrimitiveType } from "./type-factory";
 import type {
     ComponentUsedPropertiesStyle,
     ExtractedComponentProperties,
