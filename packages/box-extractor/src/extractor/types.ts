@@ -6,13 +6,15 @@ import type { SourceFile } from "ts-morph";
 // accidentally extractable tailwind classNames ?
 // also remove unused variants from https://vanilla-extract.style/documentation/packages/recipes/ ?
 
+export type PrimitiveType = string | number;
 export type ComponentUsedPropertiesStyle = {
-    literals: Map<string, Set<string>>;
-    entries: Map<string, Map<string, Set<string>>>;
+    literals: Map<string, Set<PrimitiveType>>;
+    entries: Map<string, Map<string, Set<PrimitiveType>>>;
 };
 export type UsedComponentsMap = Map<string, ComponentUsedPropertiesStyle>;
 
 export type ExtractedComponentProperties = [componentName: string, propPairs: ExtractedPropPair[]];
+// TODO PrimitiveType ?
 export type ExtractedPropPair = [propName: string, propValue: string | string[]];
 export type ExtractedPropMap = Record<string, string | string[]>;
 

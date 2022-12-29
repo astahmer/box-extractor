@@ -13,22 +13,19 @@ import { Node, ts } from "ts-morph";
 
 import { safeEvaluateNode } from "./evaluate";
 // eslint-disable-next-line import/no-cycle
+import { maybeObjectEntries, MaybeObjectEntriesReturn } from "./maybeObjectEntries";
 import {
+    box,
+    ConditionalType,
     ExtractedType,
-    LiteralType,
-    maybeObjectEntries,
-    MaybeObjectEntriesReturn,
-    ObjectType,
-} from "./maybeObjectEntries";
-import type { ExtractedPropMap } from "./types";
+    isPrimitiveType,
+    LiteralValue,
+    narrowCondionalType,
+    NodeObjectLiteralExpressionType,
+    toBoxType,
+} from "./type-factory";
+import type { ExtractedPropMap, PrimitiveType } from "./types";
 import { isNotNullish, unwrapExpression } from "./utils";
-
-type PrimitiveType = string | number;
-export const isPrimitiveType = (value: unknown): value is PrimitiveType => {
-    return typeof value === "string" || typeof value === "number";
-};
-
-export type LiteralValue = PrimitiveType | PrimitiveType[] | Record<string, unknown> | LiteralValue[];
 
 const innerGetLiteralValue = (
     valueType: PrimitiveType | ExtractedType | NodeObjectLiteralExpressionType
@@ -49,6 +46,21 @@ const innerGetLiteralValue = (
 
         return Object.fromEntries(entries);
     }
+
+    if (valueType.type === "conditional") {
+        // const possibleValues = [] as Array<Exclude<ExtractedType,ConditionalType>>
+        const narrowed = narrowCondionalType(valueType);
+        console.log({ narrowed });
+        if (narrowed.length === 1) {
+            console.log("narrowed.length === 1", getLiteralValue(narrowed[0]));
+            return getLiteralValue(narrowed[0]);
+        }
+
+        return narrowed
+            .map((value) => getLiteralValue(value))
+            .filter(isNotNullish)
+            .flat();
+    }
 };
 
 export const getLiteralValue = (maybeLiteral: MaybeLiteralReturn): LiteralValue | LiteralValue[] | undefined => {
@@ -65,6 +77,15 @@ export const getLiteralValue = (maybeLiteral: MaybeLiteralReturn): LiteralValue 
 
     return innerGetLiteralValue(maybeLiteral);
 };
+
+// const evalToLiteralType = (
+//     value: PrimitiveType | ExtractedPropMap | undefined
+// ): LiteralType | ObjectType | undefined => {
+//     if (!isNotNullish(value)) return;
+
+//     if (isPrimitiveType(value)) return { type: "literal", value };
+//     if (isObject(value)) return { type: "object", value };
+// };
 
 type MaybeLiteralReturn =
     | string
@@ -116,7 +137,8 @@ export function maybeLiteral(node: Node): MaybeLiteralReturn {
 
     // <ColorBox color={xxx.yyy} />
     if (Node.isPropertyAccessExpression(node)) {
-        return getPropertyAccessedExpressionValue(node)!;
+        const evaluated = getPropertyAccessedExpressionValue(node)!;
+        return toBoxType(evaluated);
     }
 
     // <ColorBox color={isDark ? darkValue : "whiteAlpha.100"} />
@@ -126,7 +148,8 @@ export function maybeLiteral(node: Node): MaybeLiteralReturn {
 
     // <ColorBox color={fn()} />
     if (Node.isCallExpression(node)) {
-        return safeEvaluateNode<string>(node);
+        const maybeValue = safeEvaluateNode<PrimitiveType | ExtractedPropMap>(node);
+        return toBoxType(maybeValue);
     }
 
     if (Node.isBinaryExpression(node)) {
@@ -150,27 +173,14 @@ export const maybeStringLiteral = (node: Node) => {
     }
 };
 
-const toLiteralType = (
-    value:
-        | object
-        | PrimitiveType
-        | PrimitiveType[]
-        | NodeObjectLiteralExpressionType
-        | Exclude<MaybeObjectEntriesReturn, undefined>
-) => {
-    if (isPrimitiveType(value) || Array.isArray(value)) return { type: "literal", value } as LiteralType;
-    if (isObject(value)) return { type: "object", value } as ObjectType;
-    return value;
-};
-
 const maybeExpandConditionalExpression = (
     node: Node
 ): ExtractedType | ExtractedType[] | MaybeObjectEntriesReturn | NodeObjectLiteralExpressionType => {
     // const maybeExpandConditionalExpression = (node: Node): ReturnType<typeof maybeLiteral> | ReturnType<typeof maybeObjectEntries>|[ReturnType<typeof maybeLiteral> | ReturnType<typeof maybeObjectEntries>] | undefined => {
     // <ColorBox color={isDark ? darkValue : "whiteAlpha.100"} />
     if (Node.isConditionalExpression(node)) {
-        const maybeValue = safeEvaluateNode<PrimitiveType | PrimitiveType[] | object>(node);
-        if (isNotNullish(maybeValue)) return toLiteralType(maybeValue);
+        const maybeValue = safeEvaluateNode<PrimitiveType | PrimitiveType[] | ExtractedPropMap>(node);
+        if (isNotNullish(maybeValue)) return toBoxType(maybeValue);
 
         // unresolvable condition will return both possible outcome
         const whenTrueExpr = unwrapExpression(node.getWhenTrue());
@@ -209,20 +219,24 @@ const maybeExpandConditionalExpression = (
         }
 
         if (whenTrueValue && !whenFalseValue) {
-            return toLiteralType(whenTrueValue);
+            // TODO type: "array" ?
+            return toBoxType(whenTrueValue);
         }
 
         if (!whenTrueValue && whenFalseValue) {
-            return toLiteralType(whenFalseValue);
+            return toBoxType(whenFalseValue);
         }
 
-        return [toLiteralType(whenTrueValue!), toLiteralType(whenFalseValue!)];
+        return box.conditional(toBoxType(whenTrueValue as any), toBoxType(whenFalseValue as any));
     }
 };
 
 const findProperty = (node: ObjectLiteralElementLike, propName: string) => {
+    // console.log({ node: node.getText(), kind: node.getKindName() });
+
     if (Node.isPropertyAssignment(node)) {
         const name = node.getNameNode();
+        // console.log({ name: name.getText(), kind: name.getKindName() });
 
         if (Node.isIdentifier(name) && name.getText() === propName) {
             return node;
@@ -230,7 +244,8 @@ const findProperty = (node: ObjectLiteralElementLike, propName: string) => {
 
         if (Node.isComputedPropertyName(name)) {
             const expression = name.getExpression();
-            const computedPropName = maybeLiteral(expression);
+            const computedPropName = maybeStringLiteral(expression);
+            // console.log({ computedPropName, propName, expression: expression.getText() });
 
             if (computedPropName === propName) {
                 return node;
@@ -250,14 +265,14 @@ const getPropValue = (initializer: ObjectLiteralExpression, propName: string) =>
     const property =
         initializer.getProperty(propName) ?? initializer.getProperties().find((p) => findProperty(p, propName));
 
-    // console.log("props", {
-    //     propName,
-    //     property: property?.getText(),
-    //     properties: initializer.getProperties().map((p) => p.getText()),
-    //     propertyKind: property?.getKindName(),
-    //     initializer: initializer.getText(),
-    //     initializerKind: initializer.getKindName(),
-    // });
+    console.log("props", {
+        propName,
+        property: property?.getText(),
+        properties: initializer.getProperties().map((p) => p.getText()),
+        propertyKind: property?.getKindName(),
+        initializer: initializer.getText(),
+        initializerKind: initializer.getKindName(),
+    });
 
     if (Node.isPropertyAssignment(property)) {
         const propInit = property.getInitializerOrThrow();
@@ -300,16 +315,17 @@ const maybePropIdentifierDefinitionValue = (elementAccessed: Identifier, propNam
     const defs = elementAccessed.getDefinitionNodes();
     while (defs.length > 0) {
         const def = unwrapExpression(defs.shift()!);
-        // console.log({
-        //     def: def?.getText(),
-        //     elementAccessed: elementAccessed.getText(),
-        //     kind: def?.getKindName(),
-        //     type: def?.getType().getText(),
-        //     propName,
-        // });
+        console.log({
+            def: def?.getText(),
+            elementAccessed: elementAccessed.getText(),
+            kind: def?.getKindName(),
+            type: def?.getType().getText(),
+            propName,
+        });
 
         if (Node.isVariableDeclaration(def)) {
             const initializer = unwrapExpression(def.getInitializerOrThrow());
+            console.log({ initializer: initializer.getText(), kind: initializer.getKindName(), propName });
 
             if (Node.isObjectLiteralExpression(initializer)) {
                 return getPropValue(initializer, propName);
@@ -327,8 +343,6 @@ const maybePropIdentifierDefinitionValue = (elementAccessed: Identifier, propNam
         }
     }
 };
-
-type NodeObjectLiteralExpressionType = { type: "node-object-literal"; value: ObjectLiteralExpression };
 
 export const getIdentifierReferenceValue = (identifier: Identifier) => {
     const defs = identifier.getDefinitionNodes();
@@ -350,7 +364,7 @@ export const getIdentifierReferenceValue = (identifier: Identifier) => {
             if (isNotNullish(maybeValue)) return maybeValue;
 
             if (Node.isObjectLiteralExpression(initializer)) {
-                return { type: "node-object-literal", value: initializer } as NodeObjectLiteralExpressionType;
+                return box.nodeObjectLiteral(initializer);
             }
 
             // console.log({
@@ -433,7 +447,8 @@ const getElementAccessedExpressionValue = (expression: ElementAccessExpression):
 
     // <ColorBox color={xxx[yyy.zzz]} />
     if (Node.isPropertyAccessExpression(arg)) {
-        return getPropertyAccessedExpressionValue(arg);
+        const propValue = getPropertyAccessedExpressionValue(arg);
+        return toBoxType(propValue);
     }
 
     // <ColorBox color={xxx[yyy[zzz]]} />
@@ -467,6 +482,7 @@ const getElementAccessedExpressionValue = (expression: ElementAccessExpression):
     // <ColorBox color={xxx[aaa ? yyy : zzz]]} />
     if (Node.isConditionalExpression(arg)) {
         const propName = maybeStringLiteral(arg);
+        console.log({ isConditionalExpression: true, propName });
         // eslint-disable-next-line sonarjs/no-collapsible-if
         if (isNotNullish(propName)) {
             // eslint-disable-next-line unicorn/no-lonely-if
@@ -520,13 +536,14 @@ const getArrayElementValueAtIndex = (array: ArrayLiteralExpression, index: numbe
     }
 
     if (Node.isObjectLiteralExpression(element)) {
+        // TODO opti ?
         // return maybeObjectEntries(element);
-        return { type: "node-object-literal", value: element } as NodeObjectLiteralExpressionType;
+        return box.nodeObjectLiteral(element);
     }
 };
 
 const getPropertyAccessedExpressionValue = (expression: PropertyAccessExpression) => {
-    const maybeValue = safeEvaluateNode<string | string[]>(expression);
+    const maybeValue = safeEvaluateNode<PrimitiveType | PrimitiveType[] | ExtractedPropMap>(expression);
     if (isNotNullish(maybeValue)) return maybeValue;
 
     const propName = expression.getName();
