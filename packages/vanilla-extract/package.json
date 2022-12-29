@@ -56,7 +56,6 @@
     },
     "peerDependencies": {
         "@vanilla-extract/css": ">= 1.9",
-        "typescript": ">= 4.9.4",
         "vite": "^3"
     },
     "devDependencies": {
@@ -64,7 +63,7 @@
         "prettier": "^2.7.1",
         "ts-toolbelt": "^9.6.0",
         "tsx": "^3.12.1",
-        "typescript": "4.8.4",
+        "typescript": "4.9.4",
         "vite": "^3.0.4",
         "vitest": "^0.25.8"
     },

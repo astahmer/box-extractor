@@ -35,7 +35,6 @@
         "ts-pattern": "^4.0.5"
     },
     "peerDependencies": {
-        "typescript": ">= 4.9.4",
         "vite": "^3"
     },
     "devDependencies": {
