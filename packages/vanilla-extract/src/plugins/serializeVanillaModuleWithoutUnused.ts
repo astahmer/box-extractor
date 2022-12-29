@@ -48,7 +48,7 @@ function mergeUsedValues(
     const shorthandsMap = new Map(...Array.from(compiled.sprinkleConfigs.values()).map((info) => info.shorthands));
 
     usedMap.forEach((style, _componentName) => {
-        style.properties.forEach((values, propNameOrShorthand) => {
+        style.literals.forEach((values, propNameOrShorthand) => {
             const registerPropName = (propName: string) => {
                 if (!mergedMap.has(propName)) {
                     mergedMap.set(propName, {
@@ -74,7 +74,7 @@ function mergeUsedValues(
             }
         });
 
-        style.conditionalProperties.forEach((properties, conditionalPropOrShorthand) => {
+        style.entries.forEach((properties, conditionalPropOrShorthand) => {
             const registerConditionalPropName = (propNameOrShorthand: string) => {
                 const isReversedConditionProp = propNameOrShorthand[0] === "_" && propNameOrShorthand[1] !== "_";
                 if (!isReversedConditionProp) {

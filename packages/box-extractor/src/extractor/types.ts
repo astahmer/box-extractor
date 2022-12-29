@@ -7,8 +7,8 @@ import type { SourceFile } from "ts-morph";
 // also remove unused variants from https://vanilla-extract.style/documentation/packages/recipes/ ?
 
 export type ComponentUsedPropertiesStyle = {
-    properties: Map<string, Set<string>>;
-    conditionalProperties: Map<string, Map<string, Set<string>>>;
+    literals: Map<string, Set<string>>;
+    entries: Map<string, Map<string, Set<string>>>;
 };
 export type UsedComponentsMap = Map<string, ComponentUsedPropertiesStyle>;
 

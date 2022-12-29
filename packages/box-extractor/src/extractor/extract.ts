@@ -33,7 +33,7 @@ export const extract = ({ ast, components: _components, functions: _functions, u
 
         // console.log(selector);
         if (!used.has(componentName)) {
-            used.set(componentName, { properties: new Map(), conditionalProperties: new Map() });
+            used.set(componentName, { literals: new Map(), entries: new Map() });
         }
 
         const componentMap = used.get(componentName)!;
@@ -49,15 +49,15 @@ export const extract = ({ ast, components: _components, functions: _functions, u
         identifierNodesFromJsxAttribute.forEach((node) => {
             const propName = node.getText();
 
-            const propValues = componentMap.properties.get(propName) ?? new Set();
-            const conditionalProps = componentMap.conditionalProperties.get(propName) ?? new Map();
+            const propLiterals = componentMap.literals.get(propName) ?? new Set();
+            const propEntries = componentMap.entries.get(propName) ?? new Map();
 
-            if (!componentMap.properties.has(propName)) {
-                componentMap.properties.set(propName, propValues);
+            if (!componentMap.literals.has(propName)) {
+                componentMap.literals.set(propName, propLiterals);
             }
 
-            if (!componentMap.conditionalProperties.has(propName)) {
-                componentMap.conditionalProperties.set(propName, conditionalProps);
+            if (!componentMap.entries.has(propName)) {
+                componentMap.entries.set(propName, propEntries);
             }
 
             const extracted = extractJsxAttributeIdentifierValue(node);
@@ -65,17 +65,17 @@ export const extract = ({ ast, components: _components, functions: _functions, u
             const extractedValues = castAsArray(extracted).filter(isNotNullish);
             extractedValues.forEach((value) => {
                 if (typeof value === "string") {
-                    propValues.add(value);
+                    propLiterals.add(value);
                 }
 
                 if (isObjectLiteral(value)) {
-                    Object.entries(value).forEach(([conditionName, value]) => {
-                        const conditionValues = conditionalProps.get(conditionName) ?? new Set();
-                        if (!conditionalProps.has(conditionName)) {
-                            conditionalProps.set(conditionName, conditionValues);
+                    Object.entries(value).forEach(([entryPropName, value]) => {
+                        const entryPropValues = propEntries.get(entryPropName) ?? new Set();
+                        if (!propEntries.has(entryPropName)) {
+                            propEntries.set(entryPropName, entryPropValues);
                         }
 
-                        conditionValues.add(value);
+                        entryPropValues.add(value);
                     });
                 }
             });
@@ -113,7 +113,7 @@ export const extract = ({ ast, components: _components, functions: _functions, u
         componentPropValues.push([functionName, extractedComponentPropValues]);
 
         if (!used.has(functionName)) {
-            used.set(functionName, { properties: new Map(), conditionalProperties: new Map() });
+            used.set(functionName, { literals: new Map(), entries: new Map() });
         }
 
         const componentMap = used.get(functionName)!;
@@ -169,10 +169,10 @@ function mergeSpreadEntries({
 
     // reverse again to keep the original order
     entries.reverse().forEach(([propName, propValue]) => {
-        const propValues = componentMap.properties.get(propName) ?? new Set();
+        const propValues = componentMap.literals.get(propName) ?? new Set();
 
-        if (!componentMap.properties.has(propName)) {
-            componentMap.properties.set(propName, propValues);
+        if (!componentMap.literals.has(propName)) {
+            componentMap.literals.set(propName, propValues);
         }
 
         const extractedValues = castAsArray(propValue).filter(isNotNullish);
