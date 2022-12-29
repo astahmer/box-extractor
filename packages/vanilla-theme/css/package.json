@@ -1,4 +1,13 @@
 {
     "name": "@box-extractor/vanilla-theme-css",
-    "main": "../src/css/index.ts"
+    "main": "../src/css/index.ts",
+    "module": "../src/css/index.ts",
+    "types": "../src/css/index.ts",
+    "exports": {
+        "./package.json": "./package.json",
+        ".": {
+            "module": "./../src/css/index.ts",
+            "default": "./../src/css/index.ts"
+        }
+    }
 }
