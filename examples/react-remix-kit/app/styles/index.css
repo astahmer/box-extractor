@@ -1,0 +1,16 @@
+/* vanilla-extract-css-ns:../../packages/vanilla-theme/src/css/color-mode.css.ts.vanilla.css?source=LmNvbG9yLW1vZGVfbGlnaHRNb2RlX19ja3BlY2wyIHsKICAtLWNvbG9yLXByaW1hcnlfX2NrcGVjbDA6ICNDNTMwMzA7CiAgLS1jb2xvci1zZWNvbmRhcnlfX2NrcGVjbDE6ICNCODMyODA7Cn0KLmNvbG9yLW1vZGVfZGFya01vZGVfX2NrcGVjbDMgewogIC0tY29sb3ItcHJpbWFyeV9fY2twZWNsMDogIzYzYjNlZDsKICAtLWNvbG9yLXNlY29uZGFyeV9fY2twZWNsMTogI0Y2ODdCMzsKfQ== */
+.color-mode_lightMode__ckpecl2 {
+  --color-primary__ckpecl0: #C53030;
+  --color-secondary__ckpecl1: #B83280;
+}
+.color-mode_darkMode__ckpecl3 {
+  --color-primary__ckpecl0: #63b3ed;
+  --color-secondary__ckpecl1: #F687B3;
+}
+
+/* vanilla-extract-css-ns:../../packages/vanilla-theme/src/css/external.css.ts.vanilla.css?source= */
+
+/* vanilla-extract-css-ns:../../packages/vanilla-theme/src/css/properties.css.ts.vanilla.css?source=LnByb3BlcnRpZXNfY29sb3JfYmx1ZVwuMzAwX2RlZmF1bHRfXzFyM2J0bWoxZHBoIHsKICBjb2xvcjogIzYzYjNlZCAhaW1wb3J0YW50Owp9 */
+.properties_color_blue\.300_default__1r3btmj1dph {
+  color: #63b3ed !important;
+}
