@@ -5,6 +5,7 @@ import type { CallExpression, Identifier, JsxSpreadAttribute, Node } from "ts-mo
 import { extractCallExpressionValues } from "./extractCallExpressionIdentifierValues";
 import { extractJsxAttributeIdentifierValue } from "./extractJsxAttributeIdentifierValue";
 import { extractJsxSpreadAttributeValues } from "./extractJsxSpreadAttributeValues";
+import { maybeObjectEntriesReturnToMap } from "./maybeObjectEntries";
 import type {
     ComponentUsedPropertiesStyle,
     ExtractedComponentProperties,
@@ -48,6 +49,7 @@ export const extract = ({ ast, components: _components, functions: _functions, u
         const identifierNodesFromJsxAttribute = query<Identifier>(ast, propSelector) ?? [];
         identifierNodesFromJsxAttribute.forEach((node) => {
             const propName = node.getText();
+            // console.log({ propName });
 
             const propLiterals = componentMap.literals.get(propName) ?? new Set();
             const propEntries = componentMap.entries.get(propName) ?? new Map();
@@ -89,7 +91,9 @@ export const extract = ({ ast, components: _components, functions: _functions, u
 
         const spreadNodes = query<JsxSpreadAttribute>(ast, spreadSelector) ?? [];
         spreadNodes.forEach((node) => {
-            const extracted = extractJsxSpreadAttributeValues(node);
+            const extracted = Array.from(
+                maybeObjectEntriesReturnToMap(extractJsxSpreadAttributeValues(node)).entries()
+            ) as ExtractedPropPair[];
 
             return mergeSpreadEntries({
                 extracted,
@@ -125,10 +129,11 @@ export const extract = ({ ast, components: _components, functions: _functions, u
         const maybeObjectNodes = query<CallExpression>(ast, sprinklesFnSelector) ?? [];
         maybeObjectNodes.forEach((node) => {
             const extracted = extractCallExpressionValues(node);
+            if (!extracted) return;
             // console.log({ extracted });
 
             return mergeSpreadEntries({
-                extracted,
+                extracted: Array.from(maybeObjectEntriesReturnToMap().entries()) as ExtractedPropPair[],
                 propNameList,
                 componentMap,
                 extractedComponentPropValues,

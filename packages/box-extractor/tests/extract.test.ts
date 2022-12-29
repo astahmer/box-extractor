@@ -38,7 +38,9 @@ afterEach(() => {
 });
 
 const config: ExtractOptions["components"] = {
-    ColorBox: { properties: ["color", "backgroundColor", "zIndex", "mobile"] },
+    ColorBox: {
+        properties: ["color", "backgroundColor", "zIndex", "fontSize", "display", "mobile", "tablet", "desktop", "css"],
+    },
 };
 
 const extractFromCode = (code: string) => {
@@ -1211,7 +1213,7 @@ it("extract JsxSpreadAttribute > ElementAccessExpression > ComputedProperty / Te
     ).toMatchInlineSnapshot('[["ColorBox", [["color", "salmon.600"]]]]');
 });
 
-it("extract JsxAttribute > JsxExpression > ConditionalExpression > complex nested condition > truthy", () => {
+it("extract JsxSpreadAttribute > JsxExpression > ConditionalExpression > complex nested condition > truthy + truthy", () => {
     expect(
         extractFromCode(`
             const knownCondition = true;
@@ -1233,7 +1235,7 @@ it("extract JsxAttribute > JsxExpression > ConditionalExpression > complex neste
     ).toMatchInlineSnapshot('[["ColorBox", [["color", "salmon.700"]]]]');
 });
 
-it("extract JsxAttribute > JsxExpression > ConditionalExpression > complex nested condition > truthy", () => {
+it("extract JsxSpreadAttribute > JsxExpression > ConditionalExpression > complex nested condition > truthy + falsy", () => {
     expect(
         extractFromCode(`
             const knownCondition = true;
@@ -1255,7 +1257,7 @@ it("extract JsxAttribute > JsxExpression > ConditionalExpression > complex neste
     ).toMatchInlineSnapshot('[["ColorBox", [["color", "salmon.800"]]]]');
 });
 
-it("extract JsxAttribute > JsxExpression > ConditionalExpression > unresolvable expression will output both outcome ", () => {
+it("extract JsxSpreadAttribute > JsxExpression > ConditionalExpression > unresolvable expression will output both outcome ", () => {
     expect(
         extractFromCode(`
             const [unresolvableBoolean, setUnresolvableBoolean] = useState(false)
@@ -1327,7 +1329,7 @@ it("extract JsxAttribute > JsxExpression > Identifier > NumericLiteral", () => {
     ).toMatchInlineSnapshot('[["ColorBox", [["zIndex", "2"]]]]');
 });
 
-it("extract JsxAttribute > JsxExpression > Identifier > NumericLiteral", () => {
+it("extract JsxAttribute > JsxExpression > Identifier > ConditionExpression > NumericLiteral", () => {
     expect(
         extractFromCode(`
             const nbIndex = 1;
@@ -1565,6 +1567,131 @@ it("extract JsxAttribute > JsxExpression > reversed", () => {
                           color: "sky.100",
                           tablet: "sky.200",
                           desktop: "sky.300",
+                      },
+                  ],
+              ],
+          ],
+      ]
+    `);
+});
+
+it.skip("extract JsxAttribute > ObjectLiteralExpression > css prop", () => {
+    expect(
+        extractFromCode(`
+        <ColorBox
+            css={{
+                backgroundColor: "sky.500",
+                __color: "##ff0",
+                // TODO missing display.block
+                mobile: { fontSize: "2xl", display: true ? "flex" : "block" },
+                zIndex: { desktop: "10" },
+            }}
+        >
+            css prop
+        </ColorBox>
+        `)
+    ).toMatchInlineSnapshot(`
+      [
+          [
+              "ColorBox",
+              [
+                  [
+                      "css",
+                      {
+                          backgroundColor: "sky.500",
+                          __color: "##ff0",
+                          mobile: {
+                              fontSize: "2xl",
+                              display: "flex",
+                          },
+                          zIndex: {
+                              desktop: "10",
+                          },
+                      },
+                  ],
+              ],
+          ],
+      ]
+    `);
+});
+
+// TODO missing display.block
+it.skip("extract JsxAttribute > ObjectLiteralExpression > css prop > ConditionalExpression", () => {
+    expect(
+        extractFromCode(`
+        <ColorBox
+            css={true ? {
+                backgroundColor: "sky.600",
+                __color: "##ff0",
+                // TODO missing display.block
+                mobile: { fontSize: "2xl", display: true ? "flex" : "block" },
+                zIndex: { desktop: "10" },
+            } : "sky.700"}
+        >
+            css prop
+        </ColorBox>
+        `)
+    ).toMatchInlineSnapshot(`
+      [
+          [
+              "ColorBox",
+              [
+                  [
+                      "css",
+                      {
+                          backgroundColor: "sky.600",
+                          __color: "##ff0",
+                          mobile: {
+                              fontSize: "2xl",
+                              display: "flex",
+                          },
+                          zIndex: {
+                              desktop: "10",
+                          },
+                      },
+                  ],
+              ],
+          ],
+      ]
+    `);
+});
+
+// TODO missing crimson.900
+// TODO missing display.block
+it.skip("extract JsxAttribute > ObjectLiteralExpression > css prop > PropertyAssignment > ConditionalExpression", () => {
+    expect(
+        extractFromCode(`
+        const [isShown] = useState(true);
+        <ColorBox
+            css={{
+                backgroundColor: isShown ? "sky.800" : "sky.900",
+                __color: "##ff0",
+                // TODO missing crimson.900
+                // TODO missing display.block
+                mobile: isShown ? { fontSize: "2xl", display: true ? "flex" : "block" } : "crimson.900",
+                zIndex: { desktop: "10" },
+            }}
+        >
+            css prop
+        </ColorBox>
+        `)
+    ).toMatchInlineSnapshot(`
+      [
+          [
+              "ColorBox",
+              [
+                  [
+                      "css",
+                      {
+                          backgroundColor: ["sky.800", "sky.900"],
+                          __color: "##ff0",
+                          mobile: {
+                              fontSize: ["2xl"],
+                              display: ["flex"],
+                          },
+                          zIndex: {
+                              desktop: "10",
+                          },
                       },
                   ],
               ],

@@ -1,7 +1,7 @@
 import type { Identifier } from "ts-morph";
 import { Node } from "ts-morph";
 
-import { maybeLiteral } from "./maybeLiteral";
+import { getLiteralValue, maybeLiteral } from "./maybeLiteral";
 import { maybeObjectEntries } from "./maybeObjectEntries";
 import { isNotNullish, unwrapExpression } from "./utils";
 
@@ -29,11 +29,28 @@ export const extractJsxAttributeIdentifierValue = (identifier: Identifier) => {
         // expression.getKindName() === "ObjectLiteralExpression"
         // = defineProperties.conditions
         const maybeValue = maybeLiteral(expression);
-        if (isNotNullish(maybeValue)) return maybeValue;
+        console.dir({ extractJsx: true, maybeValue }, { depth: null });
+        !maybeValue && console.log("maybeLiteral", expression.getKindName(), expression.getText());
+        if (isNotNullish(maybeValue)) {
+            return getLiteralValue(maybeValue);
+            // if (typeof maybeValue === "string") {
+            //     return maybeValue;
+            // }
+
+            // if (Array.isArray(maybeValue)) {
+            //     return maybeValue.map((valueType) => {
+            //         if (typeof valueType === "string") return valueType;
+            //         if (valueType.type === "literal") return valueType.value;
+            //         if (valueType.type === "object") return valueType.value;
+            //         if (valueType.type === "map") return Object.fromEntries(valueType.value.entries());
+            //     });
+            // }
+        }
 
         const maybeObject = maybeObjectEntries(expression);
-        // console.dir({ maybeObject }, { depth: null });
+        console.dir({ maybeObject }, { depth: null });
         // console.log("expr", expression.getKindName(), expression.getText());
-        if (isNotNullish(maybeObject) && maybeObject.length > 0) return Object.fromEntries(maybeObject);
+        if (isNotNullish(maybeObject)) return getLiteralValue(maybeObject);
+        // return maybeObject.type === "object" ? maybeObject.value : Object.fromEntries(maybeObject.value.entries());
     }
 };

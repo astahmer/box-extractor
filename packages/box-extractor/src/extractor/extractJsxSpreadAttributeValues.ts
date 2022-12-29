@@ -1,6 +1,6 @@
 import type { JsxSpreadAttribute } from "ts-morph";
 
-import { maybeObjectEntries } from "./maybeObjectEntries";
+import { emptyObjectType, maybeObjectEntries } from "./maybeObjectEntries";
 import { isNotNullish, unwrapExpression } from "./utils";
 
 export const extractJsxSpreadAttributeValues = (spreadAttribute: JsxSpreadAttribute) => {
@@ -9,5 +9,5 @@ export const extractJsxSpreadAttributeValues = (spreadAttribute: JsxSpreadAttrib
     const maybeEntries = maybeObjectEntries(node);
     if (isNotNullish(maybeEntries)) return maybeEntries;
 
-    return [];
+    return emptyObjectType;
 };
