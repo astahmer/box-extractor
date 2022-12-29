@@ -1575,14 +1575,13 @@ it("extract JsxAttribute > JsxExpression > reversed", () => {
     `);
 });
 
-it.skip("extract JsxAttribute > ObjectLiteralExpression > css prop", () => {
+it("extract JsxAttribute > ObjectLiteralExpression > css prop", () => {
     expect(
         extractFromCode(`
         <ColorBox
             css={{
                 backgroundColor: "sky.500",
                 __color: "##ff0",
-                // TODO missing display.block
                 mobile: { fontSize: "2xl", display: true ? "flex" : "block" },
                 zIndex: { desktop: "10" },
             }}
@@ -1615,16 +1614,15 @@ it.skip("extract JsxAttribute > ObjectLiteralExpression > css prop", () => {
     `);
 });
 
-// TODO missing display.block
-it.skip("extract JsxAttribute > ObjectLiteralExpression > css prop > ConditionalExpression", () => {
+it("extract JsxAttribute > ObjectLiteralExpression > css prop > ConditionalExpression", () => {
     expect(
         extractFromCode(`
+        const [isShown] = useState(true);
         <ColorBox
             css={true ? {
                 backgroundColor: "sky.600",
                 __color: "##ff0",
-                // TODO missing display.block
-                mobile: { fontSize: "2xl", display: true ? "flex" : "block" },
+                mobile: { fontSize: "2xl", display: isShown ? "flex" : "block" },
                 zIndex: { desktop: "10" },
             } : "sky.700"}
         >
@@ -1638,17 +1636,20 @@ it.skip("extract JsxAttribute > ObjectLiteralExpression > css prop > Conditional
               [
                   [
                       "css",
-                      {
-                          backgroundColor: "sky.600",
-                          __color: "##ff0",
-                          mobile: {
-                              fontSize: "2xl",
-                              display: "flex",
+                      [
+                          {
+                              backgroundColor: "sky.600",
+                              __color: "##ff0",
+                              mobile: {
+                                  fontSize: "2xl",
+                                  display: ["flex", "block"],
+                              },
+                              zIndex: {
+                                  desktop: "10",
+                              },
                           },
-                          zIndex: {
-                              desktop: "10",
-                          },
-                      },
+                          "sky.700",
+                      ],
                   ],
               ],
           ],
@@ -1656,9 +1657,7 @@ it.skip("extract JsxAttribute > ObjectLiteralExpression > css prop > Conditional
     `);
 });
 
-// TODO missing crimson.900
-// TODO missing display.block
-it.skip("extract JsxAttribute > ObjectLiteralExpression > css prop > PropertyAssignment > ConditionalExpression", () => {
+it("extract JsxAttribute > ObjectLiteralExpression > css prop > PropertyAssignment > ConditionalExpression", () => {
     expect(
         extractFromCode(`
         const [isShown] = useState(true);
@@ -1666,8 +1665,6 @@ it.skip("extract JsxAttribute > ObjectLiteralExpression > css prop > PropertyAss
             css={{
                 backgroundColor: isShown ? "sky.800" : "sky.900",
                 __color: "##ff0",
-                // TODO missing crimson.900
-                // TODO missing display.block
                 mobile: isShown ? { fontSize: "2xl", display: true ? "flex" : "block" } : "crimson.900",
                 zIndex: { desktop: "10" },
             }}
@@ -1685,10 +1682,13 @@ it.skip("extract JsxAttribute > ObjectLiteralExpression > css prop > PropertyAss
                       {
                           backgroundColor: ["sky.800", "sky.900"],
                           __color: "##ff0",
-                          mobile: {
-                              fontSize: ["2xl"],
-                              display: ["flex"],
-                          },
+                          mobile: [
+                              {
+                                  fontSize: "2xl",
+                                  display: "flex",
+                              },
+                              "crimson.900",
+                          ],
                           zIndex: {
                               desktop: "10",
                           },

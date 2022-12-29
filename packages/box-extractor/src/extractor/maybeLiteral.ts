@@ -2,6 +2,7 @@ import { isObject } from "pastable";
 import type {
     ArrayLiteralExpression,
     BinaryExpression,
+    ConditionalExpression,
     ElementAccessExpression,
     Identifier,
     ObjectLiteralElementLike,
@@ -16,7 +17,6 @@ import { safeEvaluateNode } from "./evaluate";
 import { maybeObjectEntries, MaybeObjectEntriesReturn } from "./maybeObjectEntries";
 import {
     box,
-    ConditionalType,
     ExtractedType,
     isPrimitiveType,
     LiteralValue,
@@ -48,11 +48,10 @@ const innerGetLiteralValue = (
     }
 
     if (valueType.type === "conditional") {
-        // const possibleValues = [] as Array<Exclude<ExtractedType,ConditionalType>>
         const narrowed = narrowCondionalType(valueType);
-        console.log({ narrowed });
+        // console.log({ narrowed });
+
         if (narrowed.length === 1) {
-            console.log("narrowed.length === 1", getLiteralValue(narrowed[0]));
             return getLiteralValue(narrowed[0]);
         }
 
@@ -78,22 +77,7 @@ export const getLiteralValue = (maybeLiteral: MaybeLiteralReturn): LiteralValue 
     return innerGetLiteralValue(maybeLiteral);
 };
 
-// const evalToLiteralType = (
-//     value: PrimitiveType | ExtractedPropMap | undefined
-// ): LiteralType | ObjectType | undefined => {
-//     if (!isNotNullish(value)) return;
-
-//     if (isPrimitiveType(value)) return { type: "literal", value };
-//     if (isObject(value)) return { type: "object", value };
-// };
-
-type MaybeLiteralReturn =
-    | string
-    | string[]
-    | ExtractedType
-    | ExtractedType[]
-    | NodeObjectLiteralExpressionType
-    | undefined;
+export type MaybeLiteralReturn = string | string[] | ExtractedType | ExtractedType[] | undefined;
 
 export function maybeLiteral(node: Node): MaybeLiteralReturn {
     // console.log("maybeLiteral", node.getKindName(), node.getText());
@@ -173,62 +157,64 @@ export const maybeStringLiteral = (node: Node) => {
     }
 };
 
-const maybeExpandConditionalExpression = (
-    node: Node
+// <ColorBox color={isDark ? darkValue : "whiteAlpha.100"} />
+export const maybeExpandConditionalExpression = (
+    node: ConditionalExpression
 ): ExtractedType | ExtractedType[] | MaybeObjectEntriesReturn | NodeObjectLiteralExpressionType => {
-    // const maybeExpandConditionalExpression = (node: Node): ReturnType<typeof maybeLiteral> | ReturnType<typeof maybeObjectEntries>|[ReturnType<typeof maybeLiteral> | ReturnType<typeof maybeObjectEntries>] | undefined => {
-    // <ColorBox color={isDark ? darkValue : "whiteAlpha.100"} />
-    if (Node.isConditionalExpression(node)) {
-        const maybeValue = safeEvaluateNode<PrimitiveType | PrimitiveType[] | ExtractedPropMap>(node);
-        if (isNotNullish(maybeValue)) return toBoxType(maybeValue);
+    const maybeValue = safeEvaluateNode<PrimitiveType | PrimitiveType[] | ExtractedPropMap>(node);
+    if (isNotNullish(maybeValue)) return toBoxType(maybeValue);
 
-        // unresolvable condition will return both possible outcome
-        const whenTrueExpr = unwrapExpression(node.getWhenTrue());
-        const whenFalseExpr = unwrapExpression(node.getWhenFalse());
+    // unresolvable condition will return both possible outcome
+    const whenTrueExpr = unwrapExpression(node.getWhenTrue());
+    const whenFalseExpr = unwrapExpression(node.getWhenFalse());
 
-        let whenTrueValue: ReturnType<typeof maybeLiteral> | ReturnType<typeof maybeObjectEntries> =
-            maybeLiteral(whenTrueExpr);
-        let whenFalseValue: ReturnType<typeof maybeLiteral> | ReturnType<typeof maybeObjectEntries> =
-            maybeLiteral(whenFalseExpr);
+    let whenTrueValue: ReturnType<typeof maybeLiteral> | ReturnType<typeof maybeObjectEntries> =
+        maybeLiteral(whenTrueExpr);
+    let whenFalseValue: ReturnType<typeof maybeLiteral> | ReturnType<typeof maybeObjectEntries> =
+        maybeLiteral(whenFalseExpr);
 
-        // <ColorBox color={isDark ? { mobile: "blue.100", desktop: "blue.300" } : "whiteAlpha.100"} />
-        if (!isNotNullish(whenTrueValue)) {
-            const maybeObject = maybeObjectEntries(whenTrueExpr);
-            if (isNotNullish(maybeObject)) {
-                whenTrueValue = maybeObject;
-            }
+    // <ColorBox color={isDark ? { mobile: "blue.100", desktop: "blue.300" } : "whiteAlpha.100"} />
+    if (!isNotNullish(whenTrueValue)) {
+        const maybeObject = maybeObjectEntries(whenTrueExpr);
+        if (isNotNullish(maybeObject)) {
+            whenTrueValue = maybeObject;
         }
-
-        // <ColorBox color={isDark ? { mobile: "blue.100", desktop: "blue.300" } : "whiteAlpha.100"} />
-        if (!isNotNullish(whenFalseValue)) {
-            const maybeObject = maybeObjectEntries(whenFalseExpr);
-            if (isNotNullish(maybeObject)) {
-                whenFalseValue = maybeObject;
-            }
-        }
-
-        // console.log({
-        //     whenTrueLiteral: unwrapExpression(node.getWhenTrue()).getText(),
-        //     whenFalseLiteral: unwrapExpression(node.getWhenFalse()).getText(),
-        //     whenTrueValue,
-        //     whenFalseValue,
-        // });
-
-        if (!whenTrueValue && !whenFalseValue) {
-            return;
-        }
-
-        if (whenTrueValue && !whenFalseValue) {
-            // TODO type: "array" ?
-            return toBoxType(whenTrueValue);
-        }
-
-        if (!whenTrueValue && whenFalseValue) {
-            return toBoxType(whenFalseValue);
-        }
-
-        return box.conditional(toBoxType(whenTrueValue as any), toBoxType(whenFalseValue as any));
     }
+
+    // <ColorBox color={isDark ? { mobile: "blue.100", desktop: "blue.300" } : "whiteAlpha.100"} />
+    if (!isNotNullish(whenFalseValue)) {
+        const maybeObject = maybeObjectEntries(whenFalseExpr);
+        if (isNotNullish(maybeObject)) {
+            whenFalseValue = maybeObject;
+        }
+    }
+
+    // console.log({
+    //     whenTrueLiteral: unwrapExpression(node.getWhenTrue()).getText(),
+    //     whenFalseLiteral: unwrapExpression(node.getWhenFalse()).getText(),
+    //     whenTrueValue,
+    //     whenFalseValue,
+    // });
+
+    if (!whenTrueValue && !whenFalseValue) {
+        return;
+    }
+
+    if (whenTrueValue && !whenFalseValue) {
+        // TODO type: "array" ?
+        return toBoxType(whenTrueValue as any);
+    }
+
+    if (!whenTrueValue && whenFalseValue) {
+        // TODO type: "array" ?
+        return toBoxType(whenFalseValue as any);
+    }
+
+    // TODO type: "array" ?
+    const whenTrue = toBoxType(whenTrueValue as any)!;
+    const whenFalse = toBoxType(whenFalseValue as any)!;
+
+    return box.conditional(whenTrue, whenFalse);
 };
 
 const findProperty = (node: ObjectLiteralElementLike, propName: string) => {
