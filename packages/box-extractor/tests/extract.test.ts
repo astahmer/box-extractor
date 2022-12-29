@@ -998,7 +998,7 @@ it("extract JsxSpreadAttribute > CallExpression", () => {
     `);
 });
 
-it.only("extract JsxSpreadAttribute > ObjectLiteralExpression > SpreadAssignment > CallExpression", () => {
+it("extract JsxSpreadAttribute > ObjectLiteralExpression > SpreadAssignment > CallExpression", () => {
     expect(
         extractFromCode(`
             const getColorConfig = () => ({ color: "never.700", backgroundColor: "teal.800" });

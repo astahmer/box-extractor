@@ -10,6 +10,7 @@ export const extractJsxSpreadAttributeValues = (spreadAttribute: JsxSpreadAttrib
 
     const maybeEntries = maybeObjectEntries(node);
     console.dir({ maybeEntries }, { depth: null });
+    // if (isNotNullish(maybeEntries)) return getLiteralValue(maybeEntries);
     if (isNotNullish(maybeEntries)) return getLiteralValue(maybeEntries);
 
     return emptyObjectType;

@@ -14,7 +14,9 @@ import {
     MapType,
     MapTypeValue,
     ObjectType,
+    toBoxType,
 } from "./type-factory";
+import type { ExtractedPropPair } from "./types";
 import { isNotNullish, unwrapExpression } from "./utils";
 
 export type MaybeObjectEntriesReturn = ObjectType | MapType | undefined;
@@ -48,7 +50,7 @@ export const maybeObjectEntries = (node: Node): MaybeObjectEntriesReturn => {
         if (isEvalError(maybeObject)) {
             const whenTrue = maybeObjectEntries(node.getWhenTrue());
             const whenFalse = maybeObjectEntries(node.getWhenFalse());
-            // console.log({ whenTrue, whenFalse });
+            console.log({ whenTrue, whenFalse });
             return box.map(mergePossibleEntries(whenTrue, whenFalse));
         }
 
@@ -98,8 +100,7 @@ export const maybeObjectEntries = (node: Node): MaybeObjectEntriesReturn => {
 };
 
 const getObjectLiteralExpressionPropPairs = (expression: ObjectLiteralExpression): MapTypeValue => {
-    // const extractedPropValues = [] as ExtractedPropPair[];
-    const extractedPropValues = new Map() as MapTypeValue;
+    const extractedPropValues = [] as Array<[string, ExtractedType[]]>;
     console.log({
         expression: expression.getText(),
         properties: expression.getProperties().map((prop) => prop.getText()),
@@ -113,19 +114,16 @@ const getObjectLiteralExpressionPropPairs = (expression: ObjectLiteralExpression
             console.log({ propName, extractedPropValues });
 
             const initializer = unwrapExpression(propElement.getInitializerOrThrow());
-            // TODO
-            const propValues = [] as ExtractedType[];
-            extractedPropValues.set(propName, propValues);
 
             const maybeObject = maybeObjectEntries(initializer);
             if (isNotNullish(maybeObject)) {
-                propValues.push(maybeObject);
+                extractedPropValues.push([propName, [maybeObject]]);
                 return;
             }
 
             const maybeValue = maybeStringLiteral(initializer);
             if (isNotNullish(maybeValue)) {
-                propValues.push(box.literal(maybeValue));
+                extractedPropValues.push([propName, [box.literal(maybeValue)]]);
                 return;
             }
         }
@@ -138,33 +136,40 @@ const getObjectLiteralExpressionPropPairs = (expression: ObjectLiteralExpression
             console.log("isSpreadAssignment", extracted);
             if (extracted.type === "object") {
                 Object.entries(extracted.value).forEach(([propName, value]) => {
-                    // TODO
-                    const propValues = [];
-                    if (!extractedPropValues.has(propName)) {
-                        extractedPropValues.set(propName, propValues);
-                    }
-
-                    propValues.push(box.literal(value));
+                    extractedPropValues.push([propName, [box.literal(value)]]);
                 });
                 return;
             }
 
             if (extracted.type === "map") {
                 extracted.value.forEach((value, propName) => {
-                    // TODO
-                    const propValues = [];
-                    if (!extractedPropValues.has(propName)) {
-                        extractedPropValues.set(propName, propValues);
-                    }
-
-                    propValues.push(...value);
+                    value.forEach((nested) => {
+                        const boxed = toBoxType(nested);
+                        if (!boxed) return;
+                        return extractedPropValues.push([propName, [boxed]]);
+                    });
                 });
             }
         }
     });
 
-    return extractedPropValues;
+    // return extractedPropValues;
     // return Object.fromEntries(extractedPropValues.entries());
+    // return Object.fromEntries(extractedPropValues);
+    // console.dir({ extractedPropValues }, { depth: 10 });
+    // return new Map(extractedPropValues);
+
+    // preserves order of insertion
+    const map = new Map();
+    extractedPropValues.forEach(([propName, value]) => {
+        if (map.has(propName)) {
+            map.delete(propName);
+        }
+
+        map.set(propName, value);
+    });
+
+    return map;
 };
 
 const getPropertyName = (property: ObjectLiteralElementLike) => {
@@ -195,6 +200,7 @@ export const castObjectLikeAsMapValue = (maybeObject: MaybeObjectEntriesReturn):
     if (!maybeObject) return new Map<string, ExtractedType[]>();
     if (maybeObject instanceof Map) return maybeObject;
     if (!isBoxType(maybeObject)) return new Map<string, ExtractedType[]>(Object.entries(maybeObject));
+    if (maybeObject.type === "map") return maybeObject.value;
 
     return new Map<string, ExtractedType[]>(
         Object.entries(maybeObject.value).map(([key, value]) => [key, [box.literal(value)]])
