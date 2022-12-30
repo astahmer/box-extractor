@@ -39,10 +39,9 @@ const __TARGET__ = "node";
 
 let allows: RegExp[] = [];
 
-const to_reg_exp = (x: string) => new RegExp(x.replace(/\*/g, ".*") + "$");
-
-export const enable = (allows_query: string) => {
-    allows = allows_query.split(/[\s,]+/).map(to_reg_exp);
+const toRegExpr = (x: string) => new RegExp(x.replace(/\*/g, ".*") + "$");
+const enable = (allows_query: string) => {
+    allows = allows_query.split(/[\s,]+/).map(toRegExpr);
 };
 
 if (__TARGET__ === "node" && process.env["DEBUG"]) enable(process.env["DEBUG"]);
