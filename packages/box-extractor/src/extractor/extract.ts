@@ -6,7 +6,7 @@ import { diary } from "./debug-logger";
 import { extractCallExpressionValues } from "./extractCallExpressionIdentifierValues";
 import { extractJsxAttributeIdentifierValue } from "./extractJsxAttributeIdentifierValue";
 import { extractJsxSpreadAttributeValues } from "./extractJsxSpreadAttributeValues";
-import { castObjectLikeAsMapValue, ExtractedType, MapTypeValue } from "./type-factory";
+import { castObjectLikeAsMapValue, BoxNode, MapTypeValue } from "./type-factory";
 import type { ExtractOptions, ListOrAll, NodeMap, PropNodeMap } from "./types";
 import { isNotNullish } from "./utils";
 
@@ -52,7 +52,7 @@ export const extract = ({ ast, components: _components, functions: _functions, u
             const maybeNodes = extractJsxAttributeIdentifierValue(node);
             logger(() => ({ propName, maybeNodes }));
 
-            const extractedNodes = castAsArray(maybeNodes).filter(isNotNullish) as ExtractedType[];
+            const extractedNodes = castAsArray(maybeNodes).filter(isNotNullish) as BoxNode[];
             localNodes.set(propName, (localNodes.get(propName) ?? []).concat(extractedNodes));
 
             extractedNodes.forEach((node) => {

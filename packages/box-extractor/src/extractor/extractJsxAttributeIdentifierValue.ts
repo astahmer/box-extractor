@@ -2,8 +2,8 @@ import type { Identifier } from "ts-morph";
 import { Node } from "ts-morph";
 import { diary } from "./debug-logger";
 
-import { maybeLiteral } from "./maybeLiteral";
-import { maybeObjectEntries } from "./maybeObjectEntries";
+import { maybeBoxNode } from "./maybeBoxNode";
+import { maybeObjectLikeBox } from "./maybeObjectLikeBox";
 import { box } from "./type-factory";
 import { isNotNullish, unwrapExpression } from "./utils";
 
@@ -30,14 +30,12 @@ export const extractJsxAttributeIdentifierValue = (identifier: Identifier) => {
         const expression = unwrapExpression(initializer.getExpressionOrThrow());
         if (!expression) return;
 
-        // expression.getKindName() === "ObjectLiteralExpression"
-        // = defineProperties.conditions
-        const maybeValue = maybeLiteral(expression);
+        const maybeValue = maybeBoxNode(expression);
         logger(() => ({ extractJsx: true, maybeValue }));
-        // !maybeValue && console.log("maybeLiteral empty", expression.getKindName(), expression.getText());
+        // !maybeValue && console.log("maybeBoxNode empty", expression.getKindName(), expression.getText());
         if (isNotNullish(maybeValue)) return maybeValue;
 
-        const maybeObject = maybeObjectEntries(expression);
+        const maybeObject = maybeObjectLikeBox(expression);
         logger(() => ({ maybeObject }));
         // console.log("expr", expression.getKindName(), expression.getText());
         if (isNotNullish(maybeObject)) return maybeObject;

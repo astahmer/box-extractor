@@ -1,6 +1,6 @@
 import type { CallExpression } from "ts-morph";
 
-import { maybeObjectEntries } from "./maybeObjectEntries";
+import { maybeObjectLikeBox } from "./maybeObjectLikeBox";
 import { isNotNullish, unwrapExpression } from "./utils";
 
 export const extractCallExpressionValues = (node: CallExpression) => {
@@ -8,6 +8,6 @@ export const extractCallExpressionValues = (node: CallExpression) => {
     if (!arg) return;
 
     const maybeObjectNode = unwrapExpression(arg);
-    const maybeEntries = maybeObjectEntries(maybeObjectNode);
+    const maybeEntries = maybeObjectLikeBox(maybeObjectNode);
     if (isNotNullish(maybeEntries)) return maybeEntries;
 };

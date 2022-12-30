@@ -16,8 +16,7 @@ import {
     ts,
 } from "ts-morph";
 import { query } from "./extract";
-import { getIdentifierReferenceValue } from "./maybeLiteral";
-import { isBoxType } from "./type-factory";
+import { getIdentifierReferenceValue, onlyStringLiteral } from "./maybeBoxNode";
 import type { ExtractOptions } from "./types";
 import { unwrapExpression } from "./utils";
 
@@ -153,7 +152,8 @@ function getNameLiteral(wrapper: Node) {
         const maybeValue = getIdentifierReferenceValue(wrapper);
         if (!maybeValue) return wrapper.getText();
 
-        if (isBoxType(maybeValue) && maybeValue.type === "literal") return maybeValue.value;
+        const value = onlyStringLiteral(maybeValue);
+        if (value) return value;
         return wrapper.getText();
     }
 
