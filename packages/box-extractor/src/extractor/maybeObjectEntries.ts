@@ -1,6 +1,7 @@
 import { isObjectLiteral } from "pastable";
 import type { ObjectLiteralElementLike, ObjectLiteralExpression } from "ts-morph";
 import { Node, ts } from "ts-morph";
+import { diary } from "./debug-logger";
 
 import { evaluateNode, isEvalError, safeEvaluateNode } from "./evaluate";
 // eslint-disable-next-line import/no-cycle
@@ -22,6 +23,8 @@ import {
     toBoxType,
 } from "./type-factory";
 import { isNotNullish, unwrapExpression } from "./utils";
+
+const logger = diary("box-ex:extractor:entries");
 
 export type MaybeObjectEntriesReturn = ObjectType | MapType | undefined;
 
@@ -54,7 +57,7 @@ export const maybeObjectEntries = (node: Node): MaybeObjectEntriesReturn => {
         if (isEvalError(maybeObject)) {
             const whenTrue = maybeObjectEntries(node.getWhenTrue());
             const whenFalse = maybeObjectEntries(node.getWhenFalse());
-            console.log({ whenTrue, whenFalse, oui: maybeExpandConditionalExpression(node) });
+            logger("cond", () => ({ whenTrue, whenFalse, oui: maybeExpandConditionalExpression(node) }));
             return box.map(mergePossibleEntries(whenTrue, whenFalse));
         }
 
@@ -105,10 +108,10 @@ export const maybeObjectEntries = (node: Node): MaybeObjectEntriesReturn => {
 
 const getObjectLiteralExpressionPropPairs = (expression: ObjectLiteralExpression): MapTypeValue => {
     const extractedPropValues = [] as Array<[string, ExtractedType[]]>;
-    console.log({
-        expression: expression.getText(),
-        properties: expression.getProperties().map((prop) => prop.getText()),
-    });
+    // console.log({
+    //     expression: expression.getText(),
+    //     properties: expression.getProperties().map((prop) => prop.getText()),
+    // });
 
     const properties = expression.getProperties();
     properties.forEach((propElement) => {
@@ -129,7 +132,7 @@ const getObjectLiteralExpressionPropPairs = (expression: ObjectLiteralExpression
             }
 
             const maybeObject = maybeObjectEntries(initializer);
-            console.log({ maybeObject });
+            // console.log({ maybeObject });
             if (isNotNullish(maybeObject)) {
                 extractedPropValues.push([propName, [maybeObject]]);
                 return;
@@ -141,7 +144,7 @@ const getObjectLiteralExpressionPropPairs = (expression: ObjectLiteralExpression
             const extracted = maybeObjectEntries(initializer);
             if (!isNotNullish(extracted)) return;
 
-            console.log("isSpreadAssignment", extracted);
+            logger(() => ["isSpreadAssignment", extracted]);
             if (extracted.type === "object") {
                 Object.entries(extracted.value).forEach(([propName, value]) => {
                     const boxed = box.cast(value);

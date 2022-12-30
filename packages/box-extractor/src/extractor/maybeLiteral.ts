@@ -11,6 +11,7 @@ import type {
     TemplateExpression,
 } from "ts-morph";
 import { Node, ts } from "ts-morph";
+import { diary } from "./debug-logger";
 
 import { safeEvaluateNode } from "./evaluate";
 // eslint-disable-next-line import/no-cycle
@@ -27,6 +28,8 @@ import {
 } from "./type-factory";
 import type { ExtractedPropMap, PrimitiveType } from "./types";
 import { isNotNullish, unwrapExpression } from "./utils";
+
+const logger = diary("box-ex:extractor:literal");
 
 const innerGetLiteralValue = (
     valueType: PrimitiveType | ExtractedType | NodeObjectLiteralExpressionType | undefined
@@ -51,7 +54,7 @@ const innerGetLiteralValue = (
 
     if (valueType.type === "conditional") {
         const narrowed = narrowCondionalType(valueType);
-        console.dir({ valueType, narrowed }, { depth: 4 });
+        logger("narrow", () => ({ valueType, narrowed }));
 
         if (narrowed.length === 1) {
             return getLiteralValue(narrowed[0]);
@@ -180,7 +183,7 @@ export const maybeExpandConditionalExpression = (
     let whenFalseValue: ReturnType<typeof maybeLiteral> | ReturnType<typeof maybeObjectEntries> =
         maybeLiteral(whenFalseExpr);
 
-    console.dir({ before: true, whenTrueValue, whenFalseValue }, { depth: 4 });
+    logger("cond", () => ({ before: true, whenTrueValue, whenFalseValue }));
 
     // <ColorBox color={isDark ? { mobile: "blue.100", desktop: "blue.300" } : "whiteAlpha.100"} />
     if (!isNotNullish(whenTrueValue)) {
@@ -198,15 +201,12 @@ export const maybeExpandConditionalExpression = (
         }
     }
 
-    console.dir(
-        {
-            whenTrueLiteral: unwrapExpression(node.getWhenTrue()).getText(),
-            whenFalseLiteral: unwrapExpression(node.getWhenFalse()).getText(),
-            whenTrueValue,
-            whenFalseValue,
-        },
-        { depth: 4 }
-    );
+    logger("cond", () => ({
+        whenTrueLiteral: unwrapExpression(node.getWhenTrue()).getText(),
+        whenFalseLiteral: unwrapExpression(node.getWhenFalse()).getText(),
+        whenTrueValue,
+        whenFalseValue,
+    }));
 
     if (!whenTrueValue && !whenFalseValue) {
         return;
@@ -277,14 +277,14 @@ const getPropValue = (initializer: ObjectLiteralExpression, propName: string) =>
     const property =
         initializer.getProperty(propName) ?? initializer.getProperties().find((p) => findProperty(p, propName));
 
-    console.log("props", {
+    logger("get-prop", () => ({
         propName,
         property: property?.getText(),
         properties: initializer.getProperties().map((p) => p.getText()),
         propertyKind: property?.getKindName(),
         initializer: initializer.getText(),
         initializerKind: initializer.getKindName(),
-    });
+    }));
 
     if (Node.isPropertyAssignment(property)) {
         const propInit = property.getInitializerOrThrow();
@@ -315,7 +315,7 @@ const maybeTemplateStringValue = (template: TemplateExpression) => {
         return maybeStringLiteral(expression);
     });
 
-    console.log({ head: head.getText(), headValue, tailValues });
+    // logger(() => ({ head: head.getText(), headValue, tailValues }));
 
     if (isNotNullish(headValue) && tailValues.every(isNotNullish)) {
         // console.log({ propName, headValue, tailValues });
@@ -327,17 +327,17 @@ const maybePropIdentifierDefinitionValue = (elementAccessed: Identifier, propNam
     const defs = elementAccessed.getDefinitionNodes();
     while (defs.length > 0) {
         const def = unwrapExpression(defs.shift()!);
-        console.log({
+        logger("id-def", () => ({
             def: def?.getText(),
             elementAccessed: elementAccessed.getText(),
             kind: def?.getKindName(),
             type: def?.getType().getText(),
             propName,
-        });
+        }));
 
         if (Node.isVariableDeclaration(def)) {
             const initializer = unwrapExpression(def.getInitializerOrThrow());
-            console.log({ initializer: initializer.getText(), kind: initializer.getKindName(), propName });
+            logger("id-def", () => ({ initializer: initializer.getText(), kind: initializer.getKindName(), propName }));
 
             if (Node.isObjectLiteralExpression(initializer)) {
                 return getPropValue(initializer, propName);
@@ -361,12 +361,12 @@ export const getIdentifierReferenceValue = (identifier: Identifier) => {
     while (defs.length > 0) {
         const def = unwrapExpression(defs.shift()!);
 
-        // console.log({
+        // logger(() => ({
         //     def: def?.getText(),
         //     identifier: identifier.getText(),
         //     kind: def?.getKindName(),
         //     type: def?.getType().getText(),
-        // });
+        // }));
 
         // const staticColor =
         if (Node.isVariableDeclaration(def)) {
@@ -379,7 +379,7 @@ export const getIdentifierReferenceValue = (identifier: Identifier) => {
                 return box.nodeObjectLiteral(initializer);
             }
 
-            // console.log({
+            // logger(() => ({
             //     getIdentifierReferenceValue: true,
             //     def: def?.getText(),
             //     identifier: identifier.getText(),
@@ -387,7 +387,7 @@ export const getIdentifierReferenceValue = (identifier: Identifier) => {
             //     type: def?.getType().getText(),
             //     initializer: initializer?.getText(),
             //     initializerKind: initializer?.getKindName(),
-            // });
+            // }));
         }
     }
 };
@@ -413,13 +413,15 @@ const tryUnwrapBinaryExpression = (node: BinaryExpression) => {
     }
 };
 
+const elAccessedLogger = logger.extend("element-access");
+
 const getElementAccessedExpressionValue = (expression: ElementAccessExpression): MaybeLiteralReturn => {
     const elementAccessed = unwrapExpression(expression.getExpression());
     const arg = unwrapExpression(expression.getArgumentExpressionOrThrow());
 
     const argValue = maybeStringLiteral(arg);
 
-    console.log("yes", {
+    elAccessedLogger(() => ({
         arg: arg.getText(),
         argKind: arg.getKindName(),
         elementAccessed: elementAccessed.getText(),
@@ -428,7 +430,7 @@ const getElementAccessedExpressionValue = (expression: ElementAccessExpression):
         expressionKind: expression.getKindName(),
         argValue,
         argLiteral: maybeLiteral(arg),
-    });
+    }));
 
     // <ColorBox color={xxx["yyy"]} />
     if (Node.isIdentifier(elementAccessed) && isNotNullish(argValue)) {
@@ -479,7 +481,7 @@ const getElementAccessedExpressionValue = (expression: ElementAccessExpression):
     // <ColorBox color={xxx[yyy[zzz]]} />
     if (Node.isIdentifier(elementAccessed) && Node.isElementAccessExpression(arg)) {
         const propName = getElementAccessedExpressionValue(arg);
-        console.log({ isArgElementAccessExpression: true, propName });
+        elAccessedLogger(() => ({ isArgElementAccessExpression: true, propName }));
 
         if (typeof propName === "string" && isNotNullish(propName)) {
             const maybeValue = maybePropIdentifierDefinitionValue(elementAccessed, propName);
@@ -492,7 +494,7 @@ const getElementAccessedExpressionValue = (expression: ElementAccessExpression):
     // <ColorBox color={xxx[yyy[zzz]]} />
     if (Node.isElementAccessExpression(elementAccessed) && isNotNullish(argValue)) {
         const identifier = getElementAccessedExpressionValue(elementAccessed);
-        console.log({ isElementAccessExpression: true, identifier });
+        elAccessedLogger(() => ({ isElementAccessExpression: true, identifier }));
 
         if (isObject(identifier) && !Array.isArray(identifier) && identifier.type === "node-object-literal") {
             const maybeValue = getPropValue(identifier.value, argValue);
@@ -510,7 +512,7 @@ const getElementAccessedExpressionValue = (expression: ElementAccessExpression):
     // <ColorBox color={xxx[aaa ? yyy : zzz]]} />
     if (Node.isConditionalExpression(arg)) {
         const propName = maybeStringLiteral(arg);
-        console.log({ isConditionalExpression: true, propName });
+        elAccessedLogger(() => ({ isConditionalExpression: true, propName }));
         // eslint-disable-next-line sonarjs/no-collapsible-if
         if (isNotNullish(propName)) {
             // eslint-disable-next-line unicorn/no-lonely-if
@@ -528,13 +530,13 @@ const getElementAccessedExpressionValue = (expression: ElementAccessExpression):
         const whenTrueValue = maybeStringLiteral(whenTrue);
         const whenFalseValue = maybeStringLiteral(whenFalse);
 
-        console.log({
+        elAccessedLogger(() => ({
             conditionalElementAccessed: true,
             whenTrueValue,
             whenFalseValue,
             whenTrue: [whenTrue.getKindName(), whenTrue.getText()],
             whenFalse: [whenFalse.getKindName(), whenFalse.getText()],
-        });
+        }));
 
         if (Node.isIdentifier(elementAccessed)) {
             const whenTrueResolved = isNotNullish(whenTrueValue)
@@ -578,14 +580,14 @@ const getArrayElementValueAtIndex = (array: ArrayLiteralExpression, index: numbe
     if (!element) return;
 
     const value = maybeLiteral(element);
-    console.log({
+    elAccessedLogger(() => ({
         array: array.getText(),
         arrayKind: array.getKindName(),
         element: element.getText(),
         elementKind: element.getKindName(),
         value,
         obj: maybeObjectEntries(element),
-    });
+    }));
 
     if (isNotNullish(value)) {
         return value;

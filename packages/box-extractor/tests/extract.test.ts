@@ -49,9 +49,9 @@ const extractFromCode = (code: string) => {
     const fileName = `file${fileCount++}.tsx`;
     sourceFile = project.createSourceFile(fileName, code, { scriptKind: ts.ScriptKind.TSX });
     // console.log(sourceFile.forEachDescendant((c) => [c.getKindName(), c.getText()]));
-    const oui = extract({ ast: sourceFile, components: config, used: usedMap });
+    const extracted = extract({ ast: sourceFile, components: config, used: usedMap });
     console.dir({ usedMap }, { depth: null });
-    return oui.map(([name, props]) => [name, props.map((pair) => getLiteralValue(pair))]);
+    return extracted.map(([name, props]) => [name, props.map((pair) => getLiteralValue(pair))]);
 };
 
 it("extract it all", () => {
@@ -1660,8 +1660,7 @@ it("extract JsxAttribute > ObjectLiteralExpression > css prop > ConditionalExpre
     `);
 });
 
-// only
-it("extract JsxAttribute > ObjectLiteralExpression > css prop > PropertyAssignment > ConditionalExpression", () => {
+it.only("extract JsxAttribute > ObjectLiteralExpression > css prop > PropertyAssignment > ConditionalExpression", () => {
     expect(
         extractFromCode(`
         const [isShown] = useState(true);
