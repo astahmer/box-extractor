@@ -11,18 +11,13 @@ import type { ExtractedType, LiteralValue } from "./type-factory";
 export type PrimitiveType = string | number;
 export type ExtractedPropMap = Record<string, LiteralValue>;
 
-export type ComponentUsedPropertiesStyle = {
-    nodes: Map<string, ExtractedType[]>;
-};
-export type UsedComponentsMap = Map<string, ComponentUsedPropertiesStyle>;
-
-export type ExtractedComponentProperties = [componentName: string, propPairs: ExtractedPropPair[]];
-export type ExtractedPropPair = [propName: string, propValue: ExtractedType[]];
+export type PropNodeMap = { kind: "component" | "function"; nodes: Map<string, ExtractedType[]> };
+export type NodeMap = Map<string, PropNodeMap>;
 
 export type ListOrAll = "all" | string[];
 export type ExtractOptions = {
     ast: SourceFile;
     components?: Record<string, { properties: ListOrAll }> | string[];
     functions?: Record<string, { properties: ListOrAll }> | string[];
-    used: UsedComponentsMap;
+    used: NodeMap;
 };

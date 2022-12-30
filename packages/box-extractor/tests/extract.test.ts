@@ -2,7 +2,7 @@ import { Project, SourceFile, ts } from "ts-morph";
 import { afterEach, expect, it } from "vitest";
 import { extract } from "../src/extractor/extract";
 import { getLiteralValue } from "../src/extractor/maybeLiteral";
-import type { ExtractOptions, UsedComponentsMap } from "../src/extractor/types";
+import type { ExtractOptions, NodeMap } from "../src/extractor/types";
 import { default as ExtractSample } from "./ExtractSample?raw";
 
 const createProject = () => {
@@ -45,12 +45,12 @@ const config: ExtractOptions["components"] = {
 };
 
 const extractFromCode = (code: string) => {
-    const usedMap = new Map() as UsedComponentsMap;
+    const usedMap = new Map() as NodeMap;
     const fileName = `file${fileCount++}.tsx`;
     sourceFile = project.createSourceFile(fileName, code, { scriptKind: ts.ScriptKind.TSX });
     // console.log(sourceFile.forEachDescendant((c) => [c.getKindName(), c.getText()]));
     const extracted = extract({ ast: sourceFile, components: config, used: usedMap });
-    // console.dir({ test: true, usedMap }, { depth: null });
+    console.dir({ test: true, usedMap, extracted }, { depth: null });
     return Array.from(extracted.entries()).map(([name, props]) => [
         name,
         Array.from(props.nodes.entries()).map(([propName, propValues]) => [propName, getLiteralValue(propValues)]),
@@ -64,83 +64,87 @@ it("extract it all", () => {
           [
               "ColorBox",
               [
-                  ["color", "red.200"],
-                  ["color", "yellow.300"],
-                  ["backgroundColor", "blackAlpha.100"],
-                  ["color", ["cyan.400", "cyan.500"]],
-                  ["color", "facebook.400"],
-                  ["color", "gray.100"],
-                  ["color", "facebook.500"],
-                  ["color", ["facebook.600", "gray.200"]],
-                  ["color", ["gray.200", "gray.300"]],
-                  ["color", "gray.100"],
-                  ["color", "facebook.900"],
-                  ["color", "facebook.900"],
-                  ["color", "pink.100"],
-                  ["color", "pink.100"],
-                  ["color", "pink.100"],
-                  ["color", "pink.100"],
-                  ["color", "pink.100"],
-                  ["color", "facebook.900"],
-                  ["color", "facebook.900"],
-                  ["color", "facebook.900"],
-                  ["color", "gray.100"],
-                  ["color", "gray.100"],
-                  ["color", "gray.100"],
-                  ["color", "gray.100"],
-                  ["color", "gray.100"],
-                  ["color", "gray.100"],
-                  ["color", "gray.100"],
-                  ["color", "gray.100"],
-                  ["color", "gray.100"],
-                  ["color", "gray.100"],
-                  ["color", "gray.100"],
-                  ["color", ["gray.600", "gray.800"]],
-                  ["color", ["gray.700", "gray.100"]],
-                  ["color", "gray.100"],
                   [
                       "color",
-                      {
-                          default: "red.100",
-                          hover: "green.100",
-                          focus: "blue.100",
-                      },
+                      [
+                          "red.200",
+                          "yellow.300",
+                          ["cyan.400", "cyan.500"],
+                          "facebook.400",
+                          "gray.100",
+                          "facebook.500",
+                          ["facebook.600", "gray.200"],
+                          ["gray.200", "gray.300"],
+                          "gray.100",
+                          "facebook.900",
+                          "facebook.900",
+                          "pink.100",
+                          "pink.100",
+                          "pink.100",
+                          "pink.100",
+                          "pink.100",
+                          "facebook.900",
+                          "facebook.900",
+                          "facebook.900",
+                          "gray.100",
+                          "gray.100",
+                          "gray.100",
+                          "gray.100",
+                          "gray.100",
+                          "gray.100",
+                          "gray.100",
+                          "gray.100",
+                          "gray.100",
+                          "gray.100",
+                          "gray.100",
+                          ["gray.600", "gray.800"],
+                          ["gray.700", "gray.100"],
+                          "gray.100",
+                          {
+                              default: "red.100",
+                              hover: "green.100",
+                              focus: "blue.100",
+                          },
+                          "facebook.900",
+                          "facebook.900",
+                          "facebook.900",
+                          "red.100",
+                          "red.100",
+                          "green.100",
+                          "blue.100",
+                          "yellow.100",
+                          "orange.100",
+                          "orange.300",
+                          "red.100",
+                          "orange.400",
+                          "facebook.100",
+                          "blackAlpha.400",
+                          "blackAlpha.400",
+                          "facebook.200",
+                          "facebook.200",
+                          "twitter.100",
+                          "orange.100",
+                          "orange.200",
+                          "orange.400",
+                          "telegram.300",
+                      ],
                   ],
                   [
                       "backgroundColor",
-                      {
-                          default: "orange.800",
-                          hover: "telegram.200",
-                          focus: "yellow.700",
-                      },
+                      [
+                          "blackAlpha.100",
+                          {
+                              default: "orange.800",
+                              hover: "telegram.200",
+                              focus: "yellow.700",
+                          },
+                          "blackAlpha.100",
+                          "twitter.200",
+                          "twitter.200",
+                          "twitter.200",
+                          "telegram.400",
+                      ],
                   ],
-                  ["color", "facebook.900"],
-                  ["color", "facebook.900"],
-                  ["color", "facebook.900"],
-                  ["color", "red.100"],
-                  ["color", "red.100"],
-                  ["color", "green.100"],
-                  ["color", "blue.100"],
-                  ["color", "yellow.100"],
-                  ["color", "orange.100"],
-                  ["color", "orange.300"],
-                  ["color", "red.100"],
-                  ["color", "orange.400"],
-                  ["color", "facebook.100"],
-                  ["color", "blackAlpha.400"],
-                  ["color", "blackAlpha.400"],
-                  ["color", "facebook.200"],
-                  ["backgroundColor", "blackAlpha.100"],
-                  ["color", "facebook.200"],
-                  ["color", "twitter.100"],
-                  ["backgroundColor", "twitter.200"],
-                  ["backgroundColor", "twitter.200"],
-                  ["color", "orange.100"],
-                  ["backgroundColor", "twitter.200"],
-                  ["color", "orange.200"],
-                  ["color", "orange.400"],
-                  ["color", "telegram.300"],
-                  ["backgroundColor", "telegram.400"],
               ],
               {
                   color: [
@@ -347,6 +351,46 @@ it("extract it all", () => {
                           type: "literal",
                           value: "orange.400",
                       },
+                      {
+                          type: "literal",
+                          value: "facebook.100",
+                      },
+                      {
+                          type: "literal",
+                          value: "blackAlpha.400",
+                      },
+                      {
+                          type: "literal",
+                          value: "blackAlpha.400",
+                      },
+                      {
+                          type: "literal",
+                          value: "facebook.200",
+                      },
+                      {
+                          type: "literal",
+                          value: "facebook.200",
+                      },
+                      {
+                          type: "literal",
+                          value: "twitter.100",
+                      },
+                      {
+                          type: "literal",
+                          value: "orange.100",
+                      },
+                      {
+                          type: "literal",
+                          value: "orange.200",
+                      },
+                      {
+                          type: "literal",
+                          value: "orange.400",
+                      },
+                      {
+                          type: "literal",
+                          value: "telegram.300",
+                      },
                   ],
                   backgroundColor: [
                       {
@@ -375,6 +419,26 @@ it("extract it all", () => {
                                   },
                               ],
                           },
+                      },
+                      {
+                          type: "literal",
+                          value: "blackAlpha.100",
+                      },
+                      {
+                          type: "literal",
+                          value: "twitter.200",
+                      },
+                      {
+                          type: "literal",
+                          value: "twitter.200",
+                      },
+                      {
+                          type: "literal",
+                          value: "twitter.200",
+                      },
+                      {
+                          type: "literal",
+                          value: "telegram.400",
                       },
                   ],
               },
@@ -2061,7 +2125,22 @@ it("extract JsxSpreadAttribute > ObjectLiteralExpression", () => {
         extractFromCode(`
             <ColorBox {...{ color: "orange.700" }}>spread</ColorBox>
         `)
-    ).toMatchInlineSnapshot('[["ColorBox", [["color", "orange.700"]], {}]]');
+    ).toMatchInlineSnapshot(`
+      [
+          [
+              "ColorBox",
+              [["color", "orange.700"]],
+              {
+                  color: [
+                      {
+                          type: "literal",
+                          value: "orange.700",
+                      },
+                  ],
+              },
+          ],
+      ]
+    `);
 });
 
 it("extract JsxSpreadAttribute > Identifier > ObjectLiteralExpression", () => {
@@ -2070,7 +2149,22 @@ it("extract JsxSpreadAttribute > Identifier > ObjectLiteralExpression", () => {
             const objectWithAttributes = { color: "orange.800" } as any;
             <ColorBox {...objectWithAttributes}>var spread</ColorBox>
         `)
-    ).toMatchInlineSnapshot('[["ColorBox", [["color", "orange.800"]], {}]]');
+    ).toMatchInlineSnapshot(`
+      [
+          [
+              "ColorBox",
+              [["color", "orange.800"]],
+              {
+                  color: [
+                      {
+                          type: "literal",
+                          value: "orange.800",
+                      },
+                  ],
+              },
+          ],
+      ]
+    `);
 });
 
 it("extract JsxSpreadAttribute > ConditionalExpression > Identifier/NullKeyword > falsy", () => {
@@ -2090,7 +2184,22 @@ it("extract JsxSpreadAttribute > ConditionalExpression > Identifier/NullKeyword 
             const objectWithAttributes = { color: "orange.900" } as any;
             <ColorBox {...(isShown ? objectWithAttributes : null)}>conditional var spread</ColorBox>
         `)
-    ).toMatchInlineSnapshot('[["ColorBox", [["color", "orange.900"]], {}]]');
+    ).toMatchInlineSnapshot(`
+      [
+          [
+              "ColorBox",
+              [["color", "orange.900"]],
+              {
+                  color: [
+                      {
+                          type: "literal",
+                          value: "orange.900",
+                      },
+                  ],
+              },
+          ],
+      ]
+    `);
 });
 
 it("extract JsxSpreadAttribute > PropertyAssignment / ComputedProperty", () => {
@@ -2116,7 +2225,20 @@ it("extract JsxSpreadAttribute > PropertyAssignment / ComputedProperty", () => {
                   ["color", "teal.100"],
                   ["backgroundColor", "teal.200"],
               ],
-              {},
+              {
+                  color: [
+                      {
+                          type: "literal",
+                          value: "teal.100",
+                      },
+                  ],
+                  backgroundColor: [
+                      {
+                          type: "literal",
+                          value: "teal.200",
+                      },
+                  ],
+              },
           ],
       ]
     `);
@@ -2127,7 +2249,22 @@ it("extract JsxSpreadAttribute > ConditionalExpression > ObjectLiteralExpression
         extractFromCode(`
             <ColorBox {...(true ? ({ color: "teal.400" }) as any : (undefined) as unknown)}></ColorBox>
         `)
-    ).toMatchInlineSnapshot('[["ColorBox", [["color", "teal.400"]], {}]]');
+    ).toMatchInlineSnapshot(`
+      [
+          [
+              "ColorBox",
+              [["color", "teal.400"]],
+              {
+                  color: [
+                      {
+                          type: "literal",
+                          value: "teal.400",
+                      },
+                  ],
+              },
+          ],
+      ]
+    `);
 });
 
 it("extract JsxSpreadAttribute > BinaryExpression > AmpersandAmpersandToken / ObjectLiteralExpression", () => {
@@ -2135,7 +2272,22 @@ it("extract JsxSpreadAttribute > BinaryExpression > AmpersandAmpersandToken / Ob
         extractFromCode(`
             <ColorBox {...(true && ({ color: "teal.500" }))}></ColorBox>
         `)
-    ).toMatchInlineSnapshot('[["ColorBox", [["color", "teal.500"]], {}]]');
+    ).toMatchInlineSnapshot(`
+      [
+          [
+              "ColorBox",
+              [["color", "teal.500"]],
+              {
+                  color: [
+                      {
+                          type: "literal",
+                          value: "teal.500",
+                      },
+                  ],
+              },
+          ],
+      ]
+    `);
 });
 
 it("extract JsxSpreadAttribute > CallExpression", () => {
@@ -2152,7 +2304,20 @@ it("extract JsxSpreadAttribute > CallExpression", () => {
                   ["color", "teal.600"],
                   ["backgroundColor", "teal.650"],
               ],
-              {},
+              {
+                  color: [
+                      {
+                          type: "literal",
+                          value: "teal.600",
+                      },
+                  ],
+                  backgroundColor: [
+                      {
+                          type: "literal",
+                          value: "teal.650",
+                      },
+                  ],
+              },
           ],
       ]
     `);
@@ -2172,7 +2337,20 @@ it("extract JsxSpreadAttribute > ObjectLiteralExpression > SpreadAssignment > Ca
                   ["backgroundColor", "teal.800"],
                   ["color", "teal.700"],
               ],
-              {},
+              {
+                  backgroundColor: [
+                      {
+                          type: "literal",
+                          value: "teal.800",
+                      },
+                  ],
+                  color: [
+                      {
+                          type: "literal",
+                          value: "teal.700",
+                      },
+                  ],
+              },
           ],
       ]
     `);
@@ -2200,7 +2378,20 @@ it("extract JsxSpreadAttribute > ObjectLiteralExpression > SpreadAssignment > Co
                   ["backgroundColor", "cyan.100"],
                   ["color", "cyan.200"],
               ],
-              {},
+              {
+                  backgroundColor: [
+                      {
+                          type: "literal",
+                          value: "cyan.100",
+                      },
+                  ],
+                  color: [
+                      {
+                          type: "literal",
+                          value: "cyan.200",
+                      },
+                  ],
+              },
           ],
       ]
     `);
@@ -2230,7 +2421,20 @@ it("extract JsxSpreadAttribute > BinaryExpression > AmpersandAmpersandToken / Ob
                   ["backgroundColor", "cyan.300"],
                   ["color", "cyan.400"],
               ],
-              {},
+              {
+                  backgroundColor: [
+                      {
+                          type: "literal",
+                          value: "cyan.300",
+                      },
+                  ],
+                  color: [
+                      {
+                          type: "literal",
+                          value: "cyan.400",
+                      },
+                  ],
+              },
           ],
       ]
     `);
@@ -2260,7 +2464,20 @@ it("extract JsxSpreadAttribute > 3 depth spread", () => {
                   ["color", "cyan.500"],
                   ["backgroundColor", "cyan.600"],
               ],
-              {},
+              {
+                  color: [
+                      {
+                          type: "literal",
+                          value: "cyan.500",
+                      },
+                  ],
+                  backgroundColor: [
+                      {
+                          type: "literal",
+                          value: "cyan.600",
+                      },
+                  ],
+              },
           ],
       ]
     `);
@@ -2281,7 +2498,20 @@ it("extract JsxSpreadAttribute > ConditionalExpression > unresolvable expression
                   ["color", "cyan.700"],
                   ["backgroundColor", "cyan.800"],
               ],
-              {},
+              {
+                  color: [
+                      {
+                          type: "literal",
+                          value: "cyan.700",
+                      },
+                  ],
+                  backgroundColor: [
+                      {
+                          type: "literal",
+                          value: "cyan.800",
+                      },
+                  ],
+              },
           ],
       ]
     `);
@@ -2296,7 +2526,22 @@ it("extract JsxSpreadAttribute > ElementAccessExpression", () => {
             };
             <ColorBox {...themeObjectsMap[\`basic\`]}></ColorBox>
         `)
-    ).toMatchInlineSnapshot('[["ColorBox", [["color", "cyan.900"]], {}]]');
+    ).toMatchInlineSnapshot(`
+      [
+          [
+              "ColorBox",
+              [["color", "cyan.900"]],
+              {
+                  color: [
+                      {
+                          type: "literal",
+                          value: "cyan.900",
+                      },
+                  ],
+              },
+          ],
+      ]
+    `);
 });
 
 it("extract JsxSpreadAttribute > PropertyAccessExpression", () => {
@@ -2308,7 +2553,22 @@ it("extract JsxSpreadAttribute > PropertyAccessExpression", () => {
             };
             <ColorBox {...themeObjectsMap.basic}></ColorBox>
         `)
-    ).toMatchInlineSnapshot('[["ColorBox", [["color", "salmon.100"]], {}]]');
+    ).toMatchInlineSnapshot(`
+      [
+          [
+              "ColorBox",
+              [["color", "salmon.100"]],
+              {
+                  color: [
+                      {
+                          type: "literal",
+                          value: "salmon.100",
+                      },
+                  ],
+              },
+          ],
+      ]
+    `);
 });
 
 it("extract JsxSpreadAttribute > PropertyAccessExpression > nested", () => {
@@ -2322,7 +2582,22 @@ it("extract JsxSpreadAttribute > PropertyAccessExpression > nested", () => {
             };
             <ColorBox {...themeObjectsMap.basic.nested}></ColorBox>
         `)
-    ).toMatchInlineSnapshot('[["ColorBox", [["color", "salmon.200"]], {}]]');
+    ).toMatchInlineSnapshot(`
+      [
+          [
+              "ColorBox",
+              [["color", "salmon.200"]],
+              {
+                  color: [
+                      {
+                          type: "literal",
+                          value: "salmon.200",
+                      },
+                  ],
+              },
+          ],
+      ]
+    `);
 });
 
 it("extract JsxSpreadAttribute > ElementAccessExpression + PropertyAccessExpression", () => {
@@ -2334,7 +2609,22 @@ it("extract JsxSpreadAttribute > ElementAccessExpression + PropertyAccessExpress
             };
             <ColorBox {...themeObjectsMap[\`basic\`].nested}></ColorBox>
         `)
-    ).toMatchInlineSnapshot('[["ColorBox", [["color", "salmon.300"]], {}]]');
+    ).toMatchInlineSnapshot(`
+      [
+          [
+              "ColorBox",
+              [["color", "salmon.300"]],
+              {
+                  color: [
+                      {
+                          type: "literal",
+                          value: "salmon.300",
+                      },
+                  ],
+              },
+          ],
+      ]
+    `);
 });
 
 it("extract JsxSpreadAttribute > ElementAccessExpression > nested", () => {
@@ -2346,7 +2636,22 @@ it("extract JsxSpreadAttribute > ElementAccessExpression > nested", () => {
             };
             <ColorBox {...themeObjectsMap[\`basic\`]["nested"]}></ColorBox>
         `)
-    ).toMatchInlineSnapshot('[["ColorBox", [["color", "salmon.400"]], {}]]');
+    ).toMatchInlineSnapshot(`
+      [
+          [
+              "ColorBox",
+              [["color", "salmon.400"]],
+              {
+                  color: [
+                      {
+                          type: "literal",
+                          value: "salmon.400",
+                      },
+                  ],
+              },
+          ],
+      ]
+    `);
 });
 
 it("extract JsxSpreadAttribute > ElementAccessExpression > Identifier / ComputedProperty", () => {
@@ -2359,7 +2664,22 @@ it("extract JsxSpreadAttribute > ElementAccessExpression > Identifier / Computed
             };
             <ColorBox {...themeObjectsMap[dynamicAttribute]}></ColorBox>
         `)
-    ).toMatchInlineSnapshot('[["ColorBox", [["color", "salmon.500"]], {}]]');
+    ).toMatchInlineSnapshot(`
+      [
+          [
+              "ColorBox",
+              [["color", "salmon.500"]],
+              {
+                  color: [
+                      {
+                          type: "literal",
+                          value: "salmon.500",
+                      },
+                  ],
+              },
+          ],
+      ]
+    `);
 });
 
 it("extract JsxSpreadAttribute > ElementAccessExpression > ComputedProperty / TemplateStringLiteral", () => {
@@ -2375,7 +2695,22 @@ it("extract JsxSpreadAttribute > ElementAccessExpression > ComputedProperty / Te
             };
             <ColorBox {...(themeObjectsMap[\`\${dynamicPartsAsTemplateString}\`]) as any}></ColorBox>
         `)
-    ).toMatchInlineSnapshot('[["ColorBox", [["color", "salmon.600"]], {}]]');
+    ).toMatchInlineSnapshot(`
+      [
+          [
+              "ColorBox",
+              [["color", "salmon.600"]],
+              {
+                  color: [
+                      {
+                          type: "literal",
+                          value: "salmon.600",
+                      },
+                  ],
+              },
+          ],
+      ]
+    `);
 });
 
 it("extract JsxSpreadAttribute > JsxExpression > ConditionalExpression > complex nested condition > truthy + truthy", () => {
@@ -2397,7 +2732,22 @@ it("extract JsxSpreadAttribute > JsxExpression > ConditionalExpression > complex
 
             <ColorBox {...(!knownCondition ? { color: "never.250" } : assertMap.isTrue() ? getMap.getter() : themeObjectsMap[dynamicPart1 + dynamicPart2] )}></ColorBox>
         `)
-    ).toMatchInlineSnapshot('[["ColorBox", [["color", "salmon.700"]], {}]]');
+    ).toMatchInlineSnapshot(`
+      [
+          [
+              "ColorBox",
+              [["color", "salmon.700"]],
+              {
+                  color: [
+                      {
+                          type: "literal",
+                          value: "salmon.700",
+                      },
+                  ],
+              },
+          ],
+      ]
+    `);
 });
 
 it("extract JsxSpreadAttribute > JsxExpression > ConditionalExpression > complex nested condition > truthy + falsy", () => {
@@ -2419,10 +2769,25 @@ it("extract JsxSpreadAttribute > JsxExpression > ConditionalExpression > complex
 
             <ColorBox {...(!knownCondition ? { color: "never.250" } : assertMap.isFalse() ? getMap.getter() : themeObjectsMap[dynamicPart1 + dynamicPart2] )}></ColorBox>
         `)
-    ).toMatchInlineSnapshot('[["ColorBox", [["color", "salmon.800"]], {}]]');
+    ).toMatchInlineSnapshot(`
+      [
+          [
+              "ColorBox",
+              [["color", "salmon.800"]],
+              {
+                  color: [
+                      {
+                          type: "literal",
+                          value: "salmon.800",
+                      },
+                  ],
+              },
+          ],
+      ]
+    `);
 });
 
-it.only("extract JsxSpreadAttribute > JsxExpression > ConditionalExpression > unresolvable expression will output both outcome ", () => {
+it("extract JsxSpreadAttribute > JsxExpression > ConditionalExpression > unresolvable expression will output both outcome ", () => {
     expect(
         extractFromCode(`
             const [unresolvableBoolean, setUnresolvableBoolean] = useState(false)
@@ -2441,12 +2806,23 @@ it.only("extract JsxSpreadAttribute > JsxExpression > ConditionalExpression > un
       [
           [
               "ColorBox",
-              [
-                  ["color", "never.250"],
-                  ["color", "salmon.850"],
-                  ["color", "salmon.900"],
-              ],
-              {},
+              [["color", ["never.250", "salmon.850", "salmon.900"]]],
+              {
+                  color: [
+                      {
+                          type: "literal",
+                          value: "never.250",
+                      },
+                      {
+                          type: "literal",
+                          value: "salmon.850",
+                      },
+                      {
+                          type: "literal",
+                          value: "salmon.900",
+                      },
+                  ],
+              },
           ],
       ]
     `);
@@ -2462,7 +2838,22 @@ it("extract JsxSpreadAttribute > ElementAccessExpression > CallExpression", () =
             };
             <ColorBox {...themeObjectsMap[getDynamicAttribute()]}></ColorBox>
         `)
-    ).toMatchInlineSnapshot('[["ColorBox", [["color", "white.100"]], {}]]');
+    ).toMatchInlineSnapshot(`
+      [
+          [
+              "ColorBox",
+              [["color", "white.100"]],
+              {
+                  color: [
+                      {
+                          type: "literal",
+                          value: "white.100",
+                      },
+                  ],
+              },
+          ],
+      ]
+    `);
 });
 
 it("extract JsxAttribute > ElementAccessExpression > CallExpression > PropertyAccessExpression", () => {
