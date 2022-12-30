@@ -3,4 +3,15 @@ export type { CreateViteBoxExtractorOptions, OnExtractedArgs } from "./createVit
 export { createViteBoxExtractor } from "./createViteBoxExtractor";
 export { createViteBoxRefUsageFinder } from "./createViteBoxRefUsageFinder";
 export { extract } from "./extractor/extract";
-export type { ExtractOptions, UsedComponentsMap } from "./extractor/types";
+export type {
+    ConditionalType,
+    ExtractedType,
+    LiteralType,
+    LiteralValue,
+    MapType,
+    MapTypeValue,
+    NodeObjectLiteralExpressionType,
+    ObjectType,
+    SingleLiteralValue,
+} from "./extractor/type-factory";
+export type { ExtractOptions, NodeMap, PrimitiveType, PropNodeMap } from "./extractor/types";

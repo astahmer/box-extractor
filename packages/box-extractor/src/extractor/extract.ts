@@ -6,8 +6,8 @@ import { diary } from "./debug-logger";
 import { extractCallExpressionValues } from "./extractCallExpressionIdentifierValues";
 import { extractJsxAttributeIdentifierValue } from "./extractJsxAttributeIdentifierValue";
 import { extractJsxSpreadAttributeValues } from "./extractJsxSpreadAttributeValues";
-import { castObjectLikeAsMapValue, ExtractedType } from "./type-factory";
-import type { ExtractedPropPair, ExtractOptions, ListOrAll } from "./types";
+import { castObjectLikeAsMapValue, ExtractedType, MapTypeValue } from "./type-factory";
+import type { ExtractOptions, ListOrAll, NodeMap, PropNodeMap } from "./types";
 import { isNotNullish } from "./utils";
 
 const logger = diary("box-ex:extractor:extract");
@@ -20,17 +20,19 @@ export const extract = ({ ast, components: _components, functions: _functions, u
         ? Object.fromEntries(_functions.map((name) => [name, { properties: "all" }]))
         : _functions;
 
-    const extracted = new Map<string, { kind: "component" | "function"; nodes: Map<string, ExtractedType[]> }>();
+    // contains all the extracted nodes from this ast
+    // where as `used` is the global map that is populated by this function in multiple calls
+    const extracted = new Map() as NodeMap;
 
     Object.entries(components ?? {}).forEach(([componentName, component]) => {
         const propNameList = component.properties;
         const canTakeAllProp = propNameList === "all";
 
-        const nodes = new Map<string, ExtractedType[]>();
-        extracted.set(componentName, { kind: "component", nodes });
+        const localNodes = new Map() as PropNodeMap["nodes"];
+        extracted.set(componentName, { kind: "component", nodes: localNodes });
 
         if (!used.has(componentName)) {
-            used.set(componentName, { nodes: new Map() });
+            used.set(componentName, { kind: "component", nodes: new Map() });
         }
 
         const componentMap = used.get(componentName)!;
@@ -47,19 +49,19 @@ export const extract = ({ ast, components: _components, functions: _functions, u
             const propName = node.getText();
             const propNodes = componentMap.nodes.get(propName) ?? [];
 
-            const extractedNodes = extractJsxAttributeIdentifierValue(node);
-            logger(() => ({ propName, extracted: extractedNodes }));
+            const maybeNodes = extractJsxAttributeIdentifierValue(node);
+            logger(() => ({ propName, maybeNodes }));
 
-            const extractedValues = castAsArray(extractedNodes).filter(isNotNullish) as ExtractedType[];
-            extractedValues.forEach((node) => {
+            const extractedNodes = castAsArray(maybeNodes).filter(isNotNullish) as ExtractedType[];
+            localNodes.set(propName, (localNodes.get(propName) ?? []).concat(extractedNodes));
+
+            extractedNodes.forEach((node) => {
                 propNodes.push(node);
             });
 
-            if (!componentMap.nodes.has(propName) && propNodes.length > 0) {
+            if (propNodes.length > 0) {
                 componentMap.nodes.set(propName, propNodes);
             }
-
-            nodes.set(propName, extractedValues);
         });
 
         const spreadSelector = `${componentSelector} JsxSpreadAttribute`;
@@ -70,15 +72,14 @@ export const extract = ({ ast, components: _components, functions: _functions, u
         spreadNodes.forEach((node) => {
             const objectOrMapType = extractJsxSpreadAttributeValues(node);
             const map = castObjectLikeAsMapValue(objectOrMapType);
-            const pairs = Array.from(map.entries());
 
-            const entries = mergeSpreadEntries({ extracted: pairs, propNameList });
+            const entries = mergeSpreadEntries({ map, propNameList });
             entries.forEach(([propName, propValue]) => {
-                const propNodes = componentMap.nodes.get(propName) ?? [];
                 logger("merge-spread", () => ({ jsx: true, propName, propValue }));
 
                 propValue.forEach((value) => {
-                    propNodes.push(value);
+                    localNodes.set(propName, (localNodes.get(propName) ?? []).concat(value));
+                    componentMap.nodes.set(propName, (componentMap.nodes.get(propName) ?? []).concat(value));
                 });
             });
         });
@@ -93,14 +94,14 @@ export const extract = ({ ast, components: _components, functions: _functions, u
 
     Object.entries(functions ?? {}).forEach(([functionName, component]) => {
         const propNameList = component.properties;
-        const nodes = new Map<string, ExtractedType[]>();
-        extracted.set(functionName, { kind: "function", nodes });
+        const localNodes = new Map() as PropNodeMap["nodes"];
+        extracted.set(functionName, { kind: "function", nodes: localNodes });
 
         if (!used.has(functionName)) {
-            used.set(functionName, { nodes: new Map() });
+            used.set(functionName, { kind: "function", nodes: new Map() });
         }
 
-        const functionMap = used.get(functionName)!;
+        const fnMap = used.get(functionName)!;
         const fnSelector = `JsxAttributes CallExpression:has(Identifier[name="${functionName}"])`;
         // <div className={colorSprinkles({ color: "blue.100" })}></ColorBox>
         //                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -113,15 +114,14 @@ export const extract = ({ ast, components: _components, functions: _functions, u
             // console.log({ objectOrMapType });
 
             const map = castObjectLikeAsMapValue(objectOrMapType);
-            const pairs = Array.from(map.entries());
-            const entries = mergeSpreadEntries({ extracted: pairs, propNameList });
+            const entries = mergeSpreadEntries({ map, propNameList });
 
             entries.forEach(([propName, propValue]) => {
-                const propNodes = functionMap.nodes.get(propName) ?? [];
                 logger("merge-spread", () => ({ fn: true, propName, propValue }));
 
                 propValue.forEach((value) => {
-                    propNodes.push(value);
+                    localNodes.set(propName, (localNodes.get(propName) ?? []).concat(value));
+                    fnMap.nodes.set(propName, (fnMap.nodes.get(propName) ?? []).concat(value));
                 });
             });
         });
@@ -135,25 +135,21 @@ export const extract = ({ ast, components: _components, functions: _functions, u
  * @example <Box sx={{ ...{ color: "red" }, color: "blue" }} />
  * // color: "blue" wins / color: "red" is ignored
  */
-function mergeSpreadEntries({
-    extracted,
-    propNameList: maybePropNameList,
-}: {
-    extracted: ExtractedPropPair[];
-    propNameList: ListOrAll;
-}) {
+function mergeSpreadEntries({ map, propNameList: maybePropNameList }: { map: MapTypeValue; propNameList: ListOrAll }) {
     const foundPropList = new Set<string>();
     const canTakeAllProp = maybePropNameList === "all";
     const propNameList = canTakeAllProp ? [] : maybePropNameList;
 
-    const merged = extracted.reverse().filter(([propName]) => {
-        if (!canTakeAllProp && !propNameList.includes(propName)) return false;
-        if (foundPropList.has(propName)) return false;
+    const merged = Array.from(map.entries())
+        .reverse()
+        .filter(([propName]) => {
+            if (!canTakeAllProp && !propNameList.includes(propName)) return false;
+            if (foundPropList.has(propName)) return false;
 
-        foundPropList.add(propName);
-        return true;
-    });
-    logger("merge-spread", () => ({ extracted, merged }));
+            foundPropList.add(propName);
+            return true;
+        });
+    logger("merge-spread", () => ({ extracted: map, merged }));
 
     // reverse again to keep the original order
     return merged.reverse();
