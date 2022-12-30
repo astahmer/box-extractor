@@ -56,7 +56,8 @@ export const isPrimitiveType = (value: unknown): value is PrimitiveType => {
     return typeof value === "string" || typeof value === "number";
 };
 
-export type LiteralValue = PrimitiveType | Record<string, unknown> | LiteralValue[];
+export type SingleLiteralValue = PrimitiveType | Record<string, unknown>;
+export type LiteralValue = SingleLiteralValue | SingleLiteralValue[];
 
 export const toBoxType = (value: undefined | ExtractedType | ExtractedPropMap | PrimitiveType | PrimitiveType[]) => {
     if (!isNotNullish(value)) return;
@@ -127,7 +128,7 @@ export const narrowCondionalType = (conditional: ConditionalType): ExtractedType
  * => [{ type: "literal", value: ["a", "b", "c"] }]
  */
 export const mergeLiteralTypes = (types: ExtractedType[]): ExtractedType[] => {
-    console.dir({ types }, { depth: null });
+    // console.dir({ types }, { depth: null });
     const literalValues = new Set<PrimitiveType>();
     const others = types.filter((extractedType) => {
         if (extractedType.type === "literal") {
@@ -144,7 +145,7 @@ export const mergeLiteralTypes = (types: ExtractedType[]): ExtractedType[] => {
     });
 
     const literal = box.literal(Array.from(literalValues));
-    console.dir({ literal, others }, { depth: null });
+    // console.dir({ literal, others }, { depth: null });
     return others.concat(literal);
 };
 

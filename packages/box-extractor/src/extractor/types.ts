@@ -12,14 +12,16 @@ export type PrimitiveType = string | number;
 export type ExtractedPropMap = Record<string, LiteralValue>;
 
 export type ComponentUsedPropertiesStyle = {
-    literals: Map<string, Set<LiteralValue>>;
+    properties: Map<string, Set<LiteralValue>>;
     entries: Map<string, Map<string, Set<LiteralValue>>>;
+    //
+    literals: Map<string, Set<LiteralValue>>;
     nodes: Map<string, ExtractedType[]>;
 };
 export type UsedComponentsMap = Map<string, ComponentUsedPropertiesStyle>;
 
 export type ExtractedComponentProperties = [componentName: string, propPairs: ExtractedPropPair[]];
-export type ExtractedPropPair = [propName: string, propValue: LiteralValue];
+export type ExtractedPropPair = [propName: string, propValue: ExtractedType[]];
 
 export type ListOrAll = "all" | string[];
 export type ExtractOptions = {

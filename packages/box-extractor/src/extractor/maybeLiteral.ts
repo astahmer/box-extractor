@@ -24,6 +24,7 @@ import {
     mergeLiteralTypes,
     narrowCondionalType,
     NodeObjectLiteralExpressionType,
+    SingleLiteralValue,
     toBoxType,
 } from "./type-factory";
 import type { ExtractedPropMap, PrimitiveType } from "./types";
@@ -71,7 +72,9 @@ export const getLiteralValue = (maybeLiteral: MaybeLiteralReturn): LiteralValue 
     if (!isNotNullish(maybeLiteral)) return;
 
     if (Array.isArray(maybeLiteral)) {
-        const values = maybeLiteral.map((valueType) => innerGetLiteralValue(valueType)).filter(isNotNullish);
+        const values = maybeLiteral
+            .map((valueType) => innerGetLiteralValue(valueType))
+            .filter(isNotNullish) as SingleLiteralValue[];
         if (values.length === 0) return;
         if (values.length === 1) return values[0];
 
