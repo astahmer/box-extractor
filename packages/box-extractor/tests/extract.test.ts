@@ -51,9 +51,9 @@ const extractFromCode = (code: string) => {
     // console.log(sourceFile.forEachDescendant((c) => [c.getKindName(), c.getText()]));
     const extracted = extract({ ast: sourceFile, components: config, used: usedMap });
     // console.dir({ test: true, usedMap }, { depth: null });
-    return extracted.map(([name, props]) => [
+    return Array.from(extracted.entries()).map(([name, props]) => [
         name,
-        props.map(([propName, propValues]) => [propName, getLiteralValue(propValues)]),
+        Array.from(props.nodes.entries()).map(([propName, propValues]) => [propName, getLiteralValue(propValues)]),
         usedMap.get(name)!.nodes,
     ]);
 };
@@ -2422,7 +2422,7 @@ it("extract JsxSpreadAttribute > JsxExpression > ConditionalExpression > complex
     ).toMatchInlineSnapshot('[["ColorBox", [["color", "salmon.800"]], {}]]');
 });
 
-it("extract JsxSpreadAttribute > JsxExpression > ConditionalExpression > unresolvable expression will output both outcome ", () => {
+it.only("extract JsxSpreadAttribute > JsxExpression > ConditionalExpression > unresolvable expression will output both outcome ", () => {
     expect(
         extractFromCode(`
             const [unresolvableBoolean, setUnresolvableBoolean] = useState(false)
