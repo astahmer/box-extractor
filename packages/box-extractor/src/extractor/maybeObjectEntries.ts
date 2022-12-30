@@ -57,7 +57,7 @@ export const maybeObjectEntries = (node: Node): MaybeObjectEntriesReturn => {
         if (isEvalError(maybeObject)) {
             const whenTrue = maybeObjectEntries(node.getWhenTrue());
             const whenFalse = maybeObjectEntries(node.getWhenFalse());
-            logger("cond", () => ({ whenTrue, whenFalse, oui: maybeExpandConditionalExpression(node) }));
+            logger("cond", () => ({ whenTrue, whenFalse }));
             return box.map(mergePossibleEntries(whenTrue, whenFalse));
         }
 

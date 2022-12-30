@@ -70,11 +70,14 @@ const innerGetLiteralValue = (
 
 export const getLiteralValue = (maybeLiteral: MaybeLiteralReturn): LiteralValue | undefined => {
     if (!isNotNullish(maybeLiteral)) return;
+    logger("get", () => ({ maybeLiteral }));
 
     if (Array.isArray(maybeLiteral)) {
         const values = maybeLiteral
             .map((valueType) => innerGetLiteralValue(valueType))
             .filter(isNotNullish) as SingleLiteralValue[];
+        logger("get", () => ({ values }));
+
         if (values.length === 0) return;
         if (values.length === 1) return values[0];
 

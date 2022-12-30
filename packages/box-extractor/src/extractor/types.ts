@@ -12,7 +12,6 @@ export type PrimitiveType = string | number;
 export type ExtractedPropMap = Record<string, LiteralValue>;
 
 export type ComponentUsedPropertiesStyle = {
-    literals: Map<string, Set<LiteralValue>>;
     nodes: Map<string, ExtractedType[]>;
 };
 export type UsedComponentsMap = Map<string, ComponentUsedPropertiesStyle>;
