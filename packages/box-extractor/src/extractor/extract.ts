@@ -1,21 +1,23 @@
 import { tsquery } from "@phenomnomnominal/tsquery";
-import { castAsArray, isObject, isObjectLiteral } from "pastable";
+import { castAsArray } from "pastable";
 import type { CallExpression, Identifier, JsxSpreadAttribute, Node } from "ts-morph";
+import { diary } from "./debug-logger";
 
 import { extractCallExpressionValues } from "./extractCallExpressionIdentifierValues";
 import { extractJsxAttributeIdentifierValue } from "./extractJsxAttributeIdentifierValue";
 import { extractJsxSpreadAttributeValues } from "./extractJsxSpreadAttributeValues";
 import { getLiteralValue } from "./maybeLiteral";
-import { box, castObjectLikeAsMapValue, isBoxType, isPrimitiveType, LiteralValue } from "./type-factory";
+import { castObjectLikeAsMapValue, LiteralValue } from "./type-factory";
 import type {
     ComponentUsedPropertiesStyle,
     ExtractedComponentProperties,
     ExtractedPropPair,
     ExtractOptions,
     ListOrAll,
-    PrimitiveType,
 } from "./types";
 import { isNotNullish } from "./utils";
+
+const logger = diary("box-ex:extractor:extract");
 
 export const extract = ({ ast, components: _components, functions: _functions, used }: ExtractOptions) => {
     const components = Array.isArray(_components)
@@ -34,9 +36,8 @@ export const extract = ({ ast, components: _components, functions: _functions, u
         const extractedComponentPropValues = [] as ExtractedPropPair[];
         componentPropValues.push([componentName, extractedComponentPropValues]);
 
-        // console.log(selector);
         if (!used.has(componentName)) {
-            used.set(componentName, { literals: new Map(), entries: new Map(), ast: new Map() });
+            used.set(componentName, { literals: new Map(), entries: new Map(), nodes: new Map() });
         }
 
         const componentMap = used.get(componentName)!;
@@ -51,11 +52,10 @@ export const extract = ({ ast, components: _components, functions: _functions, u
         const identifierNodesFromJsxAttribute = query<Identifier>(ast, propSelector) ?? [];
         identifierNodesFromJsxAttribute.forEach((node) => {
             const propName = node.getText();
-            // console.log({ propName });
 
             const propLiterals = componentMap.literals.get(propName) ?? new Set();
             const propEntries = componentMap.entries.get(propName) ?? (new Map() as Map<string, Set<LiteralValue>>);
-            const propAst = componentMap.ast.get(propName) ?? [];
+            const propNodes = componentMap.nodes.get(propName) ?? [];
 
             // TODO only set if not empty
             if (!componentMap.literals.has(propName)) {
@@ -68,19 +68,19 @@ export const extract = ({ ast, components: _components, functions: _functions, u
             }
 
             const extracted = extractJsxAttributeIdentifierValue(node);
-            console.log({ propName, extracted });
+            logger(() => ({ propName, extracted }));
             const extractedValues = castAsArray(extracted).filter(isNotNullish);
-            extractedValues.forEach((extractType) => {
-                if (extractType.type === "literal") {
-                    propLiterals.add(extractType.value);
+            extractedValues.forEach((node) => {
+                propNodes.push(node);
+
+                if (node.type === "literal") {
+                    propLiterals.add(node.value);
                     return;
                 }
 
-                if (extractType.type === "object" || extractType.type === "map") {
+                if (node.type === "object" || node.type === "map") {
                     const entries =
-                        extractType.type === "object"
-                            ? Object.entries(extractType.value)
-                            : Array.from(extractType.value.entries());
+                        node.type === "object" ? Object.entries(node.value) : Array.from(node.value.entries());
                     entries.forEach(([entryPropName, value]) => {
                         const entryPropValues = propEntries.get(entryPropName) ?? new Set();
                         if (!propEntries.has(entryPropName)) {
@@ -93,9 +93,10 @@ export const extract = ({ ast, components: _components, functions: _functions, u
                     return;
                 }
 
-                if (extractType.type === "conditional") {
-                    const literal = getLiteralValue(extractType);
-                    console.dir({ literal }, { depth: null });
+                if (node.type === "conditional") {
+                    const literal = getLiteralValue(node);
+                    // TODO
+                    // console.dir({ literal }, { depth: null });
                 }
             });
 
@@ -133,7 +134,7 @@ export const extract = ({ ast, components: _components, functions: _functions, u
         componentPropValues.push([functionName, extractedComponentPropValues]);
 
         if (!used.has(functionName)) {
-            used.set(functionName, { literals: new Map(), entries: new Map() });
+            used.set(functionName, { literals: new Map(), entries: new Map(), nodes: new Map() });
         }
 
         const componentMap = used.get(functionName)!;
@@ -176,7 +177,7 @@ function mergeSpreadEntries({
     componentMap: ComponentUsedPropertiesStyle;
     extractedComponentPropValues: ExtractedPropPair[];
 }) {
-    const foundPropList = new Set<PrimitiveType>();
+    const foundPropList = new Set<string>();
     const canTakeAllProp = maybePropNameList === "all";
     const propNameList = canTakeAllProp ? [] : maybePropNameList;
 

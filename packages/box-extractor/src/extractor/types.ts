@@ -7,19 +7,18 @@ import type { ExtractedType, LiteralValue } from "./type-factory";
 // accidentally extractable tailwind classNames ?
 // also remove unused variants from https://vanilla-extract.style/documentation/packages/recipes/ ?
 
-// TODO mv + check references to PrimitiveType -> LiteralValue
+// TODO mv to type-factory
 export type PrimitiveType = string | number;
 export type ExtractedPropMap = Record<string, LiteralValue>;
 
 export type ComponentUsedPropertiesStyle = {
     literals: Map<string, Set<LiteralValue>>;
     entries: Map<string, Map<string, Set<LiteralValue>>>;
-    ast: Map<string, ExtractedType[]>;
+    nodes: Map<string, ExtractedType[]>;
 };
 export type UsedComponentsMap = Map<string, ComponentUsedPropertiesStyle>;
 
 export type ExtractedComponentProperties = [componentName: string, propPairs: ExtractedPropPair[]];
-// TODO PrimitiveType ?
 export type ExtractedPropPair = [propName: string, propValue: LiteralValue];
 
 export type ListOrAll = "all" | string[];

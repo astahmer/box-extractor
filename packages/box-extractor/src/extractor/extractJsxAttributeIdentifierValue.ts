@@ -1,10 +1,13 @@
 import type { Identifier } from "ts-morph";
 import { Node } from "ts-morph";
+import { diary } from "./debug-logger";
 
 import { maybeLiteral } from "./maybeLiteral";
 import { maybeObjectEntries } from "./maybeObjectEntries";
 import { box } from "./type-factory";
 import { isNotNullish, unwrapExpression } from "./utils";
+
+const logger = diary("box-ex:extractor:jsx-attr");
 
 export const extractJsxAttributeIdentifierValue = (identifier: Identifier) => {
     // console.log(n.getText(), n.parent.getText());
@@ -30,17 +33,13 @@ export const extractJsxAttributeIdentifierValue = (identifier: Identifier) => {
         // expression.getKindName() === "ObjectLiteralExpression"
         // = defineProperties.conditions
         const maybeValue = maybeLiteral(expression);
-        console.dir({ extractJsx: true, maybeValue }, { depth: null });
-        !maybeValue && console.log("maybeLiteral empty", expression.getKindName(), expression.getText());
-        if (isNotNullish(maybeValue)) {
-            // return getLiteralValue(maybeValue);
-            return maybeValue;
-        }
+        logger(() => ({ extractJsx: true, maybeValue }));
+        // !maybeValue && console.log("maybeLiteral empty", expression.getKindName(), expression.getText());
+        if (isNotNullish(maybeValue)) return maybeValue;
 
         const maybeObject = maybeObjectEntries(expression);
-        console.dir({ maybeObject }, { depth: null });
+        logger(() => ({ maybeObject }));
         // console.log("expr", expression.getKindName(), expression.getText());
-        // if (isNotNullish(maybeObject)) return getLiteralValue(maybeObject);
         if (isNotNullish(maybeObject)) return maybeObject;
     }
 };
