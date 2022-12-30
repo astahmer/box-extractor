@@ -1,4 +1,4 @@
-import { isObject } from "pastable";
+import { castAsArray, isObject } from "pastable";
 import type {
     ArrayLiteralExpression,
     BinaryExpression,
@@ -20,6 +20,7 @@ import {
     ExtractedType,
     isPrimitiveType,
     LiteralValue,
+    mergeLiteralTypes,
     narrowCondionalType,
     NodeObjectLiteralExpressionType,
     toBoxType,
@@ -28,8 +29,9 @@ import type { ExtractedPropMap, PrimitiveType } from "./types";
 import { isNotNullish, unwrapExpression } from "./utils";
 
 const innerGetLiteralValue = (
-    valueType: PrimitiveType | ExtractedType | NodeObjectLiteralExpressionType
-): LiteralValue | LiteralValue[] | undefined => {
+    valueType: PrimitiveType | ExtractedType | NodeObjectLiteralExpressionType | undefined
+): LiteralValue | undefined => {
+    if (!valueType) return;
     if (isPrimitiveType(valueType)) return valueType;
     if (valueType.type === "literal") return valueType.value;
     if (valueType.type === "node-object-literal") return;
@@ -49,7 +51,7 @@ const innerGetLiteralValue = (
 
     if (valueType.type === "conditional") {
         const narrowed = narrowCondionalType(valueType);
-        // console.log({ narrowed });
+        console.dir({ valueType, narrowed }, { depth: 4 });
 
         if (narrowed.length === 1) {
             return getLiteralValue(narrowed[0]);
@@ -62,39 +64,38 @@ const innerGetLiteralValue = (
     }
 };
 
-export const getLiteralValue = (maybeLiteral: MaybeLiteralReturn): LiteralValue | LiteralValue[] | undefined => {
+export const getLiteralValue = (maybeLiteral: MaybeLiteralReturn): LiteralValue | undefined => {
     if (!isNotNullish(maybeLiteral)) return;
 
     if (Array.isArray(maybeLiteral)) {
         const values = maybeLiteral.map((valueType) => innerGetLiteralValue(valueType)).filter(isNotNullish);
         if (values.length === 0) return;
+        if (values.length === 1) return values[0];
 
-        const flat = values.flat();
-        if (flat.length === 1) return flat[0];
-        return flat;
+        return values;
     }
 
     return innerGetLiteralValue(maybeLiteral);
 };
 
-export type MaybeLiteralReturn = string | string[] | ExtractedType | ExtractedType[] | undefined;
+type MaybeLiteralReturn = ExtractedType | ExtractedType[] | undefined;
 
 export function maybeLiteral(node: Node): MaybeLiteralReturn {
     // console.log("maybeLiteral", node.getKindName(), node.getText());
 
     // <ColorBox color={"xxx"} />
     if (Node.isStringLiteral(node)) {
-        return node.getLiteralText();
+        return box.literal(node.getLiteralText());
     }
 
     // <ColorBox color={`xxx`} />
     if (Node.isNoSubstitutionTemplateLiteral(node)) {
-        return node.getLiteralText();
+        return box.literal(node.getLiteralText());
     }
 
     // <ColorBox color={123} />
     if (Node.isNumericLiteral(node)) {
-        return node.getLiteralText();
+        return box.literal(node.getLiteralText());
     }
 
     // <ColorBox color={staticColor} />
@@ -106,12 +107,15 @@ export function maybeLiteral(node: Node): MaybeLiteralReturn {
     }
 
     if (Node.isTemplateHead(node)) {
-        return node.getLiteralText();
+        return box.literal(node.getLiteralText());
     }
 
     // <ColorBox color={`${xxx}yyy`} />
     if (Node.isTemplateExpression(node)) {
-        return maybeTemplateStringValue(node);
+        const maybeString = maybeTemplateStringValue(node);
+        if (!maybeString) return;
+
+        return box.literal(maybeString);
     }
 
     // <ColorBox color={xxx[yyy]} /> / <ColorBox color={xxx["zzz"]} />
@@ -137,7 +141,10 @@ export function maybeLiteral(node: Node): MaybeLiteralReturn {
     }
 
     if (Node.isBinaryExpression(node)) {
-        return tryUnwrapBinaryExpression(node) ?? safeEvaluateNode<string>(node);
+        const maybeString = tryUnwrapBinaryExpression(node) ?? safeEvaluateNode<string>(node);
+        if (!maybeString) return;
+
+        return box.literal(maybeString);
     }
 
     // console.log({ maybeLiteralEnd: true, node: node.getText(), kind: node.getKindName() });
@@ -173,6 +180,8 @@ export const maybeExpandConditionalExpression = (
     let whenFalseValue: ReturnType<typeof maybeLiteral> | ReturnType<typeof maybeObjectEntries> =
         maybeLiteral(whenFalseExpr);
 
+    console.dir({ before: true, whenTrueValue, whenFalseValue }, { depth: 4 });
+
     // <ColorBox color={isDark ? { mobile: "blue.100", desktop: "blue.300" } : "whiteAlpha.100"} />
     if (!isNotNullish(whenTrueValue)) {
         const maybeObject = maybeObjectEntries(whenTrueExpr);
@@ -189,12 +198,15 @@ export const maybeExpandConditionalExpression = (
         }
     }
 
-    // console.log({
-    //     whenTrueLiteral: unwrapExpression(node.getWhenTrue()).getText(),
-    //     whenFalseLiteral: unwrapExpression(node.getWhenFalse()).getText(),
-    //     whenTrueValue,
-    //     whenFalseValue,
-    // });
+    console.dir(
+        {
+            whenTrueLiteral: unwrapExpression(node.getWhenTrue()).getText(),
+            whenFalseLiteral: unwrapExpression(node.getWhenFalse()).getText(),
+            whenTrueValue,
+            whenFalseValue,
+        },
+        { depth: 4 }
+    );
 
     if (!whenTrueValue && !whenFalseValue) {
         return;
@@ -202,17 +214,31 @@ export const maybeExpandConditionalExpression = (
 
     if (whenTrueValue && !whenFalseValue) {
         // TODO type: "array" ?
-        return toBoxType(whenTrueValue as any);
+        return box.cast(whenTrueValue);
     }
 
     if (!whenTrueValue && whenFalseValue) {
         // TODO type: "array" ?
-        return toBoxType(whenFalseValue as any);
+        return box.cast(whenFalseValue);
     }
 
     // TODO type: "array" ?
-    const whenTrue = toBoxType(whenTrueValue as any)!;
-    const whenFalse = toBoxType(whenFalseValue as any)!;
+    const whenTrue = whenTrueValue!;
+    const whenFalse = whenFalseValue!;
+
+    if (Array.isArray(whenTrue) || Array.isArray(whenFalse)) {
+        const merged = castAsArray(whenTrue).concat(whenFalse);
+        if (merged.length === 1) return merged[0];
+
+        return merged;
+    }
+
+    if (whenTrue.type === "literal" && whenFalse.type === "literal") {
+        const merged = mergeLiteralTypes([whenTrue, whenFalse]);
+        if (merged.length === 1) return merged[0];
+
+        return merged;
+    }
 
     return box.conditional(whenTrue, whenFalse);
 };
@@ -286,7 +312,7 @@ const maybeTemplateStringValue = (template: TemplateExpression) => {
     const headValue = maybeStringLiteral(head);
     const tailValues = tail.map((t) => {
         const expression = t.getExpression();
-        return maybeLiteral(expression);
+        return maybeStringLiteral(expression);
     });
 
     console.log({ head: head.getText(), headValue, tailValues });
@@ -401,11 +427,15 @@ const getElementAccessedExpressionValue = (expression: ElementAccessExpression):
         expression: expression.getText(),
         expressionKind: expression.getKindName(),
         argValue,
+        argLiteral: maybeLiteral(arg),
     });
 
     // <ColorBox color={xxx["yyy"]} />
     if (Node.isIdentifier(elementAccessed) && isNotNullish(argValue)) {
-        return maybePropIdentifierDefinitionValue(elementAccessed, argValue);
+        const maybeValue = maybePropIdentifierDefinitionValue(elementAccessed, argValue);
+        if (!maybeValue) return;
+
+        return box.literal(maybeValue);
     }
 
     // <ColorBox color={xxx[yyy + "zzz"]} />
@@ -413,7 +443,10 @@ const getElementAccessedExpressionValue = (expression: ElementAccessExpression):
         const propName = tryUnwrapBinaryExpression(arg) ?? maybeStringLiteral(arg);
 
         if (isNotNullish(propName) && Node.isIdentifier(elementAccessed)) {
-            return maybePropIdentifierDefinitionValue(elementAccessed, propName);
+            const maybeValue = maybePropIdentifierDefinitionValue(elementAccessed, propName);
+            if (!maybeValue) return;
+
+            return box.literal(maybeValue);
         }
     }
 
@@ -422,19 +455,25 @@ const getElementAccessedExpressionValue = (expression: ElementAccessExpression):
         const propName = maybeTemplateStringValue(arg);
 
         if (isNotNullish(propName) && Node.isIdentifier(elementAccessed)) {
-            return maybePropIdentifierDefinitionValue(elementAccessed, propName);
+            const maybeValue = maybePropIdentifierDefinitionValue(elementAccessed, propName);
+            if (!maybeValue) return;
+
+            return box.literal(maybeValue);
         }
     }
 
     // <ColorBox color={{ staticColor: "facebook.900" }["staticColor"]}></ColorBox>
     if (Node.isObjectLiteralExpression(elementAccessed) && isNotNullish(argValue)) {
-        return getPropValue(elementAccessed, argValue);
+        const maybeValue = getPropValue(elementAccessed, argValue);
+        if (!maybeValue) return;
+
+        return box.literal(maybeValue);
     }
 
     // <ColorBox color={xxx[yyy.zzz]} />
     if (Node.isPropertyAccessExpression(arg)) {
         const propValue = getPropertyAccessedExpressionValue(arg);
-        return toBoxType(propValue);
+        return box.cast(propValue);
     }
 
     // <ColorBox color={xxx[yyy[zzz]]} />
@@ -443,7 +482,10 @@ const getElementAccessedExpressionValue = (expression: ElementAccessExpression):
         console.log({ isArgElementAccessExpression: true, propName });
 
         if (typeof propName === "string" && isNotNullish(propName)) {
-            return maybePropIdentifierDefinitionValue(elementAccessed, propName);
+            const maybeValue = maybePropIdentifierDefinitionValue(elementAccessed, propName);
+            if (!maybeValue) return;
+
+            return box.literal(maybeValue);
         }
     }
 
@@ -452,11 +494,11 @@ const getElementAccessedExpressionValue = (expression: ElementAccessExpression):
         const identifier = getElementAccessedExpressionValue(elementAccessed);
         console.log({ isElementAccessExpression: true, identifier });
 
-        // if (Node.isNode(identifier) && Node.isObjectLiteralExpression(identifier)) {
         if (isObject(identifier) && !Array.isArray(identifier) && identifier.type === "node-object-literal") {
-            return getPropValue(identifier.value, argValue);
-            // if (isObject(identifier) && !Array.isArray(identifier) && identifier.type === "map") {
-            //     return identifier.value.get(argValue);
+            const maybeValue = getPropValue(identifier.value, argValue);
+            if (!maybeValue) return;
+
+            return box.literal(maybeValue);
         }
     }
 
@@ -473,7 +515,10 @@ const getElementAccessedExpressionValue = (expression: ElementAccessExpression):
         if (isNotNullish(propName)) {
             // eslint-disable-next-line unicorn/no-lonely-if
             if (Node.isIdentifier(elementAccessed)) {
-                return maybePropIdentifierDefinitionValue(elementAccessed, propName);
+                const maybeValue = maybePropIdentifierDefinitionValue(elementAccessed, propName);
+                if (!maybeValue) return;
+
+                return box.literal(maybeValue);
             }
         }
 
@@ -483,12 +528,13 @@ const getElementAccessedExpressionValue = (expression: ElementAccessExpression):
         const whenTrueValue = maybeStringLiteral(whenTrue);
         const whenFalseValue = maybeStringLiteral(whenFalse);
 
-        // console.log({
-        //     whenTrueValue,
-        //     whenFalseValue,
-        //     whenTrue: [whenTrue.getKindName(), whenTrue.getText()],
-        //     whenFalse: [whenFalse.getKindName(), whenFalse.getText()],
-        // });
+        console.log({
+            conditionalElementAccessed: true,
+            whenTrueValue,
+            whenFalseValue,
+            whenTrue: [whenTrue.getKindName(), whenTrue.getText()],
+            whenFalse: [whenFalse.getKindName(), whenFalse.getText()],
+        });
 
         if (Node.isIdentifier(elementAccessed)) {
             const whenTrueResolved = isNotNullish(whenTrueValue)
@@ -498,7 +544,31 @@ const getElementAccessedExpressionValue = (expression: ElementAccessExpression):
                 ? maybePropIdentifierDefinitionValue(elementAccessed, whenFalseValue)
                 : undefined;
 
-            return [whenTrueResolved, whenFalseResolved].flat().filter(isNotNullish);
+            // return [whenTrueResolved, whenFalseResolved].flatMap((v) => box.cast(v)).filter(isNotNullish);
+
+            if (!whenTrueResolved && !whenFalseResolved) {
+                return;
+            }
+
+            if (whenTrueResolved && !whenFalseResolved) {
+                return box.literal(whenTrueResolved);
+            }
+
+            if (!whenTrueResolved && whenFalseResolved) {
+                return box.literal(whenFalseResolved);
+            }
+
+            const whenTrue = box.literal(whenTrueResolved!);
+            const whenFalse = box.literal(whenFalseResolved!);
+
+            if (whenTrue.type === "literal" && whenFalse.type === "literal") {
+                const merged = mergeLiteralTypes([whenTrue, whenFalse]);
+                if (merged.length === 1) return merged[0];
+
+                return merged;
+            }
+
+            return box.conditional(whenTrue, whenFalse);
         }
     }
 };

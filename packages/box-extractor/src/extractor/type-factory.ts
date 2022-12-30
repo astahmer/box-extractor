@@ -4,7 +4,6 @@ import type { MaybeObjectEntriesReturn } from "./maybeObjectEntries";
 import type { ExtractedPropMap, PrimitiveType } from "./types";
 import { isNotNullish } from "./utils";
 
-// TODO ObjectLiteral<PrimitiveType>
 const TypeKind = Symbol("TypeKind");
 type WithTypeKind = { [TypeKind]: true };
 
@@ -61,11 +60,12 @@ export type LiteralValue = PrimitiveType | Record<string, unknown> | LiteralValu
 
 export const toBoxType = (value: undefined | ExtractedType | ExtractedPropMap | PrimitiveType | PrimitiveType[]) => {
     if (!isNotNullish(value)) return;
-    if (isPrimitiveType(value) || Array.isArray(value)) return box.literal(value);
-    if (isObject(value)) {
+    if (isObject(value) && !Array.isArray(value)) {
         if (isBoxType(value)) return value;
         return box.object(value);
     }
+
+    if (isPrimitiveType(value) || Array.isArray(value)) return box.literal(value);
 };
 
 /**
@@ -126,7 +126,8 @@ export const narrowCondionalType = (conditional: ConditionalType): ExtractedType
  * types = [{ type: "literal", value: ["a", "b"] }, { type: "literal", value: "c" }]
  * => [{ type: "literal", value: ["a", "b", "c"] }]
  */
-const mergeLiteralTypes = (types: ExtractedType[]): ExtractedType[] => {
+export const mergeLiteralTypes = (types: ExtractedType[]): ExtractedType[] => {
+    console.dir({ types }, { depth: null });
     const literalValues = new Set<PrimitiveType>();
     const others = types.filter((extractedType) => {
         if (extractedType.type === "literal") {
@@ -143,6 +144,7 @@ const mergeLiteralTypes = (types: ExtractedType[]): ExtractedType[] => {
     });
 
     const literal = box.literal(Array.from(literalValues));
+    console.dir({ literal, others }, { depth: null });
     return others.concat(literal);
 };
 
@@ -152,7 +154,18 @@ export const castObjectLikeAsMapValue = (maybeObject: MaybeObjectEntriesReturn):
     if (!isBoxType(maybeObject)) return new Map<string, ExtractedType[]>(Object.entries(maybeObject));
     if (maybeObject.type === "map") return maybeObject.value;
 
+    // TODO
+    // const entries = Object.entries(maybeObject.value).reduce((acc, [key, value]) => {
+    //     const boxed = box.cast(value);
+    //     if (boxed) return acc.concat([key, [boxed]]);
+    //     return acc;
+    // }, [] as Array<[string, ExtractedType[]]>);
+    // console.dir({ entries }, { depth: null });
     return new Map<string, ExtractedType[]>(
-        Object.entries(maybeObject.value).map(([key, value]) => [key, [box.literal(value)]])
+        Object.entries(maybeObject.value).map(([key, value]) => {
+            const boxed = box.cast(value);
+            if (!boxed) return [key, []];
+            return [key, [boxed]];
+        })
     );
 };

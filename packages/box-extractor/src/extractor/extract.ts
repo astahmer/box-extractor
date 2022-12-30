@@ -1,11 +1,12 @@
 import { tsquery } from "@phenomnomnominal/tsquery";
-import { castAsArray, isObjectLiteral } from "pastable";
+import { castAsArray, isObject, isObjectLiteral } from "pastable";
 import type { CallExpression, Identifier, JsxSpreadAttribute, Node } from "ts-morph";
 
 import { extractCallExpressionValues } from "./extractCallExpressionIdentifierValues";
 import { extractJsxAttributeIdentifierValue } from "./extractJsxAttributeIdentifierValue";
 import { extractJsxSpreadAttributeValues } from "./extractJsxSpreadAttributeValues";
-import { castObjectLikeAsMapValue, isPrimitiveType } from "./type-factory";
+import { getLiteralValue } from "./maybeLiteral";
+import { box, castObjectLikeAsMapValue, isBoxType, isPrimitiveType, LiteralValue } from "./type-factory";
 import type {
     ComponentUsedPropertiesStyle,
     ExtractedComponentProperties,
@@ -35,7 +36,7 @@ export const extract = ({ ast, components: _components, functions: _functions, u
 
         // console.log(selector);
         if (!used.has(componentName)) {
-            used.set(componentName, { literals: new Map(), entries: new Map() });
+            used.set(componentName, { literals: new Map(), entries: new Map(), ast: new Map() });
         }
 
         const componentMap = used.get(componentName)!;
@@ -53,26 +54,34 @@ export const extract = ({ ast, components: _components, functions: _functions, u
             // console.log({ propName });
 
             const propLiterals = componentMap.literals.get(propName) ?? new Set();
-            const propEntries = componentMap.entries.get(propName) ?? new Map();
+            const propEntries = componentMap.entries.get(propName) ?? (new Map() as Map<string, Set<LiteralValue>>);
+            const propAst = componentMap.ast.get(propName) ?? [];
 
+            // TODO only set if not empty
             if (!componentMap.literals.has(propName)) {
                 componentMap.literals.set(propName, propLiterals);
             }
 
+            // TODO only set if not empty
             if (!componentMap.entries.has(propName)) {
                 componentMap.entries.set(propName, propEntries);
             }
 
             const extracted = extractJsxAttributeIdentifierValue(node);
-            // console.log({ propName, extracted });
+            console.log({ propName, extracted });
             const extractedValues = castAsArray(extracted).filter(isNotNullish);
-            extractedValues.forEach((value) => {
-                if (isPrimitiveType(value)) {
-                    propLiterals.add(value);
+            extractedValues.forEach((extractType) => {
+                if (extractType.type === "literal") {
+                    propLiterals.add(extractType.value);
+                    return;
                 }
 
-                if (isObjectLiteral(value)) {
-                    Object.entries(value).forEach(([entryPropName, value]) => {
+                if (extractType.type === "object" || extractType.type === "map") {
+                    const entries =
+                        extractType.type === "object"
+                            ? Object.entries(extractType.value)
+                            : Array.from(extractType.value.entries());
+                    entries.forEach(([entryPropName, value]) => {
                         const entryPropValues = propEntries.get(entryPropName) ?? new Set();
                         if (!propEntries.has(entryPropName)) {
                             propEntries.set(entryPropName, entryPropValues);
@@ -80,6 +89,13 @@ export const extract = ({ ast, components: _components, functions: _functions, u
 
                         entryPropValues.add(value);
                     });
+
+                    return;
+                }
+
+                if (extractType.type === "conditional") {
+                    const literal = getLiteralValue(extractType);
+                    console.dir({ literal }, { depth: null });
                 }
             });
 
@@ -92,12 +108,11 @@ export const extract = ({ ast, components: _components, functions: _functions, u
 
         const spreadNodes = query<JsxSpreadAttribute>(ast, spreadSelector) ?? [];
         spreadNodes.forEach((node) => {
-            const raw = extractJsxSpreadAttributeValues(node);
-            console.log({ raw });
-            const extracted = Array.from(castObjectLikeAsMapValue(raw).entries()) as ExtractedPropPair[];
+            const objectOrMapType = extractJsxSpreadAttributeValues(node);
+            const map = castObjectLikeAsMapValue(objectOrMapType);
 
             return mergeSpreadEntries({
-                extracted,
+                extracted: Array.from(map.entries()),
                 propNameList,
                 componentMap,
                 extractedComponentPropValues,
@@ -134,7 +149,7 @@ export const extract = ({ ast, components: _components, functions: _functions, u
             // console.log({ extracted });
 
             return mergeSpreadEntries({
-                extracted: Array.from(castObjectLikeAsMapValue().entries()) as ExtractedPropPair[],
+                extracted: Array.from(castObjectLikeAsMapValue(extracted).entries()) as ExtractedPropPair[],
                 propNameList,
                 componentMap,
                 extractedComponentPropValues,
@@ -178,16 +193,19 @@ function mergeSpreadEntries({
     entries.reverse().forEach(([propName, propValue]) => {
         const propValues = componentMap.literals.get(propName) ?? new Set();
 
+        // TODO only set if not empty
         if (!componentMap.literals.has(propName)) {
             componentMap.literals.set(propName, propValues);
         }
 
-        const extractedValues = castAsArray(propValue).filter(isNotNullish);
-        extractedValues.forEach((value) => {
-            if (isPrimitiveType(value)) {
-                propValues.add(value);
-                extractedComponentPropValues.push([propName, value]);
-            }
+        console.log({ propName, propValue, propValues });
+        propValues.add(propValue);
+        propValue.forEach((value) => {
+            const literal = getLiteralValue(value);
+            if (!literal) return;
+
+            // propValues.add(literal);
+            extractedComponentPropValues.push([propName, literal]);
         });
     });
 

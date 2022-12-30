@@ -23,3 +23,11 @@ export const unwrapExpression = (node: Node): Node => {
 
     return node;
 };
+
+export const unwrapArray = <T>(array: T[]): T | T[] => {
+    if (array.length === 1) {
+        return array[0]!;
+    }
+
+    return array;
+};
