@@ -1,51 +1,51 @@
 import { isObject } from "pastable";
 import type { ObjectLiteralExpression } from "ts-morph";
-import type { MaybeObjectEntriesReturn } from "./maybeObjectEntries";
+import type { MaybeObjectLikeBoxReturn } from "./maybeObjectLikeBox";
 import type { ExtractedPropMap, PrimitiveType } from "./types";
 import { isNotNullish } from "./utils";
 
-const TypeKind = Symbol("TypeKind");
-type WithTypeKind = { [TypeKind]: true };
+const BoxKind = Symbol("BoxNode");
+type WithBoxSymbol = { [BoxKind]: true };
 
-export type ObjectType = WithTypeKind & { type: "object"; value: ExtractedPropMap; isEmpty?: boolean };
-export type LiteralType = WithTypeKind & { type: "literal"; value: PrimitiveType | PrimitiveType[] };
-export type MapType = WithTypeKind & { type: "map"; value: MapTypeValue };
-// export type ConditionalType = WithTypeKind & { type: "conditional"; value: ExtractedType[] };
-export type ConditionalType = WithTypeKind & { type: "conditional"; whenTrue: ExtractedType; whenFalse: ExtractedType };
-export type NodeObjectLiteralExpressionType = WithTypeKind & {
+export type ObjectType = WithBoxSymbol & { type: "object"; value: ExtractedPropMap; isEmpty?: boolean };
+export type LiteralType = WithBoxSymbol & { type: "literal"; value: PrimitiveType | PrimitiveType[] };
+export type MapType = WithBoxSymbol & { type: "map"; value: MapTypeValue };
+// export type ConditionalType = WithTypeKind & { type: "conditional"; value: BoxNode[] };
+export type ConditionalType = WithBoxSymbol & { type: "conditional"; whenTrue: BoxNode; whenFalse: BoxNode };
+export type NodeObjectLiteralExpressionType = WithBoxSymbol & {
     type: "node-object-literal";
     value: ObjectLiteralExpression;
 };
 
-export type ExtractedType = ObjectType | LiteralType | MapType | ConditionalType | NodeObjectLiteralExpressionType;
-export type MapTypeValue = Map<string, ExtractedType[]>;
+export type BoxNode = ObjectType | LiteralType | MapType | ConditionalType | NodeObjectLiteralExpressionType;
+export type MapTypeValue = Map<string, BoxNode[]>;
 
-export const emptyObjectType: ObjectType = { [TypeKind]: true, type: "object", value: {}, isEmpty: true };
+export const emptyObjectType: ObjectType = { [BoxKind]: true, type: "object", value: {}, isEmpty: true };
 
-export const isBoxType = (value: unknown): value is ExtractedType => {
-    return typeof value === "object" && value !== null && TypeKind in value;
+export const isBoxNode = (value: unknown): value is BoxNode => {
+    return typeof value === "object" && value !== null && BoxKind in value;
 };
 
 const boxTypeFactory = {
     object(value: ExtractedPropMap): ObjectType {
-        return { [TypeKind]: true, type: "object", value };
+        return { [BoxKind]: true, type: "object", value };
     },
     literal(value: PrimitiveType | PrimitiveType[]): LiteralType {
-        return { [TypeKind]: true, type: "literal", value };
+        return { [BoxKind]: true, type: "literal", value };
     },
     map(value: MapTypeValue): MapType {
-        return { [TypeKind]: true, type: "map", value };
+        return { [BoxKind]: true, type: "map", value };
     },
-    conditional(whenTrue: ExtractedType, whenFalse: ExtractedType): ConditionalType {
+    conditional(whenTrue: BoxNode, whenFalse: BoxNode): ConditionalType {
         // return { [TypeKind]: true, type: "conditional", value: [whenTrue, whenFalse] };
-        return { [TypeKind]: true, type: "conditional", whenTrue, whenFalse };
+        return { [BoxKind]: true, type: "conditional", whenTrue, whenFalse };
     },
     nodeObjectLiteral(value: ObjectLiteralExpression): NodeObjectLiteralExpressionType {
-        return { [TypeKind]: true, type: "node-object-literal", value };
+        return { [BoxKind]: true, type: "node-object-literal", value };
     },
-    cast<T extends ExtractedType>(value: unknown): T | undefined {
+    cast<T extends BoxNode>(value: unknown): T | undefined {
         if (!value) return;
-        if (isBoxType(value)) return value as T;
+        if (isBoxNode(value)) return value as T;
         return toBoxType(value as any) as T;
     },
 };
@@ -59,10 +59,10 @@ export const isPrimitiveType = (value: unknown): value is PrimitiveType => {
 export type SingleLiteralValue = PrimitiveType | Record<string, unknown>;
 export type LiteralValue = SingleLiteralValue | SingleLiteralValue[];
 
-export const toBoxType = (value: undefined | ExtractedType | ExtractedPropMap | PrimitiveType | PrimitiveType[]) => {
+export const toBoxType = (value: undefined | BoxNode | ExtractedPropMap | PrimitiveType | PrimitiveType[]) => {
     if (!isNotNullish(value)) return;
     if (isObject(value) && !Array.isArray(value)) {
-        if (isBoxType(value)) return value;
+        if (isBoxNode(value)) return value;
         return box.object(value);
     }
 
@@ -70,7 +70,7 @@ export const toBoxType = (value: undefined | ExtractedType | ExtractedPropMap | 
 };
 
 /**
- * Flatten nested tree of conditional types to an array of ExtractedType without conditional
+ * Flatten nested tree of conditional types to an array of BoxNode without conditional
  * merge LiteralType when possible
  *
  * @example
@@ -95,9 +95,9 @@ export const toBoxType = (value: undefined | ExtractedType | ExtractedPropMap | 
  *
  * => [{ type: "literal", value: ["a", "b", "c", "d"] }, { type: "object", value: { prop: "xxx" } }]
  */
-export const narrowCondionalType = (conditional: ConditionalType): ExtractedType[] => {
+export const narrowCondionalType = (conditional: ConditionalType): BoxNode[] => {
     const { whenTrue, whenFalse } = conditional;
-    const possibleValues = [] as Array<Exclude<ExtractedType, ConditionalType>>;
+    const possibleValues = [] as Array<Exclude<BoxNode, ConditionalType>>;
 
     let current = whenTrue;
     const toNarrow = [whenFalse];
@@ -127,17 +127,17 @@ export const narrowCondionalType = (conditional: ConditionalType): ExtractedType
  * types = [{ type: "literal", value: ["a", "b"] }, { type: "literal", value: "c" }]
  * => [{ type: "literal", value: ["a", "b", "c"] }]
  */
-export const mergeLiteralTypes = (types: ExtractedType[]): ExtractedType[] => {
+export const mergeLiteralTypes = (types: BoxNode[]): BoxNode[] => {
     // console.dir({ types }, { depth: null });
     const literalValues = new Set<PrimitiveType>();
-    const others = types.filter((extractedType) => {
-        if (extractedType.type === "literal") {
-            if (Array.isArray(extractedType.value)) {
-                extractedType.value.forEach((value) => literalValues.add(value));
+    const others = types.filter((node) => {
+        if (node.type === "literal") {
+            if (Array.isArray(node.value)) {
+                node.value.forEach((value) => literalValues.add(value));
                 return false;
             }
 
-            literalValues.add(extractedType.value);
+            literalValues.add(node.value);
             return false;
         }
 
@@ -149,10 +149,10 @@ export const mergeLiteralTypes = (types: ExtractedType[]): ExtractedType[] => {
     return others.concat(literal);
 };
 
-export const castObjectLikeAsMapValue = (maybeObject: MaybeObjectEntriesReturn): MapTypeValue => {
-    if (!maybeObject) return new Map<string, ExtractedType[]>();
+export const castObjectLikeAsMapValue = (maybeObject: MaybeObjectLikeBoxReturn): MapTypeValue => {
+    if (!maybeObject) return new Map<string, BoxNode[]>();
     if (maybeObject instanceof Map) return maybeObject;
-    if (!isBoxType(maybeObject)) return new Map<string, ExtractedType[]>(Object.entries(maybeObject));
+    if (!isBoxNode(maybeObject)) return new Map<string, BoxNode[]>(Object.entries(maybeObject));
     if (maybeObject.type === "map") return maybeObject.value;
 
     // TODO
@@ -160,9 +160,9 @@ export const castObjectLikeAsMapValue = (maybeObject: MaybeObjectEntriesReturn):
     //     const boxed = box.cast(value);
     //     if (boxed) return acc.concat([key, [boxed]]);
     //     return acc;
-    // }, [] as Array<[string, ExtractedType[]]>);
+    // }, [] as Array<[string, BoxNode[]]>);
     // console.dir({ entries }, { depth: null });
-    return new Map<string, ExtractedType[]>(
+    return new Map<string, BoxNode[]>(
         Object.entries(maybeObject.value).map(([key, value]) => {
             const boxed = box.cast(value);
             if (!boxed) return [key, []];

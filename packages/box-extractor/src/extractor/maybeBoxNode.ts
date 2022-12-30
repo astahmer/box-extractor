@@ -15,82 +15,16 @@ import { diary } from "./debug-logger";
 
 import { safeEvaluateNode } from "./evaluate";
 // eslint-disable-next-line import/no-cycle
-import { maybeObjectEntries, MaybeObjectEntriesReturn } from "./maybeObjectEntries";
-import {
-    box,
-    ExtractedType,
-    isPrimitiveType,
-    LiteralValue,
-    mergeLiteralTypes,
-    narrowCondionalType,
-    NodeObjectLiteralExpressionType,
-    SingleLiteralValue,
-    toBoxType,
-} from "./type-factory";
+import { maybeObjectLikeBox, MaybeObjectLikeBoxReturn } from "./maybeObjectLikeBox";
+import { box, BoxNode, mergeLiteralTypes, NodeObjectLiteralExpressionType, toBoxType } from "./type-factory";
 import type { ExtractedPropMap, PrimitiveType } from "./types";
 import { isNotNullish, unwrapExpression } from "./utils";
 
-const logger = diary("box-ex:extractor:literal");
+const logger = diary("box-ex:extractor:maybe-box");
 
-const innerGetLiteralValue = (
-    valueType: PrimitiveType | ExtractedType | NodeObjectLiteralExpressionType | undefined
-): LiteralValue | undefined => {
-    if (!valueType) return;
-    if (isPrimitiveType(valueType)) return valueType;
-    if (valueType.type === "literal") return valueType.value;
-    if (valueType.type === "node-object-literal") return;
-
-    if (valueType.type === "object") {
-        if (valueType.isEmpty) return;
-        return valueType.value;
-    }
-
-    if (valueType.type === "map") {
-        const entries = Array.from(valueType.value.entries())
-            .map(([key, value]) => [key, getLiteralValue(value)])
-            .filter(([_key, value]) => isNotNullish(value));
-
-        return Object.fromEntries(entries);
-    }
-
-    if (valueType.type === "conditional") {
-        const narrowed = narrowCondionalType(valueType);
-        logger("narrow", () => ({ valueType, narrowed }));
-
-        if (narrowed.length === 1) {
-            return getLiteralValue(narrowed[0]);
-        }
-
-        return narrowed
-            .map((value) => getLiteralValue(value))
-            .filter(isNotNullish)
-            .flat();
-    }
-};
-
-export const getLiteralValue = (maybeLiteral: MaybeLiteralReturn): LiteralValue | undefined => {
-    if (!isNotNullish(maybeLiteral)) return;
-    logger("get", () => ({ maybeLiteral }));
-
-    if (Array.isArray(maybeLiteral)) {
-        const values = maybeLiteral
-            .map((valueType) => innerGetLiteralValue(valueType))
-            .filter(isNotNullish) as SingleLiteralValue[];
-        logger("get", () => ({ values }));
-
-        if (values.length === 0) return;
-        if (values.length === 1) return values[0];
-
-        return values;
-    }
-
-    return innerGetLiteralValue(maybeLiteral);
-};
-
-type MaybeLiteralReturn = ExtractedType | ExtractedType[] | undefined;
-
-export function maybeLiteral(node: Node): MaybeLiteralReturn {
-    // console.log("maybeLiteral", node.getKindName(), node.getText());
+export type MaybeBoxNodeReturn = BoxNode | BoxNode[] | undefined;
+export function maybeBoxNode(node: Node): MaybeBoxNodeReturn {
+    // console.log("maybeBoxNode", node.getKindName(), node.getText());
 
     // <ColorBox color={"xxx"} />
     if (Node.isStringLiteral(node)) {
@@ -156,27 +90,27 @@ export function maybeLiteral(node: Node): MaybeLiteralReturn {
         return box.literal(maybeString);
     }
 
-    // console.log({ maybeLiteralEnd: true, node: node.getText(), kind: node.getKindName() });
+    // console.log({ maybeBoxNodeEnd: true, node: node.getText(), kind: node.getKindName() });
 }
 
-export const maybeStringLiteral = (node: Node) => {
-    const literal = maybeLiteral(node);
-    // console.log({ literal });
-    if (!isNotNullish(literal)) return;
+export const onlyStringLiteral = (box: MaybeBoxNodeReturn) => {
+    if (!isNotNullish(box)) return;
 
-    if (typeof literal === "string") {
-        return literal;
+    if (typeof box === "string") {
+        return box;
     }
 
-    if (isObject(literal) && "type" in literal && literal.type === "literal" && typeof literal.value === "string") {
-        return literal.value;
+    if (isObject(box) && "type" in box && box.type === "literal" && typeof box.value === "string") {
+        return box.value;
     }
 };
+
+export const maybeStringLiteral = (node: Node) => onlyStringLiteral(maybeBoxNode(node));
 
 // <ColorBox color={isDark ? darkValue : "whiteAlpha.100"} />
 export const maybeExpandConditionalExpression = (
     node: ConditionalExpression
-): ExtractedType | ExtractedType[] | MaybeObjectEntriesReturn | NodeObjectLiteralExpressionType => {
+): BoxNode | BoxNode[] | MaybeObjectLikeBoxReturn | NodeObjectLiteralExpressionType => {
     const maybeValue = safeEvaluateNode<PrimitiveType | PrimitiveType[] | ExtractedPropMap>(node);
     if (isNotNullish(maybeValue)) return toBoxType(maybeValue);
 
@@ -184,16 +118,16 @@ export const maybeExpandConditionalExpression = (
     const whenTrueExpr = unwrapExpression(node.getWhenTrue());
     const whenFalseExpr = unwrapExpression(node.getWhenFalse());
 
-    let whenTrueValue: ReturnType<typeof maybeLiteral> | ReturnType<typeof maybeObjectEntries> =
-        maybeLiteral(whenTrueExpr);
-    let whenFalseValue: ReturnType<typeof maybeLiteral> | ReturnType<typeof maybeObjectEntries> =
-        maybeLiteral(whenFalseExpr);
+    let whenTrueValue: ReturnType<typeof maybeBoxNode> | ReturnType<typeof maybeObjectLikeBox> =
+        maybeBoxNode(whenTrueExpr);
+    let whenFalseValue: ReturnType<typeof maybeBoxNode> | ReturnType<typeof maybeObjectLikeBox> =
+        maybeBoxNode(whenFalseExpr);
 
     logger("cond", () => ({ before: true, whenTrueValue, whenFalseValue }));
 
     // <ColorBox color={isDark ? { mobile: "blue.100", desktop: "blue.300" } : "whiteAlpha.100"} />
     if (!isNotNullish(whenTrueValue)) {
-        const maybeObject = maybeObjectEntries(whenTrueExpr);
+        const maybeObject = maybeObjectLikeBox(whenTrueExpr);
         if (isNotNullish(maybeObject)) {
             whenTrueValue = maybeObject;
         }
@@ -201,7 +135,7 @@ export const maybeExpandConditionalExpression = (
 
     // <ColorBox color={isDark ? { mobile: "blue.100", desktop: "blue.300" } : "whiteAlpha.100"} />
     if (!isNotNullish(whenFalseValue)) {
-        const maybeObject = maybeObjectEntries(whenFalseExpr);
+        const maybeObject = maybeObjectLikeBox(whenFalseExpr);
         if (isNotNullish(maybeObject)) {
             whenFalseValue = maybeObject;
         }
@@ -378,7 +312,7 @@ export const getIdentifierReferenceValue = (identifier: Identifier) => {
         if (Node.isVariableDeclaration(def)) {
             const initializer = unwrapExpression(def.getInitializerOrThrow());
 
-            const maybeValue = maybeLiteral(initializer);
+            const maybeValue = maybeBoxNode(initializer);
             if (isNotNullish(maybeValue)) return maybeValue;
 
             if (Node.isObjectLiteralExpression(initializer)) {
@@ -421,7 +355,7 @@ const tryUnwrapBinaryExpression = (node: BinaryExpression) => {
 
 const elAccessedLogger = logger.extend("element-access");
 
-const getElementAccessedExpressionValue = (expression: ElementAccessExpression): MaybeLiteralReturn => {
+const getElementAccessedExpressionValue = (expression: ElementAccessExpression): MaybeBoxNodeReturn => {
     const elementAccessed = unwrapExpression(expression.getExpression());
     const arg = unwrapExpression(expression.getArgumentExpressionOrThrow());
 
@@ -435,7 +369,7 @@ const getElementAccessedExpressionValue = (expression: ElementAccessExpression):
         expression: expression.getText(),
         expressionKind: expression.getKindName(),
         argValue,
-        argLiteral: maybeLiteral(arg),
+        argLiteral: maybeBoxNode(arg),
     }));
 
     // <ColorBox color={xxx["yyy"]} />
@@ -585,14 +519,14 @@ const getArrayElementValueAtIndex = (array: ArrayLiteralExpression, index: numbe
     const element = array.getElements()[index];
     if (!element) return;
 
-    const value = maybeLiteral(element);
+    const value = maybeBoxNode(element);
     elAccessedLogger(() => ({
         array: array.getText(),
         arrayKind: array.getKindName(),
         element: element.getText(),
         elementKind: element.getKindName(),
         value,
-        obj: maybeObjectEntries(element),
+        obj: maybeObjectLikeBox(element),
     }));
 
     if (isNotNullish(value)) {
@@ -601,7 +535,7 @@ const getArrayElementValueAtIndex = (array: ArrayLiteralExpression, index: numbe
 
     if (Node.isObjectLiteralExpression(element)) {
         // TODO opti ?
-        // return maybeObjectEntries(element);
+        // return maybeObjectLikeBox(element);
         return box.nodeObjectLiteral(element);
     }
 };

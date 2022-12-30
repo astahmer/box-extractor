@@ -1,7 +1,7 @@
 import { Project, SourceFile, ts } from "ts-morph";
 import { afterEach, expect, it } from "vitest";
 import { extract } from "../src/extractor/extract";
-import { getLiteralValue } from "../src/extractor/maybeLiteral";
+import { getBoxLiteralValue } from "../src/extractor/getBoxLiteralValue";
 import type { ExtractOptions, NodeMap } from "../src/extractor/types";
 import { default as ExtractSample } from "./ExtractSample?raw";
 
@@ -50,10 +50,10 @@ const extractFromCode = (code: string) => {
     sourceFile = project.createSourceFile(fileName, code, { scriptKind: ts.ScriptKind.TSX });
     // console.log(sourceFile.forEachDescendant((c) => [c.getKindName(), c.getText()]));
     const extracted = extract({ ast: sourceFile, components: config, used: usedMap });
-    console.dir({ test: true, usedMap, extracted }, { depth: null });
+    // console.dir({ test: true, usedMap, extracted }, { depth: null });
     return Array.from(extracted.entries()).map(([name, props]) => [
         name,
-        Array.from(props.nodes.entries()).map(([propName, propValues]) => [propName, getLiteralValue(propValues)]),
+        Array.from(props.nodes.entries()).map(([propName, propValues]) => [propName, getBoxLiteralValue(propValues)]),
         usedMap.get(name)!.nodes,
     ]);
 };

@@ -3,9 +3,10 @@ export type { CreateViteBoxExtractorOptions, OnExtractedArgs } from "./createVit
 export { createViteBoxExtractor } from "./createViteBoxExtractor";
 export { createViteBoxRefUsageFinder } from "./createViteBoxRefUsageFinder";
 export { extract } from "./extractor/extract";
+export { getBoxLiteralValue as getNodeLiteralValue } from "./extractor/getBoxLiteralValue";
 export type {
+    BoxNode,
     ConditionalType,
-    ExtractedType,
     LiteralType,
     LiteralValue,
     MapType,
