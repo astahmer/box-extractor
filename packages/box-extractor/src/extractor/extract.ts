@@ -7,14 +7,8 @@ import { extractCallExpressionValues } from "./extractCallExpressionIdentifierVa
 import { extractJsxAttributeIdentifierValue } from "./extractJsxAttributeIdentifierValue";
 import { extractJsxSpreadAttributeValues } from "./extractJsxSpreadAttributeValues";
 import { getLiteralValue } from "./maybeLiteral";
-import { castObjectLikeAsMapValue, ExtractedType, LiteralValue } from "./type-factory";
-import type {
-    ComponentUsedPropertiesStyle,
-    ExtractedComponentProperties,
-    ExtractedPropPair,
-    ExtractOptions,
-    ListOrAll,
-} from "./types";
+import { castObjectLikeAsMapValue, ExtractedType } from "./type-factory";
+import type { ExtractedComponentProperties, ExtractedPropPair, ExtractOptions, ListOrAll } from "./types";
 import { isNotNullish } from "./utils";
 
 const logger = diary("box-ex:extractor:extract");
@@ -37,12 +31,7 @@ export const extract = ({ ast, components: _components, functions: _functions, u
         componentPropValues.push([componentName, extractedComponentPropValues]);
 
         if (!used.has(componentName)) {
-            used.set(componentName, {
-                properties: new Map(),
-                entries: new Map(),
-                nodes: new Map(),
-                literals: new Map(),
-            });
+            used.set(componentName, { nodes: new Map(), literals: new Map() });
         }
 
         const componentMap = used.get(componentName)!;
@@ -58,52 +47,20 @@ export const extract = ({ ast, components: _components, functions: _functions, u
         identifierNodesFromJsxAttribute.forEach((node) => {
             const propName = node.getText();
 
-            const propValues = componentMap.properties.get(propName) ?? new Set();
-            const propEntries = componentMap.entries.get(propName) ?? (new Map() as Map<string, Set<LiteralValue>>);
             const propNodes = componentMap.nodes.get(propName) ?? [];
             const propLiterals = componentMap.literals.get(propName) ?? new Set();
 
             const extracted = extractJsxAttributeIdentifierValue(node);
             logger(() => ({ propName, extracted }));
+
             const extractedValues = castAsArray(extracted).filter(isNotNullish) as ExtractedType[];
             extractedValues.forEach((node) => {
                 propNodes.push(node);
                 const literal = getLiteralValue(node);
-                if (literal) {
-                    if (Array.isArray(literal)) {
-                        literal.forEach((value) => propLiterals.add(value));
-                    } else {
-                        propLiterals.add(literal);
-                    }
-                }
+                if (!literal) return;
 
-                if (node.type === "literal") {
-                    propValues.add(node.value);
-                    return;
-                }
-
-                if (node.type === "object" || node.type === "map") {
-                    const entries =
-                        node.type === "object" ? Object.entries(node.value) : Array.from(node.value.entries());
-                    entries.forEach(([entryPropName, value]) => {
-                        const entryPropValues = propEntries.get(entryPropName) ?? new Set();
-                        if (!propEntries.has(entryPropName)) {
-                            propEntries.set(entryPropName, entryPropValues);
-                        }
-
-                        entryPropValues.add(value);
-                    });
-                }
+                castAsArray(literal).forEach((value) => propLiterals.add(value));
             });
-
-            if (!componentMap.properties.has(propName) && propValues.size > 0) {
-                componentMap.properties.set(propName, propValues);
-            }
-
-            if (!componentMap.entries.has(propName) && propEntries.size > 0) {
-                componentMap.entries.set(propName, propEntries);
-                // console.dir({ propValues, propEntries, propNodes, propLiterals }, { depth: null });
-            }
 
             if (!componentMap.nodes.has(propName) && propNodes.length > 0) {
                 componentMap.nodes.set(propName, propNodes);
@@ -124,12 +81,15 @@ export const extract = ({ ast, components: _components, functions: _functions, u
         spreadNodes.forEach((node) => {
             const objectOrMapType = extractJsxSpreadAttributeValues(node);
             const map = castObjectLikeAsMapValue(objectOrMapType);
+            const pairs = Array.from(map.entries());
 
-            return mergeSpreadEntries({
-                extracted: Array.from(map.entries()),
-                propNameList,
-                componentMap,
-                extractedComponentPropValues,
+            const entries = mergeSpreadEntries({ extracted: pairs, propNameList });
+            entries.forEach(([propName, propValue]) => {
+                logger("merge-spread", () => ({ propName, propValue }));
+
+                propValue.forEach((value) => {
+                    extractedComponentPropValues.push([propName, [value]]);
+                });
             });
         });
 
@@ -147,15 +107,9 @@ export const extract = ({ ast, components: _components, functions: _functions, u
         componentPropValues.push([functionName, extractedComponentPropValues]);
 
         if (!used.has(functionName)) {
-            used.set(functionName, {
-                properties: new Map(),
-                entries: new Map(),
-                nodes: new Map(),
-                literals: new Map(),
-            });
+            used.set(functionName, { nodes: new Map(), literals: new Map() });
         }
 
-        const componentMap = used.get(functionName)!;
         const fnSelector = `JsxAttributes CallExpression:has(Identifier[name="${functionName}"])`;
         // <div className={colorSprinkles({ color: "blue.100" })}></ColorBox>
         //                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -163,15 +117,20 @@ export const extract = ({ ast, components: _components, functions: _functions, u
         logger(() => ({ fnSelector, functionName, propNameList }));
         const maybeObjectNodes = query<CallExpression>(ast, fnSelector) ?? [];
         maybeObjectNodes.forEach((node) => {
-            const extracted = extractCallExpressionValues(node);
-            if (!extracted) return;
-            // console.log({ extracted });
+            const objectOrMapType = extractCallExpressionValues(node);
+            if (!objectOrMapType) return;
+            // console.log({ objectOrMapType });
 
-            return mergeSpreadEntries({
-                extracted: Array.from(castObjectLikeAsMapValue(extracted).entries()),
-                propNameList,
-                componentMap,
-                extractedComponentPropValues,
+            const map = castObjectLikeAsMapValue(objectOrMapType);
+            const pairs = Array.from(map.entries());
+            const entries = mergeSpreadEntries({ extracted: pairs, propNameList });
+
+            entries.forEach(([propName, propValue]) => {
+                logger("merge-spread", () => ({ propName, propValue }));
+
+                propValue.forEach((value) => {
+                    extractedComponentPropValues.push([propName, [value]]);
+                });
             });
         });
     });
@@ -187,13 +146,9 @@ export const extract = ({ ast, components: _components, functions: _functions, u
 function mergeSpreadEntries({
     extracted,
     propNameList: maybePropNameList,
-    componentMap,
-    extractedComponentPropValues,
 }: {
     extracted: ExtractedPropPair[];
     propNameList: ListOrAll;
-    componentMap: ComponentUsedPropertiesStyle;
-    extractedComponentPropValues: ExtractedPropPair[];
 }) {
     const foundPropList = new Set<string>();
     const canTakeAllProp = maybePropNameList === "all";
@@ -209,21 +164,7 @@ function mergeSpreadEntries({
     logger("merge-spread", () => ({ extracted, entries }));
 
     // reverse again to keep the original order
-    entries.reverse().forEach(([propName, propValue]) => {
-        const propValues = componentMap.properties.get(propName) ?? new Set();
-
-        logger("merge-spread", () => ({ propName, propValue, propValues }));
-        propValues.add(propValue);
-        propValue.forEach((value) => {
-            extractedComponentPropValues.push([propName, [value]]);
-        });
-
-        if (!componentMap.properties.has(propName) && propValues.size > 0) {
-            componentMap.properties.set(propName, propValues);
-        }
-    });
-
-    return entries;
+    return entries.reverse();
 }
 
 // https://gist.github.com/dsherret/826fe77613be22676778b8c4ba7390e7
