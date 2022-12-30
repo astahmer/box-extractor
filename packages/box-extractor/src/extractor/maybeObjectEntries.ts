@@ -144,7 +144,10 @@ const getObjectLiteralExpressionPropPairs = (expression: ObjectLiteralExpression
             console.log("isSpreadAssignment", extracted);
             if (extracted.type === "object") {
                 Object.entries(extracted.value).forEach(([propName, value]) => {
-                    extractedPropValues.push([propName, [box.literal(value)]]);
+                    const boxed = box.cast(value);
+                    if (!boxed) return;
+
+                    extractedPropValues.push([propName, [boxed]]);
                 });
                 return;
             }
@@ -154,6 +157,7 @@ const getObjectLiteralExpressionPropPairs = (expression: ObjectLiteralExpression
                     value.forEach((nested) => {
                         const boxed = toBoxType(nested);
                         if (!boxed) return;
+
                         return extractedPropValues.push([propName, [boxed]]);
                     });
                 });

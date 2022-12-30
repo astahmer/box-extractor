@@ -1,6 +1,7 @@
 import { Project, SourceFile, ts } from "ts-morph";
 import { afterEach, expect, it } from "vitest";
 import { extract } from "../src/extractor/extract";
+import { getLiteralValue } from "../src/extractor/maybeLiteral";
 import type { ExtractOptions, UsedComponentsMap } from "../src/extractor/types";
 import { default as ExtractSample } from "./ExtractSample?raw";
 
@@ -48,7 +49,9 @@ const extractFromCode = (code: string) => {
     const fileName = `file${fileCount++}.tsx`;
     sourceFile = project.createSourceFile(fileName, code, { scriptKind: ts.ScriptKind.TSX });
     // console.log(sourceFile.forEachDescendant((c) => [c.getKindName(), c.getText()]));
-    return extract({ ast: sourceFile, components: config, used: usedMap });
+    const oui = extract({ ast: sourceFile, components: config, used: usedMap });
+    console.dir({ usedMap }, { depth: null });
+    return oui.map(([name, props]) => [name, props.map((pair) => getLiteralValue(pair))]);
 };
 
 it("extract it all", () => {
@@ -745,7 +748,7 @@ it("extract JsxAttribute > JsxExpression > CallExpression with non-deterministic
 
             <ColorBox color={pickRandom(array)}></ColorBox>
         `)
-    ).toMatchInlineSnapshot('[["ColorBox", [["color", null]]]]');
+    ).toMatchInlineSnapshot('[["ColorBox", ["color"]]]');
 });
 
 it("extract JsxAttribute > JsxExpression > ConditionalExpression > BinaryExpression > StringLiteral", () => {
@@ -1657,6 +1660,7 @@ it("extract JsxAttribute > ObjectLiteralExpression > css prop > ConditionalExpre
     `);
 });
 
+// only
 it("extract JsxAttribute > ObjectLiteralExpression > css prop > PropertyAssignment > ConditionalExpression", () => {
     expect(
         extractFromCode(`

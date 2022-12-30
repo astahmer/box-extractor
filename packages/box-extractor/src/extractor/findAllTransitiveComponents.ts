@@ -17,6 +17,7 @@ import {
 } from "ts-morph";
 import { query } from "./extract";
 import { getIdentifierReferenceValue } from "./maybeLiteral";
+import { isBoxType } from "./type-factory";
 import type { ExtractOptions } from "./types";
 import { unwrapExpression } from "./utils";
 
@@ -147,11 +148,16 @@ export const findAllTransitiveComponents = ({ transitiveMap, ...options }: FindA
 };
 
 function getNameLiteral(wrapper: Node) {
-    return Node.isStringLiteral(wrapper)
-        ? wrapper.getLiteralText()
-        : Node.isIdentifier(wrapper)
-        ? (getIdentifierReferenceValue(wrapper) as string) ?? wrapper.getText()
-        : unquote(wrapper.getText());
+    if (Node.isStringLiteral(wrapper)) return wrapper.getLiteralText();
+    if (Node.isIdentifier(wrapper)) {
+        const maybeValue = getIdentifierReferenceValue(wrapper);
+        if (!maybeValue) return wrapper.getText();
+
+        if (isBoxType(maybeValue) && maybeValue.type === "literal") return maybeValue.value;
+        return wrapper.getText();
+    }
+
+    return unquote(wrapper.getText());
 }
 
 function getAncestorComponent(node: Node) {

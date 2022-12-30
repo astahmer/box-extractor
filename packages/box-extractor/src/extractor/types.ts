@@ -1,4 +1,5 @@
 import type { SourceFile } from "ts-morph";
+import type { ExtractedType, LiteralValue } from "./type-factory";
 
 // https://github.com/TheMightyPenguin/dessert-box/pull/23
 // https://github.com/vanilla-extract-css/vanilla-extract/discussions/91#discussioncomment-2653340
@@ -6,17 +7,20 @@ import type { SourceFile } from "ts-morph";
 // accidentally extractable tailwind classNames ?
 // also remove unused variants from https://vanilla-extract.style/documentation/packages/recipes/ ?
 
+// TODO mv + check references to PrimitiveType -> LiteralValue
 export type PrimitiveType = string | number;
+export type ExtractedPropMap = Record<string, LiteralValue>;
+
 export type ComponentUsedPropertiesStyle = {
-    literals: Map<string, Set<PrimitiveType>>;
-    entries: Map<string, Map<string, Set<PrimitiveType>>>;
+    literals: Map<string, Set<LiteralValue>>;
+    entries: Map<string, Map<string, Set<LiteralValue>>>;
+    ast: Map<string, ExtractedType[]>;
 };
 export type UsedComponentsMap = Map<string, ComponentUsedPropertiesStyle>;
 
 export type ExtractedComponentProperties = [componentName: string, propPairs: ExtractedPropPair[]];
 // TODO PrimitiveType ?
-export type ExtractedPropPair = [propName: string, propValue: string | string[]];
-export type ExtractedPropMap = Record<string, string | string[]>;
+export type ExtractedPropPair = [propName: string, propValue: LiteralValue];
 
 export type ListOrAll = "all" | string[];
 export type ExtractOptions = {
