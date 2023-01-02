@@ -48,7 +48,7 @@ export function createEsbuildBoxExtractor({
                 });
 
                 const extracted = extract({ ast: sourceFile, components, functions, used });
-                onExtracted?.({ extracted, id: path, isSsr: true, used });
+                onExtracted?.({ extracted, id: path, isSsr: true, extractMap: used });
                 // console.dir({ id, extracted }, { depth: null });
 
                 // eslint-disable-next-line unicorn/no-useless-undefined

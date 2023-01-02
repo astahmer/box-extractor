@@ -1,21 +1,26 @@
+import type { PrimitiveType } from "@box-extractor/core";
 import type { AdapterContext } from "@vanilla-extract/integration";
 import { hash } from "@vanilla-extract/integration";
 import { stringify } from "javascript-stringify";
 import { isObject } from "pastable";
+import type { UsedComponentMap } from "../getUsedPropertiesFromExtractNodeMap";
 
-import type { UsedComponentsMap } from "@box-extractor/core";
 import { getCompiledSprinklePropertyByDebugIdPairMap, isCompiledSprinkle } from "./onEvaluated";
 
 type UsedValuesMap = Map<
     string,
-    { properties: Set<string>; conditionalProperties: Map<string, Set<string>>; allProperties: Set<string> }
+    {
+        properties: Set<PrimitiveType>;
+        conditionalProperties: Map<string, Set<PrimitiveType>>;
+        allProperties: Set<PrimitiveType>;
+    }
 >;
 
 export function serializeVanillaModuleWithoutUnused(
     cssImports: string[],
     exports: Record<string, unknown>,
     context: AdapterContext,
-    usedComponentsMap: UsedComponentsMap,
+    usedComponentsMap: UsedComponentMap,
     compiled: ReturnType<typeof getCompiledSprinklePropertyByDebugIdPairMap>
 ) {
     // console.log("serializeVanillaModuleWithoutUnused", usedComponentsMap);
@@ -41,14 +46,14 @@ export function serializeVanillaModuleWithoutUnused(
 }
 
 function mergeUsedValues(
-    usedMap: UsedComponentsMap,
+    usedMap: UsedComponentMap,
     compiled: ReturnType<typeof getCompiledSprinklePropertyByDebugIdPairMap>
 ) {
     const mergedMap: UsedValuesMap = new Map();
     const shorthandsMap = new Map(...Array.from(compiled.sprinkleConfigs.values()).map((info) => info.shorthands));
 
     usedMap.forEach((style, _componentName) => {
-        style.literals.forEach((values, propNameOrShorthand) => {
+        style.properties.forEach((values, propNameOrShorthand) => {
             const registerPropName = (propName: string) => {
                 if (!mergedMap.has(propName)) {
                     mergedMap.set(propName, {
@@ -74,7 +79,7 @@ function mergeUsedValues(
             }
         });
 
-        style.entries.forEach((properties, conditionalPropOrShorthand) => {
+        style.conditionalProperties.forEach((properties, conditionalPropOrShorthand) => {
             const registerConditionalPropName = (propNameOrShorthand: string) => {
                 const isReversedConditionProp = propNameOrShorthand[0] === "_" && propNameOrShorthand[1] !== "_";
                 if (!isReversedConditionProp) {

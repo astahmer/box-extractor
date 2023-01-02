@@ -1,7 +1,8 @@
+import type { PrimitiveType } from "@box-extractor/core";
 import type { AdapterContext } from "@vanilla-extract/integration";
 import { castAsArray, isDefined, isObject } from "pastable";
+import type { UsedComponentMap } from "../getUsedPropertiesFromExtractNodeMap";
 
-import type { UsedComponentsMap } from "@box-extractor/core";
 import { getSprinklesMap } from "./getSprinklesMap";
 
 type Conditions = {
@@ -31,7 +32,7 @@ type CompiledSprinklePropertyValue = {
 
 export function getUsedClassNameFromCompiledSprinkles(
     compiled: ReturnType<typeof getCompiledSprinklePropertyByDebugIdPairMap>,
-    usedMap: UsedComponentsMap
+    usedMap: UsedComponentMap
 ) {
     // console.log("getUsedClassNameFromCompiledSprinkles", { context, evalResult, usedMap });
 
@@ -137,7 +138,7 @@ export const cloneAdapterContext = (context: AdapterContext): AdapterContext => 
     };
 };
 
-const getDebugId = (propName: string, value: string) => `${propName}_${value}`;
+const getDebugId = (propName: string, value: PrimitiveType) => `${propName}_${value}`;
 
 type CompiledSprinkleInfo = {
     properties: Set<string>;

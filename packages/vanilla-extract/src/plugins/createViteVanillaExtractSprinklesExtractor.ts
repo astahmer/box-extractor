@@ -7,15 +7,18 @@ import { vanillaExtractPlugin, VanillaExtractPluginOptions } from "@vanilla-extr
 import type { ModuleNode, Plugin, ResolvedConfig, ViteDevServer } from "vite";
 import { normalizePath } from "vite";
 
-import type { UsedComponentsMap } from "@box-extractor/core";
+import type { BoxNodesMap } from "@box-extractor/core";
 import {
     createViteBoxExtractor,
     CreateViteBoxExtractorOptions,
     createViteBoxRefUsageFinder,
-    OnExtractedArgs,
 } from "@box-extractor/core";
 import debug from "debug";
-import { hash as objectHash } from "pastable";
+import {
+    getUsedPropertiesFromExtractNodeMap,
+    mergeExtractResultInUsedMap,
+    UsedComponentMap,
+} from "../getUsedPropertiesFromExtractNodeMap";
 import {
     cloneAdapterContext,
     getCompiledSprinklePropertyByDebugIdPairMap,
@@ -32,7 +35,7 @@ type OnAfterEvaluateMutation = {
     original: AdapterContext;
     context: AdapterContext;
     evalResult: Record<string, unknown>;
-    usedComponents: UsedComponentsMap;
+    usedComponents: BoxNodesMap;
 };
 
 const loggerEval = debug("box-ex:ve:eval");
@@ -54,14 +57,15 @@ export const createViteVanillaExtractSprinklesExtractor = ({
     };
     // TODO ignore map (components, functions)
 }): Plugin[] => {
-    const usedComponents = new Map() as UsedComponentsMap;
+    const extractMap = new Map() as BoxNodesMap;
+    const usedMap = new Map() as UsedComponentMap;
 
     let server: ViteDevServer;
     let config: ResolvedConfig;
 
     const getAbsoluteFileId = (source: string) => normalizePath(path.join(config.root, source));
 
-    const extractCacheById = new Map<string, { hashed: string; serialized: OnExtractedArgs["extracted"] }>();
+    const extractCacheById = new Map<string, { hashed: string; serialized: string[] }>();
     const compiledByFilePath = new Map<string, ReturnType<typeof getCompiledSprinklePropertyByDebugIdPairMap>>();
     const usedDebugIdList = new Set<string>();
     const sourceByPath = new Map<string, string>();
@@ -87,10 +91,15 @@ export const createViteVanillaExtractSprinklesExtractor = ({
             ...options,
             components,
             functions,
-            used: usedComponents,
+            used: extractMap,
             onExtracted(args) {
                 onExtracted?.(args);
-                if (!server) return;
+                if (!server) {
+                    const extractResult = getUsedPropertiesFromExtractNodeMap(args.extractMap, usedMap);
+                    mergeExtractResultInUsedMap(extractResult, usedDebugIdList, usedMap);
+                    return;
+                }
+
                 if (wasInvalidatedButDidntChange.has(args.id)) {
                     wasInvalidatedButDidntChange.delete(args.id);
                     loggerExtract("removing from invalidated but didn't change list", { id: args.id });
@@ -99,9 +108,11 @@ export const createViteVanillaExtractSprinklesExtractor = ({
 
                 if (args.id.endsWith(".css.ts")) return;
 
-                const serialized = args.extracted.filter(([_name, values]) => values.length > 0);
+                const extractResult = getUsedPropertiesFromExtractNodeMap(args.extractMap, usedMap);
+                const serialized = Array.from(extractResult.usedDebugIdList);
+
                 loggerExtract({ id: args.id, serialized });
-                const hashed = hash(objectHash(serialized));
+                const hashed = hash(serialized.join(""));
                 const cached = extractCacheById.get(args.id);
                 const hasCache = Boolean(cached);
 
@@ -116,20 +127,7 @@ export const createViteVanillaExtractSprinklesExtractor = ({
                 }
 
                 const sizeBefore = usedDebugIdList.size;
-                args.used.forEach((usedStyles, name) => {
-                    usedStyles.properties.forEach((values, propName) =>
-                        values.forEach((value) => usedDebugIdList.add(`${name}_${propName}_${value}`))
-                    );
-                    usedStyles.conditionalProperties.forEach((properties, propNameOrShorthand) => {
-                        const propNameOrConditionName =
-                            propNameOrShorthand[0] === "_" ? propNameOrShorthand.slice(1) : propNameOrShorthand;
-                        properties.forEach((values, condNameOrPropName) =>
-                            values.forEach((value) =>
-                                usedDebugIdList.add(`${name}_${propNameOrConditionName}_${condNameOrPropName}_${value}`)
-                            )
-                        );
-                    });
-                });
+                mergeExtractResultInUsedMap(extractResult, usedDebugIdList, usedMap);
 
                 // this file (args.id) changed but we already extracted those styles before, so we don't need to invalidate
                 if (sizeBefore === usedDebugIdList.size) {
@@ -210,8 +208,7 @@ export const createViteVanillaExtractSprinklesExtractor = ({
 
                 loggerSerialize("serializeVanillaModuleWithoutUnused", { filePath });
                 const result =
-                    cached ??
-                    serializeVanillaModuleWithoutUnused(cssImports, exports, context, usedComponents, compiled);
+                    cached ?? serializeVanillaModuleWithoutUnused(cssImports, exports, context, usedMap, compiled);
                 vanillaModuleCache.set(filePath, result);
                 return result;
             },
@@ -235,14 +232,14 @@ export const createViteVanillaExtractSprinklesExtractor = ({
 
                 if (mappedProps) {
                     const mapped = mappedProps ?? {};
-                    usedComponents.forEach((usedStyle, _componentName) => {
+                    usedMap.forEach((el, _componentName) => {
                         Object.entries(mapped).forEach(([mappedName, mappedValues]) => {
-                            if (usedStyle.properties.has(mappedName)) {
-                                const usedWithMappedName = usedStyle.properties.get(mappedName)!;
+                            if (el.properties.has(mappedName)) {
+                                const usedWithMappedName = el.properties.get(mappedName)!;
                                 mappedValues.forEach((mappedValue) => {
-                                    const current = usedStyle.properties.get(mappedValue);
+                                    const current = el.properties.get(mappedValue);
                                     if (!current) {
-                                        usedStyle.properties.set(mappedValue, usedWithMappedName);
+                                        el.properties.set(mappedValue, usedWithMappedName);
                                         return;
                                     }
 
@@ -250,12 +247,12 @@ export const createViteVanillaExtractSprinklesExtractor = ({
                                 });
                             }
 
-                            if (usedStyle.conditionalProperties.has(mappedName)) {
-                                const usedWithMappedName = usedStyle.conditionalProperties.get(mappedName)!;
+                            if (el.conditionalProperties.has(mappedName)) {
+                                const usedWithMappedName = el.conditionalProperties.get(mappedName)!;
                                 mappedValues.forEach((mappedValue) => {
-                                    const current = usedStyle.conditionalProperties.get(mappedValue);
+                                    const current = el.conditionalProperties.get(mappedValue);
                                     if (!current) {
-                                        usedStyle.conditionalProperties.set(mappedValue, usedWithMappedName);
+                                        el.conditionalProperties.set(mappedValue, usedWithMappedName);
                                         return;
                                     }
 
@@ -273,7 +270,7 @@ export const createViteVanillaExtractSprinklesExtractor = ({
                     });
                 }
 
-                const usedClassNameList = getUsedClassNameFromCompiledSprinkles(compiled, usedComponents);
+                const usedClassNameList = getUsedClassNameFromCompiledSprinkles(compiled, usedMap);
                 usedClassNameListByPath.set(filePath, usedClassNameList);
 
                 let original: AdapterContext;
@@ -306,7 +303,7 @@ export const createViteVanillaExtractSprinklesExtractor = ({
                     original,
                     context,
                     evalResult,
-                    usedComponents,
+                    usedComponents: extractMap,
                 });
             },
         }) as any,

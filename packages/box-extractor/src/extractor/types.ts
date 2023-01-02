@@ -9,13 +9,13 @@ import type { BoxNode, LiteralValue } from "./type-factory";
 export type PrimitiveType = string | number;
 export type ExtractedPropMap = Record<string, LiteralValue>;
 
-export type PropNodeMap = { kind: "component" | "function"; nodesByProp: Map<string, BoxNode[]> };
-export type NodeMap = Map<string, PropNodeMap>;
+export type PropNodesMap = { kind: "component" | "function"; nodesByProp: Map<string, BoxNode[]> };
+export type BoxNodesMap = Map<string, PropNodesMap>;
 
 export type ListOrAll = "all" | string[];
 export type ExtractOptions = {
     ast: SourceFile;
     components?: Record<string, { properties: ListOrAll }> | string[];
     functions?: Record<string, { properties: ListOrAll }> | string[];
-    used: NodeMap;
+    used: BoxNodesMap;
 };
