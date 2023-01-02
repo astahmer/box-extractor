@@ -23,6 +23,7 @@ import { unwrapExpression } from "./utils";
 // :matches(JsxOpeningElement, JsxSelfClosingElement):has(Identifier[name="Box"])
 
 // TODO find all Box components used from a sprinkles fn + find all sprinkles fn used
+// TODO logger
 
 // const CustomBox = ({ render, ...props }) => <Box {...props} >{render()}</Box>;
 //                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -125,9 +126,6 @@ export const findAllTransitiveComponents = ({ transitiveMap, ...options }: FindA
         // console.log({ names, components: Array.from(names) });
     });
 
-    // TODO map sur ce set (unique by name) de nodes puis findReferencesAsNodes sur chacun
-    // et filtrer sur seulement ceux qui ont un spread = :has(JsxAttributes:has(JsxSpreadAttribute))
-    // puis de nouveau getAncestorComponent sur chacun -> unique by name -> findReferencesAsNodes -> etc
     if (namesWithSpread.size > 0) {
         // console.log({ namesWithSpread });
         const transitiveComponents = findAllTransitiveComponents({

@@ -53,8 +53,11 @@ const extractFromCode = (code: string) => {
     // console.dir({ test: true, usedMap, extracted }, { depth: null });
     return Array.from(extracted.entries()).map(([name, props]) => [
         name,
-        Array.from(props.nodes.entries()).map(([propName, propValues]) => [propName, getBoxLiteralValue(propValues)]),
-        usedMap.get(name)!.nodes,
+        Array.from(props.nodesByProp.entries()).map(([propName, propValues]) => [
+            propName,
+            getBoxLiteralValue(propValues),
+        ]),
+        usedMap.get(name)!.nodesByProp,
     ]);
 };
 

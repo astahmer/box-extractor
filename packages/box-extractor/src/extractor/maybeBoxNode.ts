@@ -11,7 +11,7 @@ import type {
     TemplateExpression,
 } from "ts-morph";
 import { Node, ts } from "ts-morph";
-import { diary } from "./debug-logger";
+import { diary } from "@box-extractor/logger";
 
 import { safeEvaluateNode } from "./evaluate";
 // eslint-disable-next-line import/no-cycle
@@ -534,7 +534,7 @@ const getArrayElementValueAtIndex = (array: ArrayLiteralExpression, index: numbe
     }
 
     if (Node.isObjectLiteralExpression(element)) {
-        // TODO opti ?
+        // TODO opti = rm nodeObjectLiteral ?
         // return maybeObjectLikeBox(element);
         return box.nodeObjectLiteral(element);
     }

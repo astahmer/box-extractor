@@ -1,6 +1,6 @@
 import type { Identifier } from "ts-morph";
 import { Node } from "ts-morph";
-import { diary } from "./debug-logger";
+import { diary } from "@box-extractor/logger";
 
 import { maybeBoxNode } from "./maybeBoxNode";
 import { maybeObjectLikeBox } from "./maybeObjectLikeBox";

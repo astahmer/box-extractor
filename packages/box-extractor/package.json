@@ -25,6 +25,7 @@
     },
     "license": "ISC",
     "dependencies": {
+        "@box-extractor/logger": "workspace:^0.0.1",
         "@phenomnomnominal/tsquery": "^5.0.0",
         "@types/debug": "^4.1.7",
         "debug": "^4.3.4",
@@ -42,7 +43,6 @@
         "@types/react-dom": "^18.0.6",
         "@vanilla-extract/sprinkles": "^1.5.1",
         "esbuild": "^0.16.7",
-        "picocolors": "^1.0.0",
         "prettier": "^2.7.1",
         "ts-toolbelt": "^9.6.0",
         "typescript": "4.9.4",

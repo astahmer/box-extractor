@@ -1,7 +1,7 @@
 import { tsquery } from "@phenomnomnominal/tsquery";
 import { castAsArray } from "pastable";
 import type { CallExpression, Identifier, JsxSpreadAttribute, Node } from "ts-morph";
-import { diary } from "./debug-logger";
+import { diary } from "@box-extractor/logger";
 
 import { extractCallExpressionValues } from "./extractCallExpressionIdentifierValues";
 import { extractJsxAttributeIdentifierValue } from "./extractJsxAttributeIdentifierValue";
@@ -28,11 +28,11 @@ export const extract = ({ ast, components: _components, functions: _functions, u
         const propNameList = component.properties;
         const canTakeAllProp = propNameList === "all";
 
-        const localNodes = new Map() as PropNodeMap["nodes"];
-        extracted.set(componentName, { kind: "component", nodes: localNodes });
+        const localNodes = new Map() as PropNodeMap["nodesByProp"];
+        extracted.set(componentName, { kind: "component", nodesByProp: localNodes });
 
         if (!used.has(componentName)) {
-            used.set(componentName, { kind: "component", nodes: new Map() });
+            used.set(componentName, { kind: "component", nodesByProp: new Map() });
         }
 
         const componentMap = used.get(componentName)!;
@@ -47,7 +47,7 @@ export const extract = ({ ast, components: _components, functions: _functions, u
         const identifierNodesFromJsxAttribute = query<Identifier>(ast, propSelector) ?? [];
         identifierNodesFromJsxAttribute.forEach((node) => {
             const propName = node.getText();
-            const propNodes = componentMap.nodes.get(propName) ?? [];
+            const propNodes = componentMap.nodesByProp.get(propName) ?? [];
 
             const maybeNodes = extractJsxAttributeIdentifierValue(node);
             logger(() => ({ propName, maybeNodes }));
@@ -60,7 +60,7 @@ export const extract = ({ ast, components: _components, functions: _functions, u
             });
 
             if (propNodes.length > 0) {
-                componentMap.nodes.set(propName, propNodes);
+                componentMap.nodesByProp.set(propName, propNodes);
             }
         });
 
@@ -79,7 +79,10 @@ export const extract = ({ ast, components: _components, functions: _functions, u
 
                 propValue.forEach((value) => {
                     localNodes.set(propName, (localNodes.get(propName) ?? []).concat(value));
-                    componentMap.nodes.set(propName, (componentMap.nodes.get(propName) ?? []).concat(value));
+                    componentMap.nodesByProp.set(
+                        propName,
+                        (componentMap.nodesByProp.get(propName) ?? []).concat(value)
+                    );
                 });
             });
         });
@@ -94,11 +97,11 @@ export const extract = ({ ast, components: _components, functions: _functions, u
 
     Object.entries(functions ?? {}).forEach(([functionName, component]) => {
         const propNameList = component.properties;
-        const localNodes = new Map() as PropNodeMap["nodes"];
-        extracted.set(functionName, { kind: "function", nodes: localNodes });
+        const localNodes = new Map() as PropNodeMap["nodesByProp"];
+        extracted.set(functionName, { kind: "function", nodesByProp: localNodes });
 
         if (!used.has(functionName)) {
-            used.set(functionName, { kind: "function", nodes: new Map() });
+            used.set(functionName, { kind: "function", nodesByProp: new Map() });
         }
 
         const fnMap = used.get(functionName)!;
@@ -121,7 +124,7 @@ export const extract = ({ ast, components: _components, functions: _functions, u
 
                 propValue.forEach((value) => {
                     localNodes.set(propName, (localNodes.get(propName) ?? []).concat(value));
-                    fnMap.nodes.set(propName, (fnMap.nodes.get(propName) ?? []).concat(value));
+                    fnMap.nodesByProp.set(propName, (fnMap.nodesByProp.get(propName) ?? []).concat(value));
                 });
             });
         });

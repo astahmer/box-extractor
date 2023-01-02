@@ -9,7 +9,7 @@ import {
 import type { PrimitiveType } from "./types";
 import { isNotNullish } from "./utils";
 import type { MaybeBoxNodeReturn } from "./maybeBoxNode";
-import { diary } from "./debug-logger";
+import { diary } from "@box-extractor/logger";
 
 const logger = diary("box-ex:extractor:get-literal");
 
