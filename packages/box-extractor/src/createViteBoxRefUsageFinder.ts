@@ -1,4 +1,4 @@
-import debug from "debug";
+import { createLogger } from "@box-extractor/logger";
 import { Project, ts } from "ts-morph";
 import { createFilter, normalizePath, Plugin } from "vite";
 import type { CreateViteBoxExtractorOptions } from "./createViteBoxExtractor";
@@ -15,7 +15,7 @@ import {
 // Sprinkles fn
 // JsxAttributes CallExpression > Identifier[name=/colorSprinkles/]
 
-const logger = debug("box-ex:finder:vite");
+const logger = createLogger("box-ex:finder:vite");
 
 export const createViteBoxRefUsageFinder = ({
     components: _components = {},

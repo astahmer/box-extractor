@@ -1,7 +1,7 @@
 import { isObjectLiteral } from "pastable";
 import type { ObjectLiteralElementLike, ObjectLiteralExpression } from "ts-morph";
 import { Node, ts } from "ts-morph";
-import { diary } from "@box-extractor/logger";
+import { createLogger } from "@box-extractor/logger";
 
 import { evaluateNode, isEvalError, safeEvaluateNode } from "./evaluate";
 // eslint-disable-next-line import/no-cycle
@@ -19,7 +19,7 @@ import {
 } from "./type-factory";
 import { isNotNullish, unwrapExpression } from "./utils";
 
-const logger = diary("box-ex:extractor:maybe-object");
+const logger = createLogger("box-ex:extractor:maybe-object");
 
 export type MaybeObjectLikeBoxReturn = ObjectType | MapType | undefined;
 
@@ -52,7 +52,7 @@ export const maybeObjectLikeBox = (node: Node): MaybeObjectLikeBoxReturn => {
         if (isEvalError(maybeObject)) {
             const whenTrue = maybeObjectLikeBox(node.getWhenTrue());
             const whenFalse = maybeObjectLikeBox(node.getWhenFalse());
-            logger("cond", () => ({ whenTrue, whenFalse }));
+            logger.scoped("cond", () => ({ whenTrue, whenFalse }));
             return box.map(mergePossibleEntries(whenTrue, whenFalse));
         }
 
@@ -139,7 +139,7 @@ const getObjectLiteralExpressionPropPairs = (expression: ObjectLiteralExpression
             const extracted = maybeObjectLikeBox(initializer);
             if (!isNotNullish(extracted)) return;
 
-            logger(() => ["isSpreadAssignment", extracted]);
+            logger("isSpreadAssignment", extracted);
             if (extracted.type === "object") {
                 Object.entries(extracted.value).forEach(([propName, value]) => {
                     const boxed = box.cast(value);

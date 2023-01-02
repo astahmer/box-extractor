@@ -1,4 +1,3 @@
-import debug from "debug";
 import { Project, ts } from "ts-morph";
 import type { FilterPattern, Plugin as VitePlugin } from "vite";
 import { createFilter, normalizePath } from "vite";
@@ -7,6 +6,7 @@ import { ensureAbsolute } from "./extensions-helpers";
 
 import { extract } from "./extractor/extract";
 import type { ExtractOptions, BoxNodesMap } from "./extractor/types";
+import { createLogger } from "@box-extractor/logger";
 
 // Components
 // :matches(JsxOpeningElement, JsxSelfClosingElement):has(Identifier[name="ColorBox"]) JsxAttribute > Identifier[name=/color|backgroundColor/] ~ StringLiteral
@@ -39,7 +39,7 @@ export type CreateViteBoxExtractorOptions = Pick<ExtractOptions, "components" | 
     exclude?: FilterPattern;
 };
 
-const logger = debug("box-ex:extract:vite");
+const logger = createLogger("box-ex:extract:vite");
 
 export const createViteBoxExtractor = ({
     components = {},

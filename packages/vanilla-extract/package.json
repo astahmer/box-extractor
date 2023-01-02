@@ -48,7 +48,6 @@
         "@vanilla-extract/integration": "link:/Users/astahmer/dev/open-source/vanilla-extract/packages/integration",
         "@vanilla-extract/sprinkles": "link:/Users/astahmer/dev/open-source/vanilla-extract/packages/sprinkles",
         "@vanilla-extract/vite-plugin": "link:/Users/astahmer/dev/open-source/vanilla-extract/packages/vite-plugin",
-        "debug": "^4.3.4",
         "esbuild": "^0.16.7",
         "eval": "^0.1.8",
         "javascript-stringify": "^2.1.0",

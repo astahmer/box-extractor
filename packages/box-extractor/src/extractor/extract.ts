@@ -1,7 +1,7 @@
+import { createLogger } from "@box-extractor/logger";
 import { tsquery } from "@phenomnomnominal/tsquery";
 import { castAsArray } from "pastable";
 import type { CallExpression, Identifier, JsxSpreadAttribute, Node } from "ts-morph";
-import { diary } from "@box-extractor/logger";
 
 import { extractCallExpressionValues } from "./extractCallExpressionIdentifierValues";
 import { extractJsxAttributeIdentifierValue } from "./extractJsxAttributeIdentifierValue";
@@ -10,7 +10,7 @@ import { castObjectLikeAsMapValue, BoxNode, MapTypeValue } from "./type-factory"
 import type { ExtractOptions, ListOrAll, BoxNodesMap, PropNodesMap } from "./types";
 import { isNotNullish } from "./utils";
 
-const logger = diary("box-ex:extractor:extract");
+const logger = createLogger("box-ex:extractor:extract");
 
 export const extract = ({ ast, components: _components, functions: _functions, used }: ExtractOptions) => {
     const components = Array.isArray(_components)
@@ -50,7 +50,7 @@ export const extract = ({ ast, components: _components, functions: _functions, u
             const propNodes = componentMap.nodesByProp.get(propName) ?? [];
 
             const maybeNodes = extractJsxAttributeIdentifierValue(node);
-            logger(() => ({ propName, maybeNodes }));
+            logger({ propName, maybeNodes });
 
             const extractedNodes = castAsArray(maybeNodes).filter(isNotNullish) as BoxNode[];
             localNodes.set(propName, (localNodes.get(propName) ?? []).concat(extractedNodes));
@@ -75,7 +75,7 @@ export const extract = ({ ast, components: _components, functions: _functions, u
 
             const entries = mergeSpreadEntries({ map, propNameList });
             entries.forEach(([propName, propValue]) => {
-                logger("merge-spread", () => ({ jsx: true, propName, propValue }));
+                logger.scoped("merge-spread", { jsx: true, propName, propValue });
 
                 propValue.forEach((value) => {
                     localNodes.set(propName, (localNodes.get(propName) ?? []).concat(value));
@@ -109,7 +109,7 @@ export const extract = ({ ast, components: _components, functions: _functions, u
         // <div className={colorSprinkles({ color: "blue.100" })}></ColorBox>
         //                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-        logger(() => ({ fnSelector, functionName, propNameList }));
+        logger({ fnSelector, functionName, propNameList });
         const maybeObjectNodes = query<CallExpression>(ast, fnSelector) ?? [];
         maybeObjectNodes.forEach((node) => {
             const objectOrMapType = extractCallExpressionValues(node);
@@ -120,7 +120,7 @@ export const extract = ({ ast, components: _components, functions: _functions, u
             const entries = mergeSpreadEntries({ map, propNameList });
 
             entries.forEach(([propName, propValue]) => {
-                logger("merge-spread", () => ({ fn: true, propName, propValue }));
+                logger.scoped("merge-spread", { fn: true, propName, propValue });
 
                 propValue.forEach((value) => {
                     localNodes.set(propName, (localNodes.get(propName) ?? []).concat(value));
@@ -152,7 +152,7 @@ function mergeSpreadEntries({ map, propNameList: maybePropNameList }: { map: Map
             foundPropList.add(propName);
             return true;
         });
-    logger("merge-spread", () => ({ extracted: map, merged }));
+    logger.scoped("merge-spread", () => ({ extracted: map, merged }));
 
     // reverse again to keep the original order
     return merged.reverse();
