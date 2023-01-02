@@ -7,7 +7,7 @@ import { extractCallExpressionValues } from "./extractCallExpressionIdentifierVa
 import { extractJsxAttributeIdentifierValue } from "./extractJsxAttributeIdentifierValue";
 import { extractJsxSpreadAttributeValues } from "./extractJsxSpreadAttributeValues";
 import { castObjectLikeAsMapValue, BoxNode, MapTypeValue } from "./type-factory";
-import type { ExtractOptions, ListOrAll, NodeMap, PropNodeMap } from "./types";
+import type { ExtractOptions, ListOrAll, BoxNodesMap, PropNodesMap } from "./types";
 import { isNotNullish } from "./utils";
 
 const logger = diary("box-ex:extractor:extract");
@@ -22,13 +22,13 @@ export const extract = ({ ast, components: _components, functions: _functions, u
 
     // contains all the extracted nodes from this ast
     // where as `used` is the global map that is populated by this function in multiple calls
-    const extracted = new Map() as NodeMap;
+    const extracted = new Map() as BoxNodesMap;
 
     Object.entries(components ?? {}).forEach(([componentName, component]) => {
         const propNameList = component.properties;
         const canTakeAllProp = propNameList === "all";
 
-        const localNodes = new Map() as PropNodeMap["nodesByProp"];
+        const localNodes = new Map() as PropNodesMap["nodesByProp"];
         extracted.set(componentName, { kind: "component", nodesByProp: localNodes });
 
         if (!used.has(componentName)) {
@@ -97,7 +97,7 @@ export const extract = ({ ast, components: _components, functions: _functions, u
 
     Object.entries(functions ?? {}).forEach(([functionName, component]) => {
         const propNameList = component.properties;
-        const localNodes = new Map() as PropNodeMap["nodesByProp"];
+        const localNodes = new Map() as PropNodesMap["nodesByProp"];
         extracted.set(functionName, { kind: "function", nodesByProp: localNodes });
 
         if (!used.has(functionName)) {

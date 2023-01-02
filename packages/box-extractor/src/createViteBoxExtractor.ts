@@ -6,7 +6,7 @@ import { createFilter, normalizePath } from "vite";
 import { ensureAbsolute } from "./extensions-helpers";
 
 import { extract } from "./extractor/extract";
-import type { ExtractOptions, NodeMap } from "./extractor/types";
+import type { ExtractOptions, BoxNodesMap } from "./extractor/types";
 
 // Components
 // :matches(JsxOpeningElement, JsxSelfClosingElement):has(Identifier[name="ColorBox"]) JsxAttribute > Identifier[name=/color|backgroundColor/] ~ StringLiteral
@@ -18,7 +18,7 @@ export type OnExtractedArgs = {
     extracted: ReturnType<typeof extract>;
     id: string;
     isSsr?: boolean;
-    used: NodeMap;
+    extractMap: BoxNodesMap;
 };
 export type CreateViteBoxExtractorOptions = Pick<ExtractOptions, "components" | "functions" | "used"> & {
     onExtracted?: (args: OnExtractedArgs) => void;
@@ -122,7 +122,7 @@ export const createViteBoxExtractor = ({
             const extracted = extract({ ast: sourceFile, components, functions, used });
             logger("extracted", { id, extracted });
 
-            onExtracted?.({ extracted, id, isSsr: Boolean(options?.ssr), used });
+            onExtracted?.({ extracted, id, isSsr: Boolean(options?.ssr), extractMap: used });
             // console.dir({ id, extracted }, { depth: null });
 
             return null;
