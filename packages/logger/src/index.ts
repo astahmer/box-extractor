@@ -65,6 +65,19 @@ const enable = (namespaces: string) => {
     namespaceLists.skips = skips;
 };
 
+const isEnabled = (name: string) => {
+    let len = namespaceLists.skips.length;
+    for (len = namespaceLists.skips.length; len--; ) {
+        if (namespaceLists.skips[len]?.test(name)) return false;
+    }
+
+    for (len = namespaceLists.allows.length; len--; ) {
+        if (namespaceLists.allows[len]?.test(name)) return true;
+    }
+
+    return false;
+};
+
 if (__TARGET__ === "node" && process.env["DEBUG"]) enable(process.env["DEBUG"]);
 
 // ~ Logger
@@ -76,14 +89,7 @@ const logger = (
     colorFn: (msg: string) => string,
     ...messages: unknown[]
 ): void => {
-    let len = namespaceLists.skips.length;
-    for (len = namespaceLists.skips.length; len--; ) {
-        if (namespaceLists.skips[len]?.test(name)) return;
-    }
-
-    for (len = namespaceLists.allows.length; len--; ) {
-        if (namespaceLists.allows[len]?.test(name)) return void reporter({ name, level, colorFn, messages });
-    }
+    reporter({ name, level, colorFn, messages });
 };
 
 // ~ Reporter
@@ -99,9 +105,12 @@ const isOdd = (x: number) => x % 2 !== 0;
 
 let refCount = 0;
 const scopedCache = new Map<string, CreateLoggerReturn>();
+// eslint-disable-next-line @typescript-eslint/no-empty-function
+const noop = () => {};
 
-export function createLogger(name: string, onEmit?: Reporter): CreateLoggerReturn {
-    onEmit = onEmit ?? default_reporter;
+export function createLogger(name: string, _onEmit?: Reporter): CreateLoggerReturn {
+    const onEmit = _onEmit ?? default_reporter;
+
     const color = possibleColors[refCount % possibleColors.length]!;
     const style = isOdd(Math.floor(refCount / possibleStyles.length))
         ? possibleStyles[refCount % possibleStyles.length]!
@@ -110,26 +119,26 @@ export function createLogger(name: string, onEmit?: Reporter): CreateLoggerRetur
     const colorFn = (msg: string) => (styleFn ? styleFn(pc[color](msg)) : pc[color](msg));
     refCount++;
 
-    const logFn = logger.bind(0, name, onEmit, "debug", colorFn);
+    const logFn = isEnabled(name) ? logger.bind(0, name, onEmit, "debug", colorFn) : noop;
 
     return Object.assign(logFn, {
         extend: (scoped: string) => createLogger(`${name}:${scoped}`, onEmit),
         scoped: (scoped: string, ...messages: unknown[]) => {
             const namespace = `${name}:${scoped}`;
-            const logger = scopedCache.get(namespace) ?? createLogger(namespace, onEmit);
-            if (!scopedCache.has(namespace)) scopedCache.set(namespace, logger);
+            const loggerFn = scopedCache.get(namespace) ?? createLogger(namespace, onEmit);
+            if (!scopedCache.has(namespace)) scopedCache.set(namespace, loggerFn);
 
-            logger(...messages);
+            loggerFn(...messages);
         },
         lazy: (fn: () => any) => {
             logFn(fn());
         },
         lazyScoped: (scoped: string, fn: () => any) => {
             const namespace = `${name}:${scoped}`;
-            const logger = scopedCache.get(namespace) ?? createLogger(namespace, onEmit);
-            if (!scopedCache.has(namespace)) scopedCache.set(namespace, logger);
+            const loggerFn = scopedCache.get(namespace) ?? createLogger(namespace, onEmit);
+            if (!scopedCache.has(namespace)) scopedCache.set(namespace, loggerFn);
 
-            logger(fn());
+            loggerFn(fn());
         },
     });
 }
