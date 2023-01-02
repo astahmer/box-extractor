@@ -13,7 +13,6 @@ import {
     CreateViteBoxExtractorOptions,
     createViteBoxRefUsageFinder,
 } from "@box-extractor/core";
-import debug from "debug";
 import {
     getUsedPropertiesFromExtractNodeMap,
     mergeExtractResultInUsedMap,
@@ -26,6 +25,7 @@ import {
     mutateContextByKeepingUsedRulesOnly,
 } from "./onEvaluated";
 import { serializeVanillaModuleWithoutUnused } from "./serializeVanillaModuleWithoutUnused";
+import { createLogger } from "@box-extractor/logger";
 // import diff from "microdiff";
 
 type OnAfterEvaluateMutation = {
@@ -38,10 +38,10 @@ type OnAfterEvaluateMutation = {
     usedComponents: BoxNodesMap;
 };
 
-const loggerEval = debug("box-ex:ve:eval");
-const loggerExtract = debug("box-ex:ve:extract");
-const loggerSerialize = debug("box-ex:ve:serialize");
-const loggerResult = debug("box-ex:ve:result");
+const loggerEval = createLogger("box-ex:ve:eval");
+const loggerExtract = createLogger("box-ex:ve:extract");
+const loggerSerialize = createLogger("box-ex:ve:serialize");
+const loggerResult = createLogger("box-ex:ve:result");
 
 export const createViteVanillaExtractSprinklesExtractor = ({
     components = {},

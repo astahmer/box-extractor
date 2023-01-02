@@ -11,7 +11,7 @@ import type {
     TemplateExpression,
 } from "ts-morph";
 import { Node, ts } from "ts-morph";
-import { diary } from "@box-extractor/logger";
+import { createLogger } from "@box-extractor/logger";
 
 import { safeEvaluateNode } from "./evaluate";
 // eslint-disable-next-line import/no-cycle
@@ -20,7 +20,7 @@ import { box, BoxNode, mergeLiteralTypes, NodeObjectLiteralExpressionType, toBox
 import type { ExtractedPropMap, PrimitiveType } from "./types";
 import { isNotNullish, unwrapExpression } from "./utils";
 
-const logger = diary("box-ex:extractor:maybe-box");
+const logger = createLogger("box-ex:extractor:maybe-box");
 
 export type MaybeBoxNodeReturn = BoxNode | BoxNode[] | undefined;
 export function maybeBoxNode(node: Node): MaybeBoxNodeReturn {
@@ -123,7 +123,7 @@ export const maybeExpandConditionalExpression = (
     let whenFalseValue: ReturnType<typeof maybeBoxNode> | ReturnType<typeof maybeObjectLikeBox> =
         maybeBoxNode(whenFalseExpr);
 
-    logger("cond", () => ({ before: true, whenTrueValue, whenFalseValue }));
+    logger.scoped("cond", () => ({ before: true, whenTrueValue, whenFalseValue }));
 
     // <ColorBox color={isDark ? { mobile: "blue.100", desktop: "blue.300" } : "whiteAlpha.100"} />
     if (!isNotNullish(whenTrueValue)) {
@@ -141,7 +141,7 @@ export const maybeExpandConditionalExpression = (
         }
     }
 
-    logger("cond", () => ({
+    logger.scoped("cond", () => ({
         whenTrueLiteral: unwrapExpression(node.getWhenTrue()).getText(),
         whenFalseLiteral: unwrapExpression(node.getWhenFalse()).getText(),
         whenTrueValue,
@@ -217,7 +217,7 @@ const getPropValue = (initializer: ObjectLiteralExpression, propName: string) =>
     const property =
         initializer.getProperty(propName) ?? initializer.getProperties().find((p) => findProperty(p, propName));
 
-    logger("get-prop", () => ({
+    logger.lazyScoped("get-prop", () => ({
         propName,
         property: property?.getText(),
         properties: initializer.getProperties().map((p) => p.getText()),
@@ -255,7 +255,7 @@ const maybeTemplateStringValue = (template: TemplateExpression) => {
         return maybeStringLiteral(expression);
     });
 
-    // logger(() => ({ head: head.getText(), headValue, tailValues }));
+    // logger(({ head: head.getText(), headValue, tailValues }));
 
     if (isNotNullish(headValue) && tailValues.every(isNotNullish)) {
         // console.log({ propName, headValue, tailValues });
@@ -267,7 +267,7 @@ const maybePropIdentifierDefinitionValue = (elementAccessed: Identifier, propNam
     const defs = elementAccessed.getDefinitionNodes();
     while (defs.length > 0) {
         const def = unwrapExpression(defs.shift()!);
-        logger("id-def", () => ({
+        logger.lazyScoped("id-def", () => ({
             def: def?.getText(),
             elementAccessed: elementAccessed.getText(),
             kind: def?.getKindName(),
@@ -277,7 +277,11 @@ const maybePropIdentifierDefinitionValue = (elementAccessed: Identifier, propNam
 
         if (Node.isVariableDeclaration(def)) {
             const initializer = unwrapExpression(def.getInitializerOrThrow());
-            logger("id-def", () => ({ initializer: initializer.getText(), kind: initializer.getKindName(), propName }));
+            logger.lazyScoped("id-def", () => ({
+                initializer: initializer.getText(),
+                kind: initializer.getKindName(),
+                propName,
+            }));
 
             if (Node.isObjectLiteralExpression(initializer)) {
                 return getPropValue(initializer, propName);
@@ -301,7 +305,7 @@ export const getIdentifierReferenceValue = (identifier: Identifier) => {
     while (defs.length > 0) {
         const def = unwrapExpression(defs.shift()!);
 
-        // logger(() => ({
+        // logger(({
         //     def: def?.getText(),
         //     identifier: identifier.getText(),
         //     kind: def?.getKindName(),
@@ -319,7 +323,7 @@ export const getIdentifierReferenceValue = (identifier: Identifier) => {
                 return box.nodeObjectLiteral(initializer);
             }
 
-            // logger(() => ({
+            // logger(({
             //     getIdentifierReferenceValue: true,
             //     def: def?.getText(),
             //     identifier: identifier.getText(),
@@ -361,7 +365,7 @@ const getElementAccessedExpressionValue = (expression: ElementAccessExpression):
 
     const argValue = maybeStringLiteral(arg);
 
-    elAccessedLogger(() => ({
+    elAccessedLogger.lazy(() => ({
         arg: arg.getText(),
         argKind: arg.getKindName(),
         elementAccessed: elementAccessed.getText(),
@@ -421,7 +425,7 @@ const getElementAccessedExpressionValue = (expression: ElementAccessExpression):
     // <ColorBox color={xxx[yyy[zzz]]} />
     if (Node.isIdentifier(elementAccessed) && Node.isElementAccessExpression(arg)) {
         const propName = getElementAccessedExpressionValue(arg);
-        elAccessedLogger(() => ({ isArgElementAccessExpression: true, propName }));
+        elAccessedLogger({ isArgElementAccessExpression: true, propName });
 
         if (typeof propName === "string" && isNotNullish(propName)) {
             const maybeValue = maybePropIdentifierDefinitionValue(elementAccessed, propName);
@@ -434,7 +438,7 @@ const getElementAccessedExpressionValue = (expression: ElementAccessExpression):
     // <ColorBox color={xxx[yyy[zzz]]} />
     if (Node.isElementAccessExpression(elementAccessed) && isNotNullish(argValue)) {
         const identifier = getElementAccessedExpressionValue(elementAccessed);
-        elAccessedLogger(() => ({ isElementAccessExpression: true, identifier }));
+        elAccessedLogger({ isElementAccessExpression: true, identifier });
 
         if (isObject(identifier) && !Array.isArray(identifier) && identifier.type === "node-object-literal") {
             const maybeValue = getPropValue(identifier.value, argValue);
@@ -452,7 +456,7 @@ const getElementAccessedExpressionValue = (expression: ElementAccessExpression):
     // <ColorBox color={xxx[aaa ? yyy : zzz]]} />
     if (Node.isConditionalExpression(arg)) {
         const propName = maybeStringLiteral(arg);
-        elAccessedLogger(() => ({ isConditionalExpression: true, propName }));
+        elAccessedLogger({ isConditionalExpression: true, propName });
         // eslint-disable-next-line sonarjs/no-collapsible-if
         if (isNotNullish(propName)) {
             // eslint-disable-next-line unicorn/no-lonely-if
@@ -470,13 +474,13 @@ const getElementAccessedExpressionValue = (expression: ElementAccessExpression):
         const whenTrueValue = maybeStringLiteral(whenTrue);
         const whenFalseValue = maybeStringLiteral(whenFalse);
 
-        elAccessedLogger(() => ({
+        elAccessedLogger({
             conditionalElementAccessed: true,
             whenTrueValue,
             whenFalseValue,
             whenTrue: [whenTrue.getKindName(), whenTrue.getText()],
             whenFalse: [whenFalse.getKindName(), whenFalse.getText()],
-        }));
+        });
 
         if (Node.isIdentifier(elementAccessed)) {
             const whenTrueResolved = isNotNullish(whenTrueValue)
@@ -520,14 +524,14 @@ const getArrayElementValueAtIndex = (array: ArrayLiteralExpression, index: numbe
     if (!element) return;
 
     const value = maybeBoxNode(element);
-    elAccessedLogger(() => ({
+    elAccessedLogger({
         array: array.getText(),
         arrayKind: array.getKindName(),
         element: element.getText(),
         elementKind: element.getKindName(),
         value,
         obj: maybeObjectLikeBox(element),
-    }));
+    });
 
     if (isNotNullish(value)) {
         return value;

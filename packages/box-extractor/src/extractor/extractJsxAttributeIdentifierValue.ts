@@ -1,13 +1,13 @@
 import type { Identifier } from "ts-morph";
 import { Node } from "ts-morph";
-import { diary } from "@box-extractor/logger";
+import { createLogger } from "@box-extractor/logger";
 
 import { maybeBoxNode } from "./maybeBoxNode";
 import { maybeObjectLikeBox } from "./maybeObjectLikeBox";
 import { box } from "./type-factory";
 import { isNotNullish, unwrapExpression } from "./utils";
 
-const logger = diary("box-ex:extractor:jsx-attr");
+const logger = createLogger("box-ex:extractor:jsx-attr");
 
 export const extractJsxAttributeIdentifierValue = (identifier: Identifier) => {
     // console.log(n.getText(), n.parent.getText());
@@ -31,12 +31,12 @@ export const extractJsxAttributeIdentifierValue = (identifier: Identifier) => {
         if (!expression) return;
 
         const maybeValue = maybeBoxNode(expression);
-        logger(() => ({ extractJsx: true, maybeValue }));
+        logger({ extractJsx: true, maybeValue });
         // !maybeValue && console.log("maybeBoxNode empty", expression.getKindName(), expression.getText());
         if (isNotNullish(maybeValue)) return maybeValue;
 
         const maybeObject = maybeObjectLikeBox(expression);
-        logger(() => ({ maybeObject }));
+        logger({ maybeObject });
         // console.log("expr", expression.getKindName(), expression.getText());
         if (isNotNullish(maybeObject)) return maybeObject;
     }
