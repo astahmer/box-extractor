@@ -6,11 +6,10 @@ import type { BoxNode, LiteralValue } from "./type-factory";
 // accidentally extractable tailwind classNames ?
 // also remove unused variants from https://vanilla-extract.style/documentation/packages/recipes/ ?
 
-// TODO mv to type-factory
 export type PrimitiveType = string | number;
 export type ExtractedPropMap = Record<string, LiteralValue>;
 
-export type PropNodeMap = { kind: "component" | "function"; nodes: Map<string, BoxNode[]> };
+export type PropNodeMap = { kind: "component" | "function"; nodesByProp: Map<string, BoxNode[]> };
 export type NodeMap = Map<string, PropNodeMap>;
 
 export type ListOrAll = "all" | string[];

@@ -1,5 +1,5 @@
 import type { JsxSpreadAttribute } from "ts-morph";
-import { diary } from "./debug-logger";
+import { diary } from "@box-extractor/logger";
 
 import { maybeObjectLikeBox } from "./maybeObjectLikeBox";
 import { emptyObjectType } from "./type-factory";

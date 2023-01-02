@@ -155,12 +155,6 @@ export const castObjectLikeAsMapValue = (maybeObject: MaybeObjectLikeBoxReturn):
     if (!isBoxNode(maybeObject)) return new Map<string, BoxNode[]>(Object.entries(maybeObject));
     if (maybeObject.type === "map") return maybeObject.value;
 
-    // TODO
-    // const entries = Object.entries(maybeObject.value).reduce((acc, [key, value]) => {
-    //     const boxed = box.cast(value);
-    //     if (boxed) return acc.concat([key, [boxed]]);
-    //     return acc;
-    // }, [] as Array<[string, BoxNode[]]>);
     // console.dir({ entries }, { depth: null });
     return new Map<string, BoxNode[]>(
         Object.entries(maybeObject.value).map(([key, value]) => {

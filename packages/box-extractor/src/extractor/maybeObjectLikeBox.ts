@@ -1,7 +1,7 @@
 import { isObjectLiteral } from "pastable";
 import type { ObjectLiteralElementLike, ObjectLiteralExpression } from "ts-morph";
 import { Node, ts } from "ts-morph";
-import { diary } from "./debug-logger";
+import { diary } from "@box-extractor/logger";
 
 import { evaluateNode, isEvalError, safeEvaluateNode } from "./evaluate";
 // eslint-disable-next-line import/no-cycle
