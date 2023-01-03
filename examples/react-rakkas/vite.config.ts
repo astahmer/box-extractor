@@ -11,6 +11,6 @@ export default defineConfig({
             mappedProps: { direction: ["flexDirection"], spacing: ["paddingBottom", "paddingRight"] },
         }) as any,
         tsconfigPaths(),
-        rakkas(),
+        rakkas({ filterRoutes: (_route) => "server" }),
     ],
 });
