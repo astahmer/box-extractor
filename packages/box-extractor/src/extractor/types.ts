@@ -17,5 +17,5 @@ export type ExtractOptions = {
     ast: SourceFile;
     components?: Record<string, { properties: ListOrAll }> | string[];
     functions?: Record<string, { properties: ListOrAll }> | string[];
-    used: BoxNodesMap;
+    extractMap: BoxNodesMap;
 };

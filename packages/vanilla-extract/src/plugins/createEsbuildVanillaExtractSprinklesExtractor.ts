@@ -1,10 +1,14 @@
-import { defaultSerializeVanillaModule } from "@vanilla-extract/integration";
 import { vanillaExtractPlugin } from "@vanilla-extract/esbuild-plugin";
+import { defaultSerializeVanillaModule } from "@vanilla-extract/integration";
 import type { VanillaExtractPluginOptions } from "@vanilla-extract/vite-plugin";
 import type { Plugin } from "esbuild";
 
 import { createEsbuildBoxExtractor } from "@box-extractor/core";
-import type { CreateViteBoxExtractorOptions } from "@box-extractor/core";
+import {
+    getUsedPropertiesFromExtractNodeMap,
+    mergeExtractResultInUsedMap,
+} from "../getUsedPropertiesFromExtractNodeMap";
+import type { CreateViteVanillaExtractSprinklesExtractorOptions } from "./createViteVanillaExtractSprinklesExtractor";
 import {
     getCompiledSprinklePropertyByDebugIdPairMap,
     getUsedClassNameFromCompiledSprinkles,
@@ -17,24 +21,27 @@ export const createEsbuildVanillaExtractSprinklesExtractor = ({
     functions = {},
     onExtracted,
     vanillaExtractOptions,
-    used: usedComponents = new Map(),
+    extractMap = new Map(),
+    usedMap = new Map(),
     ...options
-}: Omit<CreateViteBoxExtractorOptions, "used"> &
-    Partial<Pick<CreateViteBoxExtractorOptions, "used">> & {
-        vanillaExtractOptions?: VanillaExtractPluginOptions;
-    }): Plugin[] => {
+}: CreateViteVanillaExtractSprinklesExtractorOptions & {
+    vanillaExtractOptions?: VanillaExtractPluginOptions;
+}): Plugin[] => {
     // can probably delete those cache maps
     const compiledByFilePath = new Map<string, ReturnType<typeof getCompiledSprinklePropertyByDebugIdPairMap>>();
     const sourceByPath = new Map<string, string>();
+    const usedDebugIdList = new Set<string>();
 
     return [
         createEsbuildBoxExtractor({
             ...options,
             components,
             functions,
-            used: usedComponents,
+            extractMap,
             onExtracted(args) {
                 onExtracted?.(args);
+                const extractResult = getUsedPropertiesFromExtractNodeMap(args.extractMap, usedMap);
+                mergeExtractResultInUsedMap(extractResult, usedDebugIdList, usedMap);
             },
         }),
         vanillaExtractPlugin({
@@ -47,7 +54,7 @@ export const createEsbuildVanillaExtractSprinklesExtractor = ({
                 }
 
                 // console.dir({ serializeVanillaModule: true, filePath }, { depth: null });
-                return serializeVanillaModuleWithoutUnused(cssImports, exports, context, usedComponents, compiled);
+                return serializeVanillaModuleWithoutUnused(cssImports, exports, context, usedMap, compiled);
             },
             ...vanillaExtractOptions,
             onEvaluated: (args) => {
@@ -67,7 +74,7 @@ export const createEsbuildVanillaExtractSprinklesExtractor = ({
 
                 compiledByFilePath.set(filePath, compiled);
 
-                const usedClassNameList = getUsedClassNameFromCompiledSprinkles(compiled, usedComponents);
+                const usedClassNameList = getUsedClassNameFromCompiledSprinkles(compiled, usedMap);
 
                 // console.log({
                 //     filePath,
