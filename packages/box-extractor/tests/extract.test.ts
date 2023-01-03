@@ -45,11 +45,11 @@ const config: ExtractOptions["components"] = {
 };
 
 const extractFromCode = (code: string) => {
-    const usedMap = new Map() as BoxNodesMap;
+    const extractMap = new Map() as BoxNodesMap;
     const fileName = `file${fileCount++}.tsx`;
     sourceFile = project.createSourceFile(fileName, code, { scriptKind: ts.ScriptKind.TSX });
     // console.log(sourceFile.forEachDescendant((c) => [c.getKindName(), c.getText()]));
-    const extracted = extract({ ast: sourceFile, components: config, used: usedMap });
+    const extracted = extract({ ast: sourceFile, components: config, extractMap });
     // console.dir({ test: true, usedMap, extracted }, { depth: null });
     return Array.from(extracted.entries()).map(([name, props]) => [
         name,
@@ -57,7 +57,7 @@ const extractFromCode = (code: string) => {
             propName,
             getBoxLiteralValue(propValues),
         ]),
-        usedMap.get(name)!.nodesByProp,
+        extractMap.get(name)!.nodesByProp,
     ]);
 };
 

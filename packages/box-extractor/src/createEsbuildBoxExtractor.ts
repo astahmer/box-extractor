@@ -8,7 +8,7 @@ import { extract } from "./extractor/extract";
 export function createEsbuildBoxExtractor({
     components = {},
     functions = {},
-    used,
+    extractMap,
     onExtracted,
     tsConfigFilePath = "tsconfig.json",
 }: CreateViteBoxExtractorOptions): Plugin {
@@ -47,8 +47,8 @@ export function createEsbuildBoxExtractor({
                     scriptKind: ts.ScriptKind.TSX,
                 });
 
-                const extracted = extract({ ast: sourceFile, components, functions, used });
-                onExtracted?.({ extracted, id: path, isSsr: true, extractMap: used });
+                const extracted = extract({ ast: sourceFile, components, functions, extractMap });
+                onExtracted?.({ extracted, id: path, isSsr: true, extractMap });
                 // console.dir({ id, extracted }, { depth: null });
 
                 // eslint-disable-next-line unicorn/no-useless-undefined

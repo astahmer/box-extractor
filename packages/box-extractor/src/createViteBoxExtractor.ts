@@ -20,7 +20,7 @@ export type OnExtractedArgs = {
     isSsr?: boolean;
     extractMap: BoxNodesMap;
 };
-export type CreateViteBoxExtractorOptions = Pick<ExtractOptions, "components" | "functions" | "used"> & {
+export type CreateViteBoxExtractorOptions = Pick<ExtractOptions, "components" | "functions" | "extractMap"> & {
     onExtracted?: (args: OnExtractedArgs) => void;
     tsConfigFilePath?: string;
     /**
@@ -44,7 +44,7 @@ const logger = createLogger("box-ex:extract:vite");
 export const createViteBoxExtractor = ({
     components = {},
     functions = {},
-    used,
+    extractMap,
     onExtracted,
     tsConfigFilePath = "tsconfig.json",
     ...options
@@ -119,10 +119,10 @@ export const createViteBoxExtractor = ({
                 scriptKind: ts.ScriptKind.TSX,
             });
 
-            const extracted = extract({ ast: sourceFile, components, functions, used });
+            const extracted = extract({ ast: sourceFile, components, functions, extractMap });
             logger("extracted", { id, extracted });
 
-            onExtracted?.({ extracted, id, isSsr: Boolean(options?.ssr), extractMap: used });
+            onExtracted?.({ extracted, id, isSsr: Boolean(options?.ssr), extractMap });
             // console.dir({ id, extracted }, { depth: null });
 
             return null;

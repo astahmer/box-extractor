@@ -12,7 +12,7 @@ import { isNotNullish } from "./utils";
 
 const logger = createLogger("box-ex:extractor:extract");
 
-export const extract = ({ ast, components: _components, functions: _functions, used }: ExtractOptions) => {
+export const extract = ({ ast, components: _components, functions: _functions, extractMap }: ExtractOptions) => {
     const components = Array.isArray(_components)
         ? Object.fromEntries(_components.map((name) => [name, { properties: "all" }]))
         : _components;
@@ -31,11 +31,11 @@ export const extract = ({ ast, components: _components, functions: _functions, u
         const localNodes = new Map() as PropNodesMap["nodesByProp"];
         extracted.set(componentName, { kind: "component", nodesByProp: localNodes });
 
-        if (!used.has(componentName)) {
-            used.set(componentName, { kind: "component", nodesByProp: new Map() });
+        if (!extractMap.has(componentName)) {
+            extractMap.set(componentName, { kind: "component", nodesByProp: new Map() });
         }
 
-        const componentMap = used.get(componentName)!;
+        const componentMap = extractMap.get(componentName)!;
         const componentSelector = `:matches(JsxOpeningElement, JsxSelfClosingElement):has(Identifier[name="${componentName}"])`;
 
         const namedProp = canTakeAllProp ? "" : `[name=/${propNameList.join("|")}/]`;
@@ -100,11 +100,11 @@ export const extract = ({ ast, components: _components, functions: _functions, u
         const localNodes = new Map() as PropNodesMap["nodesByProp"];
         extracted.set(functionName, { kind: "function", nodesByProp: localNodes });
 
-        if (!used.has(functionName)) {
-            used.set(functionName, { kind: "function", nodesByProp: new Map() });
+        if (!extractMap.has(functionName)) {
+            extractMap.set(functionName, { kind: "function", nodesByProp: new Map() });
         }
 
-        const fnMap = used.get(functionName)!;
+        const fnMap = extractMap.get(functionName)!;
         const fnSelector = `JsxAttributes CallExpression:has(Identifier[name="${functionName}"])`;
         // <div className={colorSprinkles({ color: "blue.100" })}></ColorBox>
         //                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

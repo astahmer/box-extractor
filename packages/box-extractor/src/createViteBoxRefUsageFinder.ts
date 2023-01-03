@@ -22,7 +22,7 @@ export const createViteBoxRefUsageFinder = ({
     functions: _functions = {},
     tsConfigFilePath = "tsconfig.json",
     ...options
-}: Omit<CreateViteBoxExtractorOptions, "used" | "onExtracted">): Plugin => {
+}: Omit<CreateViteBoxExtractorOptions, "extractMap" | "onExtracted">): Plugin => {
     const components = Array.isArray(_components)
         ? Object.fromEntries(_components.map((name) => [name, { properties: "all" }]))
         : _components;

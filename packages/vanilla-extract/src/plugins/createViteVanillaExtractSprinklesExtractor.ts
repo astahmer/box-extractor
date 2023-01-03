@@ -7,7 +7,6 @@ import { vanillaExtractPlugin, VanillaExtractPluginOptions } from "@vanilla-extr
 import type { ModuleNode, Plugin, ResolvedConfig, ViteDevServer } from "vite";
 import { normalizePath } from "vite";
 
-import type { BoxNodesMap } from "@box-extractor/core";
 import {
     createViteBoxExtractor,
     CreateViteBoxExtractorOptions,
@@ -35,7 +34,7 @@ type OnAfterEvaluateMutation = {
     original: AdapterContext;
     context: AdapterContext;
     evalResult: Record<string, unknown>;
-    usedComponents: BoxNodesMap;
+    usedComponents: UsedComponentMap;
 };
 
 const loggerEval = createLogger("box-ex:ve:eval");
@@ -43,23 +42,26 @@ const loggerExtract = createLogger("box-ex:ve:extract");
 const loggerSerialize = createLogger("box-ex:ve:serialize");
 const loggerResult = createLogger("box-ex:ve:result");
 
+export type CreateViteVanillaExtractSprinklesExtractorOptions = Omit<CreateViteBoxExtractorOptions, "extractMap"> &
+    Partial<Pick<CreateViteBoxExtractorOptions, "extractMap">> & {
+        usedMap?: UsedComponentMap;
+        mappedProps?: Record<string, string[]>;
+    };
+
 export const createViteVanillaExtractSprinklesExtractor = ({
     components = {},
     functions = {},
     mappedProps = {},
     onExtracted,
     vanillaExtractOptions,
+    extractMap = new Map(),
+    usedMap = new Map(),
     ...options
-}: Omit<CreateViteBoxExtractorOptions, "used"> & {
-    mappedProps?: Record<string, string[]>;
+}: CreateViteVanillaExtractSprinklesExtractorOptions & {
     vanillaExtractOptions?: VanillaExtractPluginOptions & {
         onAfterEvaluateMutation?: (args: OnAfterEvaluateMutation) => void;
     };
-    // TODO ignore map (components, functions)
 }): Plugin[] => {
-    const extractMap = new Map() as BoxNodesMap;
-    const usedMap = new Map() as UsedComponentMap;
-
     let server: ViteDevServer;
     let config: ResolvedConfig;
 
@@ -91,7 +93,7 @@ export const createViteVanillaExtractSprinklesExtractor = ({
             ...options,
             components,
             functions,
-            used: extractMap,
+            extractMap,
             onExtracted(args) {
                 onExtracted?.(args);
                 if (!server) {
@@ -303,7 +305,7 @@ export const createViteVanillaExtractSprinklesExtractor = ({
                     original,
                     context,
                     evalResult,
-                    usedComponents: extractMap,
+                    usedComponents: usedMap,
                 });
             },
         }) as any,
