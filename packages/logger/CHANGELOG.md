@@ -1,5 +1,11 @@
 # @box-extractor/logger
 
+## 0.0.3
+
+### Patch Changes
+
+-   [`3aec0c2`](https://github.com/astahmer/box-extractor/commit/3aec0c2923078f674bb3c246afa2b511dc15df77) Thanks [@astahmer](https://github.com/astahmer)! - make it public + publish
+
 ## 0.0.2
 
 ### Patch Changes

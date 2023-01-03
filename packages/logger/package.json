@@ -1,6 +1,6 @@
 {
     "name": "@box-extractor/logger",
-    "version": "0.0.2",
+    "version": "0.0.3",
     "main": "dist/box-extractor-logger.cjs.js",
     "module": "dist/box-extractor-logger.esm.js",
     "types": "dist/box-extractor-logger.cjs.d.ts",
