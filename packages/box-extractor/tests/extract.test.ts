@@ -44,12 +44,12 @@ const config: ExtractOptions["components"] = {
     },
 };
 
-const extractFromCode = (code: string) => {
+const extractFromCode = (code: string, options?: Partial<ExtractOptions>) => {
     const extractMap = new Map() as BoxNodesMap;
     const fileName = `file${fileCount++}.tsx`;
     sourceFile = project.createSourceFile(fileName, code, { scriptKind: ts.ScriptKind.TSX });
     // console.log(sourceFile.forEachDescendant((c) => [c.getKindName(), c.getText()]));
-    const extracted = extract({ ast: sourceFile, components: config, extractMap });
+    const extracted = extract({ ast: sourceFile, components: config, extractMap, ...options });
     // console.dir({ test: true, usedMap, extracted }, { depth: null });
     return Array.from(extracted.entries()).map(([name, props]) => [
         name,
@@ -3678,6 +3678,265 @@ it("extract JsxAttribute > ObjectLiteralExpression > css prop > PropertyAssignme
                                               },
                                           ],
                                       },
+                                  },
+                              ],
+                          },
+                      },
+                  ],
+              },
+          ],
+      ]
+    `);
+});
+
+it("extract JsxAttribute > JsxExpression > Identifier > BinaryExpression > (PropertyAccessExpression + QuestionQuestionToken + StringLiteral)", () => {
+    expect(
+        extractFromCode(`
+            const color = props.color ?? "apple.100";
+
+            <ColorBox color={color}></ColorBox>
+        `)
+    ).toMatchInlineSnapshot(`
+      [
+          [
+              "ColorBox",
+              [["color", "apple.100"]],
+              {
+                  color: [
+                      {
+                          type: "literal",
+                          value: "apple.100",
+                      },
+                  ],
+              },
+          ],
+      ]
+    `);
+});
+
+it("extract JsxAttribute > JsxExpression > Identifier > BinaryExpression > (PropertyAccessExpression + AmpersandAmpersandToken + StringLiteral)", () => {
+    expect(
+        extractFromCode(`
+            const color = props.color && "apple.200";
+
+            <ColorBox color={color}></ColorBox>
+        `)
+    ).toMatchInlineSnapshot(`
+      [
+          [
+              "ColorBox",
+              [["color", "apple.200"]],
+              {
+                  color: [
+                      {
+                          type: "literal",
+                          value: "apple.200",
+                      },
+                  ],
+              },
+          ],
+      ]
+    `);
+});
+
+it("extract JsxAttribute > JsxExpression > Identifier > BinaryExpression > (PropertyAccessExpression + BarBarToken + StringLiteral)", () => {
+    expect(
+        extractFromCode(`
+            const color = props.color || "apple.300";
+
+            <ColorBox color={color}></ColorBox>
+        `)
+    ).toMatchInlineSnapshot(`
+      [
+          [
+              "ColorBox",
+              [["color", "apple.300"]],
+              {
+                  color: [
+                      {
+                          type: "literal",
+                          value: "apple.300",
+                      },
+                  ],
+              },
+          ],
+      ]
+    `);
+});
+
+it("extract real-world Stack example ", () => {
+    expect(
+        extractFromCode(
+            `
+        export const Stack = <TType extends React.ElementType = typeof defaultElement>(
+            props: PolymorphicComponentProps<StackProps, TType>
+        ) => {
+            const { children, as, spacing, ...rest } = props;
+            const stackItems = Children.toArray(children);
+            const direction = props.flexDirection ?? "column";
+
+            return (
+                <Box display="flex" flexDirection={direction} {...rest}>
+                    {stackItems.map((item, index) => (
+                        <Box
+                            key={index}
+                            pr={direction === "row" ? (index !== stackItems.length - 1 ? spacing : undefined) : undefined}
+                            pb={direction === "column" ? (index !== stackItems.length - 1 ? spacing : undefined) : undefined}
+                        >
+                            {item}
+                        </Box>
+                    ))}
+                </Box>
+            );
+        };
+
+        const Something = () => {
+            return (
+                <Stack
+                    as="header"
+                    flexWrap="wrap"
+                    alignItems="flex-end"
+                    justifyContent="flex-end"
+                    paddingRight={2}
+                    paddingBottom={2}
+                    borderBottomWidth="1px"
+                    borderBottomColor="gray.400"
+                    className={css.header}
+                    _tablet={{ justifyContent: "space-between" }}
+                />
+            );
+        };
+        `,
+            { components: ["Box", "Stack"] }
+        )
+    ).toMatchInlineSnapshot(`
+      [
+          [
+              "Box",
+              [
+                  ["display", "flex"],
+                  ["flexDirection", "column"],
+                  ["key", null],
+                  ["pr", {}],
+                  ["pb", {}],
+              ],
+              {
+                  display: [
+                      {
+                          type: "literal",
+                          value: "flex",
+                      },
+                  ],
+                  flexDirection: [
+                      {
+                          type: "literal",
+                          value: "column",
+                      },
+                  ],
+                  key: [
+                      {
+                          type: "object",
+                          value: {},
+                          isEmpty: true,
+                      },
+                  ],
+                  pr: [
+                      {
+                          type: "map",
+                          value: {},
+                      },
+                  ],
+                  pb: [
+                      {
+                          type: "map",
+                          value: {},
+                      },
+                  ],
+              },
+          ],
+          [
+              "Stack",
+              [
+                  ["as", "header"],
+                  ["flexWrap", "wrap"],
+                  ["alignItems", "flex-end"],
+                  ["justifyContent", "flex-end"],
+                  ["paddingRight", "2"],
+                  ["paddingBottom", "2"],
+                  ["borderBottomWidth", "1px"],
+                  ["borderBottomColor", "gray.400"],
+                  ["className", null],
+                  [
+                      "_tablet",
+                      {
+                          justifyContent: "space-between",
+                      },
+                  ],
+              ],
+              {
+                  as: [
+                      {
+                          type: "literal",
+                          value: "header",
+                      },
+                  ],
+                  flexWrap: [
+                      {
+                          type: "literal",
+                          value: "wrap",
+                      },
+                  ],
+                  alignItems: [
+                      {
+                          type: "literal",
+                          value: "flex-end",
+                      },
+                  ],
+                  justifyContent: [
+                      {
+                          type: "literal",
+                          value: "flex-end",
+                      },
+                  ],
+                  paddingRight: [
+                      {
+                          type: "literal",
+                          value: "2",
+                      },
+                  ],
+                  paddingBottom: [
+                      {
+                          type: "literal",
+                          value: "2",
+                      },
+                  ],
+                  borderBottomWidth: [
+                      {
+                          type: "literal",
+                          value: "1px",
+                      },
+                  ],
+                  borderBottomColor: [
+                      {
+                          type: "literal",
+                          value: "gray.400",
+                      },
+                  ],
+                  className: [
+                      {
+                          type: "object",
+                          value: {},
+                          isEmpty: true,
+                      },
+                  ],
+                  _tablet: [
+                      {
+                          type: "map",
+                          value: {
+                              justifyContent: [
+                                  {
+                                      type: "literal",
+                                      value: "space-between",
                                   },
                               ],
                           },
