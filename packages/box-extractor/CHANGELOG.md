@@ -1,5 +1,49 @@
 # @box-extractor/core
 
+## 0.2.0
+
+### Minor Changes
+
+-   [#16](https://github.com/astahmer/box-extractor/pull/16) [`c0bde33`](https://github.com/astahmer/box-extractor/commit/c0bde33f5b18ad09473b03829cf426fe09c103b1) Thanks [@astahmer](https://github.com/astahmer)! - update ts version to 4.9.4
+
+-   [#20](https://github.com/astahmer/box-extractor/pull/20) [`c78b43d`](https://github.com/astahmer/box-extractor/commit/c78b43d6ebdabb0d842a0f86620be9ced09f6e59) Thanks [@astahmer](https://github.com/astahmer)! - feat:
+
+    -   BoxNode (AST-like objects) / getBoxLiteralValue
+    -   better extraction for nested objects/conditionals, soon allowing usage of `css={{ ... }}` prop
+
+    refactor:
+
+    -   rm properties+conditionalProperties from ComponentUsedPropertiesStyle
+    -   rm ExtractedComponentProperties/ExtractedPropPair
+    -   rename UsedComponentsMap -> NodeMap
+    -   rename ComponentUsedPropertiesStyle -> PropNodeMap
+    -   rename ExtractedType -> BoxNode
+    -   rename TypeKind -> BoxKind
+    -   rename maybeLiteral -> maybeBoxNode
+    -   rename maybeObjectEntries -> maybeObjectLikeBox
+
+    chore:
+
+    -   output BoxNode in test snapshots
+    -   debug-logger
+
+-   [#20](https://github.com/astahmer/box-extractor/pull/20) [`006126c`](https://github.com/astahmer/box-extractor/commit/006126c914ab22214e67e081032e56668feae52d) Thanks [@astahmer](https://github.com/astahmer)! - fix: ve/esbuild
+    refactor: rename used -> extractMap
+    feat(ve): allow passing extractMap/usedMap
+
+### Patch Changes
+
+-   [#20](https://github.com/astahmer/box-extractor/pull/20) [`2ed0abd`](https://github.com/astahmer/box-extractor/commit/2ed0abd950e163588568ec954e83710ebb89cff2) Thanks [@astahmer](https://github.com/astahmer)! - fix VE adapter after refactor with getUsedPropertiesFromExtractNodeMap
+
+-   [#20](https://github.com/astahmer/box-extractor/pull/20) [`2ed0abd`](https://github.com/astahmer/box-extractor/commit/2ed0abd950e163588568ec954e83710ebb89cff2) Thanks [@astahmer](https://github.com/astahmer)! - use custom logger made from debug+diary npm packages
+
+-   [#20](https://github.com/astahmer/box-extractor/pull/20) [`032ebd5`](https://github.com/astahmer/box-extractor/commit/032ebd5882b4d9404f70f3c82f6092e96d31699c) Thanks [@astahmer](https://github.com/astahmer)! - renamed UsedComponentMap properties -> literals & conditionalProperties -> entries, to remove the vanilla-extract specific naming
+
+-   [#20](https://github.com/astahmer/box-extractor/pull/20) [`80ad405`](https://github.com/astahmer/box-extractor/commit/80ad405933970b3e1a30e1ff536bbf402dd334ab) Thanks [@astahmer](https://github.com/astahmer)! - support ?? || && expressions + add some values to vanilla-theme + allow ESM usage for VE's plugins
+
+-   Updated dependencies [[`2ed0abd`](https://github.com/astahmer/box-extractor/commit/2ed0abd950e163588568ec954e83710ebb89cff2)]:
+    -   @box-extractor/logger@0.0.2
+
 ## 0.1.8
 
 ### Patch Changes

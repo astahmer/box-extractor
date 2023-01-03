@@ -1,7 +1,7 @@
 {
     "name": "@box-extractor/examples-react-rakkas",
     "type": "module",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "private": true,
     "scripts": {
         "dev": "rakkas",
@@ -23,8 +23,8 @@
         "vite-tsconfig-paths": "^4.0.3"
     },
     "dependencies": {
-        "@box-extractor/vanilla-extract": "workspace:^0.1.20",
-        "@box-extractor/vanilla-theme": "workspace:^0.1.17",
+        "@box-extractor/vanilla-extract": "workspace:^0.2.0",
+        "@box-extractor/vanilla-theme": "workspace:^0.2.0",
         "@vanilla-extract/css": "^1.9.2",
         "react": "^18.2.0",
         "react-dom": "^18.2.0"
