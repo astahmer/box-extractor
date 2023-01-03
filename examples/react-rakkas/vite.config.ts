@@ -4,6 +4,9 @@ import tsconfigPaths from "vite-tsconfig-paths";
 import { createViteVanillaExtractSprinklesExtractor } from "@box-extractor/vanilla-extract/vite-plugin";
 
 export default defineConfig({
+    ssr: {
+        external: ["@box-extractor/vanilla-theme", "ts-toolbelt"],
+    },
     plugins: [
         createViteVanillaExtractSprinklesExtractor({
             components: ["Box", "Stack"],
