@@ -1,7 +1,7 @@
 import type { PrimitiveType } from "@box-extractor/core";
 import type { AdapterContext } from "@vanilla-extract/integration";
 import { castAsArray, isDefined, isObject } from "pastable";
-import type { UsedComponentMap } from "../getUsedPropertiesFromExtractNodeMap";
+import type { UsedComponentMap } from "./getUsedPropertiesFromExtractNodeMap";
 
 import { getSprinklesMap } from "./getSprinklesMap";
 

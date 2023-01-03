@@ -7,7 +7,7 @@ import { createEsbuildBoxExtractor } from "@box-extractor/core";
 import {
     getUsedPropertiesFromExtractNodeMap,
     mergeExtractResultInUsedMap,
-} from "../getUsedPropertiesFromExtractNodeMap";
+} from "./getUsedPropertiesFromExtractNodeMap";
 import type { CreateViteVanillaExtractSprinklesExtractorOptions } from "./createViteVanillaExtractSprinklesExtractor";
 import {
     getCompiledSprinklePropertyByDebugIdPairMap,

@@ -3,7 +3,10 @@ import { Project, SourceFile, ts } from "ts-morph";
 
 import { extract } from "@box-extractor/core";
 import { afterEach, expect, it } from "vitest";
-import { getUsedPropertiesFromExtractNodeMap, UsedComponentMap } from "../src/getUsedPropertiesFromExtractNodeMap";
+import {
+    getUsedPropertiesFromExtractNodeMap,
+    UsedComponentMap,
+} from "../src/plugins/getUsedPropertiesFromExtractNodeMap";
 
 const createProject = () => {
     return new Project({
