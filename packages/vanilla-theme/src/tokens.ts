@@ -104,6 +104,7 @@ const space = {
     auto: "auto",
     none: "none",
     px: "1px",
+    0: "0",
     0.5: "0.125rem",
     1: "0.25rem",
     1.5: "0.375rem",
@@ -141,10 +142,10 @@ const space = {
 // https://github.com/chakra-ui/chakra-ui/blob/05b19899b02e17b4ee16045c9e5065fa835f0159/packages/components/theme/src/foundations/borders.ts#L1-L7
 const borders = {
     none: "0",
-    "1px": "1px solid",
-    "2px": "2px solid",
-    "4px": "4px solid",
-    "8px": "8px solid",
+    "1px": "1px",
+    "2px": "2px",
+    "4px": "4px",
+    "8px": "8px",
 };
 
 // https://github.com/chakra-ui/chakra-ui/blob/05b19899b02e17b4ee16045c9e5065fa835f0159/packages/components/theme/src/foundations/radius.ts#L1-L12
