@@ -15,7 +15,6 @@ import {
     MapType,
     MapTypeValue,
     ObjectType,
-    toBoxType,
 } from "./type-factory";
 import { isNotNullish, unwrapExpression } from "./utils";
 
@@ -52,7 +51,7 @@ export const maybeObjectLikeBox = (node: Node): MaybeObjectLikeBoxReturn => {
         if (isEvalError(maybeObject)) {
             const whenTrue = maybeObjectLikeBox(node.getWhenTrue());
             const whenFalse = maybeObjectLikeBox(node.getWhenFalse());
-            logger.scoped("cond", () => ({ whenTrue, whenFalse }));
+            logger.scoped("cond", { whenTrue, whenFalse });
             return box.map(mergePossibleEntries(whenTrue, whenFalse));
         }
 
@@ -114,7 +113,10 @@ const getObjectLiteralExpressionPropPairs = (expression: ObjectLiteralExpression
             const propName = getPropertyName(propElement);
             if (!propName) return;
 
-            const initializer = unwrapExpression(propElement.getInitializerOrThrow());
+            const init = propElement.getInitializer();
+            if (!init) return;
+
+            const initializer = unwrapExpression(init);
             // console.log({ propName, initializer: initializer.getText(), initializerKind: initializer.getKindName() });
 
             const maybeValue = maybeBoxNode(initializer);
@@ -153,7 +155,7 @@ const getObjectLiteralExpressionPropPairs = (expression: ObjectLiteralExpression
             if (extracted.type === "map") {
                 extracted.value.forEach((value, propName) => {
                     value.forEach((nested) => {
-                        const boxed = toBoxType(nested);
+                        const boxed = box.cast(nested);
                         if (!boxed) return;
 
                         return extractedPropValues.push([propName, [boxed]]);

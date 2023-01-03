@@ -27,7 +27,10 @@ export const extractJsxAttributeIdentifierValue = (identifier: Identifier) => {
 
     // <ColorBox color={xxx} />
     if (Node.isJsxExpression(initializer)) {
-        const expression = unwrapExpression(initializer.getExpressionOrThrow());
+        const expr = initializer.getExpression();
+        if (!expr) return;
+
+        const expression = unwrapExpression(expr);
         if (!expression) return;
 
         const maybeValue = maybeBoxNode(expression);

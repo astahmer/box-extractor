@@ -20,6 +20,7 @@ export type NodeObjectLiteralExpressionType = WithBoxSymbol & {
 export type BoxNode = ObjectType | LiteralType | MapType | ConditionalType | NodeObjectLiteralExpressionType;
 export type MapTypeValue = Map<string, BoxNode[]>;
 
+// TODO - unresolvable type / null / undefined
 export const emptyObjectType: ObjectType = { [BoxKind]: true, type: "object", value: {}, isEmpty: true };
 
 export const isBoxNode = (value: unknown): value is BoxNode => {
