@@ -1,4 +1,11 @@
 {
     "main": "dist/box-extractor-vanilla-extract-vite-plugin.cjs.js",
-    "module": "dist/box-extractor-vanilla-extract-vite-plugin.esm.js"
+    "module": "dist/box-extractor-vanilla-extract-vite-plugin.esm.js",
+    "exports": {
+        "./package.json": "./package.json",
+        ".": {
+            "module": "./dist/box-extractor-vanilla-extract-vite-plugin.esm.js",
+            "default": "./dist/box-extractor-vanilla-extract-vite-plugin.cjs.js"
+        }
+    }
 }
