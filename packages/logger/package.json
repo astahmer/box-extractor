@@ -1,6 +1,5 @@
 {
     "name": "@box-extractor/logger",
-    "private": true,
     "version": "0.0.2",
     "main": "dist/box-extractor-logger.cjs.js",
     "module": "dist/box-extractor-logger.esm.js",
@@ -47,5 +46,9 @@
         "vanilla-extract",
         "esbuild",
         "sprinkles"
-    ]
+    ],
+    "sideEffects": false,
+    "publishConfig": {
+        "access": "public"
+    }
 }
