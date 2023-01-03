@@ -180,7 +180,7 @@ importers:
 
   packages/box-extractor:
     specifiers:
-      '@box-extractor/logger': workspace:^0.0.2
+      '@box-extractor/logger': workspace:^0.0.3
       '@phenomnomnominal/tsquery': ^5.0.0
       '@types/debug': ^4.1.7
       '@types/react': ^18.0.15
@@ -226,7 +226,7 @@ importers:
   packages/vanilla-extract:
     specifiers:
       '@box-extractor/core': workspace:*
-      '@box-extractor/logger': workspace:^0.0.2
+      '@box-extractor/logger': workspace:^0.0.3
       '@types/debug': ^4.1.7
       '@vanilla-extract/css': ^1.9.2
       '@vanilla-extract/esbuild-plugin': link:/Users/astahmer/dev/open-source/vanilla-extract/packages/esbuild-plugin

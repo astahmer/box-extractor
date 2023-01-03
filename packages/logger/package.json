@@ -13,7 +13,8 @@
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/astahmer/vite-box-extractor.git"
+        "url": "https://github.com/astahmer/box-extractor.git",
+        "directory": "packages/logger"
     },
     "author": "Alexandre Stahmer <alexandre.stahmer@gmail.com>",
     "license": "ISC",
