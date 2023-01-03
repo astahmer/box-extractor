@@ -16,7 +16,7 @@ import {
     getUsedPropertiesFromExtractNodeMap,
     mergeExtractResultInUsedMap,
     UsedComponentMap,
-} from "../getUsedPropertiesFromExtractNodeMap";
+} from "./getUsedPropertiesFromExtractNodeMap";
 import {
     cloneAdapterContext,
     getCompiledSprinklePropertyByDebugIdPairMap,
@@ -25,6 +25,7 @@ import {
 } from "./onEvaluated";
 import { serializeVanillaModuleWithoutUnused } from "./serializeVanillaModuleWithoutUnused";
 import { createLogger } from "@box-extractor/logger";
+import { addMappedPropsToUsedMap } from "./addMappedPropsToUsedMap";
 // import diff from "microdiff";
 
 type OnAfterEvaluateMutation = {
@@ -233,43 +234,7 @@ export const createViteVanillaExtractSprinklesExtractor = ({
                 compiledByFilePath.set(filePath, compiled);
 
                 if (mappedProps) {
-                    const mapped = mappedProps ?? {};
-                    usedMap.forEach((el, _componentName) => {
-                        Object.entries(mapped).forEach(([mappedName, mappedValues]) => {
-                            if (el.properties.has(mappedName)) {
-                                const usedWithMappedName = el.properties.get(mappedName)!;
-                                mappedValues.forEach((mappedValue) => {
-                                    const current = el.properties.get(mappedValue);
-                                    if (!current) {
-                                        el.properties.set(mappedValue, usedWithMappedName);
-                                        return;
-                                    }
-
-                                    usedWithMappedName.forEach((value) => current.add(value));
-                                });
-                            }
-
-                            if (el.conditionalProperties.has(mappedName)) {
-                                const usedWithMappedName = el.conditionalProperties.get(mappedName)!;
-                                mappedValues.forEach((mappedValue) => {
-                                    const current = el.conditionalProperties.get(mappedValue);
-                                    if (!current) {
-                                        el.conditionalProperties.set(mappedValue, usedWithMappedName);
-                                        return;
-                                    }
-
-                                    usedWithMappedName.forEach((values, conditionFromMappedName) => {
-                                        if (current.has(conditionFromMappedName)) {
-                                            const currentValues = current.get(conditionFromMappedName)!;
-                                            values.forEach((value) => currentValues.add(value));
-                                        } else {
-                                            current.set(conditionFromMappedName, values);
-                                        }
-                                    });
-                                });
-                            }
-                        });
-                    });
+                    addMappedPropsToUsedMap(mappedProps, usedMap);
                 }
 
                 const usedClassNameList = getUsedClassNameFromCompiledSprinkles(compiled, usedMap);
@@ -280,14 +245,14 @@ export const createViteVanillaExtractSprinklesExtractor = ({
                     original = cloneAdapterContext(context);
                 }
 
-                loggerEval({
+                loggerEval.lazy(() => ({
                     filePath,
                     fileScope: Array.from(context.cssByFileScope.keys()).map((scope) =>
                         getAbsoluteFileId(parseFileScope(scope).filePath)
                     ),
                     sprinkles: Array.from(compiled.sprinkleConfigs.keys()),
                     usedClassNameList,
-                });
+                }));
 
                 mutateContextByKeepingUsedRulesOnly({
                     context,

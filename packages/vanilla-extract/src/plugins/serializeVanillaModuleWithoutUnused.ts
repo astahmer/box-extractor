@@ -3,7 +3,7 @@ import type { AdapterContext } from "@vanilla-extract/integration";
 import { hash } from "@vanilla-extract/integration";
 import { stringify } from "javascript-stringify";
 import { isObject } from "pastable";
-import type { UsedComponentMap } from "../getUsedPropertiesFromExtractNodeMap";
+import type { UsedComponentMap } from "./getUsedPropertiesFromExtractNodeMap";
 
 import { getCompiledSprinklePropertyByDebugIdPairMap, isCompiledSprinkle } from "./onEvaluated";
 
