@@ -1,8 +1,8 @@
+import { createLogger } from "@box-extractor/logger";
 import { castAsArray, isObject } from "pastable";
 import type {
     ArrayLiteralExpression,
     BinaryExpression,
-    ConditionalExpression,
     ElementAccessExpression,
     Identifier,
     ObjectLiteralElementLike,
@@ -11,12 +11,11 @@ import type {
     TemplateExpression,
 } from "ts-morph";
 import { Node, ts } from "ts-morph";
-import { createLogger } from "@box-extractor/logger";
 
 import { safeEvaluateNode } from "./evaluate";
 // eslint-disable-next-line import/no-cycle
 import { maybeObjectLikeBox, MaybeObjectLikeBoxReturn } from "./maybeObjectLikeBox";
-import { box, BoxNode, mergeLiteralTypes, NodeObjectLiteralExpressionType, toBoxType } from "./type-factory";
+import { box, BoxNode, mergeLiteralTypes, NodeObjectLiteralExpressionType } from "./type-factory";
 import type { ExtractedPropMap, PrimitiveType } from "./types";
 import { isNotNullish, unwrapExpression } from "./utils";
 
@@ -69,7 +68,7 @@ export function maybeBoxNode(node: Node): MaybeBoxNodeReturn {
     // <ColorBox color={xxx.yyy} />
     if (Node.isPropertyAccessExpression(node)) {
         const evaluated = getPropertyAccessedExpressionValue(node)!;
-        return toBoxType(evaluated);
+        return box.cast(evaluated);
     }
 
     // <ColorBox color={isDark ? darkValue : "whiteAlpha.100"} />
@@ -80,7 +79,7 @@ export function maybeBoxNode(node: Node): MaybeBoxNodeReturn {
     // <ColorBox color={fn()} />
     if (Node.isCallExpression(node)) {
         const maybeValue = safeEvaluateNode<PrimitiveType | ExtractedPropMap>(node);
-        return toBoxType(maybeValue);
+        return box.cast(maybeValue);
     }
 
     if (Node.isBinaryExpression(node)) {
@@ -227,9 +226,10 @@ const getPropValue = (initializer: ObjectLiteralExpression, propName: string) =>
     }));
 
     if (Node.isPropertyAssignment(property)) {
-        const propInit = property.getInitializerOrThrow();
-        const maybePropValue = maybeStringLiteral(propInit);
+        const propInit = property.getInitializer();
+        if (!propInit) return;
 
+        const maybePropValue = maybeStringLiteral(propInit);
         if (maybePropValue) {
             return maybePropValue;
         }
@@ -276,7 +276,10 @@ const maybePropIdentifierDefinitionValue = (elementAccessed: Identifier, propNam
         }));
 
         if (Node.isVariableDeclaration(def)) {
-            const initializer = unwrapExpression(def.getInitializerOrThrow());
+            const init = def.getInitializer();
+            if (!init) return;
+
+            const initializer = unwrapExpression(init);
             logger.lazyScoped("id-def", () => ({
                 initializer: initializer.getText(),
                 kind: initializer.getKindName(),
@@ -314,8 +317,10 @@ export const getIdentifierReferenceValue = (identifier: Identifier) => {
 
         // const staticColor =
         if (Node.isVariableDeclaration(def)) {
-            const initializer = unwrapExpression(def.getInitializerOrThrow());
+            const init = def.getInitializer();
+            if (!init) return;
 
+            const initializer = unwrapExpression(init);
             const maybeValue = maybeBoxNode(initializer);
             if (isNotNullish(maybeValue)) return maybeValue;
 
@@ -337,8 +342,6 @@ export const getIdentifierReferenceValue = (identifier: Identifier) => {
 };
 
 const tryUnwrapBinaryExpression = (node: BinaryExpression) => {
-    if (node.getOperatorToken().getKind() !== ts.SyntaxKind.PlusToken) return;
-
     const left = unwrapExpression(node.getLeft());
     const right = unwrapExpression(node.getRight());
 
@@ -361,8 +364,10 @@ const elAccessedLogger = logger.extend("element-access");
 
 const getElementAccessedExpressionValue = (expression: ElementAccessExpression): MaybeBoxNodeReturn => {
     const elementAccessed = unwrapExpression(expression.getExpression());
-    const arg = unwrapExpression(expression.getArgumentExpressionOrThrow());
+    const argExpr = expression.getArgumentExpression();
+    if (!argExpr) return;
 
+    const arg = unwrapExpression(argExpr);
     const argValue = maybeStringLiteral(arg);
 
     elAccessedLogger.lazy(() => ({

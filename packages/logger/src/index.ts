@@ -2,7 +2,7 @@
 import pc from "picocolors";
 import util from "node:util";
 
-util.inspect.defaultOptions.depth = 4;
+util.inspect.defaultOptions.depth = 6;
 
 const possibleColors = [
     "red",
