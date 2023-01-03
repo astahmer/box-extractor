@@ -73,7 +73,14 @@ export function maybeBoxNode(node: Node): MaybeBoxNodeReturn {
 
     // <ColorBox color={isDark ? darkValue : "whiteAlpha.100"} />
     if (Node.isConditionalExpression(node)) {
-        return maybeExpandConditionalExpression(node);
+        const maybeValue = safeEvaluateNode<PrimitiveType | PrimitiveType[] | ExtractedPropMap>(node);
+        if (isNotNullish(maybeValue)) return box.cast(maybeValue);
+
+        // unresolvable condition will return both possible outcome
+        const whenTrueExpr = unwrapExpression(node.getWhenTrue());
+        const whenFalseExpr = unwrapExpression(node.getWhenFalse());
+
+        return maybeExpandConditionalExpression(whenTrueExpr, whenFalseExpr);
     }
 
     // <ColorBox color={fn()} />
@@ -83,10 +90,22 @@ export function maybeBoxNode(node: Node): MaybeBoxNodeReturn {
     }
 
     if (Node.isBinaryExpression(node)) {
-        const maybeString = tryUnwrapBinaryExpression(node) ?? safeEvaluateNode<string>(node);
-        if (!maybeString) return;
+        const operatorKind = node.getOperatorToken().getKind();
+        if (operatorKind === ts.SyntaxKind.PlusToken) {
+            const maybeString = tryUnwrapBinaryExpression(node) ?? safeEvaluateNode<string>(node);
+            if (!maybeString) return;
 
-        return box.literal(maybeString);
+            return box.literal(maybeString);
+        } else if (
+            operatorKind === ts.SyntaxKind.BarBarToken ||
+            operatorKind === ts.SyntaxKind.QuestionQuestionToken ||
+            operatorKind === ts.SyntaxKind.AmpersandAmpersandToken
+        ) {
+            const whenTrueExpr = unwrapExpression(node.getLeft());
+            const whenFalseExpr = unwrapExpression(node.getRight());
+
+            return maybeExpandConditionalExpression(whenTrueExpr, whenFalseExpr, true);
+        }
     }
 
     // console.log({ maybeBoxNodeEnd: true, node: node.getText(), kind: node.getKindName() });
@@ -107,42 +126,41 @@ export const onlyStringLiteral = (box: MaybeBoxNodeReturn) => {
 export const maybeStringLiteral = (node: Node) => onlyStringLiteral(maybeBoxNode(node));
 
 // <ColorBox color={isDark ? darkValue : "whiteAlpha.100"} />
-export const maybeExpandConditionalExpression = (
-    node: ConditionalExpression
+const maybeExpandConditionalExpression = (
+    whenTrueExpr: Node,
+    whenFalseExpr: Node,
+    canReturnWhenTrue?: boolean
 ): BoxNode | BoxNode[] | MaybeObjectLikeBoxReturn | NodeObjectLiteralExpressionType => {
-    const maybeValue = safeEvaluateNode<PrimitiveType | PrimitiveType[] | ExtractedPropMap>(node);
-    if (isNotNullish(maybeValue)) return toBoxType(maybeValue);
-
-    // unresolvable condition will return both possible outcome
-    const whenTrueExpr = unwrapExpression(node.getWhenTrue());
-    const whenFalseExpr = unwrapExpression(node.getWhenFalse());
-
     let whenTrueValue: ReturnType<typeof maybeBoxNode> | ReturnType<typeof maybeObjectLikeBox> =
         maybeBoxNode(whenTrueExpr);
     let whenFalseValue: ReturnType<typeof maybeBoxNode> | ReturnType<typeof maybeObjectLikeBox> =
         maybeBoxNode(whenFalseExpr);
 
-    logger.scoped("cond", () => ({ before: true, whenTrueValue, whenFalseValue }));
+    logger.scoped("cond", { before: true, whenTrueValue, whenFalseValue });
 
     // <ColorBox color={isDark ? { mobile: "blue.100", desktop: "blue.300" } : "whiteAlpha.100"} />
     if (!isNotNullish(whenTrueValue)) {
         const maybeObject = maybeObjectLikeBox(whenTrueExpr);
-        if (isNotNullish(maybeObject)) {
+        if (isNotNullish(maybeObject) && !(maybeObject.type === "object" && maybeObject.isEmpty)) {
             whenTrueValue = maybeObject;
         }
+    }
+
+    if (canReturnWhenTrue && isNotNullish(whenTrueValue)) {
+        return box.cast(whenTrueValue);
     }
 
     // <ColorBox color={isDark ? { mobile: "blue.100", desktop: "blue.300" } : "whiteAlpha.100"} />
     if (!isNotNullish(whenFalseValue)) {
         const maybeObject = maybeObjectLikeBox(whenFalseExpr);
-        if (isNotNullish(maybeObject)) {
+        if (isNotNullish(maybeObject) && !(maybeObject.type === "object" && maybeObject.isEmpty)) {
             whenFalseValue = maybeObject;
         }
     }
 
-    logger.scoped("cond", () => ({
-        whenTrueLiteral: unwrapExpression(node.getWhenTrue()).getText(),
-        whenFalseLiteral: unwrapExpression(node.getWhenFalse()).getText(),
+    logger.lazyScoped("cond", () => ({
+        whenTrueLiteral: whenTrueExpr.getText(),
+        whenFalseLiteral: whenFalseExpr.getText(),
         whenTrueValue,
         whenFalseValue,
     }));
@@ -391,6 +409,8 @@ const getElementAccessedExpressionValue = (expression: ElementAccessExpression):
 
     // <ColorBox color={xxx[yyy + "zzz"]} />
     if (Node.isBinaryExpression(arg)) {
+        if (arg.getOperatorToken().getKind() !== ts.SyntaxKind.PlusToken) return;
+
         const propName = tryUnwrapBinaryExpression(arg) ?? maybeStringLiteral(arg);
 
         if (isNotNullish(propName) && Node.isIdentifier(elementAccessed)) {
