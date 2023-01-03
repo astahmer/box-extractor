@@ -49,7 +49,7 @@ const extractFromCode = (code: string) => {
     sourceFile = project.createSourceFile(fileName, code, { scriptKind: ts.ScriptKind.TSX });
     // console.log(sourceFile.forEachDescendant((c) => [c.getKindName(), c.getText()]));
     // return extract({ ast: sourceFile, components: config, used: usedMap });
-    const extracted = extract({ ast: sourceFile, components: config, used: extractMap });
+    const extracted = extract({ ast: sourceFile, components: config, extractMap });
     // console.dir({ test: true, usedMap, extracted }, { depth: null });
     const usedComponents = new Map() as UsedComponentMap;
     return getUsedPropertiesFromExtractNodeMap(extracted, usedComponents);
