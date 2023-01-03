@@ -1,5 +1,12 @@
 # @box-extractor/core
 
+## 0.2.1
+
+### Patch Changes
+
+-   Updated dependencies [[`3aec0c2`](https://github.com/astahmer/box-extractor/commit/3aec0c2923078f674bb3c246afa2b511dc15df77)]:
+    -   @box-extractor/logger@0.0.3
+
 ## 0.2.0
 
 ### Minor Changes
