@@ -178,7 +178,7 @@ export const interactiveProperties = defineProperties({
         textDecoration: ["none", "underline", "line-through"],
         //
         position: ["absolute", "relative", "fixed", "sticky"],
-        display: ["none", "flex", "inline-flex", "block", "inline"],
+        display: ["none", "flex", "inline-flex", "block", "inline", "inline-block"],
         flexDirection: ["row", "column", "row-reverse"],
         flexShrink: [0, 1] as const,
         flexGrow: [0, 1] as const,
@@ -228,6 +228,7 @@ export const interactiveProperties = defineProperties({
         marginInlineStart: space,
         marginInlineEnd: space,
         border: tokens.borders,
+        borderStyle: ["solid", "dashed", "dotted", "double", "groove", "ridge", "inset", "outset"],
         borderWidth: tokens.borders,
         borderTopWidth: tokens.borders,
         borderRightWidth: tokens.borders,
@@ -329,5 +330,6 @@ export const staticProperties = defineProperties({
         wordBreak: ["break-all", "break-word", "normal"],
         objectFit: ["cover", "contain"],
         objectPosition: ["center", "top", "bottom", "left", "right"],
+        listStyleType: ["none", "disc", "decimal"],
     },
 });

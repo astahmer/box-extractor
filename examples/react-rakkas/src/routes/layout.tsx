@@ -1,9 +1,11 @@
 // This is the main layout of our app. It renders the header and the footer.
 
+import { themeSprinkles } from "@box-extractor/vanilla-theme/css";
 import { Head, Link, StyledLink, Layout } from "rakkasjs";
+import { Box, BoxProps, PolymorphicComponentProps } from "src/theme/Box";
+import { Stack } from "src/theme/components";
 
-// Vite supports CSS modules out of the box!
-import css from "./layout.module.css";
+import "./layout.css";
 
 const MainLayout: Layout = ({ children }) => (
     <>
@@ -11,37 +13,46 @@ const MainLayout: Layout = ({ children }) => (
         {/* See their documentation: https://github.com/staylor/react-helmet-async#readme */}
         <Head title="Rakkas Demo App" />
 
-        <header className={css.header}>
+        <Box
+            as="header"
+            w="100%"
+            display="flex"
+            flexWrap="wrap"
+            alignItems="flex-end"
+            justifyContent="space-between"
+            p={4}
+            borderStyle="solid"
+            borderBottomWidth="1px"
+            borderBottomColor="gray.200"
+            _tablet={{ justifyContent: "center" }}
+        >
             {/* <Link /> is like <a /> but it provides client-side navigation without full page reload. */}
-            <Link className={css.logo} href="/">
+            <Box as={Link} __fontSize="150%" fontWeight="bold" href="/">
                 Rakkas Demo App
-            </Link>
+            </Box>
 
-            <nav className={css.nav}>
-                <ul>
-                    <li>
-                        {/* <StyledLink /> is like <Link /> but it can be styled based on the current route ()which is useful for navigation links). */}
-                        <StyledLink href="/" activeClass={css.activeLink}>
-                            Home
-                        </StyledLink>
-                    </li>
-                    <li>
-                        <StyledLink href="/about" activeClass={css.activeLink}>
-                            About
-                        </StyledLink>
-                    </li>
-                    <li>
-                        <StyledLink href="/todo" activeClass={css.activeLink}>
-                            Todo
-                        </StyledLink>
-                    </li>
-                </ul>
-            </nav>
-        </header>
+            <Stack as="nav" direction="row" spacing="4" p="0" m="0">
+                {/* <StyledLink /> is like <Link /> but it can be styled based on the current route ()which is useful for navigation links). */}
+                <NavLink href="/">Home</NavLink>
+                <NavLink href="/about">About</NavLink>
+                <NavLink href="/todo">Todo</NavLink>
+            </Stack>
+        </Box>
 
-        <section className={css.main}>{children}</section>
+        <Box as="section" pr="4" pb="4" __minHeight="calc(100vh - 16rem)">
+            {children}
+        </Box>
 
-        <footer className={css.footer}>
+        <Box
+            as="footer"
+            fontSize="sm"
+            textAlign="center"
+            marginTop="8"
+            p="4"
+            borderTop="1px"
+            borderColor="gray.300"
+            borderStyle="solid"
+        >
             <p>Software and documentation: Copyright 2021 Fatih Aygün. MIT License.</p>
 
             <p>
@@ -53,8 +64,18 @@ const MainLayout: Layout = ({ children }) => (
                     Creative Commons Attribution Generic license (CCBY)
                 </a>
             </p>
-        </footer>
+        </Box>
     </>
+);
+
+const NavLink = (props: PolymorphicComponentProps<BoxProps, typeof StyledLink>) => (
+    <Box
+        as={StyledLink}
+        p={2}
+        borderRadius="md"
+        activeClass={themeSprinkles({ backgroundColor: "gray.200" })}
+        {...props}
+    />
 );
 
 export default MainLayout;
