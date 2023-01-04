@@ -1,5 +1,11 @@
 # @box-extractor/vanilla-extract
 
+## 0.2.3
+
+### Patch Changes
+
+-   [`6376565`](https://github.com/astahmer/box-extractor/commit/6376565e0403a040efbd893e8ee0daa04d296b28) Thanks [@astahmer](https://github.com/astahmer)! - use git: deps instead of file:/ deps
+
 ## 0.2.1
 
 ### Patch Changes
