@@ -67,8 +67,6 @@ export const createViteBoxRefUsageFinder = ({
             );
         },
         transform(code, id) {
-            // console.log({ id });
-
             if (!isIncluded(id)) return null;
             if (cacheMap.has(id) && cacheMap.get(id) === code) {
                 logger("[CACHED] no diff", id);

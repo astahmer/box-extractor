@@ -229,10 +229,10 @@ importers:
       '@box-extractor/logger': workspace:*
       '@types/debug': ^4.1.7
       '@vanilla-extract/css': ^1.9.2
-      '@vanilla-extract/esbuild-plugin': link:/Users/astahmer/dev/open-source/vanilla-extract/packages/esbuild-plugin
-      '@vanilla-extract/integration': link:/Users/astahmer/dev/open-source/vanilla-extract/packages/integration
-      '@vanilla-extract/sprinkles': link:/Users/astahmer/dev/open-source/vanilla-extract/packages/sprinkles
-      '@vanilla-extract/vite-plugin': link:/Users/astahmer/dev/open-source/vanilla-extract/packages/vite-plugin
+      '@vanilla-extract/esbuild-plugin': file:./ve-fork-tgz/vanilla-extract-esbuild-plugin.tgz
+      '@vanilla-extract/integration': file:./ve-fork-tgz/vanilla-extract-integration.tgz
+      '@vanilla-extract/sprinkles': file:./ve-fork-tgz/vanilla-extract-sprinkles.tgz
+      '@vanilla-extract/vite-plugin': file:./ve-fork-tgz/vanilla-extract-vite-plugin.tgz
       esbuild: ^0.16.7
       eval: ^0.1.8
       javascript-stringify: ^2.1.0
@@ -249,10 +249,10 @@ importers:
       '@box-extractor/core': link:../box-extractor
       '@box-extractor/logger': link:../logger
       '@vanilla-extract/css': 1.9.2
-      '@vanilla-extract/esbuild-plugin': link:../../../../open-source/vanilla-extract/packages/esbuild-plugin
-      '@vanilla-extract/integration': link:../../../../open-source/vanilla-extract/packages/integration
-      '@vanilla-extract/sprinkles': link:../../../../open-source/vanilla-extract/packages/sprinkles
-      '@vanilla-extract/vite-plugin': link:../../../../open-source/vanilla-extract/packages/vite-plugin
+      '@vanilla-extract/esbuild-plugin': file:packages/vanilla-extract/ve-fork-tgz/vanilla-extract-esbuild-plugin.tgz
+      '@vanilla-extract/integration': file:packages/vanilla-extract/ve-fork-tgz/vanilla-extract-integration.tgz
+      '@vanilla-extract/sprinkles': file:packages/vanilla-extract/ve-fork-tgz/vanilla-extract-sprinkles.tgz_@vanilla-extract+css@1.9.2
+      '@vanilla-extract/vite-plugin': file:packages/vanilla-extract/ve-fork-tgz/vanilla-extract-vite-plugin.tgz_vite@3.2.3
       esbuild: 0.16.7
       eval: 0.1.8
       javascript-stringify: 2.1.0
@@ -353,7 +353,6 @@ packages:
   /@babel/compat-data/7.20.10:
     resolution: {integrity: sha512-sEnuDPpOJR/fcafHMjpcpGN5M2jbUGUHwmuWKM/YdPzeEDJg8bgmbcWQFUfE32MQjti1koACvoPVsDe8Uq+idg==}
     engines: {node: '>=6.9.0'}
-    dev: true
 
   /@babel/core/7.20.2:
     resolution: {integrity: sha512-w7DbG8DtMrJcFOi4VrLm+8QM4az8Mo+PuLBKLp2zrYRCow8W/f9xiXm5sN53C8HksCyDQwCKha9JiDoIyPjT2g==}
@@ -398,7 +397,6 @@ packages:
       semver: 6.3.0
     transitivePeerDependencies:
       - supports-color
-    dev: true
 
   /@babel/generator/7.20.4:
     resolution: {integrity: sha512-luCf7yk/cm7yab6CAW1aiFnmEfBJplb/JojV56MYEK7ziWfGmFlTfmL9Ehwfy4gFhbjBfWO1wj7/TuSbVNEEtA==}
@@ -415,7 +413,6 @@ packages:
       '@babel/types': 7.20.7
       '@jridgewell/gen-mapping': 0.3.2
       jsesc: 2.5.2
-    dev: true
 
   /@babel/helper-annotate-as-pure/7.18.6:
     resolution: {integrity: sha512-duORpUiYrEpzKIop6iNbjnwKLAKnJ47csTyRACyEmWj0QdUrm5aqNJGHSSEQSUAvNW0ojX0dOmK9dZduvkfeXA==}
@@ -455,7 +452,6 @@ packages:
       browserslist: 4.21.4
       lru-cache: 5.1.1
       semver: 6.3.0
-    dev: true
 
   /@babel/helper-create-class-features-plugin/7.20.2_@babel+core@7.20.2:
     resolution: {integrity: sha512-k22GoYRAHPYr9I+Gvy2ZQlAe5mGy8BqWst2wRt8cwIufWTxrsVshhIBvYNqC80N0GSFWTsqRVexOtfzlgOEDvA==}
@@ -553,7 +549,6 @@ packages:
       '@babel/types': 7.20.7
     transitivePeerDependencies:
       - supports-color
-    dev: true
 
   /@babel/helper-module-transforms/7.20.2:
     resolution: {integrity: sha512-zvBKyJXRbmK07XhMuujYoJ48B5yvvmM6+wcpv6Ivj4Yg6qO7NOZOSnvZN9CRl1zz1Z4cKf8YejmCMh8clOoOeA==}
@@ -671,7 +666,6 @@ packages:
       '@babel/types': 7.20.7
     transitivePeerDependencies:
       - supports-color
-    dev: true
 
   /@babel/highlight/7.18.6:
     resolution: {integrity: sha512-u7stbOuYjaPezCuLj29hNW1v64M2Md2qupEKP1fHc7WdOA3DgLh37suiSrZYY7haUB7iBeQZ9P1uiRF359do3g==}
@@ -694,7 +688,6 @@ packages:
     hasBin: true
     dependencies:
       '@babel/types': 7.20.7
-    dev: true
 
   /@babel/plugin-bugfix-safari-id-destructuring-collision-in-function-expression/7.18.6_@babel+core@7.20.2:
     resolution: {integrity: sha512-Dgxsyg54Fx1d4Nge8UnvTrED63vrwOdPmyvPzlNN/boaliRP54pm3pGzZD1SJUwrBA+Cs/xdG8kXX6Mn/RfISQ==}
@@ -1058,6 +1051,17 @@ packages:
     dependencies:
       '@babel/core': 7.20.2
       '@babel/helper-plugin-utils': 7.20.2
+    dev: true
+
+  /@babel/plugin-syntax-typescript/7.20.0_@babel+core@7.20.7:
+    resolution: {integrity: sha512-rd9TkG+u1CExzS4SM1BlMEhMXwFLKVjOAFFCDx9PbX5ycJWDoWMcwdJH9RhkPu1dOgn5TrxLot/Gx6lWFuAUNQ==}
+    engines: {node: '>=6.9.0'}
+    peerDependencies:
+      '@babel/core': ^7.0.0-0
+    dependencies:
+      '@babel/core': 7.20.7
+      '@babel/helper-plugin-utils': 7.20.2
+    dev: false
 
   /@babel/plugin-transform-arrow-functions/7.18.6_@babel+core@7.20.2:
     resolution: {integrity: sha512-9S9X9RUefzrsHZmKMbDXxweEH+YlE8JJEuat9FdvW9Qh1cw7W64jELCtWNkPBPX5En45uy28KGvA/AySqUh8CQ==}
@@ -1627,7 +1631,6 @@ packages:
       '@babel/code-frame': 7.18.6
       '@babel/parser': 7.20.7
       '@babel/types': 7.20.7
-    dev: true
 
   /@babel/traverse/7.20.1:
     resolution: {integrity: sha512-d3tN8fkVJwFLkHkBN479SOsw4DMZnz8cdbL/gvuDuzy3TS6Nfw80HuQqhw1pITbIruHyh7d1fMA47kWzmcUEGA==}
@@ -1662,7 +1665,6 @@ packages:
       globals: 11.12.0
     transitivePeerDependencies:
       - supports-color
-    dev: true
 
   /@babel/types/7.20.2:
     resolution: {integrity: sha512-FnnvsNWgZCr232sqtXggapvlkk/tuwR/qhGzcmxI0GXLCjmPYQPzio2FbdlWuY6y1sHFfQKk+rRbUZ9VStQMog==}
@@ -1679,7 +1681,6 @@ packages:
       '@babel/helper-string-parser': 7.19.4
       '@babel/helper-validator-identifier': 7.19.1
       to-fast-properties: 2.0.0
-    dev: true
 
   /@brillout/import/0.2.1:
     resolution: {integrity: sha512-4qA9sNtQZCY02MeLjTP+O9LfY9T6d2ajYS7whyvgBklJzWzLUNbJp940ClxK64hbDPqag9AQZt45beEAGcSYYA==}
@@ -2989,7 +2990,7 @@ packages:
   /@vanilla-extract/babel-plugin-debug-ids/1.0.0:
     resolution: {integrity: sha512-Q2Nh/0FEAENfcphAv+fvcMoKfl3bhPWO/2x3MPviNAhsTsvuvYPuRtLjcXwoe4aJ8MxxI46JLY33j8NBEzpTIg==}
     dependencies:
-      '@babel/core': 7.20.2
+      '@babel/core': 7.20.7
     transitivePeerDependencies:
       - supports-color
     dev: false
@@ -3013,24 +3014,7 @@ packages:
   /@vanilla-extract/esbuild-plugin/2.2.0:
     resolution: {integrity: sha512-WlnSbqD2/7OryWj1JEef9a5nLpWbv828J4cOBGqi5G1kAo0e8aKTT3+pLhFmDU0bdnpPYVw1lBz+xJrxT/FQQA==}
     dependencies:
-      '@vanilla-extract/integration': 6.0.1
-    transitivePeerDependencies:
-      - supports-color
-    dev: false
-
-  /@vanilla-extract/integration/6.0.1:
-    resolution: {integrity: sha512-8D2JdBTH6UEao5Tm50m1qtY63JP4hDxiv/sNvgj2+ix/9M5RML9sa0diS80u0hW/r26+/ZsdzoA5YIbg6ghOMw==}
-    dependencies:
-      '@babel/core': 7.20.2
-      '@babel/plugin-syntax-typescript': 7.20.0_@babel+core@7.20.2
-      '@vanilla-extract/babel-plugin-debug-ids': 1.0.0
-      '@vanilla-extract/css': 1.9.2
-      esbuild: 0.11.23
-      eval: 0.1.6
-      find-up: 5.0.0
-      javascript-stringify: 2.1.0
-      lodash: 4.17.21
-      outdent: 0.8.0
+      '@vanilla-extract/integration': file:packages/vanilla-extract/ve-fork-tgz/vanilla-extract-integration.tgz
     transitivePeerDependencies:
       - supports-color
     dev: false
@@ -5699,7 +5683,6 @@ packages:
   /lilconfig/2.0.6:
     resolution: {integrity: sha512-9JROoBW7pobfsx+Sq2JsASvCo6Pfo6WWoUW79HuB1BCoBXD4PLWJPqDF6fNj67pqBYTbAHkE57M1kS/+L1neOg==}
     engines: {node: '>=10'}
-    dev: true
 
   /lines-and-columns/1.2.4:
     resolution: {integrity: sha512-7ylylesZQ/PV29jhEDl3Ufjo6ZX7gCqJr5F7PKrqc93v7fzSymt1BpwEU8nAUXs8qzzvqhbjhK5QZg6Mt/HkBg==}
@@ -5792,7 +5775,6 @@ packages:
     resolution: {integrity: sha512-KpNARQA3Iwv+jTA0utUVVbrh+Jlrr1Fv0e56GGzAFOXN7dk/FviaDW8LHmK52DlcH4WP2n6gI8vN1aesBFgo9w==}
     dependencies:
       yallist: 3.1.1
-    dev: true
 
   /lru-cache/6.0.0:
     resolution: {integrity: sha512-Jo6dJ04CmSjuznwJSS3pUeWmd/H0ffTlkXXgwZi+eq1UCmqQwCh+eLsYOYCwY991i2Fah4h1BEMCx4qThGbsiA==}
@@ -6961,6 +6943,23 @@ packages:
       yaml: 1.10.2
     dev: true
 
+  /postcss-load-config/3.1.4_postcss@8.4.20:
+    resolution: {integrity: sha512-6DiM4E7v4coTE4uzA8U//WhtPwyhiim3eyjEMFCnUpzbrkK9wJHgKDT2mR+HbtSrd/NubVaYTOpSpjUl8NQeRg==}
+    engines: {node: '>= 10'}
+    peerDependencies:
+      postcss: '>=8.0.9'
+      ts-node: '>=9.0.0'
+    peerDependenciesMeta:
+      postcss:
+        optional: true
+      ts-node:
+        optional: true
+    dependencies:
+      lilconfig: 2.0.6
+      postcss: 8.4.20
+      yaml: 1.10.2
+    dev: false
+
   /postcss/8.4.19:
     resolution: {integrity: sha512-h+pbPsyhlYj6N2ozBmHhHrs9DzGmbaarbLvWipMRO7RLS+v4onj26MPFXA5OBYFxyqYhUJK456SwDcY9H2/zsA==}
     engines: {node: ^10 || ^12 || >=14}
@@ -6976,7 +6975,6 @@ packages:
       nanoid: 3.3.4
       picocolors: 1.0.0
       source-map-js: 1.0.2
-    dev: true
 
   /preferred-pm/3.0.3:
     resolution: {integrity: sha512-+wZgbxNES/KlJs9q40F/1sfOd/j7f1O9JaHcW5Dsn3aUUOZg3L2bjpVUcKV2jvtElYfoTuQiNeMfQJ4kwUAhCQ==}
@@ -8582,7 +8580,6 @@ packages:
 
   /yallist/3.1.1:
     resolution: {integrity: sha512-a4UGQaWPH59mOXUYnAG2ewncQS4i4F43Tv3JoAM+s2VDAmS9NsK8GpDMLrCHPksFT7h3K6TOoUNn2pb7RoXx4g==}
-    dev: true
 
   /yallist/4.0.0:
     resolution: {integrity: sha512-3wdGidZyq5PB084XLES5TpOSRA3wjXAlIWMhum2kRcv/41Sn2emQ0dycQW4uZXLejwKvg6EsvbdlVL+FYEct7A==}
@@ -8591,7 +8588,6 @@ packages:
   /yaml/1.10.2:
     resolution: {integrity: sha512-r3vXyErRCYJ7wg28yvBY5VSoAF8ZvlcW9/BwUzEtUsjvX/DKs24dIkuwjtuprwJJHsbyUbLApepYTR1BN4uHrg==}
     engines: {node: '>= 6'}
-    dev: true
 
   /yargs-parser/18.1.3:
     resolution: {integrity: sha512-o50j0JeToy/4K6OZcaQmW6lyXXKhq7csREXcDwk2omFPJEwUNOVtJKvmDr9EI1fAJZUyZcRF7kxGBWmRXudrCQ==}
@@ -8643,3 +8639,61 @@ packages:
   /zwitch/2.0.4:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
     dev: true
+
+  file:packages/vanilla-extract/ve-fork-tgz/vanilla-extract-esbuild-plugin.tgz:
+    resolution: {integrity: sha512-MmxMCKiiGxx1c6QlqaRuqQb6qpgXtgfhSF4ZQAkKM+U1TZBMVAiXqF23/SCbI6v3ZLRUyFS4S7SADJ40sA1Auw==, tarball: file:packages/vanilla-extract/ve-fork-tgz/vanilla-extract-esbuild-plugin.tgz}
+    name: '@vanilla-extract/esbuild-plugin'
+    version: 2.2.0
+    dependencies:
+      '@vanilla-extract/integration': file:packages/vanilla-extract/ve-fork-tgz/vanilla-extract-integration.tgz
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
+
+  file:packages/vanilla-extract/ve-fork-tgz/vanilla-extract-integration.tgz:
+    resolution: {integrity: sha512-wk1iWdIrLTfz3to85QTa9/cP+me3nxoZuDRo7k4pPhGkQzdDYtrRwhcANKT4x4P+Ld9uDWF5NHiRxD3eux2mxA==, tarball: file:packages/vanilla-extract/ve-fork-tgz/vanilla-extract-integration.tgz}
+    name: '@vanilla-extract/integration'
+    version: 6.0.1
+    dependencies:
+      '@babel/core': 7.20.7
+      '@babel/plugin-syntax-typescript': 7.20.0_@babel+core@7.20.7
+      '@vanilla-extract/babel-plugin-debug-ids': 1.0.0
+      '@vanilla-extract/css': 1.9.2
+      esbuild: 0.11.23
+      eval: 0.1.6
+      find-up: 5.0.0
+      javascript-stringify: 2.1.0
+      lodash: 4.17.21
+      outdent: 0.8.0
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
+
+  file:packages/vanilla-extract/ve-fork-tgz/vanilla-extract-sprinkles.tgz_@vanilla-extract+css@1.9.2:
+    resolution: {integrity: sha512-2kd0R09KHR2tCL4HOTXtxl8u4k2q2D8kgwzsfDHUCxdn30DVEue1h0T6SQrTAYjXNDXFNjZiMdPJjPxbvDpULA==, tarball: file:packages/vanilla-extract/ve-fork-tgz/vanilla-extract-sprinkles.tgz}
+    id: file:packages/vanilla-extract/ve-fork-tgz/vanilla-extract-sprinkles.tgz
+    name: '@vanilla-extract/sprinkles'
+    version: 1.5.1
+    peerDependencies:
+      '@vanilla-extract/css': ^1.0.0
+    dependencies:
+      '@vanilla-extract/css': 1.9.2
+    dev: false
+
+  file:packages/vanilla-extract/ve-fork-tgz/vanilla-extract-vite-plugin.tgz_vite@3.2.3:
+    resolution: {integrity: sha512-HrbnCyYlm5HASPYUchfHW7he6/e9QkF+Tigket7ISr8dC6nrG9HO33cCHQcSwjvDNgpggv8UNxREGHIKizGckw==, tarball: file:packages/vanilla-extract/ve-fork-tgz/vanilla-extract-vite-plugin.tgz}
+    id: file:packages/vanilla-extract/ve-fork-tgz/vanilla-extract-vite-plugin.tgz
+    name: '@vanilla-extract/vite-plugin'
+    version: 3.7.0
+    peerDependencies:
+      vite: ^2.2.3 || ^3.0.0
+    dependencies:
+      '@vanilla-extract/integration': file:packages/vanilla-extract/ve-fork-tgz/vanilla-extract-integration.tgz
+      outdent: 0.8.0
+      postcss: 8.4.20
+      postcss-load-config: 3.1.4_postcss@8.4.20
+      vite: 3.2.3
+    transitivePeerDependencies:
+      - supports-color
+      - ts-node
+    dev: false
