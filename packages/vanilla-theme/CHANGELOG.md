@@ -1,5 +1,12 @@
 # @box-extractor/vanilla-theme
 
+## 0.2.3
+
+### Patch Changes
+
+-   [`7e99f65`](https://github.com/astahmer/box-extractor/commit/7e99f6525e29db6243dc8a2bae10a73d1b9a0eb5) Thanks [@astahmer](https://github.com/astahmer)! - fix: vanilla-theme when shipped to npm
+    using .pnpmfile we can replace @vanilla-extract/integration version (in @vanilla-extract/vite-plugin dependencies or esbuild-plugin) to also use our fork
+
 ## 0.2.1
 
 ### Patch Changes

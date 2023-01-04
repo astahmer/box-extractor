@@ -1,5 +1,12 @@
 # @box-extractor/example-vite-plugin-ssr
 
+## 0.2.2
+
+### Patch Changes
+
+-   Updated dependencies [[`7e99f65`](https://github.com/astahmer/box-extractor/commit/7e99f6525e29db6243dc8a2bae10a73d1b9a0eb5)]:
+    -   @box-extractor/vanilla-theme@0.2.3
+
 ## 0.2.1
 
 ### Patch Changes
