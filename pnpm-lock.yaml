@@ -229,10 +229,10 @@ importers:
       '@box-extractor/logger': workspace:*
       '@types/debug': ^4.1.7
       '@vanilla-extract/css': ^1.9.2
-      '@vanilla-extract/esbuild-plugin': file:./ve-fork-tgz/vanilla-extract-esbuild-plugin.tgz
-      '@vanilla-extract/integration': file:./ve-fork-tgz/vanilla-extract-integration.tgz
-      '@vanilla-extract/sprinkles': file:./ve-fork-tgz/vanilla-extract-sprinkles.tgz
-      '@vanilla-extract/vite-plugin': file:./ve-fork-tgz/vanilla-extract-vite-plugin.tgz
+      '@vanilla-extract/esbuild-plugin': https://github.com/astahmer/box-extractor/raw/main/packages/vanilla-extract/ve-fork-tgz/vanilla-extract-esbuild-plugin.tgz
+      '@vanilla-extract/integration': https://github.com/astahmer/box-extractor/raw/main/packages/vanilla-extract/ve-fork-tgz/vanilla-extract-integration.tgz
+      '@vanilla-extract/sprinkles': https://github.com/astahmer/box-extractor/raw/main/packages/vanilla-extract/ve-fork-tgz/vanilla-extract-sprinkles.tgz
+      '@vanilla-extract/vite-plugin': https://github.com/astahmer/box-extractor/raw/main/packages/vanilla-extract/ve-fork-tgz/vanilla-extract-vite-plugin.tgz
       esbuild: ^0.16.7
       eval: ^0.1.8
       javascript-stringify: ^2.1.0
@@ -249,10 +249,10 @@ importers:
       '@box-extractor/core': link:../box-extractor
       '@box-extractor/logger': link:../logger
       '@vanilla-extract/css': 1.9.2
-      '@vanilla-extract/esbuild-plugin': file:packages/vanilla-extract/ve-fork-tgz/vanilla-extract-esbuild-plugin.tgz
-      '@vanilla-extract/integration': file:packages/vanilla-extract/ve-fork-tgz/vanilla-extract-integration.tgz
-      '@vanilla-extract/sprinkles': file:packages/vanilla-extract/ve-fork-tgz/vanilla-extract-sprinkles.tgz_@vanilla-extract+css@1.9.2
-      '@vanilla-extract/vite-plugin': file:packages/vanilla-extract/ve-fork-tgz/vanilla-extract-vite-plugin.tgz_vite@3.2.3
+      '@vanilla-extract/esbuild-plugin': '@github.com/astahmer/box-extractor/raw/main/packages/vanilla-extract/ve-fork-tgz/vanilla-extract-esbuild-plugin.tgz'
+      '@vanilla-extract/integration': '@github.com/astahmer/box-extractor/raw/main/packages/vanilla-extract/ve-fork-tgz/vanilla-extract-integration.tgz'
+      '@vanilla-extract/sprinkles': '@github.com/astahmer/box-extractor/raw/main/packages/vanilla-extract/ve-fork-tgz/vanilla-extract-sprinkles.tgz_@vanilla-extract+css@1.9.2'
+      '@vanilla-extract/vite-plugin': '@github.com/astahmer/box-extractor/raw/main/packages/vanilla-extract/ve-fork-tgz/vanilla-extract-vite-plugin.tgz_vite@3.2.3'
       esbuild: 0.16.7
       eval: 0.1.8
       javascript-stringify: 2.1.0
@@ -3014,7 +3014,7 @@ packages:
   /@vanilla-extract/esbuild-plugin/2.2.0:
     resolution: {integrity: sha512-WlnSbqD2/7OryWj1JEef9a5nLpWbv828J4cOBGqi5G1kAo0e8aKTT3+pLhFmDU0bdnpPYVw1lBz+xJrxT/FQQA==}
     dependencies:
-      '@vanilla-extract/integration': file:packages/vanilla-extract/ve-fork-tgz/vanilla-extract-integration.tgz
+      '@vanilla-extract/integration': '@github.com/astahmer/box-extractor/raw/main/packages/vanilla-extract/ve-fork-tgz/vanilla-extract-integration.tgz'
     transitivePeerDependencies:
       - supports-color
     dev: false
@@ -8640,18 +8640,18 @@ packages:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
     dev: true
 
-  file:packages/vanilla-extract/ve-fork-tgz/vanilla-extract-esbuild-plugin.tgz:
-    resolution: {integrity: sha512-MmxMCKiiGxx1c6QlqaRuqQb6qpgXtgfhSF4ZQAkKM+U1TZBMVAiXqF23/SCbI6v3ZLRUyFS4S7SADJ40sA1Auw==, tarball: file:packages/vanilla-extract/ve-fork-tgz/vanilla-extract-esbuild-plugin.tgz}
+  '@github.com/astahmer/box-extractor/raw/main/packages/vanilla-extract/ve-fork-tgz/vanilla-extract-esbuild-plugin.tgz':
+    resolution: {tarball: https://github.com/astahmer/box-extractor/raw/main/packages/vanilla-extract/ve-fork-tgz/vanilla-extract-esbuild-plugin.tgz}
     name: '@vanilla-extract/esbuild-plugin'
     version: 2.2.0
     dependencies:
-      '@vanilla-extract/integration': file:packages/vanilla-extract/ve-fork-tgz/vanilla-extract-integration.tgz
+      '@vanilla-extract/integration': '@github.com/astahmer/box-extractor/raw/main/packages/vanilla-extract/ve-fork-tgz/vanilla-extract-integration.tgz'
     transitivePeerDependencies:
       - supports-color
     dev: false
 
-  file:packages/vanilla-extract/ve-fork-tgz/vanilla-extract-integration.tgz:
-    resolution: {integrity: sha512-wk1iWdIrLTfz3to85QTa9/cP+me3nxoZuDRo7k4pPhGkQzdDYtrRwhcANKT4x4P+Ld9uDWF5NHiRxD3eux2mxA==, tarball: file:packages/vanilla-extract/ve-fork-tgz/vanilla-extract-integration.tgz}
+  '@github.com/astahmer/box-extractor/raw/main/packages/vanilla-extract/ve-fork-tgz/vanilla-extract-integration.tgz':
+    resolution: {tarball: https://github.com/astahmer/box-extractor/raw/main/packages/vanilla-extract/ve-fork-tgz/vanilla-extract-integration.tgz}
     name: '@vanilla-extract/integration'
     version: 6.0.1
     dependencies:
@@ -8669,9 +8669,9 @@ packages:
       - supports-color
     dev: false
 
-  file:packages/vanilla-extract/ve-fork-tgz/vanilla-extract-sprinkles.tgz_@vanilla-extract+css@1.9.2:
-    resolution: {integrity: sha512-2kd0R09KHR2tCL4HOTXtxl8u4k2q2D8kgwzsfDHUCxdn30DVEue1h0T6SQrTAYjXNDXFNjZiMdPJjPxbvDpULA==, tarball: file:packages/vanilla-extract/ve-fork-tgz/vanilla-extract-sprinkles.tgz}
-    id: file:packages/vanilla-extract/ve-fork-tgz/vanilla-extract-sprinkles.tgz
+  '@github.com/astahmer/box-extractor/raw/main/packages/vanilla-extract/ve-fork-tgz/vanilla-extract-sprinkles.tgz_@vanilla-extract+css@1.9.2':
+    resolution: {tarball: https://github.com/astahmer/box-extractor/raw/main/packages/vanilla-extract/ve-fork-tgz/vanilla-extract-sprinkles.tgz}
+    id: '@github.com/astahmer/box-extractor/raw/main/packages/vanilla-extract/ve-fork-tgz/vanilla-extract-sprinkles.tgz'
     name: '@vanilla-extract/sprinkles'
     version: 1.5.1
     peerDependencies:
@@ -8680,15 +8680,15 @@ packages:
       '@vanilla-extract/css': 1.9.2
     dev: false
 
-  file:packages/vanilla-extract/ve-fork-tgz/vanilla-extract-vite-plugin.tgz_vite@3.2.3:
-    resolution: {integrity: sha512-HrbnCyYlm5HASPYUchfHW7he6/e9QkF+Tigket7ISr8dC6nrG9HO33cCHQcSwjvDNgpggv8UNxREGHIKizGckw==, tarball: file:packages/vanilla-extract/ve-fork-tgz/vanilla-extract-vite-plugin.tgz}
-    id: file:packages/vanilla-extract/ve-fork-tgz/vanilla-extract-vite-plugin.tgz
+  '@github.com/astahmer/box-extractor/raw/main/packages/vanilla-extract/ve-fork-tgz/vanilla-extract-vite-plugin.tgz_vite@3.2.3':
+    resolution: {tarball: https://github.com/astahmer/box-extractor/raw/main/packages/vanilla-extract/ve-fork-tgz/vanilla-extract-vite-plugin.tgz}
+    id: '@github.com/astahmer/box-extractor/raw/main/packages/vanilla-extract/ve-fork-tgz/vanilla-extract-vite-plugin.tgz'
     name: '@vanilla-extract/vite-plugin'
     version: 3.7.0
     peerDependencies:
       vite: ^2.2.3 || ^3.0.0
     dependencies:
-      '@vanilla-extract/integration': file:packages/vanilla-extract/ve-fork-tgz/vanilla-extract-integration.tgz
+      '@vanilla-extract/integration': '@github.com/astahmer/box-extractor/raw/main/packages/vanilla-extract/ve-fork-tgz/vanilla-extract-integration.tgz'
       outdent: 0.8.0
       postcss: 8.4.20
       postcss-load-config: 3.1.4_postcss@8.4.20
