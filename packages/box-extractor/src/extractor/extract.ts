@@ -105,7 +105,7 @@ export const extract = ({ ast, components: _components, functions: _functions, e
         }
 
         const fnMap = extractMap.get(functionName)!;
-        const fnSelector = `JsxAttributes CallExpression:has(Identifier[name="${functionName}"])`;
+        const fnSelector = `CallExpression:has(Identifier[name="${functionName}"])`;
         // <div className={colorSprinkles({ color: "blue.100" })}></ColorBox>
         //                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -152,7 +152,7 @@ function mergeSpreadEntries({ map, propNameList: maybePropNameList }: { map: Map
             foundPropList.add(propName);
             return true;
         });
-    logger.scoped("merge-spread", () => ({ extracted: map, merged }));
+    logger.lazyScoped("merge-spread", () => ({ extracted: map, merged }));
 
     // reverse again to keep the original order
     return merged.reverse();

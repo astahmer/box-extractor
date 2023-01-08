@@ -223,13 +223,19 @@ export const createViteVanillaExtractSprinklesExtractor = ({
                 // re-use the same compiled object if the file didn't change
                 if (source !== sourceByPath.get(filePath)) {
                     compiledByFilePath.delete(filePath);
+                    loggerEval("[FRESH] source changed, deleting cache", { filePath });
+                } else {
+                    loggerEval("[CACHED] same source, reusing compiled", { filePath });
                 }
 
                 sourceByPath.set(filePath, source);
 
                 const compiled =
                     compiledByFilePath.get(filePath) ?? getCompiledSprinklePropertyByDebugIdPairMap(evalResult);
-                if (compiled.sprinkleConfigs.size === 0) return;
+                if (compiled.sprinkleConfigs.size === 0) {
+                    loggerEval("no sprinkles found", { filePath });
+                    return;
+                }
 
                 compiledByFilePath.set(filePath, compiled);
 

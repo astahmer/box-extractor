@@ -20,7 +20,7 @@ const evaluateExpression = (node: Expression, morphTypeChecker: TypeChecker) => 
             deterministic: true,
             network: false,
             console: false,
-            maxOps: 100,
+            maxOps: Number.POSITIVE_INFINITY,
             maxOpDuration: 1000,
             io: { read: false, write: false },
             process: { exit: false, spawnChild: false },
