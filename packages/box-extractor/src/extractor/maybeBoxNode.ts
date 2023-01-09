@@ -213,7 +213,7 @@ const maybeExpandConditionalExpression = (
 };
 
 const findProperty = (node: ObjectLiteralElementLike, propName: string) => {
-    // console.log({ node: node.getText(), kind: node.getKindName() });
+    logger.scoped("find-prop", { propName, kind: node.getKindName() });
 
     if (Node.isPropertyAssignment(node)) {
         const name = node.getNameNode();
@@ -221,6 +221,10 @@ const findProperty = (node: ObjectLiteralElementLike, propName: string) => {
 
         if (Node.isIdentifier(name) && name.getText() === propName) {
             return node;
+        }
+
+        if (Node.isStringLiteral(name)) {
+            return name.getLiteralText();
         }
 
         if (Node.isComputedPropertyName(name)) {

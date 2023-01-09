@@ -3798,6 +3798,31 @@ it("extract JsxAttribute > JsxExpression > Identifier > ArrayLiteralExpression)"
     `);
 });
 
+it("extract JsxAttribute > JsxExpression > ElementAccessExpression > ObjectLiteralExpression > PropertyAssignment > StringLiteral", () => {
+    expect(
+        extractFromCode(`
+            <ColorBox color={({
+                "apple": "apple.600",
+            })["apple"]}></ColorBox>
+        `)
+    ).toMatchInlineSnapshot(`
+      [
+          [
+              "ColorBox",
+              [["color", "apple.600"]],
+              {
+                  color: [
+                      {
+                          type: "literal",
+                          value: "apple.600",
+                      },
+                  ],
+              },
+          ],
+      ]
+    `);
+});
+
 it("extract CallExpression > ObjectLiteralExpression > PropertyAssignment > ObjectLiteralExpression > PropertyAssignment > ArrayLiteralExpression > StringLiteral)", () => {
     expect(
         extractFromCode(

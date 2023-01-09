@@ -119,7 +119,7 @@ const getObjectLiteralExpressionPropPairs = (expression: ObjectLiteralExpression
             if (!init) return;
 
             const initializer = unwrapExpression(init);
-            // console.log({ propName, initializer: initializer.getText(), initializerKind: initializer.getKindName() });
+            logger.scoped("prop", { propName, kind: initializer.getKindName() });
 
             const maybeValue = maybeBoxNode(initializer);
             if (isNotNullish(maybeValue)) {
@@ -194,6 +194,11 @@ const getPropertyName = (property: ObjectLiteralElementLike) => {
             const expression = node.getExpression();
             const computedPropName = maybeStringLiteral(expression);
             if (isNotNullish(computedPropName)) return computedPropName;
+        }
+
+        // { "propName": "value" }
+        if (Node.isStringLiteral(node)) {
+            return node.getLiteralText();
         }
     }
 
