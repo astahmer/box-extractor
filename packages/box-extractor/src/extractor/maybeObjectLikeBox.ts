@@ -23,7 +23,7 @@ const logger = createLogger("box-ex:extractor:maybe-object");
 export type MaybeObjectLikeBoxReturn = ObjectType | MapType | undefined;
 
 export const maybeObjectLikeBox = (node: Node): MaybeObjectLikeBoxReturn => {
-    // logger("maybeObjectLikeBox", { kind: node.getKindName() });
+    logger({ kind: node.getKindName() });
 
     if (Node.isObjectLiteralExpression(node)) {
         return box.map(getObjectLiteralExpressionPropPairs(node));

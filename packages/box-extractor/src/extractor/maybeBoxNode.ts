@@ -23,11 +23,23 @@ const logger = createLogger("box-ex:extractor:maybe-box");
 
 export type MaybeBoxNodeReturn = BoxNode | BoxNode[] | undefined;
 export function maybeBoxNode(node: Node): MaybeBoxNodeReturn {
-    // console.log("maybeBoxNode", node.getKindName(), node.getText());
+    logger({ kind: node.getKindName() });
 
     // <ColorBox color={"xxx"} />
     if (Node.isStringLiteral(node)) {
         return box.literal(node.getLiteralText());
+    }
+
+    // <ColorBox color={[xxx, yyy, zzz]} />
+    if (Node.isArrayLiteralExpression(node)) {
+        const boxes = node.getElements().map((element) => {
+            const maybeBox = maybeBoxNode(element);
+            if (!maybeBox) return box.unresolvable;
+
+            return Array.isArray(maybeBox) ? box.list(maybeBox) : maybeBox;
+        });
+
+        return box.list(boxes);
     }
 
     // <ColorBox color={`xxx`} />

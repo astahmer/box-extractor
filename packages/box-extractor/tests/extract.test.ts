@@ -3764,6 +3764,158 @@ it("extract JsxAttribute > JsxExpression > Identifier > BinaryExpression > (Prop
     `);
 });
 
+it("extract JsxAttribute > JsxExpression > Identifier > ArrayLiteralExpression)", () => {
+    expect(
+        extractFromCode(`
+            const color = ["apple.400", "apple.500"];
+
+            <ColorBox color={color}></ColorBox>
+        `)
+    ).toMatchInlineSnapshot(`
+      [
+          [
+              "ColorBox",
+              [["color", ["apple.400", "apple.500"]]],
+              {
+                  color: [
+                      {
+                          type: "list",
+                          value: [
+                              {
+                                  type: "literal",
+                                  value: "apple.400",
+                              },
+                              {
+                                  type: "literal",
+                                  value: "apple.500",
+                              },
+                          ],
+                      },
+                  ],
+              },
+          ],
+      ]
+    `);
+});
+
+it("extract CallExpression > ObjectLiteralExpression > PropertyAssignment > ObjectLiteralExpression > PropertyAssignment > ArrayLiteralExpression > StringLiteral)", () => {
+    expect(
+        extractFromCode(
+            `
+            const props = defineProperties({
+                properties: {
+                    position: ["relative", "absolute"],
+                    display: ["block", "inline-block", "flex", "inline-flex"],
+                },
+                shorthands: {
+                    p: ["position"],
+                    d: ["display"],
+                },
+            });
+        `,
+            { components: [], functions: ["defineProperties"] }
+        )
+    ).toMatchInlineSnapshot(`
+      [
+          [
+              "defineProperties",
+              [
+                  [
+                      "properties",
+                      {
+                          position: ["relative", "absolute"],
+                          display: ["block", "inline-block", "flex", "inline-flex"],
+                      },
+                  ],
+                  [
+                      "shorthands",
+                      {
+                          p: ["position"],
+                          d: ["display"],
+                      },
+                  ],
+              ],
+              {
+                  properties: [
+                      {
+                          type: "map",
+                          value: {
+                              position: [
+                                  {
+                                      type: "list",
+                                      value: [
+                                          {
+                                              type: "literal",
+                                              value: "relative",
+                                          },
+                                          {
+                                              type: "literal",
+                                              value: "absolute",
+                                          },
+                                      ],
+                                  },
+                              ],
+                              display: [
+                                  {
+                                      type: "list",
+                                      value: [
+                                          {
+                                              type: "literal",
+                                              value: "block",
+                                          },
+                                          {
+                                              type: "literal",
+                                              value: "inline-block",
+                                          },
+                                          {
+                                              type: "literal",
+                                              value: "flex",
+                                          },
+                                          {
+                                              type: "literal",
+                                              value: "inline-flex",
+                                          },
+                                      ],
+                                  },
+                              ],
+                          },
+                      },
+                  ],
+                  shorthands: [
+                      {
+                          type: "map",
+                          value: {
+                              p: [
+                                  {
+                                      type: "list",
+                                      value: [
+                                          {
+                                              type: "literal",
+                                              value: "position",
+                                          },
+                                      ],
+                                  },
+                              ],
+                              d: [
+                                  {
+                                      type: "list",
+                                      value: [
+                                          {
+                                              type: "literal",
+                                              value: "display",
+                                          },
+                                      ],
+                                  },
+                              ],
+                          },
+                      },
+                  ],
+              },
+          ],
+      ]
+    `);
+});
+
 it("extract real-world Stack example ", () => {
     expect(
         extractFromCode(

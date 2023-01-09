@@ -10,17 +10,27 @@ type WithBoxSymbol = { [BoxKind]: true };
 export type ObjectType = WithBoxSymbol & { type: "object"; value: ExtractedPropMap; isEmpty?: boolean };
 export type LiteralType = WithBoxSymbol & { type: "literal"; value: PrimitiveType | PrimitiveType[] };
 export type MapType = WithBoxSymbol & { type: "map"; value: MapTypeValue };
-// export type ConditionalType = WithTypeKind & { type: "conditional"; value: BoxNode[] };
+export type ListType = WithBoxSymbol & { type: "list"; value: BoxNode[] };
+export type UnresolvableType = WithBoxSymbol & { type: "unresolvable" };
 export type ConditionalType = WithBoxSymbol & { type: "conditional"; whenTrue: BoxNode; whenFalse: BoxNode };
+
+/** TODO rm */
 export type NodeObjectLiteralExpressionType = WithBoxSymbol & {
     type: "node-object-literal";
     value: ObjectLiteralExpression;
 };
 
-export type BoxNode = ObjectType | LiteralType | MapType | ConditionalType | NodeObjectLiteralExpressionType;
+// export type PrimitiveBoxNode = ObjectType | LiteralType | MapType
+export type BoxNode =
+    | ObjectType
+    | LiteralType
+    | MapType
+    | ListType
+    | UnresolvableType
+    | ConditionalType
+    | NodeObjectLiteralExpressionType;
 export type MapTypeValue = Map<string, BoxNode[]>;
 
-// TODO - unresolvable type / null / undefined
 export const emptyObjectType: ObjectType = { [BoxKind]: true, type: "object", value: {}, isEmpty: true };
 
 export const isBoxNode = (value: unknown): value is BoxNode => {
@@ -37,6 +47,9 @@ const boxTypeFactory = {
     map(value: MapTypeValue): MapType {
         return { [BoxKind]: true, type: "map", value };
     },
+    list(value: BoxNode[]): ListType {
+        return { [BoxKind]: true, type: "list", value };
+    },
     conditional(whenTrue: BoxNode, whenFalse: BoxNode): ConditionalType {
         // return { [TypeKind]: true, type: "conditional", value: [whenTrue, whenFalse] };
         return { [BoxKind]: true, type: "conditional", whenTrue, whenFalse };
@@ -49,6 +62,8 @@ const boxTypeFactory = {
         if (isBoxNode(value)) return value as T;
         return toBoxType(value as any) as T;
     },
+    empty: emptyObjectType,
+    unresolvable: { [BoxKind]: true, type: "unresolvable" } as UnresolvableType,
 };
 
 export const box = boxTypeFactory;

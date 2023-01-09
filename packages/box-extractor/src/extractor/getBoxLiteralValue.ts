@@ -20,7 +20,7 @@ const innerGetLiteralValue = (
     if (!valueType) return;
     if (isPrimitiveType(valueType)) return valueType;
     if (valueType.type === "literal") return valueType.value;
-    if (valueType.type === "node-object-literal") return;
+    if (valueType.type === "node-object-literal" || valueType.type === "unresolvable") return;
 
     if (valueType.type === "object") {
         if (valueType.isEmpty) return;
@@ -33,6 +33,10 @@ const innerGetLiteralValue = (
             .filter(([_key, value]) => isNotNullish(value));
 
         return Object.fromEntries(entries);
+    }
+
+    if (valueType.type === "list") {
+        return valueType.value.map((value) => getBoxLiteralValue(value)).filter(isNotNullish) as LiteralValue;
     }
 
     if (valueType.type === "conditional") {
