@@ -1,5 +1,13 @@
 # @box-extractor/example-react-basic
 
+## 0.2.5
+
+### Patch Changes
+
+-   Updated dependencies [[`b58c58c`](https://github.com/astahmer/box-extractor/commit/b58c58c34096ed5fb436e87c8d493c763b685595)]:
+    -   @box-extractor/vanilla-extract@0.2.5
+    -   @box-extractor/vanilla-theme@0.2.6
+
 ## 0.2.4
 
 ### Patch Changes

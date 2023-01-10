@@ -1,5 +1,11 @@
 # @box-extractor/vanilla-extract
 
+## 0.2.5
+
+### Patch Changes
+
+-   [`b58c58c`](https://github.com/astahmer/box-extractor/commit/b58c58c34096ed5fb436e87c8d493c763b685595) Thanks [@astahmer](https://github.com/astahmer)! - fix: add missing imports after rebase
+
 ## 0.2.4
 
 ### Patch Changes
