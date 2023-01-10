@@ -90,6 +90,8 @@ it("extract example.css.ts defineProperties arg result", () => {
                   [
                       "properties",
                       {
+                          position: ["relative", "absolute"],
+                          display: ["block", "inline-block", "flex", "inline-flex"],
                           color: {
                               main: "#d2a8ff",
                               secondary: "#7ee787",
@@ -98,7 +100,13 @@ it("extract example.css.ts defineProperties arg result", () => {
                           },
                       },
                   ],
-                  ["shorthands", {}],
+                  [
+                      "shorthands",
+                      {
+                          p: ["position"],
+                          d: ["display"],
+                      },
+                  ],
               ],
               {
                   conditions: [
@@ -111,6 +119,7 @@ it("extract example.css.ts defineProperties arg result", () => {
                                       value: {
                                           "@media": "(min-width: 320px)",
                                       },
+                                      getNode: "CallExpression",
                                   },
                               ],
                               tablet: [
@@ -119,6 +128,7 @@ it("extract example.css.ts defineProperties arg result", () => {
                                       value: {
                                           "@media": "(min-width: 768px)",
                                       },
+                                      getNode: "CallExpression",
                                   },
                               ],
                               desktop: [
@@ -127,12 +137,14 @@ it("extract example.css.ts defineProperties arg result", () => {
                                       value: {
                                           "@media": "(min-width: 1024px)",
                                       },
+                                      getNode: "CallExpression",
                                   },
                               ],
                               idle: [
                                   {
                                       type: "map",
                                       value: {},
+                                      getNode: "ObjectLiteralExpression",
                                   },
                               ],
                               focus: [
@@ -143,9 +155,11 @@ it("extract example.css.ts defineProperties arg result", () => {
                                               {
                                                   type: "literal",
                                                   value: "&:focus",
+                                                  getNode: "StringLiteral",
                                               },
                                           ],
                                       },
+                                      getNode: "ObjectLiteralExpression",
                                   },
                               ],
                               hover: [
@@ -156,24 +170,74 @@ it("extract example.css.ts defineProperties arg result", () => {
                                               {
                                                   type: "literal",
                                                   value: "&:hover",
+                                                  getNode: "StringLiteral",
                                               },
                                           ],
                                       },
+                                      getNode: "ObjectLiteralExpression",
                                   },
                               ],
                           },
+                          getNode: "ObjectLiteralExpression",
                       },
                   ],
                   defaultCondition: [
                       {
                           type: "literal",
                           value: "idle",
+                          getNode: "StringLiteral",
                       },
                   ],
                   properties: [
                       {
                           type: "map",
                           value: {
+                              position: [
+                                  {
+                                      type: "list",
+                                      value: [
+                                          {
+                                              type: "literal",
+                                              value: "relative",
+                                              getNode: "StringLiteral",
+                                          },
+                                          {
+                                              type: "literal",
+                                              value: "absolute",
+                                              getNode: "StringLiteral",
+                                          },
+                                      ],
+                                      getNode: "ArrayLiteralExpression",
+                                  },
+                              ],
+                              display: [
+                                  {
+                                      type: "list",
+                                      value: [
+                                          {
+                                              type: "literal",
+                                              value: "block",
+                                              getNode: "StringLiteral",
+                                          },
+                                          {
+                                              type: "literal",
+                                              value: "inline-block",
+                                              getNode: "StringLiteral",
+                                          },
+                                          {
+                                              type: "literal",
+                                              value: "flex",
+                                              getNode: "StringLiteral",
+                                          },
+                                          {
+                                              type: "literal",
+                                              value: "inline-flex",
+                                              getNode: "StringLiteral",
+                                          },
+                                      ],
+                                      getNode: "ArrayLiteralExpression",
+                                  },
+                              ],
                               color: [
                                   {
                                       type: "map",
@@ -182,36 +246,70 @@ it("extract example.css.ts defineProperties arg result", () => {
                                               {
                                                   type: "literal",
                                                   value: "#d2a8ff",
+                                                  getNode: "StringLiteral",
                                               },
                                           ],
                                           secondary: [
                                               {
                                                   type: "literal",
                                                   value: "#7ee787",
+                                                  getNode: "StringLiteral",
                                               },
                                           ],
                                           brand: [
                                               {
                                                   type: "literal",
                                                   value: "red",
+                                                  getNode: "StringLiteral",
                                               },
                                           ],
                                           other: [
                                               {
                                                   type: "literal",
                                                   value: "blue",
+                                                  getNode: "StringLiteral",
                                               },
                                           ],
                                       },
+                                      getNode: "ObjectLiteralExpression",
                                   },
                               ],
                           },
+                          getNode: "ObjectLiteralExpression",
                       },
                   ],
                   shorthands: [
                       {
                           type: "map",
-                          value: {},
+                          value: {
+                              p: [
+                                  {
+                                      type: "list",
+                                      value: [
+                                          {
+                                              type: "literal",
+                                              value: "position",
+                                              getNode: "StringLiteral",
+                                          },
+                                      ],
+                                      getNode: "ArrayLiteralExpression",
+                                  },
+                              ],
+                              d: [
+                                  {
+                                      type: "list",
+                                      value: [
+                                          {
+                                              type: "literal",
+                                              value: "display",
+                                              getNode: "StringLiteral",
+                                          },
+                                      ],
+                                      getNode: "ArrayLiteralExpression",
+                                  },
+                              ],
+                          },
+                          getNode: "ObjectLiteralExpression",
                       },
                   ],
               },

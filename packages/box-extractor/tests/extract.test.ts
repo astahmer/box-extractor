@@ -154,10 +154,12 @@ it("extract it all", () => {
                       {
                           type: "literal",
                           value: "red.200",
+                          getNode: "StringLiteral",
                       },
                       {
                           type: "literal",
                           value: "yellow.300",
+                          getNode: "StringLiteral",
                       },
                       {
                           type: "literal",
@@ -319,50 +321,62 @@ it("extract it all", () => {
                       {
                           type: "literal",
                           value: "facebook.900",
+                          getNode: "StringLiteral",
                       },
                       {
                           type: "literal",
                           value: "facebook.900",
+                          getNode: "StringLiteral",
                       },
                       {
                           type: "literal",
                           value: "facebook.900",
+                          getNode: "StringLiteral",
                       },
                       {
                           type: "literal",
                           value: "red.100",
+                          getNode: "StringLiteral",
                       },
                       {
                           type: "literal",
                           value: "red.100",
+                          getNode: "StringLiteral",
                       },
                       {
                           type: "literal",
                           value: "green.100",
+                          getNode: "StringLiteral",
                       },
                       {
                           type: "literal",
                           value: "blue.100",
+                          getNode: "StringLiteral",
                       },
                       {
                           type: "literal",
                           value: "yellow.100",
+                          getNode: "StringLiteral",
                       },
                       {
                           type: "literal",
                           value: "orange.100",
+                          getNode: "StringLiteral",
                       },
                       {
                           type: "literal",
                           value: "orange.300",
+                          getNode: "StringLiteral",
                       },
                       {
                           type: "literal",
                           value: "red.100",
+                          getNode: "StringLiteral",
                       },
                       {
                           type: "literal",
                           value: "orange.400",
+                          getNode: "StringLiteral",
                       },
                       {
                           type: "literal",
@@ -419,6 +433,7 @@ it("extract it all", () => {
                       {
                           type: "literal",
                           value: "blackAlpha.100",
+                          getNode: "StringLiteral",
                       },
                       {
                           type: "map",
@@ -494,12 +509,14 @@ it("extract JsxAttribute > StringLiteral (multiple)", () => {
                           {
                               type: "literal",
                               value: "red.200",
+                              getNode: "StringLiteral",
                           },
                       ],
                       backgroundColor: [
                           {
                               type: "literal",
                               value: "blackAlpha.100",
+                              getNode: "StringLiteral",
                           },
                       ],
                   },
@@ -1841,6 +1858,7 @@ it("extract JsxAttribute > JsxExpression > CallExpression with non-deterministic
                           type: "object",
                           value: {},
                           isEmpty: true,
+                          getNode: "CallExpression",
                       },
                   ],
               },
@@ -4153,6 +4171,7 @@ it("extract real-world Stack example ", () => {
                       {
                           type: "literal",
                           value: "flex",
+                          getNode: "StringLiteral",
                       },
                   ],
                   flexDirection: [
@@ -4167,6 +4186,7 @@ it("extract real-world Stack example ", () => {
                           type: "object",
                           value: {},
                           isEmpty: true,
+                          getNode: "Identifier",
                       },
                   ],
                   pr: [
@@ -4209,24 +4229,28 @@ it("extract real-world Stack example ", () => {
                       {
                           type: "literal",
                           value: "header",
+                          getNode: "StringLiteral",
                       },
                   ],
                   flexWrap: [
                       {
                           type: "literal",
                           value: "wrap",
+                          getNode: "StringLiteral",
                       },
                   ],
                   alignItems: [
                       {
                           type: "literal",
                           value: "flex-end",
+                          getNode: "StringLiteral",
                       },
                   ],
                   justifyContent: [
                       {
                           type: "literal",
                           value: "flex-end",
+                          getNode: "StringLiteral",
                       },
                   ],
                   paddingRight: [
@@ -4247,12 +4271,14 @@ it("extract real-world Stack example ", () => {
                       {
                           type: "literal",
                           value: "1px",
+                          getNode: "StringLiteral",
                       },
                   ],
                   borderBottomColor: [
                       {
                           type: "literal",
                           value: "gray.400",
+                          getNode: "StringLiteral",
                       },
                   ],
                   className: [
@@ -4260,6 +4286,7 @@ it("extract real-world Stack example ", () => {
                           type: "object",
                           value: {},
                           isEmpty: true,
+                          getNode: "PropertyAccessExpression",
                       },
                   ],
                   _tablet: [
