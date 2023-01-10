@@ -11,6 +11,7 @@ import {
     createViteBoxExtractor,
     CreateViteBoxExtractorOptions,
     createViteBoxRefUsageFinder,
+    ensureAbsolute,
 } from "@box-extractor/core";
 import {
     getUsedPropertiesFromExtractNodeMap,
@@ -26,6 +27,7 @@ import {
 import { serializeVanillaModuleWithoutUnused } from "./serializeVanillaModuleWithoutUnused";
 import { createLogger } from "@box-extractor/logger";
 import { addMappedPropsToUsedMap } from "./addMappedPropsToUsedMap";
+import { Project, ts } from "ts-morph";
 // import diff from "microdiff";
 
 type OnAfterEvaluateMutation = {
