@@ -1,5 +1,18 @@
 # @box-extractor/vanilla-extract
 
+## 0.2.4
+
+### Patch Changes
+
+-   [`f366cd3`](https://github.com/astahmer/box-extractor/commit/f366cd3a3bea021a32149adcaae3173d48cb1aad) Thanks [@astahmer](https://github.com/astahmer)! - no longer restrict functions to be inside JSX for extraction + adjust ts-evaluator maxOps for better eval results
+
+    add real-world extract+evaluator test case on project split across multiple files
+
+-   [`015edda`](https://github.com/astahmer/box-extractor/commit/015edda092c71605c9b298938c220ab515acafc1) Thanks [@astahmer](https://github.com/astahmer)! - [984b474](https://github.com/astahmer/vite-box-extractor/commit/984b474b16aac249e60d24140257b90b4724565b): feat(vite): allow passing project so it can be re-used across plugins
+    [e090ee7](https://github.com/astahmer/vite-box-extractor/commit/e090ee70aee1304c61890961b6e8421177db1b15): test: update snapshots
+-   Updated dependencies [[`f366cd3`](https://github.com/astahmer/box-extractor/commit/f366cd3a3bea021a32149adcaae3173d48cb1aad), [`015edda`](https://github.com/astahmer/box-extractor/commit/015edda092c71605c9b298938c220ab515acafc1)]:
+    -   @box-extractor/core@0.3.0
+
 ## 0.2.3
 
 ### Patch Changes
