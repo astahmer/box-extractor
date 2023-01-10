@@ -1,5 +1,21 @@
 # @box-extractor/vanilla-extract
 
+## 0.2.6
+
+### Patch Changes
+
+-   [`03c495a`](https://github.com/astahmer/box-extractor/commit/03c495a075ff30088b4a0d6d9b7c4ba92fee2153) Thanks [@astahmer](https://github.com/astahmer)! - fix: deleted lines after rebase oops
+
+    ```ts
+    config = resolvedConfig;
+    ```
+
+    was missing, so `getAbsoluteFileId` was wrong and therefore the HMR could not work anymore since the `invalidate` weren't happening since no modules were found here
+
+    ```ts
+    const maybeModule = moduleGraph.getModuleById(getAbsoluteFileId(modPath));
+    ```
+
 ## 0.2.5
 
 ### Patch Changes
