@@ -84,11 +84,13 @@ export const createViteVanillaExtractSprinklesExtractor = ({
     const usedClassNameListByPathLastTime = new Map<string, Set<string>>();
 
     return [
-        createViteBoxRefUsageFinder({ ...options, components, functions }),
+        createViteBoxRefUsageFinder({ project, components, functions, ...options }),
         {
             name: "vite-box-extractor-ve-adapter",
             enforce: "pre",
-            configResolved(config) {
+            configResolved(resolvedConfig) {
+                config = resolvedConfig;
+
                 const root = ensureAbsolute("", config.root);
                 const tsConfigPath = ensureAbsolute(tsConfigFilePath, root);
                 project =
@@ -114,7 +116,6 @@ export const createViteVanillaExtractSprinklesExtractor = ({
                 server = _server;
             },
         },
-        createViteBoxRefUsageFinder({ project, components, functions, ...options }),
         createViteBoxExtractor({
             project,
             components,
