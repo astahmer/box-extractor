@@ -57,6 +57,8 @@ export const createViteVanillaExtractSprinklesExtractor = ({
     vanillaExtractOptions,
     extractMap = new Map(),
     usedMap = new Map(),
+    project: _project,
+    tsConfigFilePath = "tsconfig.json",
     ...options
 }: CreateViteVanillaExtractSprinklesExtractorOptions & {
     vanillaExtractOptions?: VanillaExtractPluginOptions & {
@@ -65,8 +67,9 @@ export const createViteVanillaExtractSprinklesExtractor = ({
 }): Plugin[] => {
     let server: ViteDevServer;
     let config: ResolvedConfig;
+    let project: Project = _project!;
 
-    const getAbsoluteFileId = (source: string) => normalizePath(path.join(config.root, source));
+    const getAbsoluteFileId = (source: string) => normalizePath(path.join(config?.root ?? "", source));
 
     const extractCacheById = new Map<string, { hashed: string; serialized: string[] }>();
     const compiledByFilePath = new Map<string, ReturnType<typeof getCompiledSprinklePropertyByDebugIdPairMap>>();
@@ -83,18 +86,39 @@ export const createViteVanillaExtractSprinklesExtractor = ({
         {
             name: "vite-box-extractor-ve-adapter",
             enforce: "pre",
-            configResolved(resolvedConfig) {
-                config = resolvedConfig;
+            configResolved(config) {
+                const root = ensureAbsolute("", config.root);
+                const tsConfigPath = ensureAbsolute(tsConfigFilePath, root);
+                project =
+                    project ??
+                    new Project({
+                        compilerOptions: {
+                            jsx: ts.JsxEmit.React,
+                            jsxFactory: "React.createElement",
+                            jsxFragmentFactory: "React.Fragment",
+                            module: ts.ModuleKind.ESNext,
+                            target: ts.ScriptTarget.ESNext,
+                            noUnusedParameters: false,
+                            declaration: false,
+                            noEmit: true,
+                            emitDeclarationOnly: false,
+                            allowJs: true,
+                            useVirtualFileSystem: true,
+                        },
+                        tsConfigFilePath: tsConfigPath,
+                    });
             },
             configureServer(_server) {
                 server = _server;
             },
         },
+        createViteBoxRefUsageFinder({ project, components, functions, ...options }),
         createViteBoxExtractor({
-            ...options,
+            project,
             components,
             functions,
             extractMap,
+            ...options,
             onExtracted(args) {
                 onExtracted?.(args);
                 if (!server) {

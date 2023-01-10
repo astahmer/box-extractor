@@ -4,7 +4,7 @@
 import pc from "picocolors";
 import util from "node:util";
 
-util.inspect.defaultOptions.depth = 6;
+if (util?.inspect?.defaultOptions) util.inspect.defaultOptions.depth = 6;
 
 export type LogEvent = {
     name: string;

@@ -37,6 +37,7 @@ export type CreateViteBoxExtractorOptions = Pick<ExtractOptions, "components" | 
      * @default [/node_modules/,  /\.css\.ts$/]
      */
     exclude?: FilterPattern;
+    project?: Project;
 };
 
 const logger = createLogger("box-ex:extract:vite");
@@ -47,9 +48,10 @@ export const createViteBoxExtractor = ({
     extractMap,
     onExtracted,
     tsConfigFilePath = "tsconfig.json",
+    project: _project,
     ...options
 }: CreateViteBoxExtractorOptions): VitePlugin => {
-    let project: Project;
+    let project: Project = _project!;
     logger("createViteBoxExtractor", { components, functions });
 
     let isIncluded: ReturnType<typeof createFilter>;
@@ -61,22 +63,24 @@ export const createViteBoxExtractor = ({
         configResolved(config) {
             const root = ensureAbsolute("", config.root);
             const tsConfigPath = ensureAbsolute(tsConfigFilePath, root);
-            project = new Project({
-                compilerOptions: {
-                    jsx: ts.JsxEmit.React,
-                    jsxFactory: "React.createElement",
-                    jsxFragmentFactory: "React.Fragment",
-                    module: ts.ModuleKind.ESNext,
-                    target: ts.ScriptTarget.ESNext,
-                    noUnusedParameters: false,
-                    declaration: false,
-                    noEmit: true,
-                    emitDeclarationOnly: false,
-                    allowJs: true,
-                    useVirtualFileSystem: true,
-                },
-                tsConfigFilePath: tsConfigPath,
-            });
+            project =
+                project ??
+                new Project({
+                    compilerOptions: {
+                        jsx: ts.JsxEmit.React,
+                        jsxFactory: "React.createElement",
+                        jsxFragmentFactory: "React.Fragment",
+                        module: ts.ModuleKind.ESNext,
+                        target: ts.ScriptTarget.ESNext,
+                        noUnusedParameters: false,
+                        declaration: false,
+                        noEmit: true,
+                        emitDeclarationOnly: false,
+                        allowJs: true,
+                        useVirtualFileSystem: true,
+                    },
+                    tsConfigFilePath: tsConfigPath,
+                });
 
             isIncluded = createFilter(
                 options.include ?? /\.[jt]sx?$/,
