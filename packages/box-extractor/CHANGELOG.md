@@ -1,5 +1,20 @@
 # @box-extractor/core
 
+## 0.3.0
+
+### Minor Changes
+
+-   [`f366cd3`](https://github.com/astahmer/box-extractor/commit/f366cd3a3bea021a32149adcaae3173d48cb1aad) Thanks [@astahmer](https://github.com/astahmer)! - no longer restrict functions to be inside JSX for extraction + adjust ts-evaluator maxOps for better eval results
+
+    add real-world extract+evaluator test case on project split across multiple files
+
+### Patch Changes
+
+-   [`015edda`](https://github.com/astahmer/box-extractor/commit/015edda092c71605c9b298938c220ab515acafc1) Thanks [@astahmer](https://github.com/astahmer)! - [fa7a0a8](https://github.com/astahmer/vite-box-extractor/commit/3e8442a6bb7d615607d316909ac40c532ae9860a): feat(core): BoxNode.ListType & more logs
+    [3e8442a](https://github.com/astahmer/vite-box-extractor/commit/4d97931ecbbbd6132860c164b205d8cf710ce71c): fix(core): PropertyAssignment.NameNode.StringLiteral
+    [4d97931](https://github.com/astahmer/vite-box-extractor/commit/4d97931ecbbbd6132860c164b205d8cf710ce71c): feat(core): add getNode fn to BoxNode
+    allows retrieving the closest(s) ts-morph Node to the value(s) extracted
+
 ## 0.2.1
 
 ### Patch Changes
