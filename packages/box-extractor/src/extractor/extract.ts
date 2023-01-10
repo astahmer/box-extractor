@@ -71,7 +71,7 @@ export const extract = ({ ast, components: _components, functions: _functions, e
         const spreadNodes = query<JsxSpreadAttribute>(ast, spreadSelector) ?? [];
         spreadNodes.forEach((node) => {
             const objectOrMapType = extractJsxSpreadAttributeValues(node);
-            const map = castObjectLikeAsMapValue(objectOrMapType);
+            const map = castObjectLikeAsMapValue(objectOrMapType, node);
 
             const entries = mergeSpreadEntries({ map, propNameList });
             entries.forEach(([propName, propValue]) => {
@@ -116,7 +116,7 @@ export const extract = ({ ast, components: _components, functions: _functions, e
             if (!objectOrMapType) return;
             // console.log({ objectOrMapType });
 
-            const map = castObjectLikeAsMapValue(objectOrMapType);
+            const map = castObjectLikeAsMapValue(objectOrMapType, node);
             const entries = mergeSpreadEntries({ map, propNameList });
 
             entries.forEach(([propName, propValue]) => {

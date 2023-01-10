@@ -1,6 +1,7 @@
 import * as path from "node:path";
 import { isObject } from "pastable";
 import { Options, resolveConfig } from "prettier";
+import { Node } from "ts-morph";
 import { beforeAll, expect } from "vitest";
 import { maybePretty } from "./maybePretty";
 
@@ -26,6 +27,13 @@ expect.addSnapshotSerializer({
 
                             if (value instanceof Map) {
                                 return Object.fromEntries(value);
+                            }
+
+                            if (typeof value === "function" && _key === "getNode") {
+                                const node = value();
+                                if (node instanceof Node) {
+                                    return node.getKindName();
+                                }
                             }
 
                             return value;

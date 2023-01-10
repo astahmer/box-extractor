@@ -6,16 +6,7 @@ import { createLogger } from "@box-extractor/logger";
 import { evaluateNode, isEvalError, safeEvaluateNode } from "./evaluate";
 // eslint-disable-next-line import/no-cycle
 import { getIdentifierReferenceValue, maybeBoxNode, maybeStringLiteral } from "./maybeBoxNode";
-import {
-    box,
-    castObjectLikeAsMapValue,
-    emptyObjectType,
-    BoxNode,
-    isBoxNode,
-    MapType,
-    MapTypeValue,
-    ObjectType,
-} from "./type-factory";
+import { box, castObjectLikeAsMapValue, BoxNode, isBoxNode, MapType, MapTypeValue, ObjectType } from "./type-factory";
 import { isNotNullish, unwrapExpression } from "./utils";
 
 const logger = createLogger("box-ex:extractor:maybe-object");
@@ -26,22 +17,22 @@ export const maybeObjectLikeBox = (node: Node): MaybeObjectLikeBoxReturn => {
     logger({ kind: node.getKindName() });
 
     if (Node.isObjectLiteralExpression(node)) {
-        return box.map(getObjectLiteralExpressionPropPairs(node));
+        return box.map(getObjectLiteralExpressionPropPairs(node), node);
     }
 
     // <ColorBox {...xxx} />
     if (Node.isIdentifier(node)) {
         const maybeObject = getIdentifierReferenceValue(node);
-        if (!maybeObject) return emptyObjectType;
+        if (!maybeObject) return box.empty(node);
         if (isBoxNode(maybeObject) && maybeObject.type === "node-object-literal") {
-            return box.map(getObjectLiteralExpressionPropPairs(maybeObject.value));
+            return box.map(getObjectLiteralExpressionPropPairs(maybeObject.value), node);
         }
 
-        if (!maybeObject || !Node.isNode(maybeObject)) return emptyObjectType;
+        if (!maybeObject || !Node.isNode(maybeObject)) return box.empty(node);
 
         // <ColorBox {...objectLiteral} />
         if (Node.isObjectLiteralExpression(maybeObject)) {
-            return box.map(getObjectLiteralExpressionPropPairs(maybeObject));
+            return box.map(getObjectLiteralExpressionPropPairs(maybeObject), node);
         }
     }
 
@@ -54,50 +45,50 @@ export const maybeObjectLikeBox = (node: Node): MaybeObjectLikeBoxReturn => {
             const whenTrue = maybeObjectLikeBox(node.getWhenTrue());
             const whenFalse = maybeObjectLikeBox(node.getWhenFalse());
             logger.scoped("cond", { whenTrue, whenFalse });
-            return box.map(mergePossibleEntries(whenTrue, whenFalse));
+            return box.map(mergePossibleEntries(whenTrue, whenFalse, node), node);
         }
 
         if (isNotNullish(maybeObject) && isObjectLiteral(maybeObject)) {
-            return box.object(maybeObject);
+            return box.object(maybeObject, node);
         }
 
-        return emptyObjectType;
+        return box.empty(node);
     }
 
     // <ColorBox {...(condition && objectLiteral)} />
     if (Node.isBinaryExpression(node) && node.getOperatorToken().getKind() === ts.SyntaxKind.AmpersandAmpersandToken) {
         const maybeObject = safeEvaluateNode(node);
-        if (!maybeObject) return emptyObjectType;
+        if (!maybeObject) return box.empty(node);
 
         if (isObjectLiteral(maybeObject)) {
-            return box.object(maybeObject);
+            return box.object(maybeObject, node);
         }
     }
 
     if (Node.isCallExpression(node)) {
         const maybeObject = safeEvaluateNode(node);
-        if (!maybeObject) return emptyObjectType;
+        if (!maybeObject) return box.empty(node);
 
         if (isObjectLiteral(maybeObject)) {
-            return box.object(maybeObject);
+            return box.object(maybeObject, node);
         }
     }
 
     if (Node.isPropertyAccessExpression(node)) {
         const maybeObject = safeEvaluateNode(node);
-        if (!maybeObject) return emptyObjectType;
+        if (!maybeObject) return box.empty(node);
 
         if (isObjectLiteral(maybeObject)) {
-            return box.object(maybeObject);
+            return box.object(maybeObject, node);
         }
     }
 
     if (Node.isElementAccessExpression(node)) {
         const maybeObject = safeEvaluateNode(node);
-        if (!maybeObject) return emptyObjectType;
+        if (!maybeObject) return box.empty(node);
 
         if (isObjectLiteral(maybeObject)) {
-            return box.object(maybeObject);
+            return box.object(maybeObject, node);
         }
     }
 };
@@ -123,7 +114,7 @@ const getObjectLiteralExpressionPropPairs = (expression: ObjectLiteralExpression
 
             const maybeValue = maybeBoxNode(initializer);
             if (isNotNullish(maybeValue)) {
-                const value = box.cast(maybeValue);
+                const value = box.cast(maybeValue, initializer);
                 if (!value) return;
 
                 extractedPropValues.push([propName, [value]]);
@@ -146,7 +137,7 @@ const getObjectLiteralExpressionPropPairs = (expression: ObjectLiteralExpression
             logger("isSpreadAssignment", extracted);
             if (extracted.type === "object") {
                 Object.entries(extracted.value).forEach(([propName, value]) => {
-                    const boxed = box.cast(value);
+                    const boxed = box.cast(value, initializer);
                     if (!boxed) return;
 
                     extractedPropValues.push([propName, [boxed]]);
@@ -157,7 +148,7 @@ const getObjectLiteralExpressionPropPairs = (expression: ObjectLiteralExpression
             if (extracted.type === "map") {
                 extracted.value.forEach((value, propName) => {
                     value.forEach((nested) => {
-                        const boxed = box.cast(nested);
+                        const boxed = box.cast(nested, initializer);
                         if (!boxed) return;
 
                         return extractedPropValues.push([propName, [boxed]]);
@@ -215,9 +206,13 @@ const getPropertyName = (property: ObjectLiteralElementLike) => {
  * whenFalse: [ [ 'color', [ 'salmon.850', 'salmon.900' ] ] ],
  * merged: [ [ 'color', [ 'never.250', 'salmon.850', 'salmon.900' ] ] ]
  */
-const mergePossibleEntries = (_whenTrue: MaybeObjectLikeBoxReturn, _whenFalse: MaybeObjectLikeBoxReturn) => {
-    const whenTrue = castObjectLikeAsMapValue(_whenTrue);
-    const whenFalse = castObjectLikeAsMapValue(_whenFalse);
+const mergePossibleEntries = (
+    _whenTrue: MaybeObjectLikeBoxReturn,
+    _whenFalse: MaybeObjectLikeBoxReturn,
+    node: Node
+) => {
+    const whenTrue = castObjectLikeAsMapValue(_whenTrue, node);
+    const whenFalse = castObjectLikeAsMapValue(_whenFalse, node);
     const merged = new Map() as MapTypeValue;
 
     whenTrue.forEach((propValues, propName) => {

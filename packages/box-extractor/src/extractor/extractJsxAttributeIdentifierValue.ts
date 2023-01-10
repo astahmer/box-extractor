@@ -22,7 +22,7 @@ export const extractJsxAttributeIdentifierValue = (identifier: Identifier) => {
 
     if (Node.isStringLiteral(initializer)) {
         // initializer = `"red.200"` (and then "blackAlpha.100")
-        return box.literal(initializer.getLiteralText());
+        return box.literal(initializer.getLiteralText(), initializer);
     }
 
     // <ColorBox color={xxx} />
