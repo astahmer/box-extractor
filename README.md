@@ -105,7 +105,7 @@ While waiting [for the PR I made](https://github.com/vanilla-extract-css/vanilla
 
 TL;DR:
 
--   copy this file below next to your `package.json`
+-   copy this file below next to your `pnpm-lock.yaml`
 -   `pnpm i`
 -   that's it
 
