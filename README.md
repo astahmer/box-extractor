@@ -1,63 +1,36 @@
-# box-extractor
+# 📦 box-extractor
 
-Make your own `<Box />` with `@vanilla-extract/sprinkles` static extraction + purge = a DX close to Chakra-UI's `<Box />` with the benefits of Tailwind's css purge = Zero-runtime CSS-in-TS `<Box />`
+**Static code extraction. Zero-runtime CSS-in-TS `<Box />`**
 
-# What is this
+Optimize your code and elevate your developer experience with compile-time optimizations from static analysis.
 
-https://twitter.com/astahmer_dev/status/1601244606133567488
+💎 &nbsp; Enhanced DX close to [Chakra-UI's `<Box />`](https://chakra-ui.com/docs/styled-system/style-props#pseudo) without [the](https://github.com/chakra-ui/chakra-ui/issues/4003) [runtime](https://github.com/chakra-ui/chakra-ui/issues/859) [cost](https://twitter.com/jaredpalmer/status/1271482711132254210?lang=en)
 
-![Screenshot 2022-12-18 at 11 35 31](https://user-images.githubusercontent.com/47224540/208293575-811808ac-db7f-4443-b977-323a9cf25ac9.png)
+✂️ &nbsp; Smaller CSS/JS output (up to 99%) with compile-time purge just like Tailwind CSS
 
-https://twitter.com/astahmer_dev/status/1601246126396428289
+🎁 &nbsp; [Built-in](#box-extractorvanilla-theme---chakratailwind-sprinkle) preconfigured theme [sprinkles](https://vanilla-extract.style/documentation/packages/sprinkles/) with most of [Chakra-UI default theme](https://github.com/chakra-ui/chakra-ui/tree/main/packages/components/theme/src/foundations)'
+
+🎯 &nbsp; Over 180k props/values/conditions combinations, only 1 used in your app, only 1 will remain
+
+🔄 &nbsp; [Reversed conditions props](#reversed-conditions-props) allowing you to use multiple sprinkle properties on the same condition
+
+🔍 &nbsp; Smart analyzer built-in for near instant drop-in benefits
+
+💾 &nbsp; Low-level AST output with access to `ts-morph` `Node` objects for fine-grained control
+
+🔌 &nbsp; Pluggable integration with exported primitives & hooks available at each step
+
+---
 
 # Installation
 
--> You are probably looking for the [vanilla-extract/sprinkles adapter](#vanilla-extractsprinkles-adapter)
-
-## core (static AST extraction)
-
-if you need the static analysis (using [ts-morph](https://github.com/dsherret/ts-morph) + [tsquery](https://github.com/phenomnomnominal/tsquery/)) on components props/functions args:
-
-```ts
-pnpm add @box-extractor/core
-```
-
-### core/vite
-
-there are 2 plugins from `@box-extractor/core` :
-
--   `createViteBoxExtractor` that will statically analyze your TS(X) files & extract functions args / JSX component props values
--   `createViteBoxRefUsageFinder` will statically analyze your TS(X) files & recursively find every transitive components (the one being spread onto) used from a list of root components
-
-```ts
-import { createViteBoxExtractor, createViteBoxRefUsageFinder } from "@box-extractor/core";
-```
-
-### core/esbuild
-
-only the `createEsbuildBoxExtractor` is made/exported atm from `@box-extractor/core`, it does the same as its vite counterpart
-
-```ts
-import { createEsbuildBoxExtractor } from "@box-extractor/core";
-```
-
 ## [@vanilla-extract/sprinkles](https://vanilla-extract.style/documentation/packages/sprinkles/) adapter
-
-if you need the `@vanilla-extract/sprinkles` adapter to remove any unused css classes (and maybe make your own `<Box />`) :
 
 ```ts
 pnpm add @box-extractor/vanilla-extract
 ```
 
 then in your `vite.config.ts` add the plugin and list your sprinkles functions + your root component (those using a sprinkles function)
-
-a root component using a sprinkles fn could look like this:
-
-// Box.ts
-
-```ts
-const Box = ({ children, ...props }) => <div className={themeSprinkles(props)}>{children}</div>;
-```
 
 // vite.plugin.ts
 
@@ -79,19 +52,41 @@ const config: UserConfig = {
 export default config;
 ```
 
+that's it ! 🎉 enjoy your optimized output.
+
+---
+
+> 💡 a root component using a sprinkles fn could look like this:
+
+// Box.ts
+
+```ts
+const Box = ({ children, ...props }) => <div className={themeSprinkles(props)}>{children}</div>;
+```
+
+meaning you'll have to mention it in your `vite.config.ts`, like this:
+
+```ts
+const config: UserConfig = {
+    plugins: [createViteVanillaExtractSprinklesExtractor({ components: ["Box"] })],
+};
+```
+
+---
+
 ### createBoxSprinkles
 
 `@box-extractor/vanilla-extract` also exports a custom sprinkles creator function (replacement for the default `createSprinkles` from `@vanille-extract/sprinkles`) to allow for more introspection by returning the `condtions` & `shorthands` in addition to the static `properties` property on the return of `createSprinkles`.
 
-This is needed for the reversed conditions props to work properly.
+> This is needed for the 🔄 reversed conditions props to work properly.
 
-#### Reversed conditions props
+#### 🔄 Reversed conditions props
 
-The `reversed conditions props` look like this:
+It look like this:
 
 ```tsx
 <Box _hover={{ fontSize: "xl", cursor: "pointer" }}>
-    reversed conditions props = allowing multiple sprinkle properties on the same condition
+    🔄 reversed conditions props = allowing multiple sprinkle properties on the same condition
 </Box>
 ```
 
@@ -103,11 +98,11 @@ VS the original `@vanilla-extract/sprinkles` way of doing things:
 </Box>
 ```
 
-Fun fact: this was originally [a request feature](https://github.com/TheMightyPenguin/dessert-box/issues/18) I had made to `@dessert-box` and [later tried to implement](https://github.com/TheMightyPenguin/dessert-box/pull/23) but found impossible to do so with the original `createSprinkles` function. Kudos to the `rainbow-sprinkles` for the idea of making a custom sprinkles creator function.
+> Fun fact: this was originally [a request feature](https://github.com/TheMightyPenguin/dessert-box/issues/18) I had made to `@dessert-box` and [later tried to implement](https://github.com/TheMightyPenguin/dessert-box/pull/23) but found impossible to do so with the original `createSprinkles` function. Kudos to the `rainbow-sprinkles` for the idea of making a custom sprinkles creator function.
 
 ### Temporary workaround
 
-While waiting [for the PR I made](https://github.com/vanilla-extract-css/vanilla-extract/pull/942) to the `vanilla-extract` repo adding callbacks necessary for the extractor plugin to purge unused css classes, a workaround is to use the [forked versions](./packages//vanilla-extract/ve-fork-tgz/) as [remote tarballs](https://pnpm.io/cli/add#install-from-remote-tarball) using a `readPackage` hook from a [`.pnpmfile.cjs`](https://pnpm.io/pnpmfile) to install the dependencies.
+> While waiting [for the PR I made](https://github.com/vanilla-extract-css/vanilla-extract/pull/942) to the `vanilla-extract` repo adding callbacks necessary for the extractor plugin to purge unused css classes, a workaround is to use the [forked versions](./packages//vanilla-extract/ve-fork-tgz/) as [remote tarballs](https://pnpm.io/cli/add#install-from-remote-tarball) using a `readPackage` hook from a [`.pnpmfile.cjs`](https://pnpm.io/pnpmfile) to install the dependencies.
 
 TL;DR:
 
@@ -196,7 +191,7 @@ And hard-forking comes at a cost that I'd rather not pay: the maintenance cost. 
 a more complex `<Box />` component could support :
 
 -   [escape hatches](https://github.com/TheMightyPenguin/dessert-box/#escape-hatch) (inspired from `@dessert-box`) with the `__` prefix, allowing you to use styles not pre-defined in your theme sprinkles.
--   [reversed conditions props](#reversed-conditions-props) with the `_` prefix, allowing you to use multiple sprinkle properties on the same condition
+-   [🔄 reversed conditions props](#reversed-conditions-props) with the `_` prefix, allowing you to use multiple sprinkle properties on the same condition
 
 it could look like this ([the one used from the examples](https://github.com/astahmer/box-extractor/blob/main/examples/react-basic/src/components/Box.tsx)) :
 
@@ -247,7 +242,7 @@ this allows you to do things like:
 <Box as="span" color="green.500">span predefined theme value from a sprinkles fn</Box>
 <Box as={AnotherComponent} color={{ hover: "green.100" }}>`AnotherComponent` with a class from sprinkles using conditions</Box>
 <Box __color="#5f9ea0">escape hatch (value not defined in sprinkles that will result in a `style={ color: "#5f9ea0" }` inlined prop</Box>
-<Box _hover={{ fontSize: "xl", cursor: "pointer" }}>reversed conditions props = allowing multiple sprinkle properties on the same condition</Box>
+<Box _hover={{ fontSize: "xl", cursor: "pointer" }}>🔄 reversed conditions props = allowing multiple sprinkle properties on the same condition</Box>
 <Box color={{ default: "blue.200", hover: "green.400" }} _hover={{ color: "red.300" }}>
     a mix of both
 </Box>
@@ -282,11 +277,40 @@ const config: UserConfig = {
 export default config;
 ```
 
+## core (static AST extraction)
+
+if you need the static analysis (using [ts-morph](https://github.com/dsherret/ts-morph) + [tsquery](https://github.com/phenomnomnominal/tsquery/)) on components props/functions args:
+
+```ts
+pnpm add @box-extractor/core
+```
+
+### core/vite
+
+there are 2 plugins from `@box-extractor/core` :
+
+-   `createViteBoxExtractor` that will statically analyze your TS(X) files & extract functions args / JSX component props values
+-   `createViteBoxRefUsageFinder` will statically analyze your TS(X) files & recursively find every transitive components (the one being spread onto) used from a list of root components
+
+```ts
+import { createViteBoxExtractor, createViteBoxRefUsageFinder } from "@box-extractor/core";
+```
+
+### core/esbuild
+
+only the `createEsbuildBoxExtractor` is made/exported atm from `@box-extractor/core`, it does the same as its vite counterpart
+
+```ts
+import { createEsbuildBoxExtractor } from "@box-extractor/core";
+```
+
 ## Caveats / debug
 
 > `SprinklesError: "xxxx" is not a valid sprinkle`
 
 your TS version might not be compatible with the one used by `@box-extractor/core` (which is used by `@box-extractor/vanilla-extract`) which itself must be compatible with the typescript version used by [`ts-morph`](https://github.com/dsherret/ts-morph). We're currently using [`ts-morph 17.0.1`](https://github.com/astahmer/box-extractor/blob/main/packages/box-extractor/package.json#L35) which itself [is using TS 4.9.4](https://github.com/dsherret/ts-morph/commit/42d811ed9a5177fc678a5bfec4923a2048124fe0).
+
+---
 
 if your TS version is compatible with [ours](<(https://github.com/astahmer/box-extractor/blob/main/packages/box-extractor/package.json#L35)>), then we might have removed one class that we shouldn't have, please open an issue with a minimal reproduction repository
 
