@@ -12,6 +12,8 @@ Optimize your code and elevate your developer experience with compile-time optim
 
 🎯 &nbsp; Over 180k props/values/conditions combinations, only 1 used in your app, only 1 will remain
 
+⚡ &nbsp; [vite](#vanilla-extractsprinkles-adapter) & esbuild plugins available
+
 🔄 &nbsp; [Reversed conditions props](#reversed-conditions-props) allowing you to use multiple sprinkle properties on the same condition
 
 🔍 &nbsp; Smart analyzer built-in for near instant drop-in benefits
@@ -312,7 +314,7 @@ your TS version might not be compatible with the one used by `@box-extractor/cor
 
 ---
 
-if your TS version is compatible with [ours](<(https://github.com/astahmer/box-extractor/blob/main/packages/box-extractor/package.json#L35)>), then we might have removed one class that we shouldn't have, please open an issue with a minimal reproduction repository
+if your TS version is **NOT** compatible with [ours](<(https://github.com/astahmer/box-extractor/blob/main/packages/box-extractor/package.json#L35)>), then we might have removed one class that we shouldn't have, please open an issue with a minimal reproduction repository
 
 also, if you want to try debugging yourself: logs are available through the DEBUG env var
 
