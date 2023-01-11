@@ -1,5 +1,7 @@
 # box-extractor
 
+Make your own `<Box />` with `@vanilla-extract/sprinkles` static extraction + purge = a DX close to Chakra-UI's `<Box />` with the benefits of Tailwind's css purge = Zero-runtime CSS-in-TS `<Box />`
+
 # What is this
 
 https://twitter.com/astahmer_dev/status/1601244606133567488
@@ -12,7 +14,7 @@ https://twitter.com/astahmer_dev/status/1601246126396428289
 
 -> You are probably looking for the [vanilla-extract/sprinkles adapter](#vanilla-extractsprinkles-adapter)
 
-## core
+## core (static AST extraction)
 
 if you need the static analysis (using [ts-morph](https://github.com/dsherret/ts-morph) + [tsquery](https://github.com/phenomnomnominal/tsquery/)) on components props/functions args:
 
@@ -20,7 +22,7 @@ if you need the static analysis (using [ts-morph](https://github.com/dsherret/ts
 pnpm add @box-extractor/core
 ```
 
-### vite
+### core/vite
 
 there are 2 plugins from `@box-extractor/core` :
 
@@ -31,7 +33,7 @@ there are 2 plugins from `@box-extractor/core` :
 import { createViteBoxExtractor, createViteBoxRefUsageFinder } from "@box-extractor/core";
 ```
 
-### esbuild
+### core/esbuild
 
 only the `createEsbuildBoxExtractor` is made/exported atm from `@box-extractor/core`, it does the same as its vite counterpart
 
@@ -81,7 +83,11 @@ export default config;
 
 `@box-extractor/vanilla-extract` also exports a custom sprinkles creator function (replacement for the default `createSprinkles` from `@vanille-extract/sprinkles`) to allow for more introspection by returning the `condtions` & `shorthands` in addition to the static `properties` property on the return of `createSprinkles`.
 
-This is needed for the reversed conditions props to work properly. The reversed conditions props look like this:
+This is needed for the reversed conditions props to work properly.
+
+#### Reversed conditions props
+
+The `reversed conditions props` look like this:
 
 ```tsx
 <Box _hover={{ fontSize: "xl", cursor: "pointer" }}>
@@ -187,7 +193,12 @@ And hard-forking comes at a cost that I'd rather not pay: the maintenance cost. 
 
 ## Box example
 
-a more complex `<Box />` component could look like this
+a more complex `<Box />` component could support :
+
+-   [escape hatches](https://github.com/TheMightyPenguin/dessert-box/#escape-hatch) (inspired from `@dessert-box`) with the `__` prefix, allowing you to use styles not pre-defined in your theme sprinkles.
+-   [reversed conditions props](#reversed-conditions-props) with the `_` prefix, allowing you to use multiple sprinkle properties on the same condition
+
+it could look like this ([the one used from the examples](https://github.com/astahmer/box-extractor/blob/main/examples/react-basic/src/components/Box.tsx)) :
 
 ```ts
 import type { PropsWithChildren } from "react";
