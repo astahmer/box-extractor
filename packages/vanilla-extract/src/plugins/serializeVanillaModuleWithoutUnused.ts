@@ -167,16 +167,12 @@ function stringifyExports(
             if (isCompiledSprinkle(value)) {
                 // console.log({ sprinkle: value });
 
-                let isUsingAnyCondition = false;
+                const usedConditionNames = new Set<string>();
                 const usedStyles = Object.fromEntries(
                     Object.entries(value.styles)
                         .filter(([propName]) => usedValuesMap.has(propName))
                         .map(([propName]) => {
                             const propUsedValues = usedValuesMap.get(propName)!;
-
-                            if (propUsedValues.conditionalProperties.size > 0) {
-                                isUsingAnyCondition = true;
-                            }
 
                             return [
                                 propName,
@@ -208,9 +204,13 @@ function stringifyExports(
                                                                     .get(conditionName)!
                                                                     .has(valueName);
 
-                                                            return (
-                                                                isPropUsedInDefaultCondition || isPropUsedByCondition
-                                                            );
+                                                            const isConditionUsed =
+                                                                isPropUsedInDefaultCondition || isPropUsedByCondition;
+                                                            if (isConditionUsed) {
+                                                                usedConditionNames.add(conditionName);
+                                                            }
+
+                                                            return isConditionUsed;
                                                         }
                                                     );
 
@@ -227,10 +227,13 @@ function stringifyExports(
                         })
                 );
 
-                if (!isUsingAnyCondition) {
-                    // value.conditions = undefined;
+                if (usedConditionNames.size === 0) {
+                    value.conditions = undefined;
+                } else if (value.conditions) {
+                    value.conditions.conditionNames = [...usedConditionNames];
                 }
 
+                // console.log({ usedConditionNames });
                 // console.dir({ usedStyles, value });
 
                 return next({ ...value, styles: usedStyles });

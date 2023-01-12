@@ -7,7 +7,6 @@ export const getSprinklesConfig = <Props extends readonly SprinklesProperties[]>
     const conditions = [] as Array<Conditions["conditions"]>;
 
     configs.forEach((sprinkle) => {
-        // TODO filter used conditions
         if (sprinkle.conditions) {
             conditions.push(sprinkle.conditions);
         }
