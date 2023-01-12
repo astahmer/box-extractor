@@ -52,6 +52,11 @@ export function maybeBoxNode(node: Node): MaybeBoxNodeReturn {
         return box.literal(node.getLiteralText(), node);
     }
 
+    // <ColorBox bool={true} falsy={false} />
+    if (Node.isTrueLiteral(node) || Node.isFalseLiteral(node)) {
+        return box.literal(node.getText(), node);
+    }
+
     // <ColorBox color={staticColor} />
     if (Node.isIdentifier(node)) {
         const value = getIdentifierReferenceValue(node);

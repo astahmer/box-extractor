@@ -4310,6 +4310,49 @@ it("extract real-world Stack example ", () => {
     `);
 });
 
-// TODO valueOrNullable ?? fallback
-// TODO valueOrNullable ?? fallback ?? fallback
-// TODO valueOrFalsy ?? fallback
+it("extract JsxAttribute > JsxExpression > CallExpression > ObjectLiteralExpression > PropertyAssignment > TrueKeyword", () => {
+    expect(
+        extractFromCode(
+            `
+        <button class={button({ color: "accent", size: "large", rounded: true })}>
+        `,
+            { components: [], functions: ["button"] }
+        )
+    ).toMatchInlineSnapshot(`
+      [
+          [
+              "button",
+              [
+                  ["color", "accent"],
+                  ["size", "large"],
+                  ["rounded", "true"],
+              ],
+              {
+                  color: [
+                      {
+                          type: "literal",
+                          value: "accent",
+                          getNode: "StringLiteral",
+                      },
+                  ],
+                  size: [
+                      {
+                          type: "literal",
+                          value: "large",
+                          getNode: "StringLiteral",
+                      },
+                  ],
+                  rounded: [
+                      {
+                          type: "literal",
+                          value: "true",
+                          getNode: "TrueKeyword",
+                      },
+                  ],
+              },
+          ],
+      ]
+    `);
+});
+
+// TODO nested valueOrNullable ?? fallback ?? fallback
