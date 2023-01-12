@@ -98,6 +98,7 @@ export const createViteBoxExtractor = ({
 
             cacheMap.set(id, code);
 
+            // avoid full AST-parsing if possible
             let isUsingExtractableProps = false;
             const componentNames = Array.isArray(components) ? components : Object.keys(components);
             componentNames.forEach((component) => {
