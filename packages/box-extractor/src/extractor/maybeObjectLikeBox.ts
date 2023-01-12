@@ -24,8 +24,11 @@ export const maybeObjectLikeBox = (node: Node): MaybeObjectLikeBoxReturn => {
     if (Node.isIdentifier(node)) {
         const maybeObject = getIdentifierReferenceValue(node);
         if (!maybeObject) return box.empty(node);
-        if (isBoxNode(maybeObject) && maybeObject.type === "node-object-literal") {
-            return box.map(getObjectLiteralExpressionPropPairs(maybeObject.value), node);
+        if (isBoxNode(maybeObject) && (maybeObject.type === "object" || maybeObject.type === "map")) {
+            const first = Array.isArray(maybeObject) ? maybeObject[0] : maybeObject;
+            if (!first) return box.empty(node);
+
+            return first;
         }
 
         if (!maybeObject || !Node.isNode(maybeObject)) return box.empty(node);

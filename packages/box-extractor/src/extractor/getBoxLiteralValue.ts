@@ -1,12 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import {
-    BoxNode,
-    isPrimitiveType,
-    LiteralValue,
-    narrowCondionalType,
-    NodeObjectLiteralExpressionType,
-    SingleLiteralValue,
-} from "./type-factory";
+import { BoxNode, isPrimitiveType, LiteralValue, narrowCondionalType, SingleLiteralValue } from "./type-factory";
 import type { PrimitiveType } from "./types";
 import { isNotNullish } from "./utils";
 import type { MaybeBoxNodeReturn } from "./maybeBoxNode";
@@ -14,13 +7,11 @@ import { createLogger } from "@box-extractor/logger";
 
 const logger = createLogger("box-ex:extractor:get-literal");
 
-const innerGetLiteralValue = (
-    valueType: PrimitiveType | BoxNode | NodeObjectLiteralExpressionType | undefined
-): LiteralValue | undefined => {
+const innerGetLiteralValue = (valueType: PrimitiveType | BoxNode | undefined): LiteralValue | undefined => {
     if (!valueType) return;
     if (isPrimitiveType(valueType)) return valueType;
     if (valueType.type === "literal") return valueType.value;
-    if (valueType.type === "node-object-literal" || valueType.type === "unresolvable") return;
+    if (valueType.type === "unresolvable") return;
 
     if (valueType.type === "object") {
         if (valueType.isEmpty) return;

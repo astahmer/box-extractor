@@ -1,5 +1,5 @@
 import { isObject } from "pastable";
-import type { Node, ObjectLiteralExpression } from "ts-morph";
+import type { Node } from "ts-morph";
 import type { MaybeObjectLikeBoxReturn } from "./maybeObjectLikeBox";
 import type { ExtractedPropMap, PrimitiveType } from "./types";
 import { isNotNullish } from "./utils";
@@ -17,21 +17,8 @@ export type ListType = WithBoxSymbol & WithNode & { type: "list"; value: BoxNode
 export type UnresolvableType = WithBoxSymbol & { type: "unresolvable" };
 export type ConditionalType = WithBoxSymbol & WithNode & { type: "conditional"; whenTrue: BoxNode; whenFalse: BoxNode };
 
-/** TODO rm */
-export type NodeObjectLiteralExpressionType = WithBoxSymbol & {
-    type: "node-object-literal";
-    value: ObjectLiteralExpression;
-};
-
 // export type PrimitiveBoxNode = ObjectType | LiteralType | MapType
-export type BoxNode =
-    | ObjectType
-    | LiteralType
-    | MapType
-    | ListType
-    | UnresolvableType
-    | ConditionalType
-    | NodeObjectLiteralExpressionType;
+export type BoxNode = ObjectType | LiteralType | MapType | ListType | UnresolvableType | ConditionalType;
 export type MapTypeValue = Map<string, BoxNode[]>;
 
 export const isBoxNode = (value: unknown): value is BoxNode => {
@@ -53,9 +40,6 @@ const boxTypeFactory = {
     },
     conditional(whenTrue: BoxNode, whenFalse: BoxNode, node: MaybeNode): ConditionalType {
         return { [BoxKind]: true, type: "conditional", whenTrue, whenFalse, getNode: () => node };
-    },
-    nodeObjectLiteral(value: ObjectLiteralExpression): NodeObjectLiteralExpressionType {
-        return { [BoxKind]: true, type: "node-object-literal", value };
     },
     cast<T extends BoxNode>(value: unknown, node: MaybeNode): T | undefined {
         if (!value) return;

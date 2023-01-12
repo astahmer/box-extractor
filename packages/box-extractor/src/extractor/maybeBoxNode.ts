@@ -15,7 +15,7 @@ import { Node, ts } from "ts-morph";
 import { safeEvaluateNode } from "./evaluate";
 // eslint-disable-next-line import/no-cycle
 import { maybeObjectLikeBox, MaybeObjectLikeBoxReturn } from "./maybeObjectLikeBox";
-import { box, BoxNode, MaybeNode, mergeLiteralTypes, NodeObjectLiteralExpressionType } from "./type-factory";
+import { box, BoxNode, isBoxNode, MaybeNode, mergeLiteralTypes } from "./type-factory";
 import type { ExtractedPropMap, PrimitiveType } from "./types";
 import { isNotNullish, unwrapExpression } from "./utils";
 
@@ -148,7 +148,7 @@ const maybeExpandConditionalExpression = (
     whenFalseExpr: Node,
     node: MaybeNode,
     canReturnWhenTrue?: boolean
-): BoxNode | BoxNode[] | MaybeObjectLikeBoxReturn | NodeObjectLiteralExpressionType => {
+): BoxNode | BoxNode[] | MaybeObjectLikeBoxReturn => {
     let whenTrueValue: ReturnType<typeof maybeBoxNode> | ReturnType<typeof maybeObjectLikeBox> =
         maybeBoxNode(whenTrueExpr);
     let whenFalseValue: ReturnType<typeof maybeBoxNode> | ReturnType<typeof maybeObjectLikeBox> =
@@ -365,7 +365,8 @@ export const getIdentifierReferenceValue = (identifier: Identifier) => {
             if (isNotNullish(maybeValue)) return maybeValue;
 
             if (Node.isObjectLiteralExpression(initializer)) {
-                return box.nodeObjectLiteral(initializer);
+                logger.scoped("get-id-value");
+                return maybeObjectLikeBox(initializer);
             }
 
             // logger(({
@@ -485,13 +486,27 @@ const getElementAccessedExpressionValue = (expression: ElementAccessExpression):
     // <ColorBox color={xxx[yyy[zzz]]} />
     if (Node.isElementAccessExpression(elementAccessed) && isNotNullish(argValue)) {
         const identifier = getElementAccessedExpressionValue(elementAccessed);
-        elAccessedLogger({ isElementAccessExpression: true, identifier });
+        elAccessedLogger({ isElementAccessExpression: true, identifier, argValue });
 
-        if (isObject(identifier) && !Array.isArray(identifier) && identifier.type === "node-object-literal") {
-            const maybeValue = getPropValue(identifier.value, argValue);
+        if (
+            isObject(identifier) &&
+            !Array.isArray(identifier) &&
+            (identifier.type === "object" || identifier.type === "map")
+        ) {
+            let maybeValue = identifier.type === "object" ? identifier.value[argValue] : identifier.value.get(argValue);
+            elAccessedLogger({ isElementAccessExpression: true, maybeValue });
+            if (maybeValue) {
+                const first = Array.isArray(maybeValue) ? maybeValue[0] : maybeValue;
+                return isBoxNode(first) ? first : box.cast(first, [expression, elementAccessed, arg]);
+            }
+
+            const identifierNode = identifier.getNode();
+            // probably deadcode, but could serve as fallback if the above fails
+            if (!Array.isArray(identifierNode) && Node.isObjectLiteralExpression(identifierNode)) {
+                maybeValue = getPropValue(identifierNode, argValue);
+            }
+
             if (!maybeValue) return;
-
-            return box.literal(maybeValue, [expression, elementAccessed, arg]);
         }
     }
 
@@ -585,9 +600,7 @@ const getArrayElementValueAtIndex = (array: ArrayLiteralExpression, index: numbe
     }
 
     if (Node.isObjectLiteralExpression(element)) {
-        // TODO opti = rm nodeObjectLiteral ?
-        // return maybeObjectLikeBox(element);
-        return box.nodeObjectLiteral(element);
+        return maybeObjectLikeBox(element);
     }
 };
 

@@ -225,14 +225,17 @@ it("extract it all", () => {
                       {
                           type: "literal",
                           value: "facebook.900",
+                          getNode: "StringLiteral",
                       },
                       {
                           type: "literal",
                           value: "facebook.900",
+                          getNode: "StringLiteral",
                       },
                       {
                           type: "literal",
                           value: "facebook.900",
+                          getNode: "StringLiteral",
                       },
                       {
                           type: "literal",
@@ -1544,6 +1547,7 @@ it("extract JsxAttribute > JsxExpression > ElementAccessExpression > ElementAcce
                       {
                           type: "literal",
                           value: "pink.600",
+                          getNode: "StringLiteral",
                       },
                   ],
               },
