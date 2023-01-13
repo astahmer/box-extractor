@@ -19,7 +19,6 @@ import {
     UsedComponentMap,
 } from "./getUsedPropertiesFromExtractNodeMap";
 import {
-    cloneAdapterContext,
     getCompiledSprinklePropertyByDebugIdPairMap,
     getUsedClassNameFromCompiledSprinkles,
     mutateContextByKeepingUsedRulesOnly,
@@ -29,16 +28,6 @@ import { createLogger } from "@box-extractor/logger";
 import { addMappedPropsToUsedMap } from "./addMappedPropsToUsedMap";
 import { Project, ts } from "ts-morph";
 // import diff from "microdiff";
-
-type OnAfterEvaluateMutation = {
-    filePath: string;
-    compiled: ReturnType<typeof getCompiledSprinklePropertyByDebugIdPairMap>;
-    usedClassNameList: Set<string>;
-    original: AdapterContext;
-    context: AdapterContext;
-    evalResult: Record<string, unknown>;
-    usedComponents: UsedComponentMap;
-};
 
 const loggerEval = createLogger("box-ex:ve:eval");
 const loggerExtract = createLogger("box-ex:ve:extract");
@@ -63,9 +52,7 @@ export const createViteVanillaExtractSprinklesExtractor = ({
     tsConfigFilePath = "tsconfig.json",
     ...options
 }: CreateViteVanillaExtractSprinklesExtractorOptions & {
-    vanillaExtractOptions?: VanillaExtractPluginOptions & {
-        onAfterEvaluateMutation?: (args: OnAfterEvaluateMutation) => void;
-    };
+    vanillaExtractOptions?: VanillaExtractPluginOptions;
 }): Plugin[] => {
     let server: ViteDevServer;
     let config: ResolvedConfig;
@@ -212,36 +199,6 @@ export const createViteVanillaExtractSprinklesExtractor = ({
         }),
         vanillaExtractPlugin({
             forceEmitCssInSsrBuild: true, // vite-plugin-ssr needs it, tropical too
-            serializeVanillaModule: (cssImports, exports, context, filePath) => {
-                const compiled = compiledByFilePath.get(filePath);
-                const usedClassNameList = usedClassNameListByPath.get(filePath) ?? new Set();
-                const previousUsedClassNameList = usedClassNameListByPathLastTime.get(filePath);
-
-                // re-use the same vanilla module string if the used classes didn't change
-                if (previousUsedClassNameList && usedClassNameList.size !== previousUsedClassNameList.size) {
-                    loggerSerialize("[FRESH] source changed, deleting cache", { filePath });
-                    vanillaModuleCache.delete(filePath);
-                } else if (usedClassNameListByPathLastTime.has(filePath)) {
-                    loggerSerialize("[CACHED] no diff, same classes used", { filePath });
-                }
-
-                usedClassNameListByPathLastTime.set(filePath, usedClassNameList);
-                const cached = vanillaModuleCache.get(filePath);
-
-                // we only care about .css.ts with sprinkles
-                if (!compiled || compiled.sprinkleConfigs.size === 0) {
-                    loggerSerialize("defaultSerializeVanillaModule");
-                    const result = cached ?? defaultSerializeVanillaModule(cssImports, exports, context);
-                    vanillaModuleCache.set(filePath, result);
-                    return result;
-                }
-
-                loggerSerialize("serializeVanillaModuleWithoutUnused", { filePath });
-                const result =
-                    cached ?? serializeVanillaModuleWithoutUnused(cssImports, exports, context, usedMap, compiled);
-                vanillaModuleCache.set(filePath, result);
-                return result;
-            },
             ...vanillaExtractOptions,
             onEvaluated: (args) => {
                 const { source, context, evalResult, filePath } = args;
@@ -273,11 +230,6 @@ export const createViteVanillaExtractSprinklesExtractor = ({
                 const usedClassNameList = getUsedClassNameFromCompiledSprinkles(compiled, usedMap);
                 usedClassNameListByPath.set(filePath, usedClassNameList);
 
-                let original: AdapterContext;
-                if (vanillaExtractOptions?.onAfterEvaluateMutation) {
-                    original = cloneAdapterContext(context);
-                }
-
                 loggerEval.lazy(() => ({
                     filePath,
                     fileScope: Array.from(context.cssByFileScope.keys()).map((scope) =>
@@ -295,16 +247,37 @@ export const createViteVanillaExtractSprinklesExtractor = ({
                         loggerResult({ before: before.length, after: after.length, fileScope, filePath });
                     },
                 });
-                vanillaExtractOptions?.onAfterEvaluateMutation?.({
-                    filePath,
-                    compiled,
-                    usedClassNameList,
-                    // @ts-expect-error
-                    original,
-                    context,
-                    evalResult,
-                    usedComponents: usedMap,
-                });
+            },
+            serializeVanillaModule: (cssImports, exports, context, filePath) => {
+                const compiled = compiledByFilePath.get(filePath);
+                const usedClassNameList = usedClassNameListByPath.get(filePath) ?? new Set();
+                const previousUsedClassNameList = usedClassNameListByPathLastTime.get(filePath);
+
+                // re-use the same vanilla module string if the used classes didn't change
+                if (previousUsedClassNameList && usedClassNameList.size !== previousUsedClassNameList.size) {
+                    loggerSerialize("[FRESH] source changed, deleting cache", { filePath });
+                    vanillaModuleCache.delete(filePath);
+                } else if (usedClassNameListByPathLastTime.has(filePath)) {
+                    loggerSerialize("[CACHED] no diff, same classes used", { filePath });
+                }
+
+                usedClassNameListByPathLastTime.set(filePath, usedClassNameList);
+                const cached = vanillaModuleCache.get(filePath);
+
+                // we only care about .css.ts with sprinkles
+                // TODO check recipes
+                if (!compiled || compiled.sprinkleConfigs.size === 0) {
+                    loggerSerialize("defaultSerializeVanillaModule");
+                    const result = cached ?? defaultSerializeVanillaModule(cssImports, exports, context);
+                    vanillaModuleCache.set(filePath, result);
+                    return result;
+                }
+
+                loggerSerialize("serializeVanillaModuleWithoutUnused", { filePath });
+                const result =
+                    cached ?? serializeVanillaModuleWithoutUnused(cssImports, exports, context, usedMap, compiled);
+                vanillaModuleCache.set(filePath, result);
+                return result;
             },
         }) as any,
     ];
