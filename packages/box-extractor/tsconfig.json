@@ -7,6 +7,8 @@
         "types": ["vite/client"],
         "noImplicitReturns": false,
         "target": "ES2019",
-        "moduleResolution": "Node"
+        "moduleResolution": "Node",
+        "declaration": true,
+        "declarationMap": true
     }
 }
