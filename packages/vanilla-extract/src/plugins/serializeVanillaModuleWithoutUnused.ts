@@ -5,7 +5,13 @@ import { stringify } from "javascript-stringify";
 import { isObject } from "pastable";
 import type { UsedComponentMap } from "./getUsedPropertiesFromExtractNodeMap";
 
-import { getEvalCompiledResultByKind, isCompiledSprinkle } from "./onEvaluated";
+import {
+    CompiledSprinkle,
+    getEvalCompiledResultByKind,
+    isCompiledSprinkle,
+    isRecipePatternResult,
+    PatternResult,
+} from "./onEvaluated";
 
 type UsedValuesMap = Map<
     string,
@@ -22,12 +28,14 @@ export function serializeVanillaModuleWithoutUnused({
     context,
     usedComponentsMap,
     compiled,
+    usedRecipeClassNameList,
 }: {
     cssImports: string[];
     exports: Record<string, unknown>;
     context: AdapterContext;
     usedComponentsMap: UsedComponentMap;
     compiled: ReturnType<typeof getEvalCompiledResultByKind>;
+    usedRecipeClassNameList: Set<string>;
 }) {
     // console.log("serializeVanillaModuleWithoutUnused", usedComponentsMap);
     const unusedCompositions = context.composedClassLists
@@ -41,7 +49,13 @@ export function serializeVanillaModuleWithoutUnused({
     const usedValuesMap = mergeUsedValues(usedComponentsMap, compiled);
 
     const moduleExports = Object.keys(exports).map((key) => {
-        const result = stringifyExports(recipeImports, exports[key], unusedCompositionRegex, usedValuesMap);
+        const result = stringifyExports({
+            recipeImports,
+            exported: exports[key],
+            unusedCompositionRegex,
+            usedValuesMap,
+            usedRecipeClassNameList,
+        });
         return key === "default" ? `export default ${result};` : `export var ${key} = ${result};`;
     });
 
@@ -156,90 +170,41 @@ function mergeUsedValues(usedMap: UsedComponentMap, compiled: ReturnType<typeof 
     return mergedMap;
 }
 
-function stringifyExports(
-    recipeImports: Set<string>,
-    value: any,
-    unusedCompositionRegex: RegExp | null,
-    usedValuesMap: UsedValuesMap
-): string {
+function stringifyExports({
+    recipeImports,
+    exported,
+    unusedCompositionRegex,
+    usedValuesMap,
+    usedRecipeClassNameList,
+}: {
+    recipeImports: Set<string>;
+    exported: unknown;
+    unusedCompositionRegex: RegExp | null;
+    usedValuesMap: UsedValuesMap;
+    usedRecipeClassNameList: Set<string>;
+}): string {
     return stringify(
-        value,
+        exported,
         (value, _indent, next) => {
             const valueType = typeof value;
 
             if (isCompiledSprinkle(value)) {
                 // console.log({ sprinkle: value });
 
-                const usedConditionNames = new Set<string>();
-                const usedStyles = Object.fromEntries(
-                    Object.entries(value.styles)
-                        .filter(([propName]) => usedValuesMap.has(propName))
-                        .map(([propName]) => {
-                            const propUsedValues = usedValuesMap.get(propName)!;
-
-                            return [
-                                propName,
-                                {
-                                    ...value.styles[propName],
-                                    values: Object.fromEntries(
-                                        Object.entries(value.styles[propName]?.values ?? {})
-                                            .filter(([valueName]) => propUsedValues.allProperties.has(valueName))
-                                            .map(([valueName, propValueMap]) => {
-                                                const updated = {
-                                                    defaultClass: propValueMap.defaultClass,
-                                                } as typeof propValueMap;
-
-                                                const conditions = propValueMap.conditions;
-                                                if (conditions && propUsedValues.conditionalProperties.size > 0) {
-                                                    const usedConditionsValues = Object.entries(conditions).filter(
-                                                        function ([conditionName]) {
-                                                            const isPropUsedInDefaultCondition =
-                                                                (propUsedValues.properties.has(valueName) &&
-                                                                    propValueMap.defaultClass ===
-                                                                        conditions[conditionName]) ??
-                                                                false;
-
-                                                            const isPropUsedByCondition =
-                                                                propUsedValues.conditionalProperties.has(
-                                                                    conditionName
-                                                                ) &&
-                                                                propUsedValues.conditionalProperties
-                                                                    .get(conditionName)!
-                                                                    .has(valueName);
-
-                                                            const isConditionUsed =
-                                                                isPropUsedInDefaultCondition || isPropUsedByCondition;
-                                                            if (isConditionUsed) {
-                                                                usedConditionNames.add(conditionName);
-                                                            }
-
-                                                            return isConditionUsed;
-                                                        }
-                                                    );
-
-                                                    if (usedConditionsValues.length > 0) {
-                                                        updated.conditions = Object.fromEntries(usedConditionsValues);
-                                                    }
-                                                }
-
-                                                return [valueName, updated];
-                                            })
-                                    ),
-                                },
-                            ];
-                        })
-                );
-
-                if (usedConditionNames.size === 0) {
-                    value.conditions = undefined;
-                } else if (value.conditions) {
-                    value.conditions.conditionNames = [...usedConditionNames];
-                }
+                const usedStyles = getStylesWithoutUnusedSprinkleProps(value, usedValuesMap);
 
                 // console.log({ usedConditionNames });
                 // console.dir({ usedStyles, value });
 
                 return next({ ...value, styles: usedStyles });
+            } else if (isRecipePatternResult(value)) {
+                const usedRecipe = getRecipeWithoutUnusedVariants(value as PatternResult, usedRecipeClassNameList);
+                console.log({
+                    value,
+                    usedRecipe,
+                });
+
+                return next(usedRecipe);
             }
 
             if (
@@ -275,9 +240,36 @@ function stringifyExports(
                     const hashedImportName = `_${hash(`${importName}${importPath}`).slice(0, 5)}`;
 
                     recipeImports.add(`import { ${importName} as ${hashedImportName} } from '${importPath}';`);
+                    console.log({
+                        importName,
+                        importPath,
+                        args,
+                        hashedImportName,
+                        recipeImports,
+                        value,
+                        result: `${hashedImportName}(${args
+                            .map((arg) =>
+                                stringifyExports({
+                                    recipeImports,
+                                    exported: arg,
+                                    unusedCompositionRegex,
+                                    usedValuesMap,
+                                    usedRecipeClassNameList,
+                                })
+                            )
+                            .join(",")})`,
+                    });
 
                     return `${hashedImportName}(${args
-                        .map((arg) => stringifyExports(recipeImports, arg, unusedCompositionRegex, usedValuesMap))
+                        .map((arg) =>
+                            stringifyExports({
+                                recipeImports,
+                                exported: arg,
+                                unusedCompositionRegex,
+                                usedValuesMap,
+                                usedRecipeClassNameList,
+                            })
+                        )
                         .join(",")})`;
                 } catch (error) {
                     console.error(error);
@@ -300,3 +292,105 @@ function stringifyExports(
         }
     )!;
 }
+
+function getStylesWithoutUnusedSprinkleProps(value: CompiledSprinkle, usedValuesMap: UsedValuesMap) {
+    const usedConditionNames = new Set<string>();
+    const usedStyles = Object.fromEntries(
+        Object.entries(value.styles)
+            .filter(([propName]) => usedValuesMap.has(propName))
+            .map(([propName]) => {
+                const propUsedValues = usedValuesMap.get(propName)!;
+
+                return [
+                    propName,
+                    {
+                        ...value.styles[propName],
+                        values: Object.fromEntries(
+                            Object.entries(value.styles[propName]?.values ?? {})
+                                .filter(([valueName]) => propUsedValues.allProperties.has(valueName))
+                                .map(([valueName, propValueMap]) => {
+                                    const updated = {
+                                        defaultClass: propValueMap.defaultClass,
+                                    } as typeof propValueMap;
+
+                                    const conditions = propValueMap.conditions;
+                                    if (conditions && propUsedValues.conditionalProperties.size > 0) {
+                                        const usedConditionsValues = Object.entries(conditions).filter(function ([
+                                            conditionName,
+                                        ]) {
+                                            const isPropUsedInDefaultCondition =
+                                                (propUsedValues.properties.has(valueName) &&
+                                                    propValueMap.defaultClass === conditions[conditionName]) ??
+                                                false;
+
+                                            const isPropUsedByCondition =
+                                                propUsedValues.conditionalProperties.has(conditionName) &&
+                                                propUsedValues.conditionalProperties.get(conditionName)!.has(valueName);
+
+                                            const isConditionUsed =
+                                                isPropUsedInDefaultCondition || isPropUsedByCondition;
+                                            if (isConditionUsed) {
+                                                usedConditionNames.add(conditionName);
+                                            }
+
+                                            return isConditionUsed;
+                                        });
+
+                                        if (usedConditionsValues.length > 0) {
+                                            updated.conditions = Object.fromEntries(usedConditionsValues);
+                                        }
+                                    }
+
+                                    return [valueName, updated];
+                                })
+                        ),
+                    },
+                ];
+            })
+    );
+
+    if (usedConditionNames.size === 0) {
+        value.conditions = undefined;
+    } else if (value.conditions) {
+        value.conditions.conditionNames = [...usedConditionNames];
+    }
+
+    return usedStyles;
+}
+
+const getRecipeWithoutUnusedVariants = (recipe: PatternResult, usedRecipeClassNameList: Set<string>) => {
+    const updated = {
+        defaultClassName: "",
+        variantClassNames: {},
+        defaultVariants: {},
+        compoundVariants: [],
+    } as PatternResult;
+
+    if (recipe.defaultClassName) {
+        updated.defaultClassName = recipe.defaultClassName;
+    }
+
+    if (recipe.variantClassNames) {
+        Object.entries(recipe.variantClassNames).forEach(([propName, variantMap]) =>
+            Object.entries(variantMap).forEach(([propValue, className]) => {
+                if (!usedRecipeClassNameList.has(className)) return;
+
+                if (!updated.variantClassNames[propName]) {
+                    updated.variantClassNames[propName] = {};
+                }
+
+                updated.variantClassNames[propName]![propValue] = className;
+            })
+        );
+    }
+
+    if (recipe.compoundVariants) {
+        recipe.compoundVariants.forEach(([variantSelection, className], index) => {
+            if (!usedRecipeClassNameList.has(className)) return;
+
+            updated.compoundVariants[index] = [variantSelection, className];
+        });
+    }
+
+    return updated;
+};

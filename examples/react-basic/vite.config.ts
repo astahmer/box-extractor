@@ -12,7 +12,7 @@ export default defineConfig((_env) => ({
         createViteVanillaExtractSprinklesExtractor({
             components: ["ColorBox", "DessertBox", "Box"],
             sprinkles: ["colorSprinkles", "themeSprinkles", "minimalSprinkles"],
-            recipes: ["button"],
+            recipes: ["button", "multiple", "row"],
         }),
         // vanillaExtractPlugin() as any,
         react(),

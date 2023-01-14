@@ -29,8 +29,7 @@ type VariantSelection<Variants extends VariantGroups> = {
     [VariantGroup in keyof Variants]?: BooleanMap<keyof Variants[VariantGroup]>;
 };
 
-// renamed to RecipePatternResult from PatternResult & made Partial<>
-type PatternResult = {
+export type PatternResult = {
     defaultClassName: string;
     variantClassNames: {
         [P in keyof VariantGroups]: { [P in keyof VariantGroups[keyof VariantGroups]]: string };
@@ -38,18 +37,18 @@ type PatternResult = {
     defaultVariants: VariantSelection<VariantGroups>;
     compoundVariants: Array<[VariantSelection<VariantGroups>, string]>;
 };
-type RecipePatternResult = { name: string } & Partial<PatternResult>;
+export type RecipePatternResult = { name: string } & Partial<PatternResult>;
 
 // end of inlined code
 
-type CompiledSprinkle = { styles: Record<string, CompiledSprinklePropertyMap> } & Conditions;
-type CompiledResult = CompiledSprinkle | RecipePatternResult;
+export type CompiledSprinkle = { styles: Record<string, CompiledSprinklePropertyMap> } & Conditions;
+export type CompiledResult = CompiledSprinkle | RecipePatternResult;
 
 export const isCompiledSprinkle = (value: any): value is CompiledSprinkle => {
     return isObject(value) && "styles" in value && "conditions" in value;
 };
 
-export const isRecipePatternResult = (value: any): value is RecipePatternResult => {
+export const isRecipePatternResult = (value: any): value is RecipePatternResult | PatternResult => {
     return (
         isObject(value) &&
         ("defaultClassName" in value ||
@@ -83,6 +82,7 @@ export function getUsedClassNameListFromCompiledResult({
     // console.dir({ shorthandsMap }, { depth: null });
 
     const usedClassNameList = new Set<string>();
+    const usedRecipeClassNameList = new Set<string>();
 
     Array.from(usedMap.entries()).forEach(([_componentName, usedStyles]) => {
         console.log({ _componentName }, usedStyles);
@@ -129,14 +129,18 @@ export function getUsedClassNameListFromCompiledResult({
         if (!recipe) return;
         if (!isRecipePatternResult(recipe)) return;
 
-        let isUsingRecipe = false;
+        if (recipe.defaultClassName) {
+            usedClassNameList.add(recipe.defaultClassName);
+            usedRecipeClassNameList.add(recipe.defaultClassName);
+        }
+
         if (recipe.variantClassNames) {
             Object.entries(recipe.variantClassNames).forEach(([propName, variantClassNameMap]) => {
                 Object.entries(variantClassNameMap).forEach(([propValue, className]) => {
                     const recipeDebugId = `recipe.${recipe.name}.variant.${propName}_${propValue}`;
                     if (recipeDebugId === debugId) {
                         usedClassNameList.add(className);
-                        isUsingRecipe = true;
+                        usedRecipeClassNameList.add(className);
                     }
                 });
             });
@@ -147,17 +151,13 @@ export function getUsedClassNameListFromCompiledResult({
                 const recipeDebugId = `recipe.${recipe.name}.compound.${index}`;
                 if (recipeDebugId === debugId) {
                     usedClassNameList.add(className);
-                    isUsingRecipe = true;
+                    usedRecipeClassNameList.add(className);
                 }
             });
         }
-
-        if (isUsingRecipe && recipe.defaultClassName) {
-            usedClassNameList.add(recipe.defaultClassName);
-        }
     });
 
-    return usedClassNameList;
+    return { usedClassNameList, usedRecipeClassNameList };
 }
 
 type InferMapValue<T> = T extends Map<any, infer V> ? V : never;

@@ -1,11 +1,11 @@
 import { recipe } from "@vanilla-extract/recipes";
+import { minimalSprinkles } from "./minimalSprinkles.css";
 
 // taken from https://vanilla-extract.style/documentation/packages/recipes/#recipe
 export const button = recipe({
     base: {
         borderRadius: 6,
     },
-
     variants: {
         color: {
             neutral: { background: "whitesmoke" },
@@ -21,7 +21,6 @@ export const button = recipe({
             true: { borderRadius: 999 },
         },
     },
-
     // Applied when multiple variants are set at once
     compoundVariants: [
         {
@@ -34,9 +33,20 @@ export const button = recipe({
             },
         },
     ],
-
     defaultVariants: {
         color: "accent",
         size: "medium",
     },
+});
+
+export const multiple = recipe({
+    base: [minimalSprinkles({ color: "brand" }), minimalSprinkles({ backgroundColor: "main" })],
+    variants: {
+        first: { colored: minimalSprinkles({ color: "other" }), absolute: minimalSprinkles({ position: "absolute" }) },
+        second: { backgroundColor: minimalSprinkles({ backgroundColor: "secondary" }) },
+    },
+});
+
+export const row = recipe({
+    base: minimalSprinkles({ display: "flex" }),
 });

@@ -38,7 +38,6 @@ export function createEsbuildBoxExtractor({
 
             // build.onLoad({ filter: /.*/, namespace: boxExtractorNamespace }, async ({ path }) => {
             build.onLoad({ filter: tsRE }, async ({ path }) => {
-                console.log({ path });
                 const code = await fs.promises.readFile(path, "utf8");
 
                 // add ts file to project so that references can be resolved

@@ -83,6 +83,7 @@ export const createViteVanillaExtractSprinklesExtractor = ({
     const vanillaModuleCache = new Map<string, string>();
     const usedClassNameListByPath = new Map<string, Set<string>>();
     const usedClassNameListByPathLastTime = new Map<string, Set<string>>();
+    const usedRecipeClassNameListByPath = new Map<string, Set<string>>();
 
     const sprinkles: Extractable = Array.isArray(_sprinkles)
         ? Object.fromEntries(_sprinkles.map((name) => [name, { properties: "all" }]))
@@ -266,13 +267,14 @@ export const createViteVanillaExtractSprinklesExtractor = ({
                     addMappedPropsToUsedMap(mappedProps, usedMap);
                 }
 
-                const usedClassNameList = getUsedClassNameListFromCompiledResult({
+                const { usedClassNameList, usedRecipeClassNameList } = getUsedClassNameListFromCompiledResult({
                     compiled,
                     usedMap,
                     usedRecipeDebugIdList,
                 });
                 console.log({ usedClassNameList });
                 usedClassNameListByPath.set(filePath, usedClassNameList);
+                usedRecipeClassNameListByPath.set(filePath, usedRecipeClassNameList);
 
                 loggerEval.lazy(() => ({
                     filePath,
@@ -308,8 +310,7 @@ export const createViteVanillaExtractSprinklesExtractor = ({
                 usedClassNameListByPathLastTime.set(filePath, usedClassNameList);
                 const cached = vanillaModuleCache.get(filePath);
 
-                // we only care about .css.ts with sprinkles
-                // TODO check recipes
+                // we only care about .css.ts with sprinkles or recipes
                 if (!compiled || (compiled.sprinkleConfigs.size === 0 && compiled.recipesByDebugId.size === 0)) {
                     loggerSerialize("no sprinkles/recipes found -> defaultSerializeVanillaModule");
                     const result = cached ?? defaultSerializeVanillaModule(cssImports, exports, context);
@@ -317,6 +318,7 @@ export const createViteVanillaExtractSprinklesExtractor = ({
                     return result;
                 }
 
+                const usedRecipeClassNameList = usedRecipeClassNameListByPath.get(filePath) ?? new Set();
                 loggerSerialize("serializeVanillaModuleWithoutUnused", { filePath });
                 const result =
                     cached ??
@@ -325,6 +327,7 @@ export const createViteVanillaExtractSprinklesExtractor = ({
                         exports,
                         context,
                         usedComponentsMap: usedMap,
+                        usedRecipeClassNameList,
                         compiled,
                     });
                 vanillaModuleCache.set(filePath, result);

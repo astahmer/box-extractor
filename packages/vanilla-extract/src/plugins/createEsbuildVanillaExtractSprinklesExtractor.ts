@@ -36,7 +36,9 @@ export const createEsbuildVanillaExtractSprinklesExtractor = ({
 
     const usedDebugIdList = new Set<string>();
     const usedSprinkleDebugIdList = new Set<string>();
+
     const usedRecipeDebugIdList = new Set<string>();
+    const usedRecipeClassNameListByPath = new Map<string, Set<string>>();
 
     const sprinkles: Extractable = Array.isArray(_sprinkles)
         ? Object.fromEntries(_sprinkles.map((name) => [name, { properties: "all" }]))
@@ -75,11 +77,14 @@ export const createEsbuildVanillaExtractSprinklesExtractor = ({
                 }
 
                 // console.dir({ serializeVanillaModule: true, filePath }, { depth: null });
+                const usedRecipeClassNameList = usedRecipeClassNameListByPath.get(filePath) ?? new Set();
+
                 return serializeVanillaModuleWithoutUnused({
                     cssImports,
                     exports,
                     context,
                     usedComponentsMap: usedMap,
+                    usedRecipeClassNameList,
                     compiled,
                 });
             },
@@ -100,11 +105,12 @@ export const createEsbuildVanillaExtractSprinklesExtractor = ({
 
                 compiledByFilePath.set(filePath, compiled);
 
-                const usedClassNameList = getUsedClassNameListFromCompiledResult({
+                const { usedClassNameList, usedRecipeClassNameList } = getUsedClassNameListFromCompiledResult({
                     compiled,
                     usedMap,
                     usedRecipeDebugIdList,
                 });
+                usedRecipeClassNameListByPath.set(filePath, usedRecipeClassNameList);
 
                 // console.log({
                 //     filePath,
