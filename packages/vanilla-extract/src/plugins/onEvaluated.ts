@@ -1,4 +1,5 @@
 import type { PrimitiveType } from "@box-extractor/core";
+import type { ComplexStyleRule } from "@vanilla-extract/css";
 import type { AdapterContext } from "@vanilla-extract/integration";
 import { castAsArray, isDefined, isObject } from "pastable";
 import type { UsedComponentMap } from "./getUsedPropertiesFromExtractNodeMap";
@@ -15,9 +16,47 @@ type Conditions = {
           };
 };
 
+// Inlined from https://github.com/astahmer/vanilla-extract/blob/dab0f257c10cdf3aec9a220dbf6191281ada0831/packages/recipes/src/types.ts#L1
+// since it's not exported
+type RecipeStyleRule = ComplexStyleRule | string;
+
+type VariantDefinitions = Record<string, RecipeStyleRule>;
+
+type BooleanMap<T> = T extends "true" | "false" ? boolean : T;
+
+type VariantGroups = Record<string, VariantDefinitions>;
+type VariantSelection<Variants extends VariantGroups> = {
+    [VariantGroup in keyof Variants]?: BooleanMap<keyof Variants[VariantGroup]>;
+};
+
+// renamed to RecipePatternResult from PatternResult & made Partial<>
+type PatternResult = {
+    defaultClassName: string;
+    variantClassNames: {
+        [P in keyof VariantGroups]: { [P in keyof VariantGroups[keyof VariantGroups]]: string };
+    };
+    defaultVariants: VariantSelection<VariantGroups>;
+    compoundVariants: Array<[VariantSelection<VariantGroups>, string]>;
+};
+type RecipePatternResult = { name: string } & Partial<PatternResult>;
+
+// end of inlined code
+
 type CompiledSprinkle = { styles: Record<string, CompiledSprinklePropertyMap> } & Conditions;
+type CompiledResult = CompiledSprinkle | RecipePatternResult;
+
 export const isCompiledSprinkle = (value: any): value is CompiledSprinkle => {
     return isObject(value) && "styles" in value && "conditions" in value;
+};
+
+export const isRecipePatternResult = (value: any): value is RecipePatternResult => {
+    return (
+        isObject(value) &&
+        ("defaultClassName" in value ||
+            "variantClassNames" in value ||
+            "defaultVariants" in value ||
+            "compoundVariants" in value)
+    );
 };
 
 type CompiledSprinklePropertyMap = {
@@ -30,15 +69,15 @@ type CompiledSprinklePropertyValue = {
     defaultClass: string;
 };
 
-export function getUsedClassNameFromCompiledSprinkles(
-    compiled: ReturnType<typeof getCompiledSprinklePropertyByDebugIdPairMap>,
-    usedMap: UsedComponentMap
-) {
-    // console.log("getUsedClassNameFromCompiledSprinkles", { context, evalResult, usedMap });
-
-    // console.dir(Array.from(context.cssByFileScope.values()), { depth: null });
-    // console.log(compiledSprinkleByDebugId);
-    // console.log(identifierByDebugId);
+export function getUsedClassNameListFromCompiledResult({
+    compiled,
+    usedMap,
+    usedRecipeDebugIdList,
+}: {
+    compiled: ReturnType<typeof getEvalCompiledResultByKind>;
+    usedMap: UsedComponentMap;
+    usedRecipeDebugIdList: Set<string>;
+}) {
     const compiledMap = compiled.compiledSprinkleByDebugId;
     const shorthandsMap = new Map(...Array.from(compiled.sprinkleConfigs.values()).map((info) => info.shorthands));
     // console.dir({ shorthandsMap }, { depth: null });
@@ -46,7 +85,7 @@ export function getUsedClassNameFromCompiledSprinkles(
     const usedClassNameList = new Set<string>();
 
     Array.from(usedMap.entries()).forEach(([_componentName, usedStyles]) => {
-        // console.log(componentName, usedStyles);
+        console.log({ _componentName }, usedStyles);
         // console.dir({ usedMap }, { depth: null });
 
         usedStyles.properties.forEach((values, propNameOrShorthand) => {
@@ -54,7 +93,7 @@ export function getUsedClassNameFromCompiledSprinkles(
                 const propName = shorthandsMap.has(propNameOrShorthand)
                     ? shorthandsMap.get(propNameOrShorthand)!.at(0)!
                     : propNameOrShorthand;
-                const debugId = getDebugId(propName, value);
+                const debugId = getSprinkleDebugId(propName, value);
                 const className = compiledMap.get(debugId)?.defaultClass;
                 // console.log({ propNameOrShorthand, propName, value, debugId, className });
                 if (className) {
@@ -74,7 +113,7 @@ export function getUsedClassNameFromCompiledSprinkles(
                         : isReversedConditionProp
                         ? condNameOrPropName
                         : propNameOrShorthand;
-                    const debugId = getDebugId(propName, value);
+                    const debugId = getSprinkleDebugId(propName, value);
                     const propValue = compiledMap.get(debugId);
                     const className = propValue?.conditions?.[conditionName];
                     if (className) {
@@ -85,7 +124,38 @@ export function getUsedClassNameFromCompiledSprinkles(
         });
     });
 
-    // console.log({ usedClassNameList });
+    usedRecipeDebugIdList.forEach((debugId) => {
+        const recipe = compiled.recipesByDebugId.get(debugId);
+        if (!recipe) return;
+        if (!isRecipePatternResult(recipe)) return;
+
+        let isUsingRecipe = false;
+        if (recipe.variantClassNames) {
+            Object.entries(recipe.variantClassNames).forEach(([propName, variantClassNameMap]) => {
+                Object.entries(variantClassNameMap).forEach(([propValue, className]) => {
+                    const recipeDebugId = `recipe.${recipe.name}.variant.${propName}_${propValue}`;
+                    if (recipeDebugId === debugId) {
+                        usedClassNameList.add(className);
+                        isUsingRecipe = true;
+                    }
+                });
+            });
+        }
+
+        if (recipe.compoundVariants) {
+            recipe.compoundVariants.forEach(([_variantSelection, className], index) => {
+                const recipeDebugId = `recipe.${recipe.name}.compound.${index}`;
+                if (recipeDebugId === debugId) {
+                    usedClassNameList.add(className);
+                    isUsingRecipe = true;
+                }
+            });
+        }
+
+        if (isUsingRecipe && recipe.defaultClassName) {
+            usedClassNameList.add(recipe.defaultClassName);
+        }
+    });
 
     return usedClassNameList;
 }
@@ -96,14 +166,16 @@ type CssRuleList = InferMapValue<AdapterContext["cssByFileScope"]>;
 export const mutateContextByKeepingUsedRulesOnly = ({
     context,
     usedClassNameList,
-    sprinklesClassNames,
+    compiled,
     onMutate,
 }: {
     context: AdapterContext;
     usedClassNameList: Set<string>;
-    sprinklesClassNames: ReturnType<typeof getCompiledSprinklePropertyByDebugIdPairMap>["sprinklesClassNames"];
+    compiled: ReturnType<typeof getEvalCompiledResultByKind>;
     onMutate?: (args: { fileScope: string; before: CssRuleList; after: CssRuleList }) => void;
 }) => {
+    const { sprinklesClassNames, recipesClassNames } = compiled;
+
     context.cssByFileScope.forEach((css, fileScope) => {
         // const fileName = getFileNameFromFileScopeStr(fileScope);
         const usedRules = css.filter((rule) => {
@@ -111,7 +183,8 @@ export const mutateContextByKeepingUsedRulesOnly = ({
 
             const isClassNameUsed = usedClassNameList.has(rule.selector);
             const isSprinklesClassName = sprinklesClassNames.has(rule.selector);
-            const isSelectorUsed = isClassNameUsed || !isSprinklesClassName;
+            const isRecipesClassName = recipesClassNames.has(rule.selector);
+            const isSelectorUsed = isClassNameUsed || (!isSprinklesClassName && !isRecipesClassName);
 
             if (!isSelectorUsed) {
                 context.localClassNames.delete(rule.selector);
@@ -138,28 +211,37 @@ export const cloneAdapterContext = (context: AdapterContext): AdapterContext => 
     };
 };
 
-const getDebugId = (propName: string, value: PrimitiveType) => `${propName}_${value}`;
+const getSprinkleDebugId = (propName: string, value: PrimitiveType) => `${propName}_${value}`;
+// const getRecipeDebugId = (propName: string, value: PrimitiveType) => `${propName}_${value}`;
 
 type CompiledSprinkleInfo = {
     properties: Set<string>;
     shorthands: Map<string, string[]>;
 } & Conditions;
 
-export function getCompiledSprinklePropertyByDebugIdPairMap(evalResult: Record<string, unknown>) {
+export function getEvalCompiledResultByKind(evalResult: Record<string, unknown>) {
+    const evaluated = getSprinklesMap(evalResult) as Record<string, CompiledResult[]>;
+    const flatSprinkles = [] as Array<CompiledSprinkle & { name: string }>;
+    const flatRecipes = [] as RecipePatternResult[];
+
+    Object.entries(evaluated).flatMap(([exportName, exportResult]) => {
+        const results = castAsArray(exportResult);
+
+        results.forEach((compiledItem) => {
+            if (isCompiledSprinkle(compiledItem)) {
+                flatSprinkles.push({ ...compiledItem, name: exportName });
+            } else if (isRecipePatternResult(compiledItem)) {
+                flatRecipes.push({ ...compiledItem, name: exportName });
+            }
+        });
+    });
+
+    const sprinklesClassNames = new Set<string>();
+    const sprinkleConfigs = new Map<string, CompiledSprinkleInfo>();
     const compiledSprinkleByDebugId = new Map<
         string,
         CompiledSprinklePropertyValue & { defaultConditionName: string | undefined }
     >();
-    const sprinklesClassNames = new Set<string>();
-    const sprinkleConfigs = new Map<string, CompiledSprinkleInfo>();
-
-    const evaluated = getSprinklesMap(evalResult) as Record<string, CompiledSprinkle[]>;
-    const flatSprinkles = Object.entries(evaluated).flatMap(([sprinkleName, sprinkle]) => {
-        return castAsArray(sprinkle)
-            .filter(isCompiledSprinkle)
-            .map((s) => ({ ...s, name: sprinkleName }));
-    });
-
     flatSprinkles.forEach((sprinkle) => {
         let defaultConditionName: string | undefined;
         if (isDefined(sprinkle.conditions) && sprinkle.conditions.defaultCondition) {
@@ -183,7 +265,7 @@ export function getCompiledSprinklePropertyByDebugIdPairMap(evalResult: Record<s
                         });
                     }
 
-                    compiledSprinkleByDebugId.set(getDebugId(propNameOrShorthand, valueName), {
+                    compiledSprinkleByDebugId.set(getSprinkleDebugId(propNameOrShorthand, valueName), {
                         ...value,
                         defaultConditionName,
                     });
@@ -212,12 +294,12 @@ export function getCompiledSprinklePropertyByDebugIdPairMap(evalResult: Record<s
                             }
 
                             // pt_0
-                            compiledSprinkleByDebugId.set(getDebugId(propNameOrShorthand, valueName), {
+                            compiledSprinkleByDebugId.set(getSprinkleDebugId(propNameOrShorthand, valueName), {
                                 ...value,
                                 defaultConditionName,
                             });
                             // paddingTop_0
-                            compiledSprinkleByDebugId.set(getDebugId(propName, valueName), {
+                            compiledSprinkleByDebugId.set(getSprinkleDebugId(propName, valueName), {
                                 ...value,
                                 defaultConditionName,
                             });
@@ -228,10 +310,42 @@ export function getCompiledSprinklePropertyByDebugIdPairMap(evalResult: Record<s
         });
     });
 
+    const recipesClassNames = new Set<string>();
+    const recipesByDebugId = new Map<string, RecipePatternResult>();
+    flatRecipes.forEach((recipe) => {
+        if (recipe.defaultClassName) {
+            recipesClassNames.add(recipe.defaultClassName);
+            recipesByDebugId.set(`recipe.${recipe.name}.default`, recipe);
+        }
+
+        if (recipe.variantClassNames) {
+            Object.entries(recipe.variantClassNames).forEach(([propName, variantMap]) =>
+                Object.entries(variantMap).forEach(([propValue, className]) => {
+                    recipesClassNames.add(className);
+                    recipesByDebugId.set(`recipe.${recipe.name}.variant.${propName}_${propValue}`, recipe);
+                })
+            );
+        }
+
+        if (recipe.compoundVariants) {
+            recipe.compoundVariants.forEach(([_variantSelection, className], index) => {
+                recipesClassNames.add(className);
+                recipesByDebugId.set(`recipe.${recipe.name}.compound.${index}`, recipe);
+            });
+        }
+    });
+
+    // console.dir(
+    //     { evaluated, recipesClassNames, variantByDebugId: Array.from(variantByDebugId.keys()) },
+    //     { depth: null }
+    // );
+
     return {
-        compiledSprinkleByDebugId,
-        sprinklesClassNames,
         evaluated,
+        sprinklesClassNames,
         sprinkleConfigs,
+        compiledSprinkleByDebugId,
+        recipesClassNames,
+        recipesByDebugId,
     };
 }

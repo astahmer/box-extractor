@@ -5,7 +5,7 @@ import { stringify } from "javascript-stringify";
 import { isObject } from "pastable";
 import type { UsedComponentMap } from "./getUsedPropertiesFromExtractNodeMap";
 
-import { getCompiledSprinklePropertyByDebugIdPairMap, isCompiledSprinkle } from "./onEvaluated";
+import { getEvalCompiledResultByKind, isCompiledSprinkle } from "./onEvaluated";
 
 type UsedValuesMap = Map<
     string,
@@ -16,13 +16,19 @@ type UsedValuesMap = Map<
     }
 >;
 
-export function serializeVanillaModuleWithoutUnused(
-    cssImports: string[],
-    exports: Record<string, unknown>,
-    context: AdapterContext,
-    usedComponentsMap: UsedComponentMap,
-    compiled: ReturnType<typeof getCompiledSprinklePropertyByDebugIdPairMap>
-) {
+export function serializeVanillaModuleWithoutUnused({
+    cssImports,
+    exports,
+    context,
+    usedComponentsMap,
+    compiled,
+}: {
+    cssImports: string[];
+    exports: Record<string, unknown>;
+    context: AdapterContext;
+    usedComponentsMap: UsedComponentMap;
+    compiled: ReturnType<typeof getEvalCompiledResultByKind>;
+}) {
     // console.log("serializeVanillaModuleWithoutUnused", usedComponentsMap);
     const unusedCompositions = context.composedClassLists
         .filter(({ identifier }) => !context.usedCompositions.has(identifier))
@@ -45,10 +51,7 @@ export function serializeVanillaModuleWithoutUnused(
     return outputCode.join("\n");
 }
 
-function mergeUsedValues(
-    usedMap: UsedComponentMap,
-    compiled: ReturnType<typeof getCompiledSprinklePropertyByDebugIdPairMap>
-) {
+function mergeUsedValues(usedMap: UsedComponentMap, compiled: ReturnType<typeof getEvalCompiledResultByKind>) {
     const mergedMap: UsedValuesMap = new Map();
     const shorthandsMap = new Map(...Array.from(compiled.sprinkleConfigs.values()).map((info) => info.shorthands));
 

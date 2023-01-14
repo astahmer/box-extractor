@@ -22,6 +22,7 @@
         "@box-extractor/vanilla-theme": "workspace:*",
         "@dessert-box/react": "^0.4.0",
         "@vanilla-extract/css": "^1.9.2",
+        "@vanilla-extract/recipes": "^0.3.0",
         "@vanilla-extract/sprinkles": "^1.5.0",
         "pastable": "^2.0.10",
         "react": "^18.2.0",

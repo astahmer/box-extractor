@@ -35,15 +35,25 @@ const loggerExtract = createLogger("box-ex:ve:extract");
 const loggerSerialize = createLogger("box-ex:ve:serialize");
 const loggerResult = createLogger("box-ex:ve:result");
 
-export type CreateViteVanillaExtractSprinklesExtractorOptions = Omit<CreateViteBoxExtractorOptions, "extractMap"> &
+export type CreateViteVanillaExtractSprinklesExtractorOptions = Omit<
+    CreateViteBoxExtractorOptions,
+    "extractMap" | "functions"
+> &
     Partial<Pick<CreateViteBoxExtractorOptions, "extractMap">> & {
         usedMap?: UsedComponentMap;
         mappedProps?: Record<string, string[]>;
+        sprinkles?: CreateViteBoxExtractorOptions["functions"];
+        sprinklesFnCreator?: { fn: string; importer: string };
+        recipes?: string[];
+        recipesFnCreator?: { fn: string; importer: string };
     };
 
 export const createViteVanillaExtractSprinklesExtractor = ({
     components = {},
-    functions = {},
+    sprinkles: _sprinkles = {},
+    sprinklesFnCreator = { fn: "createSprinkles", importer: "@vanilla-extract/sprinkles" },
+    recipes: _recipes = [],
+    recipesFnCreator = { fn: "recipe", importer: "@vanilla-extract/recipes" },
     mappedProps = {},
     onExtracted,
     vanillaExtractOptions,
@@ -64,12 +74,24 @@ export const createViteVanillaExtractSprinklesExtractor = ({
     const extractCacheById = new Map<string, { hashed: string; serialized: string[] }>();
     const compiledByFilePath = new Map<string, ReturnType<typeof getEvalCompiledResultByKind>>();
     const usedDebugIdList = new Set<string>();
+    const usedSprinkleDebugIdList = new Set<string>();
+    const usedRecipeDebugIdList = new Set<string>();
+
     const sourceByPath = new Map<string, string>();
     const wasInvalidatedButDidntChange = new Set<string>();
 
     const vanillaModuleCache = new Map<string, string>();
     const usedClassNameListByPath = new Map<string, Set<string>>();
     const usedClassNameListByPathLastTime = new Map<string, Set<string>>();
+
+    const sprinkles: Extractable = Array.isArray(_sprinkles)
+        ? Object.fromEntries(_sprinkles.map((name) => [name, { properties: "all" }]))
+        : _sprinkles;
+    const recipes: Extractable = Object.fromEntries(_recipes.map((name) => [name, { properties: "all" }]));
+
+    // const hasSprinkles = Object.keys(sprinkles).length > 0;
+    // const hasRecipes = Object.keys(recipes).length > 0;
+    const functions = { ...sprinkles, ...recipes };
 
     return [
         createViteBoxRefUsageFinder({ project, components, functions, ...options }),
@@ -114,7 +136,13 @@ export const createViteVanillaExtractSprinklesExtractor = ({
                 onExtracted?.(args);
                 if (!server) {
                     const extractResult = getUsedPropertiesFromExtractNodeMap(args.extractMap, usedMap);
-                    mergeExtractResultInUsedMap(extractResult, usedDebugIdList, usedMap);
+                    mergeExtractResultInUsedMap({
+                        extractResult,
+                        usedDebugIdList,
+                        usedSprinkleDebugIdList,
+                        usedRecipeDebugIdList,
+                        usedMap,
+                    });
                     return;
                 }
 
@@ -145,7 +173,13 @@ export const createViteVanillaExtractSprinklesExtractor = ({
                 }
 
                 const sizeBefore = usedDebugIdList.size;
-                mergeExtractResultInUsedMap(extractResult, usedDebugIdList, usedMap);
+                mergeExtractResultInUsedMap({
+                    extractResult,
+                    usedDebugIdList,
+                    usedSprinkleDebugIdList,
+                    usedRecipeDebugIdList,
+                    usedMap,
+                });
 
                 // this file (args.id) changed but we already extracted those styles before, so we don't need to invalidate
                 if (sizeBefore === usedDebugIdList.size) {
@@ -216,6 +250,13 @@ export const createViteVanillaExtractSprinklesExtractor = ({
                 sourceByPath.set(filePath, source);
 
                 const compiled = compiledByFilePath.get(filePath) ?? getEvalCompiledResultByKind(evalResult);
+                console.log({
+                    evaluated: compiled.evaluated,
+                    recipesClassNames: compiled.recipesClassNames,
+                    usedRecipeDebugIdList,
+                });
+                if (compiled.sprinkleConfigs.size === 0 && compiled.recipesByDebugId.size === 0) {
+                    loggerEval("no sprinkles/recipes found", { filePath });
                     return;
                 }
 
@@ -225,7 +266,12 @@ export const createViteVanillaExtractSprinklesExtractor = ({
                     addMappedPropsToUsedMap(mappedProps, usedMap);
                 }
 
-                const usedClassNameList = getUsedClassNameFromCompiledSprinkles(compiled, usedMap);
+                const usedClassNameList = getUsedClassNameListFromCompiledResult({
+                    compiled,
+                    usedMap,
+                    usedRecipeDebugIdList,
+                });
+                console.log({ usedClassNameList });
                 usedClassNameListByPath.set(filePath, usedClassNameList);
 
                 loggerEval.lazy(() => ({
@@ -240,7 +286,7 @@ export const createViteVanillaExtractSprinklesExtractor = ({
                 mutateContextByKeepingUsedRulesOnly({
                     context,
                     usedClassNameList,
-                    sprinklesClassNames: compiled.sprinklesClassNames,
+                    compiled,
                     onMutate: ({ before, after, fileScope }) => {
                         loggerResult({ before: before.length, after: after.length, fileScope, filePath });
                     },
@@ -264,8 +310,8 @@ export const createViteVanillaExtractSprinklesExtractor = ({
 
                 // we only care about .css.ts with sprinkles
                 // TODO check recipes
-                if (!compiled || compiled.sprinkleConfigs.size === 0) {
-                    loggerSerialize("defaultSerializeVanillaModule");
+                if (!compiled || (compiled.sprinkleConfigs.size === 0 && compiled.recipesByDebugId.size === 0)) {
+                    loggerSerialize("no sprinkles/recipes found -> defaultSerializeVanillaModule");
                     const result = cached ?? defaultSerializeVanillaModule(cssImports, exports, context);
                     vanillaModuleCache.set(filePath, result);
                     return result;
@@ -273,7 +319,14 @@ export const createViteVanillaExtractSprinklesExtractor = ({
 
                 loggerSerialize("serializeVanillaModuleWithoutUnused", { filePath });
                 const result =
-                    cached ?? serializeVanillaModuleWithoutUnused(cssImports, exports, context, usedMap, compiled);
+                    cached ??
+                    serializeVanillaModuleWithoutUnused({
+                        cssImports,
+                        exports,
+                        context,
+                        usedComponentsMap: usedMap,
+                        compiled,
+                    });
                 vanillaModuleCache.set(filePath, result);
                 return result;
             },

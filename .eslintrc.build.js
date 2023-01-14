@@ -18,5 +18,6 @@ module.exports = defineConfig({
         "sonarjs/cognitive-complexity": ["warn", 120],
         "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
         "@typescript-eslint/prefer-string-starts-ends-with": "off",
+        "sonarjs/prefer-single-boolean-return": "warn",
     },
 });

@@ -11,10 +11,8 @@ export default defineConfig((_env) => ({
     plugins: [
         createViteVanillaExtractSprinklesExtractor({
             components: ["ColorBox", "DessertBox", "Box"],
-            functions: ["colorSprinkles", "themeSprinkles", "minimalSprinkles"],
-            // vanillaExtractOptions: {
-            //     onAfterEvaluateMutation: (args) => console.dir(args.usedComponents.get("Box"), { depth: null }),
-            // },
+            sprinkles: ["colorSprinkles", "themeSprinkles", "minimalSprinkles"],
+            recipes: ["button"],
         }),
         // vanillaExtractPlugin() as any,
         react(),

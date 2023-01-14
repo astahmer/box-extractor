@@ -2,7 +2,8 @@ import "./App.css";
 // import { VanillaThemeDemo } from "./components/VanillaThemeDemo";
 // import { Demo } from "./components/Demo";
 // import { MinimalSprinklesDemo } from "./components/MinimalSprinklesDemo";
-import { BoxDemo } from "./components/BoxDemo";
+import { WithRecipe } from "./components/WithRecipe";
+// import { BoxDemo } from "./components/BoxDemo";
 
 function App() {
     return (
@@ -13,7 +14,8 @@ function App() {
                         {/* <Demo /> */}
                         {/* <MinimalSprinklesDemo /> */}
                         {/* <VanillaThemeDemo /> */}
-                        <BoxDemo />
+                        {/* <BoxDemo /> */}
+                        <WithRecipe />
                     </div>
                 </div>
             </div>

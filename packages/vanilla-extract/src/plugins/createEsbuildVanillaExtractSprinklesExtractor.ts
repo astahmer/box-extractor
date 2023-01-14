@@ -18,7 +18,10 @@ import { serializeVanillaModuleWithoutUnused } from "./serializeVanillaModuleWit
 
 export const createEsbuildVanillaExtractSprinklesExtractor = ({
     components = {},
-    functions = {},
+    sprinkles: _sprinkles = {},
+    sprinklesFnCreator = { fn: "createSprinkles", importer: "@vanilla-extract/sprinkles" },
+    recipes: _recipes = [],
+    recipesFnCreator = { fn: "recipe", importer: "@vanilla-extract/recipes" },
     onExtracted,
     vanillaExtractOptions,
     extractMap = new Map(),
@@ -30,7 +33,19 @@ export const createEsbuildVanillaExtractSprinklesExtractor = ({
     // can probably delete those cache maps
     const compiledByFilePath = new Map<string, ReturnType<typeof getEvalCompiledResultByKind>>();
     const sourceByPath = new Map<string, string>();
+
     const usedDebugIdList = new Set<string>();
+    const usedSprinkleDebugIdList = new Set<string>();
+    const usedRecipeDebugIdList = new Set<string>();
+
+    const sprinkles: Extractable = Array.isArray(_sprinkles)
+        ? Object.fromEntries(_sprinkles.map((name) => [name, { properties: "all" }]))
+        : _sprinkles;
+    const recipes: Extractable = Object.fromEntries(_recipes.map((name) => [name, { properties: "all" }]));
+
+    // const hasSprinkles = Object.keys(sprinkles).length > 0;
+    // const hasRecipes = Object.keys(recipes).length > 0;
+    const functions = { ...sprinkles, ...recipes };
 
     return [
         createEsbuildBoxExtractor({
@@ -41,7 +56,13 @@ export const createEsbuildVanillaExtractSprinklesExtractor = ({
             onExtracted(args) {
                 onExtracted?.(args);
                 const extractResult = getUsedPropertiesFromExtractNodeMap(args.extractMap, usedMap);
-                mergeExtractResultInUsedMap(extractResult, usedDebugIdList, usedMap);
+                mergeExtractResultInUsedMap({
+                    extractResult,
+                    usedDebugIdList,
+                    usedSprinkleDebugIdList,
+                    usedRecipeDebugIdList,
+                    usedMap,
+                });
             },
         }),
         vanillaExtractPlugin({
@@ -54,7 +75,13 @@ export const createEsbuildVanillaExtractSprinklesExtractor = ({
                 }
 
                 // console.dir({ serializeVanillaModule: true, filePath }, { depth: null });
-                return serializeVanillaModuleWithoutUnused(cssImports, exports, context, usedMap, compiled);
+                return serializeVanillaModuleWithoutUnused({
+                    cssImports,
+                    exports,
+                    context,
+                    usedComponentsMap: usedMap,
+                    compiled,
+                });
             },
             ...vanillaExtractOptions,
             onEvaluated: (args) => {
@@ -68,13 +95,16 @@ export const createEsbuildVanillaExtractSprinklesExtractor = ({
 
                 sourceByPath.set(filePath, source);
 
-                const compiled =
-                    compiledByFilePath.get(filePath) ?? getCompiledSprinklePropertyByDebugIdPairMap(evalResult);
+                const compiled = compiledByFilePath.get(filePath) ?? getEvalCompiledResultByKind(evalResult);
                 if (compiled.sprinkleConfigs.size === 0) return;
 
                 compiledByFilePath.set(filePath, compiled);
 
-                const usedClassNameList = getUsedClassNameFromCompiledSprinkles(compiled, usedMap);
+                const usedClassNameList = getUsedClassNameListFromCompiledResult({
+                    compiled,
+                    usedMap,
+                    usedRecipeDebugIdList,
+                });
 
                 // console.log({
                 //     filePath,
@@ -88,7 +118,7 @@ export const createEsbuildVanillaExtractSprinklesExtractor = ({
                 mutateContextByKeepingUsedRulesOnly({
                     context,
                     usedClassNameList,
-                    sprinklesClassNames: compiled.sprinklesClassNames,
+                    compiled,
                     onMutate: ({ before, after, fileScope }) => {
                         console.log({ before: before.length, after: after.length, fileScope, filePath });
                     },

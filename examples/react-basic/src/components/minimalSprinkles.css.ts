@@ -1,4 +1,5 @@
-import { createSprinkles, defineProperties } from "@vanilla-extract/sprinkles";
+import { defineProperties } from "@vanilla-extract/sprinkles";
+import { createBoxSprinkles } from "@box-extractor/vanilla-extract";
 
 const base = defineProperties({
     conditions: {
@@ -26,5 +27,5 @@ const base = defineProperties({
     },
 });
 
-export const minimalSprinkles = createSprinkles(base);
+export const minimalSprinkles = createBoxSprinkles(base);
 export type MinimalSprinkles = Parameters<typeof minimalSprinkles>[0];
