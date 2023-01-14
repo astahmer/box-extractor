@@ -10,8 +10,8 @@ import {
 } from "./getUsedPropertiesFromExtractNodeMap";
 import type { CreateViteVanillaExtractSprinklesExtractorOptions } from "./createViteVanillaExtractSprinklesExtractor";
 import {
-    getCompiledSprinklePropertyByDebugIdPairMap,
-    getUsedClassNameFromCompiledSprinkles,
+    getEvalCompiledResultByKind,
+    getUsedClassNameListFromCompiledResult,
     mutateContextByKeepingUsedRulesOnly,
 } from "./onEvaluated";
 import { serializeVanillaModuleWithoutUnused } from "./serializeVanillaModuleWithoutUnused";
@@ -28,7 +28,7 @@ export const createEsbuildVanillaExtractSprinklesExtractor = ({
     vanillaExtractOptions?: VanillaExtractPluginOptions;
 }): Plugin[] => {
     // can probably delete those cache maps
-    const compiledByFilePath = new Map<string, ReturnType<typeof getCompiledSprinklePropertyByDebugIdPairMap>>();
+    const compiledByFilePath = new Map<string, ReturnType<typeof getEvalCompiledResultByKind>>();
     const sourceByPath = new Map<string, string>();
     const usedDebugIdList = new Set<string>();
 

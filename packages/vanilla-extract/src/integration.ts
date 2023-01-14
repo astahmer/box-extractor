@@ -1,7 +1,7 @@
 export {
     cloneAdapterContext,
-    getCompiledSprinklePropertyByDebugIdPairMap,
-    getUsedClassNameFromCompiledSprinkles,
+    getEvalCompiledResultByKind,
+    getUsedClassNameListFromCompiledResult,
     mutateContextByKeepingUsedRulesOnly,
 } from "./plugins/onEvaluated";
 export { serializeVanillaModuleWithoutUnused } from "./plugins/serializeVanillaModuleWithoutUnused";

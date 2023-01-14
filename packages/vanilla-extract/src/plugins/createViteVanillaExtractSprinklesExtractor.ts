@@ -19,8 +19,8 @@ import {
     UsedComponentMap,
 } from "./getUsedPropertiesFromExtractNodeMap";
 import {
-    getCompiledSprinklePropertyByDebugIdPairMap,
-    getUsedClassNameFromCompiledSprinkles,
+    getEvalCompiledResultByKind,
+    getUsedClassNameListFromCompiledResult,
     mutateContextByKeepingUsedRulesOnly,
 } from "./onEvaluated";
 import { serializeVanillaModuleWithoutUnused } from "./serializeVanillaModuleWithoutUnused";
@@ -61,7 +61,7 @@ export const createViteVanillaExtractSprinklesExtractor = ({
     const getAbsoluteFileId = (source: string) => normalizePath(path.join(config?.root ?? "", source));
 
     const extractCacheById = new Map<string, { hashed: string; serialized: string[] }>();
-    const compiledByFilePath = new Map<string, ReturnType<typeof getCompiledSprinklePropertyByDebugIdPairMap>>();
+    const compiledByFilePath = new Map<string, ReturnType<typeof getEvalCompiledResultByKind>>();
     const usedDebugIdList = new Set<string>();
     const sourceByPath = new Map<string, string>();
     const wasInvalidatedButDidntChange = new Set<string>();
@@ -214,10 +214,7 @@ export const createViteVanillaExtractSprinklesExtractor = ({
 
                 sourceByPath.set(filePath, source);
 
-                const compiled =
-                    compiledByFilePath.get(filePath) ?? getCompiledSprinklePropertyByDebugIdPairMap(evalResult);
-                if (compiled.sprinkleConfigs.size === 0) {
-                    loggerEval("no sprinkles found", { filePath });
+                const compiled = compiledByFilePath.get(filePath) ?? getEvalCompiledResultByKind(evalResult);
                     return;
                 }
 
