@@ -3,7 +3,7 @@ import { defaultSerializeVanillaModule } from "@vanilla-extract/integration";
 import type { VanillaExtractPluginOptions } from "@vanilla-extract/vite-plugin";
 import type { Plugin } from "esbuild";
 
-import { createEsbuildBoxExtractor } from "@box-extractor/core";
+import { createEsbuildBoxExtractor, Extractable } from "@box-extractor/core";
 import {
     getUsedPropertiesFromExtractNodeMap,
     mergeExtractResultInUsedMap,

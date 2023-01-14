@@ -12,9 +12,8 @@ export type {
     LiteralValue,
     MapType,
     MapTypeValue,
-    NodeObjectLiteralExpressionType,
     ObjectType,
     SingleLiteralValue,
 } from "./extractor/type-factory";
 export { isPrimitiveType } from "./extractor/type-factory";
-export type { BoxNodesMap, ExtractOptions, PrimitiveType, PropNodesMap } from "./extractor/types";
+export type { BoxNodesMap, Extractable, ExtractOptions, PrimitiveType, PropNodesMap } from "./extractor/types";

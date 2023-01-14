@@ -1,6 +1,6 @@
 import path from "node:path";
 
-import { AdapterContext, defaultSerializeVanillaModule, hash, parseFileScope } from "@vanilla-extract/integration";
+import { defaultSerializeVanillaModule, hash, parseFileScope } from "@vanilla-extract/integration";
 
 import { vanillaExtractPlugin, VanillaExtractPluginOptions } from "@vanilla-extract/vite-plugin";
 
@@ -12,6 +12,7 @@ import {
     CreateViteBoxExtractorOptions,
     createViteBoxRefUsageFinder,
     ensureAbsolute,
+    Extractable,
 } from "@box-extractor/core";
 import {
     getUsedPropertiesFromExtractNodeMap,
