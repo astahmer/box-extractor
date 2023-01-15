@@ -14,5 +14,5 @@ export const extractJsxSpreadAttributeValues = (spreadAttribute: JsxSpreadAttrib
     logger({ maybeEntries });
     if (maybeEntries) return maybeEntries;
 
-    return box.empty(node);
+    return box.emptyObject(node);
 };

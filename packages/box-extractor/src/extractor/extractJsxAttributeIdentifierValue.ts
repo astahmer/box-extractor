@@ -18,7 +18,7 @@ export const extractJsxAttributeIdentifierValue = (identifier: Identifier) => {
     // identifier = `color` (and then backgroundColor)
     // parent = `color="red.200"` (and then backgroundColor="blackAlpha.100")
     const initializer = parent.getInitializer();
-    if (!initializer) return;
+    if (!initializer) return box.emptyInitializer(identifier);
 
     if (Node.isStringLiteral(initializer)) {
         // initializer = `"red.200"` (and then "blackAlpha.100")
