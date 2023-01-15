@@ -20,7 +20,9 @@ export type LiteralType = WithBoxSymbol &
 export type MapType = WithBoxSymbol & WithNode & { type: "map"; value: MapTypeValue };
 export type ListType = WithBoxSymbol & WithNode & { type: "list"; value: BoxNode[] };
 export type UnresolvableType = WithBoxSymbol & { type: "unresolvable" };
-export type ConditionalType = WithBoxSymbol & WithNode & { type: "conditional"; whenTrue: BoxNode; whenFalse: BoxNode };
+export type ConditionalKind = "ternary" | "and" | "or" | "nullish-coalescing";
+export type ConditionalType = WithBoxSymbol &
+    WithNode & { type: "conditional"; whenTrue: BoxNode; whenFalse: BoxNode; kind: ConditionalKind };
 
 // export type PrimitiveBoxNode = ObjectType | LiteralType | MapType
 export type BoxNode = ObjectType | LiteralType | MapType | ListType | UnresolvableType | ConditionalType;
@@ -53,8 +55,8 @@ const boxTypeFactory = {
     list(value: BoxNode[], node: Node): ListType {
         return { [BoxKind]: true, type: "list", value, getNode: () => node };
     },
-    conditional(whenTrue: BoxNode, whenFalse: BoxNode, node: Node): ConditionalType {
-        return { [BoxKind]: true, type: "conditional", whenTrue, whenFalse, getNode: () => node };
+    conditional(whenTrue: BoxNode, whenFalse: BoxNode, node: Node, kind: ConditionalKind): ConditionalType {
+        return { [BoxKind]: true, type: "conditional", whenTrue, whenFalse, kind, getNode: () => node };
     },
     cast<T extends BoxNode>(value: unknown, node: Node): T | undefined {
         if (!value) return;

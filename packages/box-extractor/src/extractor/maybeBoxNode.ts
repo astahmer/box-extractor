@@ -15,7 +15,7 @@ import { Node, ts } from "ts-morph";
 import { safeEvaluateNode } from "./evaluate";
 // eslint-disable-next-line import/no-cycle
 import { maybeObjectLikeBox, MaybeObjectLikeBoxReturn } from "./maybeObjectLikeBox";
-import { box, BoxNode, isBoxNode } from "./type-factory";
+import { box, BoxNode, ConditionalKind, isBoxNode } from "./type-factory";
 import type { ExtractedPropMap, PrimitiveType } from "./types";
 import { isNotNullish, unwrapExpression } from "./utils";
 
@@ -97,7 +97,7 @@ export function maybeBoxNode(node: Node): MaybeBoxNodeReturn {
         const whenTrueExpr = unwrapExpression(node.getWhenTrue());
         const whenFalseExpr = unwrapExpression(node.getWhenFalse());
 
-        return maybeExpandConditionalExpression(whenTrueExpr, whenFalseExpr, node);
+        return maybeExpandConditionalExpression({ whenTrueExpr, whenFalseExpr, node, kind: "ternary" });
     }
 
     // <ColorBox color={fn()} />
@@ -121,12 +121,24 @@ export function maybeBoxNode(node: Node): MaybeBoxNodeReturn {
             const whenTrueExpr = unwrapExpression(node.getLeft());
             const whenFalseExpr = unwrapExpression(node.getRight());
 
-            return maybeExpandConditionalExpression(whenTrueExpr, whenFalseExpr, node, true);
+            return maybeExpandConditionalExpression({
+                whenTrueExpr,
+                whenFalseExpr,
+                node,
+                kind: conditionalKindByOperatorKind[operatorKind],
+                canReturnWhenTrue: true,
+            });
         }
     }
 
     // console.log({ maybeBoxNodeEnd: true, expression: node.getText(), kind: node.getKindName() });
 }
+
+const conditionalKindByOperatorKind = {
+    [ts.SyntaxKind.BarBarToken]: "or" as ConditionalKind,
+    [ts.SyntaxKind.QuestionQuestionToken]: "nullish-coalescing" as ConditionalKind,
+    [ts.SyntaxKind.AmpersandAmpersandToken]: "and" as ConditionalKind,
+};
 
 export const onlyStringLiteral = (box: MaybeBoxNodeReturn) => {
     if (!isNotNullish(box)) return;
@@ -143,12 +155,19 @@ export const onlyStringLiteral = (box: MaybeBoxNodeReturn) => {
 export const maybeStringLiteral = (node: Node) => onlyStringLiteral(maybeBoxNode(node));
 
 // <ColorBox color={isDark ? darkValue : "whiteAlpha.100"} />
-const maybeExpandConditionalExpression = (
-    whenTrueExpr: Node,
-    whenFalseExpr: Node,
-    node: Node,
-    canReturnWhenTrue?: boolean
-): BoxNode | BoxNode[] | MaybeObjectLikeBoxReturn => {
+const maybeExpandConditionalExpression = ({
+    whenTrueExpr,
+    whenFalseExpr,
+    node,
+    kind,
+    canReturnWhenTrue,
+}: {
+    whenTrueExpr: Node;
+    whenFalseExpr: Node;
+    node: Node;
+    kind: ConditionalKind;
+    canReturnWhenTrue?: boolean;
+}): BoxNode | BoxNode[] | MaybeObjectLikeBoxReturn => {
     let whenTrueValue: ReturnType<typeof maybeBoxNode> | ReturnType<typeof maybeObjectLikeBox> =
         maybeBoxNode(whenTrueExpr);
     let whenFalseValue: ReturnType<typeof maybeBoxNode> | ReturnType<typeof maybeObjectLikeBox> =
@@ -205,7 +224,7 @@ const maybeExpandConditionalExpression = (
         return merged;
     }
 
-    return box.conditional(whenTrue, whenFalse, node);
+    return box.conditional(whenTrue, whenFalse, node, kind);
 };
 
 const findProperty = (node: ObjectLiteralElementLike, propName: string) => {
@@ -537,8 +556,6 @@ const getElementAccessedExpressionValue = (expression: ElementAccessExpression):
                 ? maybePropIdentifierDefinitionValue(elementAccessed, whenFalseValue)
                 : undefined;
 
-            // return [whenTrueResolved, whenFalseResolved].flatMap((v) => box.cast(v)).filter(isNotNullish);
-
             if (!whenTrueResolved && !whenFalseResolved) {
                 return;
             }
@@ -554,7 +571,7 @@ const getElementAccessedExpressionValue = (expression: ElementAccessExpression):
             const whenTrue = box.literal(whenTrueResolved, whenTrueExpr);
             const whenFalse = box.literal(whenFalseResolved, whenFalseExpr);
 
-            return box.conditional(whenTrue, whenFalse, arg);
+            return box.conditional(whenTrue, whenFalse, arg, "ternary");
         }
     }
 };
