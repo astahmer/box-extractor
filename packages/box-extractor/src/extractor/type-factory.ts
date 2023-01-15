@@ -15,7 +15,7 @@ export type LiteralKind = "array" | "string" | "number" | "boolean" | "null" | "
 export type LiteralType = WithBoxSymbol &
     WithNode & {
         type: "literal";
-        value: PrimitiveType | PrimitiveType[];
+        value: PrimitiveType;
         kind: LiteralKind;
     };
 export type MapType = WithBoxSymbol & WithNode & { type: "map"; value: MapTypeValue };
@@ -45,7 +45,7 @@ const boxTypeFactory = {
     object(value: ExtractedPropMap, node: MaybeNode): ObjectType {
         return { [BoxKind]: true, type: "object", value, getNode: () => node };
     },
-    literal(value: PrimitiveType | PrimitiveType[], node: MaybeNode): LiteralType {
+    literal(value: PrimitiveType, node: MaybeNode): LiteralType {
         return { [BoxKind]: true, type: "literal", value, kind: getTypeOfLiteral(value), getNode: () => node };
     },
     map(value: MapTypeValue, node: Node | Node[]): MapType {
@@ -88,91 +88,8 @@ const toBoxType = (
         return box.object(value, node);
     }
 
-    if (isPrimitiveType(value) || Array.isArray(value)) return box.literal(value, node);
-};
-
-/**
- * Flatten nested tree of conditional types to an array of BoxNode without conditional
- * merge LiteralType when possible
- *
- * @example
- * conditional = {
- *  type: "conditional",
- *  whenTrue: {
-        type: "conditional",
-        whenTrue: { type: "literal", value: "a" },
-        whenFalse: { type: "literal", value: "b" },
-    },
- *  whenFalse: {
-        type: "conditional",
-        whenTrue: { type: "literal", value: "c" },
-        whenFalse: {
-            type: "conditional", value: {
-                whenTrue: { type: "literal", value: "d" },
-                whenFalse: { type: "object", value: { prop: "xxx" } },
-            }
-        },
-    },
- * }
- *
- * => [{ type: "literal", value: ["a", "b", "c", "d"] }, { type: "object", value: { prop: "xxx" } }]
- */
-export const narrowCondionalType = (conditional: ConditionalType): BoxNode[] => {
-    const { whenTrue, whenFalse } = conditional;
-    const possibleValues = [] as Array<Exclude<BoxNode, ConditionalType>>;
-
-    let current = whenTrue;
-    const toNarrow = [whenFalse];
-    while (current.type === "conditional" || toNarrow.length > 0) {
-        // console.dir({ narrowed: current, toNarrow }, { depth: null });
-        if (current.type === "conditional") {
-            toNarrow.push(current.whenFalse);
-            current = current.whenTrue;
-        } else {
-            possibleValues.push(current);
-            current = toNarrow.pop()!;
-
-            // last possible value
-            if (toNarrow.length === 0 && current.type !== "conditional") {
-                possibleValues.push(current);
-            }
-        }
-    }
-
-    return mergeLiteralTypes(possibleValues);
-};
-
-/**
- * Merge all LiteralType in 1 when possible, ignore other types
- *
- * @example
- * types = [{ type: "literal", value: ["a", "b"] }, { type: "literal", value: "c" }]
- * => [{ type: "literal", value: ["a", "b", "c"] }]
- */
-export const mergeLiteralTypes = (types: BoxNode[]): BoxNode[] => {
-    return types;
-    // console.dir({ types }, { depth: null });
-    const literalValues = new Set<PrimitiveType>();
-    const others = types.filter((node) => {
-        if (node.type === "literal") {
-            if (Array.isArray(node.value)) {
-                node.value.forEach((value) => literalValues.add(value));
-                return false;
-            }
-
-            literalValues.add(node.value);
-            return false;
-        }
-
-        return true;
-    });
-
-    const literal = box.literal(
-        Array.from(literalValues),
-        types.flatMap((b) => (b as LiteralType).getNode?.()).filter(isNotNullish)
-    );
-    // console.dir({ literal, others }, { depth: null });
-    return others.concat(literal);
+    if (Array.isArray(value)) return value.map((item) => box.literal(item, node));
+    if (isPrimitiveType(value)) return box.literal(value, node);
 };
 
 export const castObjectLikeAsMapValue = (maybeObject: MaybeObjectLikeBoxReturn, node: MaybeNode): MapTypeValue => {
