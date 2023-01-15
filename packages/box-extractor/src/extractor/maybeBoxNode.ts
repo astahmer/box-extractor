@@ -15,7 +15,7 @@ import { Node, ts } from "ts-morph";
 import { safeEvaluateNode } from "./evaluate";
 // eslint-disable-next-line import/no-cycle
 import { maybeObjectLikeBox, MaybeObjectLikeBoxReturn } from "./maybeObjectLikeBox";
-import { box, BoxNode, isBoxNode, MaybeNode } from "./type-factory";
+import { box, BoxNode, isBoxNode } from "./type-factory";
 import type { ExtractedPropMap, PrimitiveType } from "./types";
 import { isNotNullish, unwrapExpression } from "./utils";
 
@@ -146,7 +146,7 @@ export const maybeStringLiteral = (node: Node) => onlyStringLiteral(maybeBoxNode
 const maybeExpandConditionalExpression = (
     whenTrueExpr: Node,
     whenFalseExpr: Node,
-    node: MaybeNode,
+    node: Node,
     canReturnWhenTrue?: boolean
 ): BoxNode | BoxNode[] | MaybeObjectLikeBoxReturn => {
     let whenTrueValue: ReturnType<typeof maybeBoxNode> | ReturnType<typeof maybeObjectLikeBox> =
@@ -417,7 +417,7 @@ const getElementAccessedExpressionValue = (expression: ElementAccessExpression):
         const maybeValue = maybePropIdentifierDefinitionValue(elementAccessed, argValue);
         if (!maybeValue) return;
 
-        return box.literal(maybeValue, [expression, elementAccessed, arg]);
+        return box.literal(maybeValue, expression);
     }
 
     // <ColorBox color={xxx[yyy + "zzz"]} />
@@ -430,7 +430,7 @@ const getElementAccessedExpressionValue = (expression: ElementAccessExpression):
             const maybeValue = maybePropIdentifierDefinitionValue(elementAccessed, propName);
             if (!maybeValue) return;
 
-            return box.literal(maybeValue, [expression, elementAccessed, arg]);
+            return box.literal(maybeValue, expression);
         }
     }
 
@@ -442,7 +442,7 @@ const getElementAccessedExpressionValue = (expression: ElementAccessExpression):
             const maybeValue = maybePropIdentifierDefinitionValue(elementAccessed, propName);
             if (!maybeValue) return;
 
-            return box.literal(maybeValue, [expression, elementAccessed, arg]);
+            return box.literal(maybeValue, expression);
         }
     }
 
@@ -451,7 +451,7 @@ const getElementAccessedExpressionValue = (expression: ElementAccessExpression):
         const maybeValue = getPropValue(elementAccessed, argValue);
         if (!maybeValue) return;
 
-        return box.literal(maybeValue, [expression, elementAccessed, arg]);
+        return box.literal(maybeValue, expression);
     }
 
     // <ColorBox color={xxx[yyy.zzz]} />
@@ -469,7 +469,7 @@ const getElementAccessedExpressionValue = (expression: ElementAccessExpression):
             const maybeValue = maybePropIdentifierDefinitionValue(elementAccessed, propName);
             if (!maybeValue) return;
 
-            return box.literal(maybeValue, [expression, elementAccessed, arg]);
+            return box.literal(maybeValue, expression);
         }
     }
 
@@ -483,17 +483,12 @@ const getElementAccessedExpressionValue = (expression: ElementAccessExpression):
             !Array.isArray(identifier) &&
             (identifier.type === "object" || identifier.type === "map")
         ) {
-            let maybeValue = identifier.type === "object" ? identifier.value[argValue] : identifier.value.get(argValue);
+            const maybeValue =
+                identifier.type === "object" ? identifier.value[argValue] : identifier.value.get(argValue);
             elAccessedLogger({ isElementAccessExpression: true, maybeValue });
             if (maybeValue) {
                 const first = Array.isArray(maybeValue) ? maybeValue[0] : maybeValue;
-                return isBoxNode(first) ? first : box.cast(first, [expression, elementAccessed, arg]);
-            }
-
-            const identifierNode = identifier.getNode();
-            // probably deadcode, but could serve as fallback if the above fails
-            if (!Array.isArray(identifierNode) && Node.isObjectLiteralExpression(identifierNode)) {
-                maybeValue = getPropValue(identifierNode, argValue);
+                return isBoxNode(first) ? first : box.cast(first, expression);
             }
 
             if (!maybeValue) return;
@@ -516,7 +511,7 @@ const getElementAccessedExpressionValue = (expression: ElementAccessExpression):
                 const maybeValue = maybePropIdentifierDefinitionValue(elementAccessed, propName);
                 if (!maybeValue) return;
 
-                return box.literal(maybeValue, [expression, elementAccessed, arg]);
+                return box.literal(maybeValue, expression);
             }
         }
 
