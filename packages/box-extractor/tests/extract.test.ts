@@ -4523,6 +4523,32 @@ it("extract JsxAttribute > JsxExpression > ArrayLiteralExpression", () => {
     `);
 });
 
+it("extract JsxAttribute > Identifier without initializer", () => {
+    expect(
+        extractFromCode(
+            `
+            <Flex col />
+        `,
+            { components: ["Flex"] }
+        )
+    ).toMatchInlineSnapshot(`
+      [
+          [
+              "Flex",
+              [["col", null]],
+              {
+                  col: [
+                      {
+                          type: "empty-initializer",
+                          getNode: "Identifier",
+                      },
+                  ],
+              },
+          ],
+      ]
+    `);
+});
+
 it("extract CallExpression > ObjectLiteralExpression > PropertyAssignment > ObjectLiteralExpression > PropertyAssignment > ArrayLiteralExpression > StringLiteral)", () => {
     expect(
         extractFromCode(

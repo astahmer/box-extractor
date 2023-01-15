@@ -23,15 +23,15 @@ export const maybeObjectLikeBox = (node: Node): MaybeObjectLikeBoxReturn => {
     // <ColorBox {...xxx} />
     if (Node.isIdentifier(node)) {
         const maybeObject = getIdentifierReferenceValue(node);
-        if (!maybeObject) return box.empty(node);
+        if (!maybeObject) return box.emptyObject(node);
         if (isBoxNode(maybeObject) && (maybeObject.type === "object" || maybeObject.type === "map")) {
             const first = Array.isArray(maybeObject) ? maybeObject[0] : maybeObject;
-            if (!first) return box.empty(node);
+            if (!first) return box.emptyObject(node);
 
             return first;
         }
 
-        if (!maybeObject || !Node.isNode(maybeObject)) return box.empty(node);
+        if (!maybeObject || !Node.isNode(maybeObject)) return box.emptyObject(node);
 
         // <ColorBox {...objectLiteral} />
         if (Node.isObjectLiteralExpression(maybeObject)) {
@@ -55,13 +55,13 @@ export const maybeObjectLikeBox = (node: Node): MaybeObjectLikeBoxReturn => {
             return box.object(maybeObject, node);
         }
 
-        return box.empty(node);
+        return box.emptyObject(node);
     }
 
     // <ColorBox {...(condition && objectLiteral)} />
     if (Node.isBinaryExpression(node) && node.getOperatorToken().getKind() === ts.SyntaxKind.AmpersandAmpersandToken) {
         const maybeObject = safeEvaluateNode(node);
-        if (!maybeObject) return box.empty(node);
+        if (!maybeObject) return box.emptyObject(node);
 
         if (isObjectLiteral(maybeObject)) {
             return box.object(maybeObject, node);
@@ -70,7 +70,7 @@ export const maybeObjectLikeBox = (node: Node): MaybeObjectLikeBoxReturn => {
 
     if (Node.isCallExpression(node)) {
         const maybeObject = safeEvaluateNode(node);
-        if (!maybeObject) return box.empty(node);
+        if (!maybeObject) return box.emptyObject(node);
 
         if (isObjectLiteral(maybeObject)) {
             return box.object(maybeObject, node);
@@ -79,7 +79,7 @@ export const maybeObjectLikeBox = (node: Node): MaybeObjectLikeBoxReturn => {
 
     if (Node.isPropertyAccessExpression(node)) {
         const maybeObject = safeEvaluateNode(node);
-        if (!maybeObject) return box.empty(node);
+        if (!maybeObject) return box.emptyObject(node);
 
         if (isObjectLiteral(maybeObject)) {
             return box.object(maybeObject, node);
@@ -88,7 +88,7 @@ export const maybeObjectLikeBox = (node: Node): MaybeObjectLikeBoxReturn => {
 
     if (Node.isElementAccessExpression(node)) {
         const maybeObject = safeEvaluateNode(node);
-        if (!maybeObject) return box.empty(node);
+        if (!maybeObject) return box.emptyObject(node);
 
         if (isObjectLiteral(maybeObject)) {
             return box.object(maybeObject, node);

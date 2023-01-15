@@ -23,9 +23,17 @@ export type UnresolvableType = WithBoxSymbol & { type: "unresolvable" };
 export type ConditionalKind = "ternary" | "and" | "or" | "nullish-coalescing";
 export type ConditionalType = WithBoxSymbol &
     WithNode & { type: "conditional"; whenTrue: BoxNode; whenFalse: BoxNode; kind: ConditionalKind };
+export type EmptyInitializerType = WithBoxSymbol & { type: "empty-initializer" };
 
 // export type PrimitiveBoxNode = ObjectType | LiteralType | MapType
-export type BoxNode = ObjectType | LiteralType | MapType | ListType | UnresolvableType | ConditionalType;
+export type BoxNode =
+    | ObjectType
+    | LiteralType
+    | MapType
+    | ListType
+    | UnresolvableType
+    | ConditionalType
+    | EmptyInitializerType;
 export type MapTypeValue = Map<string, BoxNode[]>;
 
 export const isBoxNode = (value: unknown): value is BoxNode => {
@@ -64,8 +72,10 @@ const boxTypeFactory = {
         return toBoxType(value as any, node) as T;
     },
     //
-    empty: (node: Node) =>
+    emptyObject: (node: Node) =>
         ({ [BoxKind]: true, type: "object", value: {}, isEmpty: true, getNode: () => node } as ObjectType),
+    emptyInitializer: (node: Node) =>
+        ({ [BoxKind]: true, type: "empty-initializer", getNode: () => node } as EmptyInitializerType),
     unresolvable: (node: Node) => ({ [BoxKind]: true, type: "unresolvable", getNode: () => node } as UnresolvableType),
 };
 
