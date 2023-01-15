@@ -15,7 +15,7 @@ import { Node, ts } from "ts-morph";
 import { safeEvaluateNode } from "./evaluate";
 // eslint-disable-next-line import/no-cycle
 import { maybeObjectLikeBox, MaybeObjectLikeBoxReturn } from "./maybeObjectLikeBox";
-import { box, BoxNode, isBoxNode, MaybeNode, mergeLiteralTypes } from "./type-factory";
+import { box, BoxNode, isBoxNode, MaybeNode } from "./type-factory";
 import type { ExtractedPropMap, PrimitiveType } from "./types";
 import { isNotNullish, unwrapExpression } from "./utils";
 
@@ -188,28 +188,18 @@ const maybeExpandConditionalExpression = (
     }
 
     if (whenTrueValue && !whenFalseValue) {
-        // TODO type: "array" ?
         return box.cast(whenTrueValue, whenTrueExpr);
     }
 
     if (!whenTrueValue && whenFalseValue) {
-        // TODO type: "array" ?
         return box.cast(whenFalseValue, whenFalseExpr);
     }
 
-    // TODO type: "array" ?
     const whenTrue = whenTrueValue!;
     const whenFalse = whenFalseValue!;
 
     if (Array.isArray(whenTrue) || Array.isArray(whenFalse)) {
         const merged = castAsArray(whenTrue).concat(whenFalse);
-        if (merged.length === 1) return merged[0];
-
-        return merged;
-    }
-
-    if (whenTrue.type === "literal" && whenFalse.type === "literal") {
-        const merged = mergeLiteralTypes([whenTrue, whenFalse]);
         if (merged.length === 1) return merged[0];
 
         return merged;
@@ -568,13 +558,6 @@ const getElementAccessedExpressionValue = (expression: ElementAccessExpression):
 
             const whenTrue = box.literal(whenTrueResolved, whenTrueExpr);
             const whenFalse = box.literal(whenFalseResolved, whenFalseExpr);
-
-            if (whenTrue.type === "literal" && whenFalse.type === "literal") {
-                const merged = mergeLiteralTypes([whenTrue, whenFalse]);
-                if (merged.length === 1) return merged[0];
-
-                return merged;
-            }
 
             return box.conditional(whenTrue, whenFalse, arg);
         }

@@ -164,9 +164,20 @@ it("extract it all", () => {
                           getNode: "StringLiteral",
                       },
                       {
-                          type: "literal",
-                          value: ["cyan.400", "cyan.500"],
-                          kind: "array",
+                          type: "conditional",
+                          whenTrue: {
+                              type: "literal",
+                              value: "cyan.400",
+                              kind: "string",
+                              getNode: "StringLiteral",
+                          },
+                          whenFalse: {
+                              type: "literal",
+                              value: "cyan.500",
+                              kind: "string",
+                              getNode: "StringLiteral",
+                          },
+                          getNode: "ConditionalExpression",
                       },
                       {
                           type: "literal",
@@ -187,14 +198,36 @@ it("extract it all", () => {
                           getNode: "ConditionalExpression",
                       },
                       {
-                          type: "literal",
-                          value: ["facebook.600", "gray.200"],
-                          kind: "array",
+                          type: "conditional",
+                          whenTrue: {
+                              type: "literal",
+                              value: "facebook.600",
+                              kind: "string",
+                              getNode: "StringLiteral",
+                          },
+                          whenFalse: {
+                              type: "literal",
+                              value: "gray.200",
+                              kind: "string",
+                              getNode: "StringLiteral",
+                          },
+                          getNode: "ConditionalExpression",
                       },
                       {
-                          type: "literal",
-                          value: ["gray.200", "gray.300"],
-                          kind: "array",
+                          type: "conditional",
+                          whenTrue: {
+                              type: "literal",
+                              value: "gray.200",
+                              kind: "string",
+                              getNode: "StringLiteral",
+                          },
+                          whenFalse: {
+                              type: "literal",
+                              value: "gray.300",
+                              kind: "string",
+                              getNode: "StringLiteral",
+                          },
+                          getNode: "ConditionalExpression",
                       },
                       {
                           type: "literal",
@@ -312,14 +345,34 @@ it("extract it all", () => {
                           kind: "string",
                       },
                       {
-                          type: "literal",
-                          value: ["gray.600", "gray.800"],
-                          kind: "array",
+                          type: "conditional",
+                          whenTrue: {
+                              type: "literal",
+                              value: "gray.600",
+                              kind: "string",
+                              getNode: "StringLiteral",
+                          },
+                          whenFalse: {
+                              type: "literal",
+                              value: "gray.800",
+                              kind: "string",
+                              getNode: "StringLiteral",
+                          },
+                          getNode: "ConditionalExpression",
                       },
                       {
-                          type: "literal",
-                          value: ["gray.700", "gray.100"],
-                          kind: "array",
+                          type: "conditional",
+                          whenTrue: {
+                              type: "literal",
+                              value: "gray.700",
+                              kind: "string",
+                          },
+                          whenFalse: {
+                              type: "literal",
+                              value: "gray.100",
+                              kind: "string",
+                          },
+                          getNode: "ConditionalExpression",
                       },
                       {
                           type: "literal",
@@ -660,9 +713,20 @@ it("extract JsxAttribute > JsxExpression > ConditonalExpression > Identifier|Val
               {
                   color: [
                       {
-                          type: "literal",
-                          value: ["red.500", "whiteAlpha.100"],
-                          kind: "array",
+                          type: "conditional",
+                          whenTrue: {
+                              type: "literal",
+                              value: "red.500",
+                              kind: "string",
+                              getNode: "StringLiteral",
+                          },
+                          whenFalse: {
+                              type: "literal",
+                              value: "whiteAlpha.100",
+                              kind: "string",
+                              getNode: "StringLiteral",
+                          },
+                          getNode: "ConditionalExpression",
                       },
                   ],
               },
@@ -2156,9 +2220,18 @@ it("extract JsxAttribute > JsxExpression > ConditionalExpression with Unexpected
               {
                   color: [
                       {
-                          type: "literal",
-                          value: ["purple.600", "purple.700"],
-                          kind: "array",
+                          type: "conditional",
+                          whenTrue: {
+                              type: "literal",
+                              value: "purple.600",
+                              kind: "string",
+                          },
+                          whenFalse: {
+                              type: "literal",
+                              value: "purple.700",
+                              kind: "string",
+                          },
+                          getNode: "ConditionalExpression",
                       },
                   ],
               },
@@ -2183,9 +2256,30 @@ it("extract JsxAttribute > JsxExpression > ConditionalExpression > unresolvable 
               {
                   color: [
                       {
-                          type: "literal",
-                          value: ["purple.800", "purple.900", "purple.950"],
-                          kind: "array",
+                          type: "conditional",
+                          whenTrue: {
+                              type: "literal",
+                              value: "purple.800",
+                              kind: "string",
+                              getNode: "StringLiteral",
+                          },
+                          whenFalse: {
+                              type: "conditional",
+                              whenTrue: {
+                                  type: "literal",
+                                  value: "purple.900",
+                                  kind: "string",
+                                  getNode: "StringLiteral",
+                              },
+                              whenFalse: {
+                                  type: "literal",
+                                  value: "purple.950",
+                                  kind: "string",
+                                  getNode: "StringLiteral",
+                              },
+                              getNode: "ConditionalExpression",
+                          },
+                          getNode: "ConditionalExpression",
                       },
                   ],
               },
@@ -2215,9 +2309,30 @@ it("extract JsxAttribute > JsxExpression > ConditionalExpression > ElementAccess
               {
                   color: [
                       {
-                          type: "literal",
-                          value: ["orange.100", "orange.200", "orange.300"],
-                          kind: "array",
+                          type: "conditional",
+                          whenTrue: {
+                              type: "literal",
+                              value: "orange.100",
+                              kind: "string",
+                              getNode: "StringLiteral",
+                          },
+                          whenFalse: {
+                              type: "conditional",
+                              whenTrue: {
+                                  type: "literal",
+                                  value: "orange.200",
+                                  kind: "string",
+                                  getNode: "StringLiteral",
+                              },
+                              whenFalse: {
+                                  type: "literal",
+                                  value: "orange.300",
+                                  kind: "string",
+                                  getNode: "StringLiteral",
+                              },
+                              getNode: "ConditionalExpression",
+                          },
+                          getNode: "ConditionalExpression",
                       },
                   ],
               },
@@ -3876,9 +3991,20 @@ it("extract JsxAttribute > ObjectLiteralExpression > css prop > ConditionalExpre
                                               ],
                                               display: [
                                                   {
-                                                      type: "literal",
-                                                      value: ["flex", "block"],
-                                                      kind: "array",
+                                                      type: "conditional",
+                                                      whenTrue: {
+                                                          type: "literal",
+                                                          value: "flex",
+                                                          kind: "string",
+                                                          getNode: "StringLiteral",
+                                                      },
+                                                      whenFalse: {
+                                                          type: "literal",
+                                                          value: "block",
+                                                          kind: "string",
+                                                          getNode: "StringLiteral",
+                                                      },
+                                                      getNode: "ConditionalExpression",
                                                   },
                                               ],
                                           },
@@ -3964,9 +4090,20 @@ it("extract JsxAttribute > ObjectLiteralExpression > css prop > PropertyAssignme
                           value: {
                               backgroundColor: [
                                   {
-                                      type: "literal",
-                                      value: ["sky.800", "sky.900"],
-                                      kind: "array",
+                                      type: "conditional",
+                                      whenTrue: {
+                                          type: "literal",
+                                          value: "sky.800",
+                                          kind: "string",
+                                          getNode: "StringLiteral",
+                                      },
+                                      whenFalse: {
+                                          type: "literal",
+                                          value: "sky.900",
+                                          kind: "string",
+                                          getNode: "StringLiteral",
+                                      },
+                                      getNode: "ConditionalExpression",
                                   },
                               ],
                               __color: [
@@ -4228,6 +4365,82 @@ it("extract JsxAttribute + CallExpression > booleans", () => {
                           value: false,
                           kind: "boolean",
                           getNode: "FalseKeyword",
+                      },
+                  ],
+              },
+          ],
+      ]
+    `);
+});
+
+it("extract JsxAttribute > JsxExpression > ArrayLiteralExpression", () => {
+    expect(
+        extractFromCode(
+            `
+            <Container classNames={["color:main", "hover:secondary"]} config={{ state: ["hovered", "focused"] }} />
+        `,
+            { components: ["Container"] }
+        )
+    ).toMatchInlineSnapshot(`
+      [
+          [
+              "Container",
+              [
+                  ["classNames", ["color:main", "hover:secondary"]],
+                  [
+                      "config",
+                      {
+                          state: ["hovered", "focused"],
+                      },
+                  ],
+              ],
+              {
+                  classNames: [
+                      {
+                          type: "list",
+                          value: [
+                              {
+                                  type: "literal",
+                                  value: "color:main",
+                                  kind: "string",
+                                  getNode: "StringLiteral",
+                              },
+                              {
+                                  type: "literal",
+                                  value: "hover:secondary",
+                                  kind: "string",
+                                  getNode: "StringLiteral",
+                              },
+                          ],
+                          getNode: "ArrayLiteralExpression",
+                      },
+                  ],
+                  config: [
+                      {
+                          type: "map",
+                          value: {
+                              state: [
+                                  {
+                                      type: "list",
+                                      value: [
+                                          {
+                                              type: "literal",
+                                              value: "hovered",
+                                              kind: "string",
+                                              getNode: "StringLiteral",
+                                          },
+                                          {
+                                              type: "literal",
+                                              value: "focused",
+                                              kind: "string",
+                                              getNode: "StringLiteral",
+                                          },
+                                      ],
+                                      getNode: "ArrayLiteralExpression",
+                                  },
+                              ],
+                          },
+                          getNode: "ObjectLiteralExpression",
                       },
                   ],
               },

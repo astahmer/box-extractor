@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { BoxNode, isPrimitiveType, LiteralValue, narrowCondionalType, SingleLiteralValue } from "./type-factory";
+import { BoxNode, isPrimitiveType, LiteralValue, SingleLiteralValue } from "./type-factory";
 import type { PrimitiveType } from "./types";
 import { isNotNullish } from "./utils";
 import type { MaybeBoxNodeReturn } from "./maybeBoxNode";
@@ -31,14 +31,7 @@ const innerGetLiteralValue = (valueType: PrimitiveType | BoxNode | undefined): L
     }
 
     if (valueType.type === "conditional") {
-        const narrowed = narrowCondionalType(valueType);
-        logger.scoped("narrow", { valueType, narrowed });
-
-        if (narrowed.length === 1) {
-            return getBoxLiteralValue(narrowed[0]);
-        }
-
-        return narrowed
+        return [valueType.whenTrue, valueType.whenFalse]
             .map((value) => getBoxLiteralValue(value))
             .filter(isNotNullish)
             .flat();
