@@ -54,7 +54,7 @@ export function maybeBoxNode(node: Node): MaybeBoxNodeReturn {
 
     // <ColorBox bool={true} falsy={false} />
     if (Node.isTrueLiteral(node) || Node.isFalseLiteral(node)) {
-        return box.literal(node.getText(), node);
+        return box.literal(node.getLiteralValue(), node);
     }
 
     // <ColorBox color={staticColor} />
@@ -566,8 +566,8 @@ const getElementAccessedExpressionValue = (expression: ElementAccessExpression):
                 return box.literal(whenFalseResolved, whenFalseExpr);
             }
 
-            const whenTrue = box.literal(whenTrueResolved!, whenTrueExpr);
-            const whenFalse = box.literal(whenFalseResolved!, whenFalseExpr);
+            const whenTrue = box.literal(whenTrueResolved, whenTrueExpr);
+            const whenFalse = box.literal(whenFalseResolved, whenFalseExpr);
 
             if (whenTrue.type === "literal" && whenFalse.type === "literal") {
                 const merged = mergeLiteralTypes([whenTrue, whenFalse]);

@@ -154,144 +154,177 @@ it("extract it all", () => {
                       {
                           type: "literal",
                           value: "red.200",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                       {
                           type: "literal",
                           value: "yellow.300",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                       {
                           type: "literal",
                           value: ["cyan.400", "cyan.500"],
+                          kind: "array",
                       },
                       {
                           type: "literal",
                           value: "facebook.400",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                       {
                           type: "literal",
                           value: "gray.100",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                       {
                           type: "literal",
                           value: "facebook.500",
+                          kind: "string",
                           getNode: "ConditionalExpression",
                       },
                       {
                           type: "literal",
                           value: ["facebook.600", "gray.200"],
+                          kind: "array",
                       },
                       {
                           type: "literal",
                           value: ["gray.200", "gray.300"],
+                          kind: "array",
                       },
                       {
                           type: "literal",
                           value: "gray.100",
+                          kind: "string",
                           getNode: "PropertyAccessExpression",
                       },
                       {
                           type: "literal",
                           value: "facebook.900",
+                          kind: "string",
                       },
                       {
                           type: "literal",
                           value: "facebook.900",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                       {
                           type: "literal",
                           value: "pink.100",
+                          kind: "string",
                       },
                       {
                           type: "literal",
                           value: "pink.100",
+                          kind: "string",
                       },
                       {
                           type: "literal",
                           value: "pink.100",
+                          kind: "string",
                       },
                       {
                           type: "literal",
                           value: "pink.100",
+                          kind: "string",
                       },
                       {
                           type: "literal",
                           value: "pink.100",
+                          kind: "string",
                       },
                       {
                           type: "literal",
                           value: "facebook.900",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                       {
                           type: "literal",
                           value: "facebook.900",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                       {
                           type: "literal",
                           value: "facebook.900",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                       {
                           type: "literal",
                           value: "gray.100",
+                          kind: "string",
                       },
                       {
                           type: "literal",
                           value: "gray.100",
+                          kind: "string",
                       },
                       {
                           type: "literal",
                           value: "gray.100",
+                          kind: "string",
                       },
                       {
                           type: "literal",
                           value: "gray.100",
+                          kind: "string",
                       },
                       {
                           type: "literal",
                           value: "gray.100",
+                          kind: "string",
                       },
                       {
                           type: "literal",
                           value: "gray.100",
+                          kind: "string",
                       },
                       {
                           type: "literal",
                           value: "gray.100",
+                          kind: "string",
                       },
                       {
                           type: "literal",
                           value: "gray.100",
+                          kind: "string",
                       },
                       {
                           type: "literal",
                           value: "gray.100",
+                          kind: "string",
                       },
                       {
                           type: "literal",
                           value: "gray.100",
+                          kind: "string",
                       },
                       {
                           type: "literal",
                           value: "gray.100",
+                          kind: "string",
                       },
                       {
                           type: "literal",
                           value: ["gray.600", "gray.800"],
+                          kind: "array",
                       },
                       {
                           type: "literal",
                           value: ["gray.700", "gray.100"],
+                          kind: "array",
                       },
                       {
                           type: "literal",
                           value: "gray.100",
+                          kind: "string",
                           getNode: "PropertyAccessExpression",
                       },
                       {
@@ -301,6 +334,7 @@ it("extract it all", () => {
                                   {
                                       type: "literal",
                                       value: "red.100",
+                                      kind: "string",
                                       getNode: "StringLiteral",
                                   },
                               ],
@@ -308,6 +342,7 @@ it("extract it all", () => {
                                   {
                                       type: "literal",
                                       value: "green.100",
+                                      kind: "string",
                                       getNode: "StringLiteral",
                                   },
                               ],
@@ -315,6 +350,7 @@ it("extract it all", () => {
                                   {
                                       type: "literal",
                                       value: "blue.100",
+                                      kind: "string",
                                       getNode: "StringLiteral",
                                   },
                               ],
@@ -324,111 +360,133 @@ it("extract it all", () => {
                       {
                           type: "literal",
                           value: "facebook.900",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                       {
                           type: "literal",
                           value: "facebook.900",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                       {
                           type: "literal",
                           value: "facebook.900",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                       {
                           type: "literal",
                           value: "red.100",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                       {
                           type: "literal",
                           value: "red.100",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                       {
                           type: "literal",
                           value: "green.100",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                       {
                           type: "literal",
                           value: "blue.100",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                       {
                           type: "literal",
                           value: "yellow.100",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                       {
                           type: "literal",
                           value: "orange.100",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                       {
                           type: "literal",
                           value: "orange.300",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                       {
                           type: "literal",
                           value: "red.100",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                       {
                           type: "literal",
                           value: "orange.400",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                       {
                           type: "literal",
                           value: "facebook.100",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                       {
                           type: "literal",
                           value: "blackAlpha.400",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                       {
                           type: "literal",
                           value: "blackAlpha.400",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                       {
                           type: "literal",
                           value: "facebook.200",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                       {
                           type: "literal",
                           value: "facebook.200",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                       {
                           type: "literal",
                           value: "twitter.100",
+                          kind: "string",
                           getNode: "CallExpression",
                       },
                       {
                           type: "literal",
                           value: "orange.100",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                       {
                           type: "literal",
                           value: "orange.200",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                       {
                           type: "literal",
                           value: "orange.400",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                       {
                           type: "literal",
                           value: "telegram.300",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                   ],
@@ -436,6 +494,7 @@ it("extract it all", () => {
                       {
                           type: "literal",
                           value: "blackAlpha.100",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                       {
@@ -445,6 +504,7 @@ it("extract it all", () => {
                                   {
                                       type: "literal",
                                       value: "orange.800",
+                                      kind: "string",
                                       getNode: "StringLiteral",
                                   },
                               ],
@@ -452,6 +512,7 @@ it("extract it all", () => {
                                   {
                                       type: "literal",
                                       value: "telegram.200",
+                                      kind: "string",
                                       getNode: "StringLiteral",
                                   },
                               ],
@@ -459,6 +520,7 @@ it("extract it all", () => {
                                   {
                                       type: "literal",
                                       value: "yellow.700",
+                                      kind: "string",
                                       getNode: "StringLiteral",
                                   },
                               ],
@@ -468,26 +530,31 @@ it("extract it all", () => {
                       {
                           type: "literal",
                           value: "blackAlpha.100",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                       {
                           type: "literal",
                           value: "twitter.200",
+                          kind: "string",
                           getNode: "CallExpression",
                       },
                       {
                           type: "literal",
                           value: "twitter.200",
+                          kind: "string",
                           getNode: "CallExpression",
                       },
                       {
                           type: "literal",
                           value: "twitter.200",
+                          kind: "string",
                           getNode: "CallExpression",
                       },
                       {
                           type: "literal",
                           value: "telegram.400",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                   ],
@@ -512,6 +579,7 @@ it("extract JsxAttribute > StringLiteral (multiple)", () => {
                           {
                               type: "literal",
                               value: "red.200",
+                              kind: "string",
                               getNode: "StringLiteral",
                           },
                       ],
@@ -519,6 +587,7 @@ it("extract JsxAttribute > StringLiteral (multiple)", () => {
                           {
                               type: "literal",
                               value: "blackAlpha.100",
+                              kind: "string",
                               getNode: "StringLiteral",
                           },
                       ],
@@ -540,6 +609,7 @@ it("extract JsxAttribute > JsxExpression > StringLiteral", () => {
                       {
                           type: "literal",
                           value: "red.300",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                   ],
@@ -566,6 +636,7 @@ it("extract JsxAttribute > JsxExpression > Identifier", () => {
                       {
                           type: "literal",
                           value: "red.400",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                   ],
@@ -591,6 +662,7 @@ it("extract JsxAttribute > JsxExpression > ConditonalExpression > Identifier|Val
                       {
                           type: "literal",
                           value: ["red.500", "whiteAlpha.100"],
+                          kind: "array",
                       },
                   ],
               },
@@ -617,6 +689,7 @@ it("extract JsxAttribute > JsxExpression > ElementAccessExpression", () => {
                       {
                           type: "literal",
                           value: "red.600",
+                          kind: "string",
                       },
                   ],
               },
@@ -643,6 +716,7 @@ it("extract JsxAttribute > JsxExpression > ElementAccessExpression without as co
                       {
                           type: "literal",
                           value: "red.600",
+                          kind: "string",
                       },
                   ],
               },
@@ -669,6 +743,7 @@ it("extract JsxAttribute > JsxExpression > ElementAccessExpression optional", ()
                       {
                           type: "literal",
                           value: "red.700",
+                          kind: "string",
                       },
                   ],
               },
@@ -695,6 +770,7 @@ it("extract JsxAttribute > JsxExpression > ElementAccessExpression optional with
                       {
                           type: "literal",
                           value: "red.700",
+                          kind: "string",
                       },
                   ],
               },
@@ -722,6 +798,7 @@ it("extract JsxAttribute > JsxExpression > ElementAccessExpression > Identifier"
                       {
                           type: "literal",
                           value: "red.800",
+                          kind: "string",
                       },
                   ],
               },
@@ -749,6 +826,7 @@ it("extract JsxAttribute > JsxExpression > ElementAccessExpression > Identifier 
                       {
                           type: "literal",
                           value: "red.800",
+                          kind: "string",
                       },
                   ],
               },
@@ -776,6 +854,7 @@ it("extract JsxAttribute > JsxExpression > ElementAccessExpression > StringLiter
                       {
                           type: "literal",
                           value: "red.900",
+                          kind: "string",
                       },
                   ],
               },
@@ -803,6 +882,7 @@ it("extract JsxAttribute > JsxExpression > ElementAccessExpression > StringLiter
                       {
                           type: "literal",
                           value: "red.900",
+                          kind: "string",
                       },
                   ],
               },
@@ -830,6 +910,7 @@ it("extract JsxAttribute > JsxExpression > ElementAccessExpression > ComputedPro
                       {
                           type: "literal",
                           value: "blue.100",
+                          kind: "string",
                       },
                   ],
               },
@@ -857,6 +938,7 @@ it("extract JsxAttribute > JsxExpression > ElementAccessExpression > ComputedPro
                       {
                           type: "literal",
                           value: "blue.100",
+                          kind: "string",
                       },
                   ],
               },
@@ -883,6 +965,7 @@ it("extract JsxAttribute > JsxExpression > PropertyAccessExpression", () => {
                       {
                           type: "literal",
                           value: "blue.200",
+                          kind: "string",
                           getNode: "PropertyAccessExpression",
                       },
                   ],
@@ -910,6 +993,7 @@ it("extract JsxAttribute > JsxExpression > PropertyAccessExpression optional", (
                       {
                           type: "literal",
                           value: "blue.300",
+                          kind: "string",
                           getNode: "PropertyAccessExpression",
                       },
                   ],
@@ -937,6 +1021,7 @@ it("extract JsxAttribute > JsxExpression > PropertyAccessExpression optional wit
                       {
                           type: "literal",
                           value: "blue.300",
+                          kind: "string",
                           getNode: "PropertyAccessExpression",
                       },
                   ],
@@ -964,6 +1049,7 @@ it("extract JsxAttribute > JsxExpression > ElementAccessExpression > BinaryExpre
                       {
                           type: "literal",
                           value: "blue.400",
+                          kind: "string",
                       },
                   ],
               },
@@ -990,6 +1076,7 @@ it("extract JsxAttribute > JsxExpression > ElementAccessExpression > BinaryExpre
                       {
                           type: "literal",
                           value: "blue.400",
+                          kind: "string",
                       },
                   ],
               },
@@ -1017,6 +1104,7 @@ it("extract JsxAttribute > JsxExpression > ElementAccessExpression > BinaryExpre
                       {
                           type: "literal",
                           value: "blue.500",
+                          kind: "string",
                       },
                   ],
               },
@@ -1043,6 +1131,7 @@ it("extract JsxAttribute > JsxExpression > ElementAccessExpression > NoSubstitio
                       {
                           type: "literal",
                           value: "blue.600",
+                          kind: "string",
                       },
                   ],
               },
@@ -1069,6 +1158,7 @@ it("extract JsxAttribute > JsxExpression > ElementAccessExpression > NoSubstitio
                       {
                           type: "literal",
                           value: "blue.600",
+                          kind: "string",
                       },
                   ],
               },
@@ -1096,6 +1186,7 @@ it("extract JsxAttribute > JsxExpression > ElementAccessExpression > TemplateStr
                       {
                           type: "literal",
                           value: "blue.700",
+                          kind: "string",
                       },
                   ],
               },
@@ -1124,6 +1215,7 @@ it("extract JsxAttribute > JsxExpression > ElementAccessExpression > TemplateStr
                       {
                           type: "literal",
                           value: "blue.800",
+                          kind: "string",
                       },
                   ],
               },
@@ -1153,6 +1245,7 @@ it("extract JsxAttribute > JsxExpression > ConditonalExpression > AsExpression (
                       {
                           type: "literal",
                           value: "blue.900",
+                          kind: "string",
                       },
                   ],
               },
@@ -1179,6 +1272,7 @@ it("extract JsxAttribute > JsxExpression > ElementAccessExpression > TemplateStr
                       {
                           type: "literal",
                           value: "green.100",
+                          kind: "string",
                       },
                   ],
               },
@@ -1208,6 +1302,7 @@ it("extract JsxAttribute > JsxExpression > ElementAccessExpression > BinaryExpre
                       {
                           type: "literal",
                           value: "green.200",
+                          kind: "string",
                       },
                   ],
               },
@@ -1239,6 +1334,7 @@ it("extract JsxAttribute > JsxExpression > ElementAccessExpression > BinaryExpre
                       {
                           type: "literal",
                           value: "green.300",
+                          kind: "string",
                       },
                   ],
               },
@@ -1262,6 +1358,7 @@ it("extract JsxAttribute > JsxExpression > ElementAccessExpression > ObjectLiter
                       {
                           type: "literal",
                           value: "green.400",
+                          kind: "string",
                       },
                   ],
               },
@@ -1288,6 +1385,7 @@ it("extract JsxAttribute > JsxExpression > ElementAccessExpression (AsExpression
                       {
                           type: "literal",
                           value: "green.500",
+                          kind: "string",
                       },
                   ],
               },
@@ -1315,6 +1413,7 @@ it("extract JsxAttribute > JsxExpression > ElementAccessExpression (AsExpression
                       {
                           type: "literal",
                           value: "green.600",
+                          kind: "string",
                       },
                   ],
               },
@@ -1346,6 +1445,7 @@ it("extract JsxAttribute > JsxExpression > ElementAccessExpression > BinaryExpre
                       {
                           type: "literal",
                           value: "green.700",
+                          kind: "string",
                       },
                   ],
               },
@@ -1378,6 +1478,7 @@ it("extract JsxAttribute > JsxExpression > ElementAccessExpression > ElementAcce
                       {
                           type: "literal",
                           value: "green.800",
+                          kind: "string",
                       },
                   ],
               },
@@ -1401,6 +1502,7 @@ it("extract JsxAttribute > JsxExpression > ElementAccessExpression > ArrayLitera
                       {
                           type: "literal",
                           value: "green.900",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                   ],
@@ -1425,6 +1527,7 @@ it("extract JsxAttribute > JsxExpression > ElementAccessExpression > ArrayLitera
                       {
                           type: "literal",
                           value: "pink.100",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                   ],
@@ -1450,6 +1553,7 @@ it("extract JsxAttribute > JsxExpression > ElementAccessExpression > ArrayLitera
                       {
                           type: "literal",
                           value: "pink.200",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                   ],
@@ -1475,6 +1579,7 @@ it("extract JsxAttribute > JsxExpression > ElementAccessExpression > ArrayLitera
                       {
                           type: "literal",
                           value: "pink.300",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                   ],
@@ -1500,6 +1605,7 @@ it("extract JsxAttribute > JsxExpression > ElementAccessExpression > Parenthesiz
                       {
                           type: "literal",
                           value: "pink.400",
+                          kind: "string",
                       },
                   ],
               },
@@ -1524,6 +1630,7 @@ it("extract JsxAttribute > JsxExpression > ArrayLiteralExpression > ElementAcces
                       {
                           type: "literal",
                           value: "pink.500",
+                          kind: "string",
                       },
                   ],
               },
@@ -1547,6 +1654,7 @@ it("extract JsxAttribute > JsxExpression > ElementAccessExpression > ElementAcce
                       {
                           type: "literal",
                           value: "pink.600",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                   ],
@@ -1581,6 +1689,7 @@ it("extract JsxAttribute > JsxExpression > ConditionalExpression", () => {
                       {
                           type: "literal",
                           value: "pink.800",
+                          kind: "string",
                       },
                   ],
               },
@@ -1612,6 +1721,7 @@ it("extract JsxAttribute > JsxExpression > ElementAccessExpression > TemplateExp
                       {
                           type: "literal",
                           value: "pink.900",
+                          kind: "string",
                       },
                   ],
               },
@@ -1643,6 +1753,7 @@ it("extract JsxAttribute > JsxExpression > ElementAccessExpression > TemplateExp
                       {
                           type: "literal",
                           value: "pink.900",
+                          kind: "string",
                       },
                   ],
               },
@@ -1685,6 +1796,7 @@ it("extract JsxAttribute > JsxExpression > ElementAccessExpression > BinaryExpre
                       {
                           type: "literal",
                           value: "yellow.100",
+                          kind: "string",
                       },
                   ],
               },
@@ -1720,6 +1832,7 @@ it("extract JsxAttribute > JsxExpression > ConditionalExpression evaluate (first
                       {
                           type: "literal",
                           value: "yellow.200",
+                          kind: "string",
                       },
                   ],
               },
@@ -1754,6 +1867,7 @@ it("extract JsxAttribute > JsxExpression > ConditionalExpression evaluate (secon
                       {
                           type: "literal",
                           value: "yellow.500",
+                          kind: "string",
                       },
                   ],
               },
@@ -1779,6 +1893,7 @@ it("extract JsxAttribute > JsxExpression > CallExpression > ArrowFunction > Iden
                       {
                           type: "literal",
                           value: "yellow.600",
+                          kind: "string",
                           getNode: "CallExpression",
                       },
                   ],
@@ -1807,6 +1922,7 @@ it("extract JsxAttribute > JsxExpression > CallExpression > FunctionDeclaration 
                       {
                           type: "literal",
                           value: "yellow.700",
+                          kind: "string",
                           getNode: "CallExpression",
                       },
                   ],
@@ -1834,6 +1950,7 @@ it("extract JsxAttribute > JsxExpression > CallExpression with Parameter > Eleme
                       {
                           type: "literal",
                           value: "yellow.900",
+                          kind: "string",
                           getNode: "CallExpression",
                       },
                   ],
@@ -1886,6 +2003,7 @@ it("extract JsxAttribute > JsxExpression > ConditionalExpression > BinaryExpress
                       {
                           type: "literal",
                           value: "purple.100",
+                          kind: "string",
                           getNode: "ConditionalExpression",
                       },
                   ],
@@ -1913,6 +2031,7 @@ it("extract JsxAttribute > JsxExpression > ElementAccessExpression > Conditional
                       {
                           type: "literal",
                           value: "purple.200",
+                          kind: "string",
                       },
                   ],
               },
@@ -1941,6 +2060,7 @@ it("extract JsxAttribute > JsxExpression > CallExpression > ElementAccessExpress
                       {
                           type: "literal",
                           value: "purple.300",
+                          kind: "string",
                           getNode: "CallExpression",
                       },
                   ],
@@ -1966,6 +2086,7 @@ it("extract JsxAttribute > JsxExpression > BinaryExpression > StringLiteral", ()
                       {
                           type: "literal",
                           value: "purple.400",
+                          kind: "string",
                           getNode: "BinaryExpression",
                       },
                   ],
@@ -2001,6 +2122,7 @@ it("extract JsxAttribute > JsxExpression > resolvable ConditionalExpression resu
                       {
                           type: "literal",
                           value: "purple.500",
+                          kind: "string",
                           getNode: "ConditionalExpression",
                       },
                   ],
@@ -2036,6 +2158,7 @@ it("extract JsxAttribute > JsxExpression > ConditionalExpression with Unexpected
                       {
                           type: "literal",
                           value: ["purple.600", "purple.700"],
+                          kind: "array",
                       },
                   ],
               },
@@ -2062,6 +2185,7 @@ it("extract JsxAttribute > JsxExpression > ConditionalExpression > unresolvable 
                       {
                           type: "literal",
                           value: ["purple.800", "purple.900", "purple.950"],
+                          kind: "array",
                       },
                   ],
               },
@@ -2093,6 +2217,7 @@ it("extract JsxAttribute > JsxExpression > ConditionalExpression > ElementAccess
                       {
                           type: "literal",
                           value: ["orange.100", "orange.200", "orange.300"],
+                          kind: "array",
                       },
                   ],
               },
@@ -2124,6 +2249,7 @@ it("extract JsxAttribute > JsxExpression > ConditionalExpression > ElementAccess
                       {
                           type: "literal",
                           value: "orange.400",
+                          kind: "string",
                           getNode: "ConditionalExpression",
                       },
                   ],
@@ -2154,6 +2280,7 @@ it("extract JsxAttribute > JsxExpression > multiple variables with same name but
                       {
                           type: "literal",
                           value: "orange.500",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                   ],
@@ -2184,6 +2311,7 @@ it("extract JsxAttribute > JsxExpression > variables referencing another var in 
                       {
                           type: "literal",
                           value: "orange.600",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                   ],
@@ -2208,6 +2336,7 @@ it("extract JsxSpreadAttribute > ObjectLiteralExpression", () => {
                       {
                           type: "literal",
                           value: "orange.700",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                   ],
@@ -2233,6 +2362,7 @@ it("extract JsxSpreadAttribute > Identifier > ObjectLiteralExpression", () => {
                       {
                           type: "literal",
                           value: "orange.800",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                   ],
@@ -2269,6 +2399,7 @@ it("extract JsxSpreadAttribute > ConditionalExpression > Identifier/NullKeyword 
                       {
                           type: "literal",
                           value: "orange.900",
+                          kind: "string",
                           getNode: "ConditionalExpression",
                       },
                   ],
@@ -2306,6 +2437,7 @@ it("extract JsxSpreadAttribute > PropertyAssignment / ComputedProperty", () => {
                       {
                           type: "literal",
                           value: "teal.100",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                   ],
@@ -2313,6 +2445,7 @@ it("extract JsxSpreadAttribute > PropertyAssignment / ComputedProperty", () => {
                       {
                           type: "literal",
                           value: "teal.200",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                   ],
@@ -2337,6 +2470,7 @@ it("extract JsxSpreadAttribute > ConditionalExpression > ObjectLiteralExpression
                       {
                           type: "literal",
                           value: "teal.400",
+                          kind: "string",
                           getNode: "ConditionalExpression",
                       },
                   ],
@@ -2361,6 +2495,7 @@ it("extract JsxSpreadAttribute > BinaryExpression > AmpersandAmpersandToken / Ob
                       {
                           type: "literal",
                           value: "teal.500",
+                          kind: "string",
                           getNode: "BinaryExpression",
                       },
                   ],
@@ -2389,6 +2524,7 @@ it("extract JsxSpreadAttribute > CallExpression", () => {
                       {
                           type: "literal",
                           value: "teal.600",
+                          kind: "string",
                           getNode: "CallExpression",
                       },
                   ],
@@ -2396,6 +2532,7 @@ it("extract JsxSpreadAttribute > CallExpression", () => {
                       {
                           type: "literal",
                           value: "teal.650",
+                          kind: "string",
                           getNode: "CallExpression",
                       },
                   ],
@@ -2424,6 +2561,7 @@ it("extract JsxSpreadAttribute > ObjectLiteralExpression > SpreadAssignment > Ca
                       {
                           type: "literal",
                           value: "teal.800",
+                          kind: "string",
                           getNode: "CallExpression",
                       },
                   ],
@@ -2431,6 +2569,7 @@ it("extract JsxSpreadAttribute > ObjectLiteralExpression > SpreadAssignment > Ca
                       {
                           type: "literal",
                           value: "teal.700",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                   ],
@@ -2467,6 +2606,7 @@ it("extract JsxSpreadAttribute > ObjectLiteralExpression > SpreadAssignment > Co
                       {
                           type: "literal",
                           value: "cyan.100",
+                          kind: "string",
                           getNode: "ConditionalExpression",
                       },
                   ],
@@ -2474,6 +2614,7 @@ it("extract JsxSpreadAttribute > ObjectLiteralExpression > SpreadAssignment > Co
                       {
                           type: "literal",
                           value: "cyan.200",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                   ],
@@ -2512,6 +2653,7 @@ it("extract JsxSpreadAttribute > BinaryExpression > AmpersandAmpersandToken / Ob
                       {
                           type: "literal",
                           value: "cyan.300",
+                          kind: "string",
                           getNode: "ConditionalExpression",
                       },
                   ],
@@ -2519,6 +2661,7 @@ it("extract JsxSpreadAttribute > BinaryExpression > AmpersandAmpersandToken / Ob
                       {
                           type: "literal",
                           value: "cyan.400",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                   ],
@@ -2557,6 +2700,7 @@ it("extract JsxSpreadAttribute > 3 depth spread", () => {
                       {
                           type: "literal",
                           value: "cyan.500",
+                          kind: "string",
                           getNode: "CallExpression",
                       },
                   ],
@@ -2564,6 +2708,7 @@ it("extract JsxSpreadAttribute > 3 depth spread", () => {
                       {
                           type: "literal",
                           value: "cyan.600",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                   ],
@@ -2593,6 +2738,7 @@ it("extract JsxSpreadAttribute > ConditionalExpression > unresolvable expression
                       {
                           type: "literal",
                           value: "cyan.700",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                   ],
@@ -2600,6 +2746,7 @@ it("extract JsxSpreadAttribute > ConditionalExpression > unresolvable expression
                       {
                           type: "literal",
                           value: "cyan.800",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                   ],
@@ -2628,6 +2775,7 @@ it("extract JsxSpreadAttribute > ElementAccessExpression", () => {
                       {
                           type: "literal",
                           value: "cyan.900",
+                          kind: "string",
                           getNode: "ElementAccessExpression",
                       },
                   ],
@@ -2656,6 +2804,7 @@ it("extract JsxSpreadAttribute > PropertyAccessExpression", () => {
                       {
                           type: "literal",
                           value: "salmon.100",
+                          kind: "string",
                           getNode: "PropertyAccessExpression",
                       },
                   ],
@@ -2686,6 +2835,7 @@ it("extract JsxSpreadAttribute > PropertyAccessExpression > nested", () => {
                       {
                           type: "literal",
                           value: "salmon.200",
+                          kind: "string",
                           getNode: "PropertyAccessExpression",
                       },
                   ],
@@ -2714,6 +2864,7 @@ it("extract JsxSpreadAttribute > ElementAccessExpression + PropertyAccessExpress
                       {
                           type: "literal",
                           value: "salmon.300",
+                          kind: "string",
                           getNode: "PropertyAccessExpression",
                       },
                   ],
@@ -2742,6 +2893,7 @@ it("extract JsxSpreadAttribute > ElementAccessExpression > nested", () => {
                       {
                           type: "literal",
                           value: "salmon.400",
+                          kind: "string",
                           getNode: "ElementAccessExpression",
                       },
                   ],
@@ -2771,6 +2923,7 @@ it("extract JsxSpreadAttribute > ElementAccessExpression > Identifier / Computed
                       {
                           type: "literal",
                           value: "salmon.500",
+                          kind: "string",
                           getNode: "ElementAccessExpression",
                       },
                   ],
@@ -2803,6 +2956,7 @@ it("extract JsxSpreadAttribute > ElementAccessExpression > ComputedProperty / Te
                       {
                           type: "literal",
                           value: "salmon.600",
+                          kind: "string",
                           getNode: "ElementAccessExpression",
                       },
                   ],
@@ -2841,6 +2995,7 @@ it("extract JsxSpreadAttribute > JsxExpression > ConditionalExpression > complex
                       {
                           type: "literal",
                           value: "salmon.700",
+                          kind: "string",
                           getNode: "ConditionalExpression",
                       },
                   ],
@@ -2879,6 +3034,7 @@ it("extract JsxSpreadAttribute > JsxExpression > ConditionalExpression > complex
                       {
                           type: "literal",
                           value: "salmon.800",
+                          kind: "string",
                           getNode: "ConditionalExpression",
                       },
                   ],
@@ -2913,16 +3069,19 @@ it("extract JsxSpreadAttribute > JsxExpression > ConditionalExpression > unresol
                       {
                           type: "literal",
                           value: "never.250",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                       {
                           type: "literal",
                           value: "salmon.850",
+                          kind: "string",
                           getNode: "PropertyAccessExpression",
                       },
                       {
                           type: "literal",
                           value: "salmon.900",
+                          kind: "string",
                           getNode: "PropertyAccessExpression",
                       },
                   ],
@@ -2952,6 +3111,7 @@ it("extract JsxSpreadAttribute > ElementAccessExpression > CallExpression", () =
                       {
                           type: "literal",
                           value: "white.100",
+                          kind: "string",
                           getNode: "ElementAccessExpression",
                       },
                   ],
@@ -2981,6 +3141,7 @@ it("extract JsxAttribute > ElementAccessExpression > CallExpression > PropertyAc
                       {
                           type: "literal",
                           value: "white.200",
+                          kind: "string",
                           getNode: "PropertyAccessExpression",
                       },
                   ],
@@ -3005,6 +3166,7 @@ it("extract JsxAttribute > JsxExpression  > NumericLiteral", () => {
                       {
                           type: "literal",
                           value: "1",
+                          kind: "string",
                           getNode: "NumericLiteral",
                       },
                   ],
@@ -3030,6 +3192,7 @@ it("extract JsxAttribute > JsxExpression > Identifier > NumericLiteral", () => {
                       {
                           type: "literal",
                           value: "2",
+                          kind: "string",
                           getNode: "NumericLiteral",
                       },
                   ],
@@ -3056,6 +3219,7 @@ it("extract JsxAttribute > JsxExpression > Identifier > ConditionExpression > Nu
                       {
                           type: "literal",
                           value: 3,
+                          kind: "number",
                           getNode: "ConditionalExpression",
                       },
                   ],
@@ -3080,6 +3244,7 @@ it("extract JsxAttribute > JsxExpression > CallExpression > immediately invoked 
                       {
                           type: "literal",
                           value: 4,
+                          kind: "number",
                           getNode: "CallExpression",
                       },
                   ],
@@ -3105,6 +3270,7 @@ it("extract JsxAttribute > JsxExpression > CallExpression > optional + NonNullab
                       {
                           type: "literal",
                           value: 5,
+                          kind: "number",
                           getNode: "CallExpression",
                       },
                   ],
@@ -3130,6 +3296,7 @@ it("extract JsxAttribute > JsxExpression > ElementAccessExpression > NumericLite
                       {
                           type: "literal",
                           value: "6",
+                          kind: "string",
                       },
                   ],
               },
@@ -3166,6 +3333,7 @@ it("extract JsxAttribute > JsxExpression > ObjectLiteralExpression > conditional
                                   {
                                       type: "literal",
                                       value: "white.300",
+                                      kind: "string",
                                       getNode: "StringLiteral",
                                   },
                               ],
@@ -3173,6 +3341,7 @@ it("extract JsxAttribute > JsxExpression > ObjectLiteralExpression > conditional
                                   {
                                       type: "literal",
                                       value: "white.400",
+                                      kind: "string",
                                       getNode: "StringLiteral",
                                   },
                               ],
@@ -3180,6 +3349,7 @@ it("extract JsxAttribute > JsxExpression > ObjectLiteralExpression > conditional
                                   {
                                       type: "literal",
                                       value: "white.500",
+                                      kind: "string",
                                       getNode: "StringLiteral",
                                   },
                               ],
@@ -3384,6 +3554,7 @@ it("extract JsxAttribute > JsxExpression > ConditionalExpression > StringLiteral
                       {
                           type: "literal",
                           value: "black.700",
+                          kind: "string",
                           getNode: "ConditionalExpression",
                       },
                   ],
@@ -3428,6 +3599,7 @@ it("extract JsxAttribute > JsxExpression > ConditionalExpression > StringLiteral
                                       {
                                           type: "literal",
                                           value: "black.400",
+                                          kind: "string",
                                           getNode: "StringLiteral",
                                       },
                                   ],
@@ -3435,6 +3607,7 @@ it("extract JsxAttribute > JsxExpression > ConditionalExpression > StringLiteral
                                       {
                                           type: "literal",
                                           value: "black.500",
+                                          kind: "string",
                                           getNode: "StringLiteral",
                                       },
                                   ],
@@ -3442,6 +3615,7 @@ it("extract JsxAttribute > JsxExpression > ConditionalExpression > StringLiteral
                                       {
                                           type: "literal",
                                           value: "black.600",
+                                          kind: "string",
                                           getNode: "StringLiteral",
                                       },
                                   ],
@@ -3451,6 +3625,7 @@ it("extract JsxAttribute > JsxExpression > ConditionalExpression > StringLiteral
                           whenFalse: {
                               type: "literal",
                               value: "black.700",
+                              kind: "string",
                               getNode: "StringLiteral",
                           },
                           getNode: "ConditionalExpression",
@@ -3491,6 +3666,7 @@ it("extract JsxAttribute > JsxExpression > reversed", () => {
                                   {
                                       type: "literal",
                                       value: "sky.100",
+                                      kind: "string",
                                       getNode: "StringLiteral",
                                   },
                               ],
@@ -3498,6 +3674,7 @@ it("extract JsxAttribute > JsxExpression > reversed", () => {
                                   {
                                       type: "literal",
                                       value: "sky.200",
+                                      kind: "string",
                                       getNode: "StringLiteral",
                                   },
                               ],
@@ -3505,6 +3682,7 @@ it("extract JsxAttribute > JsxExpression > reversed", () => {
                                   {
                                       type: "literal",
                                       value: "sky.300",
+                                      kind: "string",
                                       getNode: "StringLiteral",
                                   },
                               ],
@@ -3561,6 +3739,7 @@ it("extract JsxAttribute > ObjectLiteralExpression > css prop", () => {
                                   {
                                       type: "literal",
                                       value: "sky.500",
+                                      kind: "string",
                                       getNode: "StringLiteral",
                                   },
                               ],
@@ -3568,6 +3747,7 @@ it("extract JsxAttribute > ObjectLiteralExpression > css prop", () => {
                                   {
                                       type: "literal",
                                       value: "##ff0",
+                                      kind: "string",
                                       getNode: "StringLiteral",
                                   },
                               ],
@@ -3579,6 +3759,7 @@ it("extract JsxAttribute > ObjectLiteralExpression > css prop", () => {
                                               {
                                                   type: "literal",
                                                   value: "2xl",
+                                                  kind: "string",
                                                   getNode: "StringLiteral",
                                               },
                                           ],
@@ -3586,6 +3767,7 @@ it("extract JsxAttribute > ObjectLiteralExpression > css prop", () => {
                                               {
                                                   type: "literal",
                                                   value: "flex",
+                                                  kind: "string",
                                                   getNode: "ConditionalExpression",
                                               },
                                           ],
@@ -3601,6 +3783,7 @@ it("extract JsxAttribute > ObjectLiteralExpression > css prop", () => {
                                               {
                                                   type: "literal",
                                                   value: "10",
+                                                  kind: "string",
                                                   getNode: "StringLiteral",
                                               },
                                           ],
@@ -3667,6 +3850,7 @@ it("extract JsxAttribute > ObjectLiteralExpression > css prop > ConditionalExpre
                                       {
                                           type: "literal",
                                           value: "sky.600",
+                                          kind: "string",
                                           getNode: "StringLiteral",
                                       },
                                   ],
@@ -3674,6 +3858,7 @@ it("extract JsxAttribute > ObjectLiteralExpression > css prop > ConditionalExpre
                                       {
                                           type: "literal",
                                           value: "##ff0",
+                                          kind: "string",
                                           getNode: "StringLiteral",
                                       },
                                   ],
@@ -3685,6 +3870,7 @@ it("extract JsxAttribute > ObjectLiteralExpression > css prop > ConditionalExpre
                                                   {
                                                       type: "literal",
                                                       value: "2xl",
+                                                      kind: "string",
                                                       getNode: "StringLiteral",
                                                   },
                                               ],
@@ -3692,6 +3878,7 @@ it("extract JsxAttribute > ObjectLiteralExpression > css prop > ConditionalExpre
                                                   {
                                                       type: "literal",
                                                       value: ["flex", "block"],
+                                                      kind: "array",
                                                   },
                                               ],
                                           },
@@ -3706,6 +3893,7 @@ it("extract JsxAttribute > ObjectLiteralExpression > css prop > ConditionalExpre
                                                   {
                                                       type: "literal",
                                                       value: "10",
+                                                      kind: "string",
                                                       getNode: "StringLiteral",
                                                   },
                                               ],
@@ -3719,6 +3907,7 @@ it("extract JsxAttribute > ObjectLiteralExpression > css prop > ConditionalExpre
                           whenFalse: {
                               type: "literal",
                               value: "sky.700",
+                              kind: "string",
                               getNode: "StringLiteral",
                           },
                           getNode: "ConditionalExpression",
@@ -3777,12 +3966,14 @@ it("extract JsxAttribute > ObjectLiteralExpression > css prop > PropertyAssignme
                                   {
                                       type: "literal",
                                       value: ["sky.800", "sky.900"],
+                                      kind: "array",
                                   },
                               ],
                               __color: [
                                   {
                                       type: "literal",
                                       value: "##ff0",
+                                      kind: "string",
                                       getNode: "StringLiteral",
                                   },
                               ],
@@ -3796,6 +3987,7 @@ it("extract JsxAttribute > ObjectLiteralExpression > css prop > PropertyAssignme
                                                   {
                                                       type: "literal",
                                                       value: "2xl",
+                                                      kind: "string",
                                                       getNode: "StringLiteral",
                                                   },
                                               ],
@@ -3803,6 +3995,7 @@ it("extract JsxAttribute > ObjectLiteralExpression > css prop > PropertyAssignme
                                                   {
                                                       type: "literal",
                                                       value: "flex",
+                                                      kind: "string",
                                                       getNode: "ConditionalExpression",
                                                   },
                                               ],
@@ -3812,6 +4005,7 @@ it("extract JsxAttribute > ObjectLiteralExpression > css prop > PropertyAssignme
                                       whenFalse: {
                                           type: "literal",
                                           value: "crimson.900",
+                                          kind: "string",
                                           getNode: "StringLiteral",
                                       },
                                       getNode: "ConditionalExpression",
@@ -3825,6 +4019,7 @@ it("extract JsxAttribute > ObjectLiteralExpression > css prop > PropertyAssignme
                                               {
                                                   type: "literal",
                                                   value: "10",
+                                                  kind: "string",
                                                   getNode: "StringLiteral",
                                               },
                                           ],
@@ -3859,6 +4054,7 @@ it("extract JsxAttribute > JsxExpression > Identifier > BinaryExpression > (Prop
                       {
                           type: "literal",
                           value: "apple.100",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                   ],
@@ -3885,6 +4081,7 @@ it("extract JsxAttribute > JsxExpression > Identifier > BinaryExpression > (Prop
                       {
                           type: "literal",
                           value: "apple.200",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                   ],
@@ -3911,6 +4108,7 @@ it("extract JsxAttribute > JsxExpression > Identifier > BinaryExpression > (Prop
                       {
                           type: "literal",
                           value: "apple.300",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                   ],
@@ -3940,11 +4138,13 @@ it("extract JsxAttribute > JsxExpression > Identifier > ArrayLiteralExpression)"
                               {
                                   type: "literal",
                                   value: "apple.400",
+                                  kind: "string",
                                   getNode: "StringLiteral",
                               },
                               {
                                   type: "literal",
                                   value: "apple.500",
+                                  kind: "string",
                                   getNode: "StringLiteral",
                               },
                           ],
@@ -3974,6 +4174,60 @@ it("extract JsxAttribute > JsxExpression > ElementAccessExpression > ObjectLiter
                       {
                           type: "literal",
                           value: "apple.600",
+                          kind: "string",
+                      },
+                  ],
+              },
+          ],
+      ]
+    `);
+});
+
+it("extract JsxAttribute + CallExpression > booleans", () => {
+    expect(
+        extractFromCode(
+            `
+            <Container className={someFn({ isFlex: false })} withBorder={true} />
+        `,
+            { components: ["Container"], functions: ["someFn"] }
+        )
+    ).toMatchInlineSnapshot(`
+      [
+          [
+              "Container",
+              [
+                  ["className", null],
+                  ["withBorder", true],
+              ],
+              {
+                  className: [
+                      {
+                          type: "object",
+                          value: {},
+                          isEmpty: true,
+                          getNode: "CallExpression",
+                      },
+                  ],
+                  withBorder: [
+                      {
+                          type: "literal",
+                          value: true,
+                          kind: "boolean",
+                          getNode: "TrueKeyword",
+                      },
+                  ],
+              },
+          ],
+          [
+              "someFn",
+              [["isFlex", false]],
+              {
+                  isFlex: [
+                      {
+                          type: "literal",
+                          value: false,
+                          kind: "boolean",
+                          getNode: "FalseKeyword",
                       },
                   ],
               },
@@ -4031,11 +4285,13 @@ it("extract CallExpression > ObjectLiteralExpression > PropertyAssignment > Obje
                                           {
                                               type: "literal",
                                               value: "relative",
+                                              kind: "string",
                                               getNode: "StringLiteral",
                                           },
                                           {
                                               type: "literal",
                                               value: "absolute",
+                                              kind: "string",
                                               getNode: "StringLiteral",
                                           },
                                       ],
@@ -4049,21 +4305,25 @@ it("extract CallExpression > ObjectLiteralExpression > PropertyAssignment > Obje
                                           {
                                               type: "literal",
                                               value: "block",
+                                              kind: "string",
                                               getNode: "StringLiteral",
                                           },
                                           {
                                               type: "literal",
                                               value: "inline-block",
+                                              kind: "string",
                                               getNode: "StringLiteral",
                                           },
                                           {
                                               type: "literal",
                                               value: "flex",
+                                              kind: "string",
                                               getNode: "StringLiteral",
                                           },
                                           {
                                               type: "literal",
                                               value: "inline-flex",
+                                              kind: "string",
                                               getNode: "StringLiteral",
                                           },
                                       ],
@@ -4085,6 +4345,7 @@ it("extract CallExpression > ObjectLiteralExpression > PropertyAssignment > Obje
                                           {
                                               type: "literal",
                                               value: "position",
+                                              kind: "string",
                                               getNode: "StringLiteral",
                                           },
                                       ],
@@ -4098,6 +4359,7 @@ it("extract CallExpression > ObjectLiteralExpression > PropertyAssignment > Obje
                                           {
                                               type: "literal",
                                               value: "display",
+                                              kind: "string",
                                               getNode: "StringLiteral",
                                           },
                                       ],
@@ -4175,6 +4437,7 @@ it("extract real-world Stack example ", () => {
                       {
                           type: "literal",
                           value: "flex",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                   ],
@@ -4182,6 +4445,7 @@ it("extract real-world Stack example ", () => {
                       {
                           type: "literal",
                           value: "column",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                   ],
@@ -4233,6 +4497,7 @@ it("extract real-world Stack example ", () => {
                       {
                           type: "literal",
                           value: "header",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                   ],
@@ -4240,6 +4505,7 @@ it("extract real-world Stack example ", () => {
                       {
                           type: "literal",
                           value: "wrap",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                   ],
@@ -4247,6 +4513,7 @@ it("extract real-world Stack example ", () => {
                       {
                           type: "literal",
                           value: "flex-end",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                   ],
@@ -4254,6 +4521,7 @@ it("extract real-world Stack example ", () => {
                       {
                           type: "literal",
                           value: "flex-end",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                   ],
@@ -4261,6 +4529,7 @@ it("extract real-world Stack example ", () => {
                       {
                           type: "literal",
                           value: "2",
+                          kind: "string",
                           getNode: "NumericLiteral",
                       },
                   ],
@@ -4268,6 +4537,7 @@ it("extract real-world Stack example ", () => {
                       {
                           type: "literal",
                           value: "2",
+                          kind: "string",
                           getNode: "NumericLiteral",
                       },
                   ],
@@ -4275,6 +4545,7 @@ it("extract real-world Stack example ", () => {
                       {
                           type: "literal",
                           value: "1px",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                   ],
@@ -4282,6 +4553,7 @@ it("extract real-world Stack example ", () => {
                       {
                           type: "literal",
                           value: "gray.400",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                   ],
@@ -4301,6 +4573,7 @@ it("extract real-world Stack example ", () => {
                                   {
                                       type: "literal",
                                       value: "space-between",
+                                      kind: "string",
                                       getNode: "StringLiteral",
                                   },
                               ],
@@ -4329,13 +4602,14 @@ it("extract JsxAttribute > JsxExpression > CallExpression > ObjectLiteralExpress
               [
                   ["color", "accent"],
                   ["size", "large"],
-                  ["rounded", "true"],
+                  ["rounded", true],
               ],
               {
                   color: [
                       {
                           type: "literal",
                           value: "accent",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                   ],
@@ -4343,13 +4617,15 @@ it("extract JsxAttribute > JsxExpression > CallExpression > ObjectLiteralExpress
                       {
                           type: "literal",
                           value: "large",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                   ],
                   rounded: [
                       {
                           type: "literal",
-                          value: "true",
+                          value: true,
+                          kind: "boolean",
                           getNode: "TrueKeyword",
                       },
                   ],

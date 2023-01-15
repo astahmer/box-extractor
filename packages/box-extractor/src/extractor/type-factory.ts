@@ -11,7 +11,13 @@ export type MaybeNode = Node | Node[];
 type WithNode = { getNode: () => MaybeNode };
 
 export type ObjectType = WithBoxSymbol & WithNode & { type: "object"; value: ExtractedPropMap; isEmpty?: boolean };
-export type LiteralType = WithBoxSymbol & WithNode & { type: "literal"; value: PrimitiveType | PrimitiveType[] };
+export type LiteralKind = "array" | "string" | "number" | "boolean" | "null" | "undefined";
+export type LiteralType = WithBoxSymbol &
+    WithNode & {
+        type: "literal";
+        value: PrimitiveType | PrimitiveType[];
+        kind: LiteralKind;
+    };
 export type MapType = WithBoxSymbol & WithNode & { type: "map"; value: MapTypeValue };
 export type ListType = WithBoxSymbol & WithNode & { type: "list"; value: BoxNode[] };
 export type UnresolvableType = WithBoxSymbol & { type: "unresolvable" };
@@ -25,12 +31,22 @@ export const isBoxNode = (value: unknown): value is BoxNode => {
     return typeof value === "object" && value !== null && BoxKind in value;
 };
 
+const getTypeOfLiteral = (value: PrimitiveType | PrimitiveType[]): LiteralKind => {
+    if (Array.isArray(value)) return "array";
+    if (typeof value === "string") return "string";
+    if (typeof value === "number") return "number";
+    if (typeof value === "boolean") return "boolean";
+    if (value === null) return "null";
+    if (value === undefined) return "undefined";
+    throw new Error(`Unexpected literal type: ${value as any}`);
+};
+
 const boxTypeFactory = {
     object(value: ExtractedPropMap, node: MaybeNode): ObjectType {
         return { [BoxKind]: true, type: "object", value, getNode: () => node };
     },
     literal(value: PrimitiveType | PrimitiveType[], node: MaybeNode): LiteralType {
-        return { [BoxKind]: true, type: "literal", value, getNode: () => node };
+        return { [BoxKind]: true, type: "literal", value, kind: getTypeOfLiteral(value), getNode: () => node };
     },
     map(value: MapTypeValue, node: Node | Node[]): MapType {
         return { [BoxKind]: true, type: "map", value, getNode: () => node };
@@ -134,6 +150,7 @@ export const narrowCondionalType = (conditional: ConditionalType): BoxNode[] => 
  * => [{ type: "literal", value: ["a", "b", "c"] }]
  */
 export const mergeLiteralTypes = (types: BoxNode[]): BoxNode[] => {
+    return types;
     // console.dir({ types }, { depth: null });
     const literalValues = new Set<PrimitiveType>();
     const others = types.filter((node) => {
