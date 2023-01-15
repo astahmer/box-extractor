@@ -155,6 +155,7 @@ it("extract example.css.ts defineProperties arg result", () => {
                                               {
                                                   type: "literal",
                                                   value: "&:focus",
+                                                  kind: "string",
                                                   getNode: "StringLiteral",
                                               },
                                           ],
@@ -170,6 +171,7 @@ it("extract example.css.ts defineProperties arg result", () => {
                                               {
                                                   type: "literal",
                                                   value: "&:hover",
+                                                  kind: "string",
                                                   getNode: "StringLiteral",
                                               },
                                           ],
@@ -185,6 +187,7 @@ it("extract example.css.ts defineProperties arg result", () => {
                       {
                           type: "literal",
                           value: "idle",
+                          kind: "string",
                           getNode: "StringLiteral",
                       },
                   ],
@@ -199,11 +202,13 @@ it("extract example.css.ts defineProperties arg result", () => {
                                           {
                                               type: "literal",
                                               value: "relative",
+                                              kind: "string",
                                               getNode: "StringLiteral",
                                           },
                                           {
                                               type: "literal",
                                               value: "absolute",
+                                              kind: "string",
                                               getNode: "StringLiteral",
                                           },
                                       ],
@@ -217,21 +222,25 @@ it("extract example.css.ts defineProperties arg result", () => {
                                           {
                                               type: "literal",
                                               value: "block",
+                                              kind: "string",
                                               getNode: "StringLiteral",
                                           },
                                           {
                                               type: "literal",
                                               value: "inline-block",
+                                              kind: "string",
                                               getNode: "StringLiteral",
                                           },
                                           {
                                               type: "literal",
                                               value: "flex",
+                                              kind: "string",
                                               getNode: "StringLiteral",
                                           },
                                           {
                                               type: "literal",
                                               value: "inline-flex",
+                                              kind: "string",
                                               getNode: "StringLiteral",
                                           },
                                       ],
@@ -246,6 +255,7 @@ it("extract example.css.ts defineProperties arg result", () => {
                                               {
                                                   type: "literal",
                                                   value: "#d2a8ff",
+                                                  kind: "string",
                                                   getNode: "StringLiteral",
                                               },
                                           ],
@@ -253,6 +263,7 @@ it("extract example.css.ts defineProperties arg result", () => {
                                               {
                                                   type: "literal",
                                                   value: "#7ee787",
+                                                  kind: "string",
                                                   getNode: "StringLiteral",
                                               },
                                           ],
@@ -260,6 +271,7 @@ it("extract example.css.ts defineProperties arg result", () => {
                                               {
                                                   type: "literal",
                                                   value: "red",
+                                                  kind: "string",
                                                   getNode: "StringLiteral",
                                               },
                                           ],
@@ -267,6 +279,7 @@ it("extract example.css.ts defineProperties arg result", () => {
                                               {
                                                   type: "literal",
                                                   value: "blue",
+                                                  kind: "string",
                                                   getNode: "StringLiteral",
                                               },
                                           ],
@@ -289,6 +302,7 @@ it("extract example.css.ts defineProperties arg result", () => {
                                           {
                                               type: "literal",
                                               value: "position",
+                                              kind: "string",
                                               getNode: "StringLiteral",
                                           },
                                       ],
@@ -302,6 +316,7 @@ it("extract example.css.ts defineProperties arg result", () => {
                                           {
                                               type: "literal",
                                               value: "display",
+                                              kind: "string",
                                               getNode: "StringLiteral",
                                           },
                                       ],
