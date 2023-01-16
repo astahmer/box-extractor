@@ -4948,4 +4948,115 @@ it("extract JsxAttribute > JsxExpression > CallExpression > ObjectLiteralExpress
     `);
 });
 
+it("extract JsxAttribute > Identifier > StringLiteral tailwind-like", () => {
+    expect(
+        extractFromCode(
+            `
+            export function composeClassNames(...classNames: Array<string | undefined>) {
+                const classes = classNames
+                    .filter((className) => Boolean(className) && className !== " ")
+                    .map((className) => className?.toString().trim()) as string[];
+                return classes.length === 0 ? undefined : classes.join(" ");
+            }
+
+            function clsx (...classNames)  {
+                return classNames.reduce((acc, className) => {
+                    if (typeof className === "string") {
+                        return acc.concat(className);
+                    }
+                    if (Array.isArray(className)) {
+                        return acc.concat(className.filter(Boolean).join(" "));
+                    }
+                    return acc.concat(Object.entries(className).filter(([, value]) => Boolean(value)).map(([key]) => key))
+                }, []).join(" ");
+            }
+
+            <div className="bg-slate-100 rounded-xl p-8 dark:bg-slate-800" />
+            <div className={isHovered ? ["bg-sky-400", "text-lg"] : "bg-sky-800"} />
+            <div className={composeClassNames("bg-sky-400", "text-lg", "bg-sky-800")} />
+            <div className={clsx("bg-red-400", { ["bg-white"]: true, shadow: false }, ["rounded", "w-48", "text-sm"])} />
+
+            const [unresolvable] = useState(true);
+            <div className={clsx("basic", { ["fine"]: true, stillFine: false, nope: unresolvable })} />
+        `,
+            { components: ["div"] }
+        )
+    ).toMatchInlineSnapshot(`
+      [
+          [
+              "div",
+              [
+                  [
+                      "className",
+                      [
+                          "bg-slate-100 rounded-xl p-8 dark:bg-slate-800",
+                          ["bg-sky-400", "text-lg", "bg-sky-800"],
+                          "bg-sky-400 text-lg bg-sky-800",
+                          "bg-red-400 bg-white rounded w-48 text-sm",
+                      ],
+                  ],
+              ],
+              {
+                  className: [
+                      {
+                          type: "literal",
+                          value: "bg-slate-100 rounded-xl p-8 dark:bg-slate-800",
+                          kind: "string",
+                          getNode: "StringLiteral",
+                      },
+                      {
+                          type: "conditional",
+                          whenTrue: {
+                              type: "list",
+                              value: [
+                                  {
+                                      type: "literal",
+                                      value: "bg-sky-400",
+                                      kind: "string",
+                                      getNode: "StringLiteral",
+                                  },
+                                  {
+                                      type: "literal",
+                                      value: "text-lg",
+                                      kind: "string",
+                                      getNode: "StringLiteral",
+                                  },
+                              ],
+                              getNode: "ArrayLiteralExpression",
+                          },
+                          whenFalse: {
+                              type: "literal",
+                              value: "bg-sky-800",
+                              kind: "string",
+                              getNode: "StringLiteral",
+                          },
+                          kind: "ternary",
+                          getNode: "ConditionalExpression",
+                      },
+                      {
+                          type: "literal",
+                          value: "bg-sky-400 text-lg bg-sky-800",
+                          kind: "string",
+                          getNode: "CallExpression",
+                      },
+                      {
+                          type: "literal",
+                          value: "bg-red-400 bg-white rounded w-48 text-sm",
+                          kind: "string",
+                          getNode: "CallExpression",
+                      },
+                      {
+                          type: "object",
+                          value: {},
+                          isEmpty: true,
+                          getNode: "CallExpression",
+                      },
+                  ],
+              },
+          ],
+      ]
+    `);
+});
+
 // TODO nested valueOrNullable ?? fallback ?? fallback
+// TODO ElementAccessExpression with conditionals other than ternary

@@ -1,8 +1,11 @@
+import { createLogger } from "@box-extractor/logger";
 import { evaluate } from "ts-evaluator";
 import type { Expression, TypeChecker } from "ts-morph";
 import { ts } from "ts-morph";
 
 const TsEvalError = Symbol("EvalError");
+
+const logger = createLogger("box-ex:extractor:evaluator");
 
 /**
  * Evaluates with strict policies restrictions
@@ -27,11 +30,11 @@ const evaluateExpression = (node: Expression, morphTypeChecker: TypeChecker) => 
         },
     });
 
-    // console.log({
-    //     compilerNode: compilerNode.getText(),
-    //     compilerNodeKind: node.getKindName(),
-    //     result: result.success ? result.value : null,
-    // });
+    logger({
+        compilerNode: compilerNode.getText(),
+        compilerNodeKind: node.getKindName(),
+        result: result.success ? result.value : { name: result.reason.name, reason: result.reason.message },
+    });
     return result.success ? result.value : TsEvalError;
 };
 
