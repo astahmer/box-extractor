@@ -4,7 +4,7 @@ import {
     findAllTransitiveComponents,
     FindAllTransitiveComponentsOptions,
 } from "../src/extractor/findAllTransitiveComponents";
-import type { ExtractOptions } from "../src/extractor/types";
+// @ts-ignore
 import { default as ExtractSample } from "./ExtractSample?raw";
 
 const createProject = () => {

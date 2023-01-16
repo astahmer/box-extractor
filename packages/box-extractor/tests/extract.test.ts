@@ -3,6 +3,7 @@ import { afterEach, expect, it } from "vitest";
 import { extract } from "../src/extractor/extract";
 import { getBoxLiteralValue } from "../src/extractor/getBoxLiteralValue";
 import type { ExtractOptions, BoxNodesMap } from "../src/extractor/types";
+// @ts-ignore
 import { default as ExtractSample } from "./ExtractSample?raw";
 
 const createProject = () => {

@@ -321,23 +321,6 @@ const unquote = (str: string) => {
     return str;
 };
 
-/**
- * @see adapted from https://github.com/noahbuscher/react-tsdoc/blob/6231f6be0caf43bcafc32ded14f13f18fbcb54a1/src/utils/reactComponentHelper.ts#L14
- */
-const isReactComponentDefinition = (node: Node): boolean => {
-    if (Node.isVariableDeclaration(node) || Node.isFunctionDeclaration(node)) {
-        const name = node.getName();
-        if (!name) return false;
-
-        const first = name[0];
-        if (!first) return false;
-
-        return first === first.toUpperCase();
-    }
-
-    return false;
-};
-
 const isJsxNamedComponent = (node: Node): node is JsxOpeningElement | JsxSelfClosingElement => {
     return Node.isJsxOpeningElement(node) || Node.isJsxSelfClosingElement(node);
 };

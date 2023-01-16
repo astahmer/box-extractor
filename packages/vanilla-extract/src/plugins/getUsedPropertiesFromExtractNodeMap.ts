@@ -28,7 +28,7 @@ export const getUsedPropertiesFromExtractNodeMap = (nodeMap: BoxNodesMap, usedCo
                 if (visited.type === "literal") {
                     const values = castAsArray(visited.value);
                     values.forEach((value) => {
-                        usedDebugIdList.add(`${name}_${attrName}_${value}`);
+                        usedDebugIdList.add(`${name}_${attrName}_${String(value)}`);
                         propertiesList.add(value);
                     });
                 }
@@ -40,7 +40,9 @@ export const getUsedPropertiesFromExtractNodeMap = (nodeMap: BoxNodesMap, usedCo
                                 const actualPropName = attrName.startsWith("_") ? propName : attrName;
                                 const conditionName = attrName.startsWith("_") ? attrName : propName;
 
-                                usedDebugIdList.add(`${name}_${actualPropName}_${conditionName}_${innerNode.value}`);
+                                usedDebugIdList.add(
+                                    `${name}_${actualPropName}_${conditionName}_${String(innerNode.value)}`
+                                );
 
                                 const current = propertiesListAtCondition.get(propName);
                                 if (current) {
@@ -59,7 +61,7 @@ export const getUsedPropertiesFromExtractNodeMap = (nodeMap: BoxNodesMap, usedCo
                             const actualPropName = attrName.startsWith("_") ? propName : attrName;
                             const conditionName = attrName.startsWith("_") ? attrName : propName;
 
-                            usedDebugIdList.add(`${name}_${actualPropName}_${conditionName}_${literal}`);
+                            usedDebugIdList.add(`${name}_${actualPropName}_${conditionName}_${String(literal)}`);
                             const current = propertiesListAtCondition.get(propName);
                             if (current) {
                                 current.add(literal);

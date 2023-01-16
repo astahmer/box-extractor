@@ -11,7 +11,8 @@
         "dev": "preconstruct watch",
         "build": "preconstruct build",
         "postinstall": "preconstruct dev",
-        "test": "pnpm --filter @box-extractor/core test:ci",
+        "test": "pnpm -r test:ci",
+        "ci": "pnpm -r ci",
         "release": "pnpm changeset publish"
     },
     "dependencies": {

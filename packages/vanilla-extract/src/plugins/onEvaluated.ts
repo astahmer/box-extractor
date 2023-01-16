@@ -138,7 +138,7 @@ export const cloneAdapterContext = (context: AdapterContext): AdapterContext => 
     };
 };
 
-const getDebugId = (propName: string, value: PrimitiveType) => `${propName}_${value}`;
+const getDebugId = (propName: string, value: PrimitiveType) => `${propName}_${String(value)}`;
 
 type CompiledSprinkleInfo = {
     properties: Set<string>;

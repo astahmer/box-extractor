@@ -12,7 +12,6 @@ export type {
     LiteralValue,
     MapType,
     MapTypeValue,
-    NodeObjectLiteralExpressionType,
     ObjectType,
     SingleLiteralValue,
 } from "./extractor/type-factory";
