@@ -1,7 +1,5 @@
 import type { Monaco } from "@monaco-editor/react";
 import type { editor } from "monaco-editor";
-import type { TemplateContext } from "openapi-zod-client";
-import { getHandlebars, getZodClientTemplateContext, maybePretty } from "openapi-zod-client";
 import type { AwaitFn } from "pastable";
 import { capitalize, createContextWithHook, limit, pick, removeAtIndex, safeJSONParse, updateAtIndex } from "pastable";
 import type { Options as PrettierOptions } from "prettier";
@@ -13,7 +11,6 @@ import { parse } from "yaml";
 import type { OptionsFormValues } from "../components/OptionsForm";
 import { defaultOptionValues } from "../components/OptionsForm";
 import type { ResizablePanesContext } from "../components/SplitPane/SplitPane.machine";
-import { toasts } from "../toasts";
 import { deletingParamInUrl, resetUrl, updateUrlWithCompressedString, updateUrlWithParam } from "../url-saver";
 import { isValidDocumentName, isValidTemplateName, isValidPrettierConfig } from "./Playground.asserts";
 import type { PresetTemplate } from "./Playground.consts";

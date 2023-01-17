@@ -1,5 +1,7 @@
-import { Box, Code, IconButton, Stack, useColorMode } from "@chakra-ui/react";
-import { PropsWithChildren } from "react";
+import type { PropsWithChildren } from "react";
+import { Link } from "../renderer/Link";
+import { Box } from "../theme/Box";
+import { Stack } from "../theme/components";
 
 import "./layout.css";
 
@@ -14,78 +16,73 @@ export const MainLayout = ({ children }: PropsWithChildren) => {
                 alignItems="flex-end"
                 justifyContent="space-between"
                 borderBottom="1px"
-                borderBottomColor="bgHover"
+                // TODO
+                // borderBottomColor="bgHover"
                 py="5"
                 px="4"
             >
                 <Box fontWeight="bold" fontSize={"2xl"}>
-                    <Code
-                        variant="solid"
+                    <Box
                         fontSize="2xl"
-                        // as={Link}
-                        as="a"
-                        href="https://github.com/astahmer/openapi-zod-client/"
+                        as={Link}
+                        href="https://github.com/astahmer/box-extractor"
                         rel="external"
                         target="_blank"
                     >
-                        openapi-zod-client v{version}
-                    </Code>
+                        @box-extractor/core v{version}
+                    </Box>
                 </Box>
-                <Stack direction="row">
+                <Stack flexDirection="row">
                     <Box
-                        // as={StyledLink}
-                        as="a"
+                        as={Link}
                         href="/"
                         px="2"
                         py="1"
                         borderRadius="md"
-                        _hover={{ backgroundColor: "bg-darker" }}
+                        // _hover={{ backgroundColor: "bg-darker" }}
                         // activeClass="activeLink"
                     >
                         Playground
                     </Box>
                     <Box
-                        // as={StyledLink}
-                        as="a"
+                        as={Link}
                         href="/docs"
                         px="2"
                         py="1"
                         borderRadius="md"
-                        _hover={{ backgroundColor: "bg-darker" }}
+                        // _hover={{ backgroundColor: "bg-darker" }}
                         // activeClass="activeLink"
                     >
                         Documentation
                     </Box>
                     <Box
-                        // as={StyledLink}
-                        as="a"
-                        href="https://github.com/astahmer/openapi-zod-client/"
+                        as={Link}
+                        href="https://github.com/astahmer/box-extractor"
                         rel="external"
                         target="_blank"
                         px="2"
                         py="1"
                         borderRadius="md"
-                        _hover={{ backgroundColor: "bg-darker" }}
+                        // _hover={{ backgroundColor: "bg-darker" }}
                     >
-                        <Box className="i-mdi-github" boxSize="1.5em" />
+                        <Box className="i-mdi-github" boxSize={1.5} />
                     </Box>
                     <Box
-                        // as={StyledLink}
-                        as="a"
-                        href="https://www.zodios.org/"
+                        as={Link}
+                        href="https://vanilla-extract.style"
                         rel="external"
                         target="_blank"
                         px="2"
                         py="1"
                         borderRadius="md"
-                        _hover={{ backgroundColor: "bg-darker" }}
+                        // _hover={{ backgroundColor: "bg-darker" }}
                         display="flex"
                         alignItems="center"
                     >
-                        <Box className="i-ic-outline-diamond" boxSize="1.5em" color="purple" mr="1" />
-                        Zodios
+                        <Box className="i-ic-outline-diamond" boxSize={1.5} color="purple.400" mr="1" />
+                        vanilla-extract
                     </Box>
-                    <ColorModeSwitchIconButton />
+                    {/* <ColorModeSwitchIconButton /> */}
                 </Stack>
             </Box>
 
@@ -96,20 +93,20 @@ export const MainLayout = ({ children }: PropsWithChildren) => {
     );
 };
 
-const ColorModeSwitchIconButton = () => {
-    const { colorMode, toggleColorMode } = useColorMode();
-    return (
-        <IconButton
-            aria-label="Color mode switch"
-            onClick={toggleColorMode}
-            size="sm"
-            icon={
-                colorMode === "light" ? (
-                    <Box className="i-material-symbols-sunny" boxSize="1em" />
-                ) : (
-                    <Box className="i-ri-moon-clear-fill" boxSize="1em" />
-                )
-            }
-        />
-    );
-};
+// const ColorModeSwitchIconButton = () => {
+//     const { colorMode, toggleColorMode } = useColorMode();
+//     return (
+//         <IconButton
+//             aria-label="Color mode switch"
+//             onClick={toggleColorMode}
+//             size="sm"
+//             icon={
+//                 colorMode === "light" ? (
+//                     <Box className="i-material-symbols-sunny" boxSize="1em" />
+//                 ) : (
+//                     <Box className="i-ri-moon-clear-fill" boxSize="1em" />
+//                 )
+//             }
+//         />
+//     );
+// };
