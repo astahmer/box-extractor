@@ -3,11 +3,12 @@ import { createBoxSprinklesInternal } from "./createBoxSprinklesInternal";
 import type { SprinklesProperties } from "./types";
 
 export function createBoxSprinkles<Configs extends readonly SprinklesProperties[]>(...definePropsFn: Configs) {
-    // console.log("createBoxSprinkles");
     const original = createBoxSprinklesInternal(...definePropsFn);
 
-    // @ts-expect-error
     const sprinklesFn: typeof original = (props) => original(props);
+    sprinklesFn.properties = original.properties;
+    sprinklesFn.conditions = original.conditions;
+    sprinklesFn.shorthands = original.shorthands;
 
     return addFunctionSerializer(sprinklesFn, {
         importPath: "@box-extractor/vanilla-extract/createRuntimeBoxSprinkles",
