@@ -3,12 +3,11 @@ import { PageShell } from "./PageShell";
 import { escapeInject, dangerouslySkipEscape } from "vite-plugin-ssr";
 import logoUrl from "./logo.svg";
 import type { PageContextServer } from "./types";
-import { lightMode, darkMode } from "@box-extractor/vanilla-theme/css";
+import { lightMode, darkMode } from "../theme/css/color-mode.css";
+import { themeKey } from "../ColorModeToggle/ColorModeToggle";
 
 // See https://vite-plugin-ssr.com/data-fetching
 export const passToClient = ["pageProps", "urlPathname"];
-
-const key = "react-vite-plugin-ssr";
 
 export async function render(pageContext: PageContextServer) {
     const { Page, pageProps } = pageContext;
@@ -29,7 +28,7 @@ export async function render(pageContext: PageContextServer) {
     <html lang="en">
       <head>
         <script>
-        ((d)=>{try{var p=localStorage.getItem('${key}');if(p==d||(p!='${lightMode}'&&matchMedia('(prefers-color-scheme:dark)').matches)) document.documentElement.classList.add(d)}catch(e){}})('${darkMode}')
+        ((d)=>{try{var p=localStorage.getItem('${themeKey}');if(p==d||(p!='${lightMode}'&&matchMedia('(prefers-color-scheme:dark)').matches)) document.documentElement.classList.add(d)}catch(e){}})('${darkMode}');
         </script>
         <meta charset="UTF-8" />
         <link rel="icon" href="${logoUrl}" />

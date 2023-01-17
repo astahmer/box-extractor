@@ -1,11 +1,9 @@
 import { defineProperties } from "@vanilla-extract/sprinkles";
 import { tokens, flatColors } from "@box-extractor/vanilla-theme";
-import { colorModeVars } from "./color-mode.css";
+import { colorModeVars, darkMode, lightMode } from "./color-mode.css";
 
 const colors = { ...flatColors, main: colorModeVars.color.primary, secondary: colorModeVars.color.primary };
 
-// TODO theme vars ?
-const absPos = ["auto", "0", "-50%", "0%", "50%", "100%"] as const;
 const flexAlign = ["stretch", "flex-start", "center", "flex-end", "space-around", "space-between"] as const;
 
 const screens = {
@@ -37,6 +35,7 @@ const twBreakpointsToAppBreakpoints = (breakpointsMap: TwResponsiveBreakpointsMa
 
 const overflow = ["auto", "hidden", "scroll", "visible"] as const;
 const space = tokens.space as Record<keyof typeof tokens.space | `${keyof typeof tokens.space}`, string>;
+const sizes = tokens.sizes as Record<keyof typeof tokens.sizes | `${keyof typeof tokens.sizes}`, string>;
 
 /** https://chakra-ui.com/docs/styled-system/style-props#pseudo */
 export const interactiveProperties = defineProperties({
@@ -148,8 +147,11 @@ export const interactiveProperties = defineProperties({
         ltr: { selector: "&[dir=ltr] &,&[dir=ltr]" },
         mediaDark: { "@media": "(prefers-color-scheme: dark)" },
         mediaReduceMotion: { "@media": "(prefers-reduced-motion: reduce)" },
-        dark: { selector: "&[data-theme=dark] &,&[data-theme=dark]" },
-        light: { selector: "&[data-theme=light] &,&[data-theme=light]" },
+        dark: { selector: `&[data-theme=dark] &,[data-theme=dark] &,.${darkMode} &` },
+        light: { selector: `&[data-theme=light] &,[data-theme=light] &,.${lightMode} &` },
+        resizeHandleActive: { selector: "[data-resize-handle-active] &" },
+        panelHorizontalActive: { selector: '[data-panel-group-direction="horizontal"] &' },
+        panelVerticalActive: { selector: '[data-panel-group-direction="vertical"] &' },
     },
     defaultCondition: "default",
     properties: {
@@ -186,18 +188,18 @@ export const interactiveProperties = defineProperties({
         justifySelf: flexAlign,
         alignItems: flexAlign,
         alignSelf: flexAlign,
-        top: absPos,
-        bottom: absPos,
-        left: absPos,
-        right: absPos,
-        inset: absPos,
+        top: sizes,
+        bottom: sizes,
+        left: sizes,
+        right: sizes,
+        inset: sizes,
         // base props
-        width: tokens.sizes,
-        minWidth: tokens.sizes,
-        maxWidth: tokens.sizes,
-        height: tokens.sizes,
-        minHeight: tokens.sizes,
-        maxHeight: tokens.sizes,
+        width: sizes,
+        minWidth: sizes,
+        maxWidth: sizes,
+        height: sizes,
+        minHeight: sizes,
+        maxHeight: sizes,
         whiteSpace: ["nowrap", "unset"],
         textOverflow: ["ellipsis", "clip", "unset"],
         overflow: overflow,

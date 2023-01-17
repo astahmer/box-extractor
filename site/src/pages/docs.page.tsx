@@ -1,8 +1,7 @@
-import type { FC } from "react";
 import { Link } from "../renderer/Link";
 import { Box } from "../theme/Box";
 
-const DocsPage: FC = () => (
+export const Page = () => (
     <main>
         TODO sorry, in the meantime there is
         <Box
@@ -20,5 +19,3 @@ const DocsPage: FC = () => (
         </Box>
     </main>
 );
-
-export default DocsPage;
