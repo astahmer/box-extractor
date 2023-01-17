@@ -19,8 +19,8 @@
             "default": "./integration/dist/box-extractor-vanilla-extract-integration.cjs.js"
         },
         "./vite-plugin": {
-            "module": "./vite-plugin/dist/box-extractor-vanilla-extract-vite.esm.js",
-            "default": "./vite-plugin/dist/box-extractor-vanilla-extract-vite.cjs.js"
+            "module": "./vite-plugin/dist/box-extractor-vanilla-extract-vite-plugin.esm.js",
+            "default": "./vite-plugin/dist/box-extractor-vanilla-extract-vite-plugin.cjs.js"
         },
         "./esbuild-plugin": {
             "module": "./esbuild-plugin/dist/box-extractor-vanilla-extract-esbuild-plugin.esm.js",

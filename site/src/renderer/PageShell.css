@@ -1,0 +1,8 @@
+/* This CSS is common to all pages */
+
+.navitem {
+    padding: 3px 10px;
+}
+.navitem.is-active {
+    background-color: #eee;
+}
