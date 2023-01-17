@@ -6,12 +6,15 @@ import { ReactNode, StrictMode } from "react";
 import { MainLayout } from "../pages/layout";
 import type { PageContext } from "./types";
 import { PageContextProvider } from "./usePageContext";
+import { ColorModeProvider } from "../ColorModeToggle/ColorModeToggle";
 
 export function PageShell({ children, pageContext }: { children: ReactNode; pageContext: PageContext }) {
     return (
         <StrictMode>
             <PageContextProvider pageContext={pageContext}>
-                <MainLayout>{children}</MainLayout>
+                <ColorModeProvider>
+                    <MainLayout>{children}</MainLayout>
+                </ColorModeProvider>
             </PageContextProvider>
         </StrictMode>
     );

@@ -32,8 +32,8 @@ export const Stack = <TType extends React.ElementType = typeof defaultElement>(
 };
 
 export const Flex = (props: PropsWithChildren<BoxProps>) => <Box flexDirection="row" {...props} />;
-export const Inline = (props: StackProps) => <Stack flexDirection="row" {...props} />;
+export const Inline = (props: PropsWithChildren<StackProps>) => <Stack flexDirection="row" {...props} />;
 
-export const Center = (props: BoxProps) => (
-    <Box justifyContent="center" alignItems="center" textAlign="center" {...props} />
+export const Center = (props: PropsWithChildren<BoxProps>) => (
+    <Box display="flex" justifyContent="center" alignItems="center" textAlign="center" {...props} />
 );

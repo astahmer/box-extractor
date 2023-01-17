@@ -13,7 +13,8 @@ export default defineConfig((env) => {
         plugins: [
             UnoCSS({ presets: [presetIcons({})] }),
             createViteVanillaExtractSprinklesExtractor({
-                components: ["Box", "Stack"],
+                // TODO rm Stack/Center
+                components: ["Box", "Stack", "Center"],
                 mappedProps: { direction: ["flexDirection"], spacing: ["paddingBottom", "paddingRight"] },
                 functions: ["themeSprinkles"],
                 vanillaExtractOptions: {
