@@ -1,4 +1,5 @@
 import { Node } from "ts-morph";
+import type { Extractable, ExtractableMap } from "./types";
 
 type Nullable<T> = T | null | undefined;
 
@@ -30,4 +31,10 @@ export const unwrapArray = <T>(array: T[]): T | T[] => {
     }
 
     return array;
+};
+
+export const castAsExtractableMap = (extractable: Extractable) => {
+    return Array.isArray(extractable)
+        ? (Object.fromEntries(extractable.map((name) => [name, { properties: "all" }])) as ExtractableMap)
+        : extractable;
 };

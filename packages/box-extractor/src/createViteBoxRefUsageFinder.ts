@@ -17,22 +17,21 @@ import {
 
 const logger = createLogger("box-ex:finder:vite");
 
+type TransitiveMap = FindAllTransitiveComponentsOptions["transitiveMap"];
+
 export const createViteBoxRefUsageFinder = ({
-    components: _components = {},
-    functions: _functions = {},
+    components,
+    // functions: _functions = {}, TODO
+    onFound,
     tsConfigFilePath = "tsconfig.json",
     project: _project,
     ...options
-}: Omit<CreateViteBoxExtractorOptions, "extractMap" | "onExtracted">): Plugin => {
-    const components = Array.isArray(_components)
-        ? Object.fromEntries(_components.map((name) => [name, { properties: "all" }]))
-        : _components;
-    // TODO functions
-    const functions = Array.isArray(_functions)
-        ? Object.fromEntries(_functions.map((name) => [name, { properties: "all" }]))
-        : _functions;
+}: Omit<CreateViteBoxExtractorOptions, "extractMap" | "onExtracted" | "functions"> & {
+    onFound: (transitiveMap: TransitiveMap) => void;
+}): Plugin => {
+    const componentNames = Array.isArray(components) ? components : Object.keys(components ?? {});
 
-    logger("createViteBoxRefUsageFinder", { components, functions });
+    logger("createViteBoxRefUsageFinder", { components });
 
     let project: Project = _project!;
     let isIncluded: ReturnType<typeof createFilter>;
@@ -80,19 +79,19 @@ export const createViteBoxRefUsageFinder = ({
 
             // avoid full AST-parsing if possible
             let isUsingExtractableProps = false;
-            const componentNames = Array.isArray(components) ? components : Object.keys(components);
             componentNames.forEach((component) => {
                 if (code.includes("<" + component)) {
                     isUsingExtractableProps = true;
                 }
             });
 
-            const functionNames = Array.isArray(functions) ? functions : Object.keys(functions);
-            functionNames.forEach((fn) => {
-                if (code.includes(fn + "(")) {
-                    isUsingExtractableProps = true;
-                }
-            });
+            // TODO
+            // const functionNames = Array.isArray(functions) ? functions : Object.keys(functions);
+            // functionNames.forEach((fn) => {
+            //     if (code.includes(fn + "(")) {
+            //         isUsingExtractableProps = true;
+            //     }
+            // });
 
             if (!isUsingExtractableProps) {
                 logger("no used component/functions found", id);
@@ -104,20 +103,11 @@ export const createViteBoxRefUsageFinder = ({
                 scriptKind: ts.ScriptKind.TSX,
             });
 
-            const transitiveMap: FindAllTransitiveComponentsOptions["transitiveMap"] = new Map();
-            findAllTransitiveComponents({ ast: sourceFile, components: Object.keys(components), transitiveMap });
+            const transitiveMap: TransitiveMap = new Map();
+            findAllTransitiveComponents({ ast: sourceFile, components: componentNames, transitiveMap });
 
-            // TODO callback ?
-            // console.log({ transitiveMap, components });
-            transitiveMap.forEach((value, componentName) => {
-                value.refUsedWithSpread.forEach((transitiveName) => {
-                    const config = components[value.from ?? componentName];
-                    if (config) {
-                        components[transitiveName] = config;
-                    }
-                });
-            });
-            // console.log("after", { components });
+            logger("transitive components", transitiveMap);
+            onFound(transitiveMap);
 
             return null;
         },

@@ -1,6 +1,7 @@
 // = find all usage via vs-code
 // https://github.com/dsherret/ts-morph/issues/299
 
+import { createLogger } from "@box-extractor/logger";
 import {
     BindingName,
     Identifier,
@@ -23,7 +24,7 @@ import { unwrapExpression } from "./utils";
 // :matches(JsxOpeningElement, JsxSelfClosingElement):has(Identifier[name="Box"])
 
 // TODO find all Box components used from a sprinkles fn + find all sprinkles fn used
-// TODO logger
+const logger = createLogger("box-ex:finder:components");
 
 // const CustomBox = ({ render, ...props }) => <Box {...props} >{render()}</Box>;
 //                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -39,11 +40,10 @@ export type FindAllTransitiveComponentsOptions = Pick<ExtractOptions, "ast"> & {
 };
 
 export const findAllTransitiveComponents = ({ transitiveMap, ...options }: FindAllTransitiveComponentsOptions) => {
-    // console.log({ findAllTransitiveComponents: true });
+    logger({ components: options.components });
     const namesWithSpread = new Set<string>();
 
     options.components.forEach((component) => {
-        // console.log(component);
         if (!transitiveMap.has(component)) {
             transitiveMap.set(component, { from: null, referencedBy: new Set(), refUsedWithSpread: new Set() });
         }
@@ -54,92 +54,53 @@ export const findAllTransitiveComponents = ({ transitiveMap, ...options }: FindA
         const jsxNodes = getJsxComponentWithSpreadByName(options.ast, component);
         // console.log(new Set(jsxNodes.map((jsxNode) => getAncestorComponent(jsxNode)?.getText())));
 
-        const wrapperNodes = new Map<string, { node: ReturnType<typeof getAncestorComponent>; refs: Node[] }>();
+        const wrapperNodes = new Map<string, ReturnType<typeof getAncestorComponent>>();
         jsxNodes.forEach((jsxNode) => {
             const wrapper = getAncestorComponent(jsxNode) as Identifier | StringLiteral;
             if (!wrapper) return;
 
             const name = getNameLiteral(wrapper);
-            // console.log({
-            //     wrapper: wrapper.getText(),
-            //     wrapperKind: wrapper.getKindName(),
-            //     name,
-            //     // has: wrapperNodes.has(name),
-            //     // includes: options.components.includes(name),
-            // });
             if (wrapperNodes.has(name) || options.components.includes(name)) return;
 
             const parent = wrapper.getParent();
             const isComputed = Node.isComputedPropertyName(parent);
+            const hasSpread = jsxNode.getAttributes().some((attr) => Node.isJsxSpreadAttribute(attr));
 
-            let refs = [] as Node[];
-            // console.log({ isComputed, parent: parent?.getText(), parentKind: parent?.getKindName() });
-            if (Node.isIdentifier(wrapper) && !isComputed) {
-                // console.log({ name, wrapperKind: wrapper.getKindName() });
-                refs = wrapper.findReferencesAsNodes().reduce((acc, ref) => {
-                    if (Node.isIdentifier(ref)) {
-                        // <Something color="red.200" />
-                        let parent = ref.getParent();
+            logger({
+                name,
+                wrapperKind: wrapper.getKindName(),
+                parentKind: parent.getKindName(),
+                isComputed,
+                hasSpread,
+            });
 
-                        // <componentsMap.Something color="red.200" />
-                        if (Node.isPropertyAccessExpression(parent) && parent.getParent()) {
-                            parent = parent.getParent()!;
-                        }
-
-                        // console.log({
-                        //     parent: parent.getText(),
-                        //     parentKind: parent.getKindName(),
-                        // });
-                        if (
-                            isJsxNamedComponent(parent) &&
-                            parent.getAttributes().some((attr) => Node.isJsxSpreadAttribute(attr))
-                        ) {
-                            return acc.concat(parent);
-                        }
-                    }
-
-                    return acc;
-                }, [] as Node[]);
-            } else if (Node.isStringLiteral(wrapper) || (Node.isIdentifier(wrapper) && isComputed)) {
-                // TODO wrapper is exported -> options.ast.getProject().getSourceFiles() ?
-                refs = getJsxComponentWithSpreadByName(options.ast, name);
-                // console.log(refs.map((ref) => ref.getText()));
-            } else {
-                console.warn({ todo: true, name, wrapperKind: wrapper.getKindName() });
-            }
-
-            wrapperNodes.set(name, { node: wrapper, refs });
+            wrapperNodes.set(name, wrapper);
             referencedBy.add(name);
 
-            if (refs.length > 0) {
+            if (hasSpread) {
                 namesWithSpread.add(name);
                 refUsedWithSpread.add(name);
                 transitiveMap.set(name, { from: component, referencedBy: new Set(), refUsedWithSpread: new Set() });
             }
         });
 
-        // const namesWithRefs = Array.from(wrapperNodes.entries())
-        //     // .filter(([, { refs }]) => refs.length === 0)
-        //     .map(([name, { refs }]) => [name, refs.map((ref) => ref.getText())] as [string, string[]]);
-
-        // console.log({ namesWithRefs });
-        // console.log({ names, components: Array.from(names) });
+        // logger.lazy(() => ({
+        //     namesWithRefs: Array.from(wrapperNodes.entries())
+        //         // .filter(([, { refs }]) => refs.length === 0)
+        //         .map(([name, { refs }]) => [name, refs.map((ref) => ref.getText())] as [string, string[]]),
+        // }));
     });
 
     if (namesWithSpread.size > 0) {
-        // console.log({ namesWithSpread });
+        logger({ namesWithSpread });
         const transitiveComponents = findAllTransitiveComponents({
             components: Array.from(namesWithSpread),
             ast: options.ast,
             transitiveMap,
         });
         transitiveComponents.forEach((name) => namesWithSpread.add(name));
-        // console.log({ transitiveComponents, namesWithSpread, from: options.components });
+        logger({ transitiveComponents, namesWithSpread, from: options.components });
     }
-
-    // transitiveComponents.forEach((name) => void names.add(name));
-    // console.log({ transitiveComponents, names, from: options.components });
-    // console.log({ names, namesWithSpread });
 
     return namesWithSpread;
 };

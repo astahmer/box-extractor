@@ -8,17 +8,13 @@ import { extractJsxAttributeIdentifierValue } from "./extractJsxAttributeIdentif
 import { extractJsxSpreadAttributeValues } from "./extractJsxSpreadAttributeValues";
 import { castObjectLikeAsMapValue, BoxNode, MapTypeValue } from "./type-factory";
 import type { ExtractOptions, ListOrAll, BoxNodesMap, PropNodesMap } from "./types";
-import { isNotNullish } from "./utils";
+import { castAsExtractableMap, isNotNullish } from "./utils";
 
 const logger = createLogger("box-ex:extractor:extract");
 
 export const extract = ({ ast, components: _components, functions: _functions, extractMap }: ExtractOptions) => {
-    const components = Array.isArray(_components)
-        ? Object.fromEntries(_components.map((name) => [name, { properties: "all" }]))
-        : _components;
-    const functions = Array.isArray(_functions)
-        ? Object.fromEntries(_functions.map((name) => [name, { properties: "all" }]))
-        : _functions;
+    const components = castAsExtractableMap(_components ?? {});
+    const functions = castAsExtractableMap(_functions ?? {});
 
     // contains all the extracted nodes from this ast
     // where as `used` is the global map that is populated by this function in multiple calls

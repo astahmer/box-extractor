@@ -8,6 +8,7 @@ import type { ModuleNode, Plugin, ResolvedConfig, ViteDevServer } from "vite";
 import { normalizePath } from "vite";
 
 import {
+    castAsExtractableMap,
     createViteBoxExtractor,
     CreateViteBoxExtractorOptions,
     createViteBoxRefUsageFinder,
@@ -52,8 +53,8 @@ export type CreateViteVanillaExtractSprinklesExtractorOptions = Omit<CreateViteB
     };
 
 export const createViteVanillaExtractSprinklesExtractor = ({
-    components = {},
-    functions = {},
+    components: _components = {},
+    functions: _functions = {},
     mappedProps = {},
     onExtracted,
     vanillaExtractOptions,
@@ -83,8 +84,25 @@ export const createViteVanillaExtractSprinklesExtractor = ({
     const usedClassNameListByPath = new Map<string, Set<string>>();
     const usedClassNameListByPathLastTime = new Map<string, Set<string>>();
 
+    const components = castAsExtractableMap(_components);
+    const functions = castAsExtractableMap(_functions);
+
     return [
-        createViteBoxRefUsageFinder({ project, components, functions, ...options }),
+        createViteBoxRefUsageFinder({
+            project,
+            components,
+            onFound(transitiveMap) {
+                transitiveMap.forEach((value, componentName) => {
+                    value.refUsedWithSpread.forEach((transitiveName) => {
+                        const config = components[value.from ?? componentName];
+                        if (config) {
+                            components[transitiveName] = config;
+                        }
+                    });
+                });
+            },
+            ...options,
+        }),
         {
             name: "vite-box-extractor-ve-adapter",
             enforce: "pre",
