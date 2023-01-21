@@ -57,7 +57,7 @@
         "express": "^4.18.1",
         "lz-string": "^1.4.4",
         "monaco-editor": "^0.34.1",
-        "pastable": "^2.0.13",
+        "pastable": "^2.1.0",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
         "react-resizable-panels": "^0.0.33",
