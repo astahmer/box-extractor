@@ -45,6 +45,7 @@ const loggerEval = createLogger("box-ex:ve:eval");
 const loggerExtract = createLogger("box-ex:ve:extract");
 const loggerSerialize = createLogger("box-ex:ve:serialize");
 const loggerResult = createLogger("box-ex:ve:result");
+const loggerVite = createLogger("box-ex:ve:vite");
 
 export type CreateViteVanillaExtractSprinklesExtractorOptions = Omit<CreateViteBoxExtractorOptions, "extractMap"> &
     Partial<Pick<CreateViteBoxExtractorOptions, "extractMap">> & {
@@ -87,18 +88,48 @@ export const createViteVanillaExtractSprinklesExtractor = ({
     const components = castAsExtractableMap(_components);
     const functions = castAsExtractableMap(_functions);
 
+    const extractorCacheMap = new Map<string, string>();
+
     return [
         createViteBoxRefUsageFinder({
             project,
             components,
-            onFound(transitiveMap) {
+            onFound(transitiveMap, id) {
+                if (transitiveMap.size === 0) return;
+
+                const newTransitiveComponentsFound = new Set<string>();
                 transitiveMap.forEach((value, componentName) => {
                     value.refUsedWithSpread.forEach((transitiveName) => {
                         const config = components[value.from ?? componentName];
-                        if (config) {
+                        if (config && !components[transitiveName]) {
                             components[transitiveName] = config;
+                            newTransitiveComponentsFound.add(transitiveName);
                         }
                     });
+                });
+
+                const toInvalidate = new Set<string>();
+                extractorCacheMap.forEach((code, id) => {
+                    // avoid full AST-parsing
+                    const hasUnextractedComponent = Array.from(newTransitiveComponentsFound).some((componentName) =>
+                        code.includes("<" + componentName)
+                    );
+                    if (!hasUnextractedComponent) return;
+
+                    toInvalidate.add(id);
+                });
+                loggerVite({ id, transitiveComponentsFound: newTransitiveComponentsFound, toInvalidate });
+
+                const timestamp = Date.now();
+                toInvalidate.forEach((id) => {
+                    extractorCacheMap.delete(id);
+
+                    const moduleGraph = server.moduleGraph;
+                    const mod = moduleGraph.getModuleById(id);
+                    if (mod) {
+                        moduleGraph.invalidateModule(mod);
+                        mod.lastHMRTimestamp = timestamp;
+                    }
                 });
             },
             ...options,
@@ -139,6 +170,7 @@ export const createViteVanillaExtractSprinklesExtractor = ({
             components,
             functions,
             extractMap,
+            cacheMap: extractorCacheMap,
             ...options,
             onExtracted(args) {
                 onExtracted?.(args);
@@ -158,6 +190,7 @@ export const createViteVanillaExtractSprinklesExtractor = ({
 
                 const extractResult = getUsedPropertiesFromExtractNodeMap(args.extractMap, usedMap);
                 const serialized = Array.from(extractResult.usedDebugIdList);
+                // console.log({ RESULT: true, extractResult });
 
                 loggerExtract({ id: args.id, serialized });
                 const hashed = hash(serialized.join(""));

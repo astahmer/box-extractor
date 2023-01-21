@@ -27,7 +27,7 @@ export const createViteBoxRefUsageFinder = ({
     project: _project,
     ...options
 }: Omit<CreateViteBoxExtractorOptions, "extractMap" | "onExtracted" | "functions"> & {
-    onFound: (transitiveMap: TransitiveMap) => void;
+    onFound: (transitiveMap: TransitiveMap, id: string) => void;
 }): Plugin => {
     const componentNames = Array.isArray(components) ? components : Object.keys(components ?? {});
 
@@ -107,7 +107,7 @@ export const createViteBoxRefUsageFinder = ({
             findAllTransitiveComponents({ ast: sourceFile, components: componentNames, transitiveMap });
 
             logger("transitive components", transitiveMap);
-            onFound(transitiveMap);
+            onFound(transitiveMap, id);
 
             return null;
         },
