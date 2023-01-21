@@ -54,7 +54,7 @@
         "eval": "^0.1.8",
         "javascript-stringify": "^2.1.0",
         "outdent": "^0.8.0",
-        "pastable": "^2.0.10",
+        "pastable": "^2.1.0",
         "ts-morph": "^17.0.1"
     },
     "peerDependencies": {
