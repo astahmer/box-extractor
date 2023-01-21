@@ -38,6 +38,7 @@ export type CreateViteBoxExtractorOptions = Pick<ExtractOptions, "components" | 
      */
     exclude?: FilterPattern;
     project?: Project;
+    cacheMap?: Map<string, string>;
 };
 
 const logger = createLogger("box-ex:extract:vite");
@@ -49,13 +50,13 @@ export const createViteBoxExtractor = ({
     onExtracted,
     tsConfigFilePath = "tsconfig.json",
     project: _project,
+    cacheMap = new Map<string, string>(),
     ...options
 }: CreateViteBoxExtractorOptions): VitePlugin => {
     let project: Project = _project!;
     logger("createViteBoxExtractor", { components, functions });
 
     let isIncluded: ReturnType<typeof createFilter>;
-    const cacheMap = new Map<string, string>();
 
     return {
         enforce: "pre",
