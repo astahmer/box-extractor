@@ -1,7 +1,7 @@
-import type { PropsWithChildren } from "react";
+import type { ComponentPropsWithoutRef, PropsWithChildren } from "react";
 import { ColorModeToggle } from "../ColorModeToggle/ColorModeToggle";
 import { Link } from "../renderer/Link";
-import { Box } from "../theme/Box";
+import { Box, BoxProps } from "../theme/Box";
 import { Stack } from "../theme/components";
 
 import "./layout.css";
@@ -17,8 +17,8 @@ export const MainLayout = ({ children }: PropsWithChildren) => {
                 alignItems="flex-end"
                 justifyContent="space-between"
                 borderBottom="1px"
-                // TODO
-                // borderBottomColor="bgHover"
+                borderBottomColor="bgHover"
+                fontSize="lg"
                 py="5"
                 px="4"
             >
@@ -34,61 +34,23 @@ export const MainLayout = ({ children }: PropsWithChildren) => {
                     </Box>
                 </Box>
                 <Stack flexDirection="row" alignItems="center" spacing="4" mr="8">
-                    <Box
-                        as={Link}
-                        href="/"
-                        borderRadius="md"
-                        // _hover={{ backgroundColor: "bg-darker" }}
-                    >
-                        Home
-                    </Box>
-                    <Box
-                        as={Link}
-                        href="/playground"
-                        borderRadius="md"
-                        // _hover={{ backgroundColor: "bg-darker" }}
-                    >
-                        Playground
-                    </Box>
-                    <Box
-                        as={Link}
-                        href="/playground"
-                        borderRadius="md"
-                        // _hover={{ backgroundColor: "bg-darker" }}
-                    >
-                        Playground
-                    </Box>
-                    <Box
-                        as={Link}
-                        href="/docs"
-                        borderRadius="md"
-                        // _hover={{ backgroundColor: "bg-darker" }}
-                    >
-                        Documentation
-                    </Box>
-                    <Box
-                        as={Link}
-                        href="https://github.com/astahmer/box-extractor"
-                        rel="external"
-                        target="_blank"
-                        borderRadius="md"
-                        // _hover={{ backgroundColor: "bg-darker" }}
-                    >
+                    <NavLink href="/">Home</NavLink>
+                    <NavLink href="/playground">Playground</NavLink>
+                    <NavLink href="/docs">Documentation</NavLink>
+                    <NavLink href="https://github.com/astahmer/box-extractor" rel="external" target="_blank">
                         <Box className="i-mdi-github" fontSize="2xl" />
-                    </Box>
-                    <Box
-                        as={Link}
+                    </NavLink>
+                    <NavLink
                         href="https://vanilla-extract.style"
                         rel="external"
                         target="_blank"
-                        borderRadius="md"
-                        // _hover={{ backgroundColor: "bg-darker" }}
                         display="flex"
                         alignItems="center"
+                        width="8"
                     >
                         <Box className="i-ri:cake-3-line" fontSize="2xl" color="purple.400" mr="1" />
                         vanilla-extract
-                    </Box>
+                    </NavLink>
                     <ColorModeToggle />
                 </Stack>
             </Box>
@@ -100,20 +62,6 @@ export const MainLayout = ({ children }: PropsWithChildren) => {
     );
 };
 
-// const ColorModeSwitchIconButton = () => {
-//     const { colorMode, toggleColorMode } = useColorMode();
-//     return (
-//         <IconButton
-//             aria-label="Color mode switch"
-//             onClick={toggleColorMode}
-//             size="sm"
-//             icon={
-//                 colorMode === "light" ? (
-//                     <Box className="i-material-symbols-sunny" boxSize="1em" />
-//                 ) : (
-//                     <Box className="i-ri-moon-clear-fill" boxSize="1em" />
-//                 )
-//             }
-//         />
-//     );
-// };
+const NavLink = (props: PropsWithChildren<BoxProps & ComponentPropsWithoutRef<typeof Link>>) => (
+    <Box as={Link} borderRadius="md" p="2" _hover={{ backgroundColor: "bgSecondary" }} {...props} />
+);
