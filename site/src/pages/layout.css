@@ -28,15 +28,6 @@ main {
     line-height: 1.6;
 }
 
-/* TODO */
-/* a.active {
-    background-color: var(--chakra-colors-gray-100);
-}
-
-html[data-theme="dark"] a.active {
-    background-color: var(--chakra-colors-gray-700);
-} */
-
 .main {
     padding: 0 1em 1em;
     min-height: calc(100vh - 16rem);

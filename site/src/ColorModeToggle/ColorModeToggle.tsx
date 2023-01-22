@@ -51,7 +51,6 @@ export function ColorModeProvider({ children }: { children: ReactNode }) {
 
 export const ColorModeToggle = () => {
     const { colorMode, setColorMode } = useContext(ColorModeContext);
-    console.log({ colorMode });
 
     return (
         <Box

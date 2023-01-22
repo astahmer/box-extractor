@@ -10,11 +10,13 @@ import react from "@vitejs/plugin-react";
 // TODO pwa ?
 export default defineConfig((env) => {
     const config: UserConfig = {
+        ssr: {
+            external: ["ts-toolbelt"],
+        },
         plugins: [
             UnoCSS({ presets: [presetIcons({})] }),
             createViteVanillaExtractSprinklesExtractor({
-                // TODO rm Stack/Center
-                components: ["Box", "Stack", "Center"],
+                components: ["Box"],
                 mappedProps: { direction: ["flexDirection"], spacing: ["paddingBottom", "paddingRight"] },
                 functions: ["themeSprinkles"],
                 vanillaExtractOptions: {

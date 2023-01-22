@@ -2,7 +2,7 @@ import { defineProperties } from "@vanilla-extract/sprinkles";
 import { tokens, flatColors } from "@box-extractor/vanilla-theme";
 import { colorModeVars, darkMode, lightMode } from "./color-mode.css";
 
-const colors = { ...flatColors, main: colorModeVars.color.primary, secondary: colorModeVars.color.primary };
+const colors = { ...flatColors, ...colorModeVars.color };
 
 const flexAlign = ["stretch", "flex-start", "center", "flex-end", "space-around", "space-between"] as const;
 

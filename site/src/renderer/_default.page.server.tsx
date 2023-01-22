@@ -19,13 +19,13 @@ export async function render(pageContext: PageContextServer) {
 
     // See https://vite-plugin-ssr.com/head
     const { documentProps } = pageContext.exports;
-    const title = documentProps?.title ?? "Vite SSR app";
-    const desc = documentProps?.description ?? "App using Vite + vite-plugin-ssr";
+    const title = documentProps?.title ?? "box-extractor";
+    const desc = documentProps?.description ?? "box-extractor";
 
     // ColorMode script
     // https://github.com/vanilla-extract-css/vanilla-extract/blob/9312b66e5bd67942b7929a6b93e0ad2181b2e0ba/site/src/render.tsx#L55
     const documentHtml = escapeInject`<!DOCTYPE html>
-    <html lang="en">
+    <html lang="en" class="${lightMode}">
       <head>
         <script>
         ((d)=>{try{var p=localStorage.getItem('${themeKey}');if(p==d||(p!='${lightMode}'&&matchMedia('(prefers-color-scheme:dark)').matches)) document.documentElement.classList.add(d)}catch(e){}})('${darkMode}');
