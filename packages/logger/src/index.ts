@@ -2,9 +2,12 @@
 // mixed with debug colors
 
 import pc from "picocolors";
-import util from "node:util";
+// needed for preconstruct
+// eslint-disable-next-line unicorn/import-style, unicorn/prefer-node-protocol
+import util from "util";
 
-if (util?.inspect?.defaultOptions) util.inspect.defaultOptions.depth = 6;
+if (typeof process !== "undefined" && typeof util !== "undefined" && util?.inspect?.defaultOptions)
+    util.inspect.defaultOptions.depth = 6;
 
 export type LogEvent = {
     name: string;
@@ -15,8 +18,6 @@ export type LogEvent = {
 
 type LogLevels = "fatal" | "error" | "warn" | "debug" | "info" | "log";
 export type Reporter = (event: LogEvent) => void;
-
-const __TARGET__ = "node";
 
 const namespaceLists = {
     allows: [] as RegExp[],
@@ -63,7 +64,7 @@ const isEnabled = (name: string) => {
     return false;
 };
 
-if (__TARGET__ === "node" && process.env["DEBUG"]) enable(process.env["DEBUG"]);
+if (typeof process !== "undefined" && process.env["DEBUG"]) enable(process.env["DEBUG"]);
 
 // ~ Logger
 
@@ -156,17 +157,17 @@ type CreateLoggerReturn = ((...args: unknown[]) => void) & {
  * taken from vite
  * https://github.com/vitejs/vite/blob/167753d3754507430600a1bc2b100ca321b17a86/packages/vite/src/node/utils.ts#L360
  */
-export function timeFrom(start: number, subtract = 0): string {
-    const time: number | string = performance.now() - start - subtract;
-    const timeString = (time.toFixed(2) + "ms").padEnd(5, " ");
-    if (time < 10) {
-        return pc.green(timeString);
-    } else if (time < 50) {
-        return pc.yellow(timeString);
-    } else {
-        return pc.red(timeString);
-    }
-}
+// export function timeFrom(start: number, subtract = 0): string {
+//     const time: number | string = performance.now() - start - subtract;
+//     const timeString = (time.toFixed(2) + "ms").padEnd(5, " ");
+//     if (time < 10) {
+//         return pc.green(timeString);
+//     } else if (time < 50) {
+//         return pc.yellow(timeString);
+//     } else {
+//         return pc.red(timeString);
+//     }
+// }
 
 // const printColors = () => {
 //     for (let i = 0; i < 16; i++) {

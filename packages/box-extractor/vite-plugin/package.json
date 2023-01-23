@@ -1,0 +1,7 @@
+{
+    "main": "dist/box-extractor-core-vite-plugin.cjs.js",
+    "module": "dist/box-extractor-core-vite-plugin.esm.js",
+    "browser": {
+        "./dist/box-extractor-core-vite-plugin.esm.js": "./dist/box-extractor-core-vite-plugin.browser.esm.js"
+    }
+}

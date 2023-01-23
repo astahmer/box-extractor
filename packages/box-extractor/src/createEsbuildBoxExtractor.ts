@@ -2,7 +2,8 @@ import type { Plugin } from "esbuild";
 import type { CreateViteBoxExtractorOptions } from "./createViteBoxExtractor";
 import { ensureAbsolute, tsRE } from "./extensions-helpers";
 import { Project, ts } from "ts-morph";
-import * as fs from "node:fs";
+// eslint-disable-next-line unicorn/prefer-node-protocol
+import * as fs from "fs";
 import { extract } from "./extractor/extract";
 
 export function createEsbuildBoxExtractor({
