@@ -1,7 +1,8 @@
-import { useEffect, useState, createContext, useContext, ReactNode, useMemo } from "react";
+import { createContextWithHook } from "pastable/react";
+import { ReactNode, useEffect, useMemo, useState } from "react";
 import { Box } from "../theme/Box";
-import * as styles from "./ColorModeToggle.css";
 import { darkMode, lightMode } from "../theme/css/color-mode.css";
+import * as styles from "./ColorModeToggle.css";
 
 type ColorMode = typeof darkMode | typeof lightMode;
 export const themeKey = "vanilla-theme-pref";
@@ -11,10 +12,13 @@ type ColorModeContextValues = {
     setColorMode: (colorMode: ColorMode) => void;
 };
 
-export const ColorModeContext = createContext<ColorModeContextValues>({
-    colorMode: null,
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
-    setColorMode: () => {},
+export const [ColorModeContextProvider, useColorMode] = createContextWithHook<ColorModeContextValues>({
+    name: "ColorModeContext",
+    initialValue: {
+        colorMode: null,
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
+        setColorMode: () => {},
+    },
 });
 
 export function ColorModeProvider({ children }: { children: ReactNode }) {
@@ -25,7 +29,7 @@ export function ColorModeProvider({ children }: { children: ReactNode }) {
     }, []);
 
     return (
-        <ColorModeContext.Provider
+        <ColorModeContextProvider
             value={useMemo(
                 () => ({
                     colorMode,
@@ -45,12 +49,12 @@ export function ColorModeProvider({ children }: { children: ReactNode }) {
             )}
         >
             {children}
-        </ColorModeContext.Provider>
+        </ColorModeContextProvider>
     );
 }
 
 export const ColorModeToggle = () => {
-    const { colorMode, setColorMode } = useContext(ColorModeContext);
+    const { colorMode, setColorMode } = useColorMode();
 
     return (
         <Box

@@ -1,17 +1,23 @@
+import { createViteVanillaExtractSprinklesExtractor } from "@box-extractor/vanilla-extract/vite-plugin";
+import { NodeGlobalsPolyfillPlugin } from "@esbuild-plugins/node-globals-polyfill";
+import presetIcons from "@unocss/preset-icons";
+import react from "@vitejs/plugin-react";
+import { resolve } from "path";
+import { visualizer } from "rollup-plugin-visualizer";
+import UnoCSS from "unocss/vite";
 import { defineConfig, UserConfig } from "vite";
 import compileTime from "vite-plugin-compile-time";
-import UnoCSS from "unocss/vite";
-import presetIcons from "@unocss/preset-icons";
-import { visualizer } from "rollup-plugin-visualizer";
-import { createViteVanillaExtractSprinklesExtractor } from "@box-extractor/vanilla-extract/vite-plugin";
 import ssr from "vite-plugin-ssr/plugin";
-import react from "@vitejs/plugin-react";
+import path from "path";
 
 // TODO pwa ?
 export default defineConfig((env) => {
     const config: UserConfig = {
         ssr: {
-            external: ["ts-toolbelt"],
+            external: ["ts-toolbelt", "picocolors"],
+            optimizeDeps: {
+                include: ["picocolors"],
+            },
         },
         plugins: [
             UnoCSS({ presets: [presetIcons({})] }),
@@ -28,16 +34,23 @@ export default defineConfig((env) => {
             compileTime(),
         ],
         optimizeDeps: {
+            include: ["path-browserify"],
             esbuildOptions: {
                 define: {
-                    global: "globalThis", // for handlebars
-                    // https://github.com/vitejs/vite/discussions/5912#discussioncomment-3895047
+                    global: "globalThis",
+                    "process.env.NODE_ENV": "'dev'",
                 },
+                plugins: [NodeGlobalsPolyfillPlugin({ process: true })],
             },
         },
         resolve: {
             alias: {
-                "pastable/server": "pastable",
+                // needed shims for tsquery / ts-evaluator to work in the browser
+                process: "process/browser",
+                esquery: resolve("node_modules/esquery/dist/esquery.js"), // yes it's needed, no idea why it works, solves Uncaught TypeError: esquery.parse is not a function
+                os: "os-browserify",
+                path: "path-browserify",
+                module: path.join(__dirname, "./module.shim.ts"),
             },
         },
     };
