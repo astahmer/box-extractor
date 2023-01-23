@@ -21,6 +21,22 @@
             },
             "default": "./dist/box-extractor-core.cjs.js"
         },
+        "./vite-plugin": {
+            "module": {
+                "worker": "./vite-plugin/dist/box-extractor-core-vite-plugin.worker.esm.js",
+                "browser": "./vite-plugin/dist/box-extractor-core-vite-plugin.browser.esm.js",
+                "default": "./vite-plugin/dist/box-extractor-core-vite-plugin.esm.js"
+            },
+            "default": "./vite-plugin/dist/box-extractor-core-vite-plugin.cjs.js"
+        },
+        "./esbuild-plugin": {
+            "module": {
+                "worker": "./esbuild-plugin/dist/box-extractor-core-esbuild-plugin.worker.esm.js",
+                "browser": "./esbuild-plugin/dist/box-extractor-core-esbuild-plugin.browser.esm.js",
+                "default": "./esbuild-plugin/dist/box-extractor-core-esbuild-plugin.esm.js"
+            },
+            "default": "./esbuild-plugin/dist/box-extractor-core-esbuild-plugin.cjs.js"
+        },
         "./package.json": "./package.json"
     },
     "types": "dist/box-extractor-core.cjs.d.ts",
@@ -59,7 +75,9 @@
     },
     "preconstruct": {
         "entrypoints": [
-            "index.ts"
+            "index.ts",
+            "vite-plugin.ts",
+            "esbuild-plugin.ts"
         ],
         "exports": {
             "envConditions": [
@@ -71,7 +89,8 @@
     "files": [
         "src",
         "dist",
-        "../../README.md"
+        "vite-plugin",
+        "esbuild-plugin"
     ],
     "keywords": [
         "box",

@@ -7,13 +7,12 @@ import { vanillaExtractPlugin, VanillaExtractPluginOptions } from "@vanilla-extr
 import type { ModuleNode, Plugin, ResolvedConfig, ViteDevServer } from "vite";
 import { normalizePath } from "vite";
 
+import { castAsExtractableMap, ensureAbsolute } from "@box-extractor/core";
 import {
-    castAsExtractableMap,
     createViteBoxExtractor,
     CreateViteBoxExtractorOptions,
     createViteBoxRefUsageFinder,
-    ensureAbsolute,
-} from "@box-extractor/core";
+} from "@box-extractor/core/vite-plugin";
 import {
     getUsedPropertiesFromExtractNodeMap,
     mergeExtractResultInUsedMap,

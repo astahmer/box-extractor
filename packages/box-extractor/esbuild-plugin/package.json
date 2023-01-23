@@ -1,0 +1,7 @@
+{
+    "main": "dist/box-extractor-core-esbuild-plugin.cjs.js",
+    "module": "dist/box-extractor-core-esbuild-plugin.esm.js",
+    "browser": {
+        "./dist/box-extractor-core-esbuild-plugin.esm.js": "./dist/box-extractor-core-esbuild-plugin.browser.esm.js"
+    }
+}

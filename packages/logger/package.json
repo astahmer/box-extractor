@@ -3,9 +3,16 @@
     "version": "0.0.3",
     "main": "dist/box-extractor-logger.cjs.js",
     "module": "dist/box-extractor-logger.esm.js",
+    "browser": {
+        "./dist/box-extractor-logger.esm.js": "./dist/box-extractor-logger.browser.esm.js"
+    },
     "exports": {
         ".": {
-            "module": "./dist/box-extractor-logger.esm.js",
+            "module": {
+                "worker": "./dist/box-extractor-logger.worker.esm.js",
+                "browser": "./dist/box-extractor-logger.browser.esm.js",
+                "default": "./dist/box-extractor-logger.esm.js"
+            },
             "default": "./dist/box-extractor-logger.cjs.js"
         },
         "./package.json": "./package.json"
@@ -25,8 +32,11 @@
         "entrypoints": [
             "index.ts"
         ],
-        "___experimentalFlags_WILL_CHANGE_IN_PATCH": {
-            "exports": true
+        "exports": {
+            "envConditions": [
+                "browser",
+                "worker"
+            ]
         }
     },
     "files": [
