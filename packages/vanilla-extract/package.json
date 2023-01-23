@@ -3,16 +3,10 @@
     "version": "0.2.6",
     "main": "dist/box-extractor-vanilla-extract.cjs.js",
     "module": "dist/box-extractor-vanilla-extract.esm.js",
-    "types": "dist/box-extractor-vanilla-extract.cjs.d.ts",
     "exports": {
-        "./package.json": "./package.json",
         ".": {
             "module": "./dist/box-extractor-vanilla-extract.esm.js",
             "default": "./dist/box-extractor-vanilla-extract.cjs.js"
-        },
-        "./createRuntimeBoxSprinkles": {
-            "module": "./createRuntimeBoxSprinkles/dist/box-extractor-vanilla-extract-createRuntimeBoxSprinkles.esm.js",
-            "default": "./createRuntimeBoxSprinkles/dist/box-extractor-vanilla-extract-createRuntimeBoxSprinkles.cjs.js"
         },
         "./integration": {
             "module": "./integration/dist/box-extractor-vanilla-extract-integration.esm.js",
@@ -25,8 +19,14 @@
         "./esbuild-plugin": {
             "module": "./esbuild-plugin/dist/box-extractor-vanilla-extract-esbuild-plugin.esm.js",
             "default": "./esbuild-plugin/dist/box-extractor-vanilla-extract-esbuild-plugin.cjs.js"
-        }
+        },
+        "./createRuntimeBoxSprinkles": {
+            "module": "./createRuntimeBoxSprinkles/dist/box-extractor-vanilla-extract-createRuntimeBoxSprinkles.esm.js",
+            "default": "./createRuntimeBoxSprinkles/dist/box-extractor-vanilla-extract-createRuntimeBoxSprinkles.cjs.js"
+        },
+        "./package.json": "./package.json"
     },
+    "types": "dist/box-extractor-vanilla-extract.cjs.d.ts",
     "repository": {
         "type": "git",
         "url": "https://github.com/astahmer/box-extractor.git",

@@ -9,14 +9,21 @@
     "author": "Alexandre Stahmer <alexandre.stahmer@gmail.com>",
     "main": "dist/box-extractor-core.cjs.js",
     "module": "dist/box-extractor-core.esm.js",
-    "types": "dist/box-extractor-core.cjs.d.ts",
-    "exports": {
-        "./package.json": "./package.json",
-        ".": {
-            "module": "./dist/box-extractor-core.esm.js",
-            "default": "./dist/box-extractor-core.cjs.js"
-        }
+    "browser": {
+        "./dist/box-extractor-core.esm.js": "./dist/box-extractor-core.browser.esm.js"
     },
+    "exports": {
+        ".": {
+            "module": {
+                "worker": "./dist/box-extractor-core.worker.esm.js",
+                "browser": "./dist/box-extractor-core.browser.esm.js",
+                "default": "./dist/box-extractor-core.esm.js"
+            },
+            "default": "./dist/box-extractor-core.cjs.js"
+        },
+        "./package.json": "./package.json"
+    },
+    "types": "dist/box-extractor-core.cjs.d.ts",
     "scripts": {
         "test": "vitest",
         "test:ci": "vitest run",
@@ -54,8 +61,11 @@
         "entrypoints": [
             "index.ts"
         ],
-        "___experimentalFlags_WILL_CHANGE_IN_PATCH": {
-            "exports": true
+        "exports": {
+            "envConditions": [
+                "browser",
+                "worker"
+            ]
         }
     },
     "files": [
