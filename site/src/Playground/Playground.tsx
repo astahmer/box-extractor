@@ -1,11 +1,46 @@
+import { extract } from "@box-extractor/core";
 import Editor from "@monaco-editor/react";
+import { useState } from "react";
 import { Panel, PanelGroup } from "react-resizable-panels";
+import { useColorMode } from "../ColorModeToggle/ColorModeToggle";
 import { Box } from "../theme/Box";
 import { Flex } from "../theme/components";
 import { themeSprinkles } from "../theme/css";
 import { ResizeHandle } from "./ResizeHandle";
 
+import { Project, SourceFile, ts } from "ts-morph";
+
+const createProject = () => {
+    return new Project({
+        compilerOptions: {
+            jsx: ts.JsxEmit.React,
+            jsxFactory: "React.createElement",
+            jsxFragmentFactory: "React.Fragment",
+            module: ts.ModuleKind.ESNext,
+            target: ts.ScriptTarget.ESNext,
+            noUnusedParameters: false,
+            declaration: false,
+            noEmit: true,
+            emitDeclaratio: false,
+            // allowJs: true,
+            // useVirtualFileSystem: true,
+        },
+        // tsConfigFilePath: tsConfigPath,
+        skipAddingFilesFromTsConfig: true,
+        skipFileDependencyResolution: true,
+        skipLoadingLibFiles: true,
+        useInMemoryFileSystem: true,
+    });
+};
+
+const project: Project = createProject();
+
 export const Playground = () => {
+    const [input, setInput] = useState("");
+    const { colorMode } = useColorMode();
+
+    console.log({ input, colorMode });
+
     return (
         <Flex h="100%" pos="relative">
             <Box display="flex" boxSize="100%">
@@ -20,16 +55,26 @@ export const Playground = () => {
                             overflow="hidden"
                         >
                             <Editor
-                            // path={activeInputTab}
-                            // value={inputList.at(activeInputIndex)?.content}
-                            // onChange={(content) => send({ type: "Update input", value: content ?? "" })}
-                            // onMount={(editor, monaco) => {
-                            //     send({ type: "Editor Loaded", editor, name: "input" });
-                            //     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
-                            //         send({ type: "Save" });
-                            //     });
-                            // }}
-                            // theme={colorMode === "dark" ? "vs-dark" : "vs-light"}
+                                onChange={(value) => {
+                                    if (!value) return;
+                                    // setInput(value ?? "");
+                                    const sourceFile = project.createSourceFile("file.ts", value, {
+                                        scriptKind: ts.ScriptKind.TSX,
+                                        overwrite: true,
+                                    });
+                                    const extractMap = new Map();
+                                    const result = extract({ ast: sourceFile, extractMap, components: ["Box"] });
+                                    console.log({ value, result, extractMap });
+                                }}
+                                language="typescript"
+                                // onChange={(content) => send({ type: "Update input", value: content ?? "" })}
+                                // onMount={(editor, monaco) => {
+                                //     send({ type: "Editor Loaded", editor, name: "input" });
+                                //     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
+                                //         send({ type: "Save" });
+                                //     });
+                                // }}
+                                theme={colorMode === "dark" ? "vs-dark" : "vs-light"}
                             />
                         </Box>
                     </Panel>

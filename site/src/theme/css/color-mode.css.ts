@@ -32,23 +32,23 @@ export const colorModeVars = createThemeContract({
 
 const lightVars = assignVars(colorModeVars, {
     color: {
-        mainBg: colors.frenchblue["300"],
-        secondaryBg: colors.frenchblue["400"],
+        mainBg: tokens.colors.cyan["300"],
+        secondaryBg: tokens.colors.cyan["400"],
         text: tokens.colors.red["600"],
-        bg: colors.frenchblue["600"],
-        bgSecondary: colors.frenchblue["200"],
-        bgHover: colors.frenchblue["100"],
+        bg: tokens.colors.cyan["600"],
+        bgSecondary: tokens.colors.cyan["200"],
+        bgHover: tokens.colors.cyan["100"],
     },
 });
 
 const darkVars = assignVars(colorModeVars, {
     color: {
-        mainBg: colors.frenchblue["900"],
-        secondaryBg: colors.frenchblue["800"],
+        mainBg: tokens.colors.cyan["900"],
+        secondaryBg: tokens.colors.cyan["800"],
         text: tokens.colors.blue["300"],
-        bg: colors.frenchblue["300"],
-        bgSecondary: colors.frenchblue["800"],
-        bgHover: colors.frenchblue["700"],
+        bg: tokens.colors.cyan["300"],
+        bgSecondary: tokens.colors.cyan["800"],
+        bgHover: tokens.colors.cyan["700"],
     },
 });
 
