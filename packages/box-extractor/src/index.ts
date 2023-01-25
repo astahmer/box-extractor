@@ -4,6 +4,7 @@ export { getBoxLiteralValue } from "./extractor/getBoxLiteralValue";
 export type {
     BoxNode,
     ConditionalType,
+    ListType,
     LiteralType,
     LiteralValue,
     MapType,

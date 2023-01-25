@@ -5,24 +5,25 @@ import type { ExtractedPropMap, PrimitiveType } from "./types";
 import { isNotNullish } from "./utils";
 
 const BoxKind = Symbol("BoxNode");
-type WithBoxSymbol = { [BoxKind]: true };
+type WithBoxSymbol = { [BoxKind]: true; getNode: () => Node };
 
-type WithNode = { getNode: () => Node };
-
-export type ObjectType = WithBoxSymbol & WithNode & { type: "object"; value: ExtractedPropMap; isEmpty?: boolean };
+export type ObjectType = WithBoxSymbol & { type: "object"; value: ExtractedPropMap; isEmpty?: boolean };
 export type LiteralKind = "array" | "string" | "number" | "boolean" | "null" | "undefined";
-export type LiteralType = WithBoxSymbol &
-    WithNode & {
-        type: "literal";
-        value: PrimitiveType;
-        kind: LiteralKind;
-    };
-export type MapType = WithBoxSymbol & WithNode & { type: "map"; value: MapTypeValue };
-export type ListType = WithBoxSymbol & WithNode & { type: "list"; value: BoxNode[] };
+export type LiteralType = WithBoxSymbol & {
+    type: "literal";
+    value: PrimitiveType;
+    kind: LiteralKind;
+};
+export type MapType = WithBoxSymbol & { type: "map"; value: MapTypeValue };
+export type ListType = WithBoxSymbol & { type: "list"; value: BoxNode[] };
 export type UnresolvableType = WithBoxSymbol & { type: "unresolvable" };
 export type ConditionalKind = "ternary" | "and" | "or" | "nullish-coalescing";
-export type ConditionalType = WithBoxSymbol &
-    WithNode & { type: "conditional"; whenTrue: BoxNode; whenFalse: BoxNode; kind: ConditionalKind };
+export type ConditionalType = WithBoxSymbol & {
+    type: "conditional";
+    whenTrue: BoxNode;
+    whenFalse: BoxNode;
+    kind: ConditionalKind;
+};
 export type EmptyInitializerType = WithBoxSymbol & { type: "empty-initializer" };
 
 // export type PrimitiveBoxNode = ObjectType | LiteralType | MapType
