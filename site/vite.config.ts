@@ -9,23 +9,25 @@ import { defineConfig, UserConfig } from "vite";
 import compileTime from "vite-plugin-compile-time";
 import ssr from "vite-plugin-ssr/plugin";
 import path from "path";
+import replace from "@rollup/plugin-replace";
+
+const replaceOptions = { __REPLACE_ME_TS_EVAL_PRESET_: "NONE" };
 
 // TODO pwa ?
 export default defineConfig((env) => {
     const config: UserConfig = {
         ssr: {
             external: ["ts-toolbelt", "picocolors"],
-            optimizeDeps: {
-                include: ["picocolors"],
-            },
         },
         plugins: [
             UnoCSS({ presets: [presetIcons({})] }),
+            replace(replaceOptions),
             createViteVanillaExtractSprinklesExtractor({
-                components: ["Box"],
+                components: ["Box", "box.*"],
                 mappedProps: { direction: ["flexDirection"], spacing: ["paddingBottom", "paddingRight"] },
                 functions: ["themeSprinkles"],
                 vanillaExtractOptions: {
+                    identifiers: "short",
                     forceEmitCssInSsrBuild: true,
                 },
             }),
@@ -40,7 +42,7 @@ export default defineConfig((env) => {
                     global: "globalThis",
                     "process.env.NODE_ENV": "'dev'",
                 },
-                plugins: [NodeGlobalsPolyfillPlugin({ process: true })],
+                plugins: [NodeGlobalsPolyfillPlugin({ process: true }) as any],
             },
         },
         resolve: {

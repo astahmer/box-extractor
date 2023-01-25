@@ -68,6 +68,7 @@ export const ColorModeToggle = () => {
             title="Toggle colour mode"
             aria-label="Color mode switch"
             onClick={() => setColorMode(colorMode === lightMode ? darkMode : lightMode)}
+            __background="0"
         />
     );
 };

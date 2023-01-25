@@ -25,7 +25,7 @@ export async function render(pageContext: PageContextServer) {
     // ColorMode script
     // https://github.com/vanilla-extract-css/vanilla-extract/blob/9312b66e5bd67942b7929a6b93e0ad2181b2e0ba/site/src/render.tsx#L55
     const documentHtml = escapeInject`<!DOCTYPE html>
-    <html lang="en" class="${lightMode}">
+    <html lang="en">
       <head>
         <script>
         ((d)=>{try{var p=localStorage.getItem('${themeKey}');if(p==d||(p!='${lightMode}'&&matchMedia('(prefers-color-scheme:dark)').matches)) document.documentElement.classList.add(d)}catch(e){}})('${darkMode}');
