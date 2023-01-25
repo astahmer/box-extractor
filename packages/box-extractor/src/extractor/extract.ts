@@ -32,7 +32,10 @@ export const extract = ({ ast, components: _components, functions: _functions, e
         }
 
         const componentMap = extractMap.get(componentName)!;
-        const componentSelector = `:matches(JsxOpeningElement, JsxSelfClosingElement):has(Identifier[name="${componentName}"])`;
+        const identifierSelector = componentName.includes(".")
+            ? `PropertyAccessExpression:has(Identifier[name="${componentName.split(".")[0]}"])`
+            : `Identifier[name="${componentName}"]`;
+        const componentSelector = `:matches(JsxOpeningElement, JsxSelfClosingElement):has(${identifierSelector})`;
 
         const namedProp = canTakeAllProp ? "" : `[name=/${propNameList.join("|")}/]`;
         const propIdentifier = `Identifier${namedProp}`;
