@@ -4,8 +4,10 @@ import type { Expression, TypeChecker } from "ts-morph";
 import { ts } from "ts-morph";
 
 const TsEvalError = Symbol("EvalError");
-
 const logger = createLogger("box-ex:extractor:evaluator");
+
+// replaced dyanmicaly
+const envPreset = "__REPLACE_ME_TS_EVAL_PRESET_";
 
 /**
  * Evaluates with strict policies restrictions
@@ -27,6 +29,9 @@ const evaluateExpression = (node: Expression, morphTypeChecker: TypeChecker) => 
             maxOpDuration: 1000,
             io: { read: false, write: false },
             process: { exit: false, spawnChild: false },
+        },
+        environment: {
+            preset: envPreset.startsWith("__REPLACE_ME_") ? "NODE" : (envPreset as any),
         },
     });
 
