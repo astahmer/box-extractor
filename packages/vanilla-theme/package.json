@@ -35,16 +35,12 @@
     "preconstruct": {
         "entrypoints": [
             "index.ts"
-        ],
-        "___experimentalFlags_WILL_CHANGE_IN_PATCH": {
-            "exports": true
-        }
+        ]
     },
     "files": [
         "src",
         "dist",
-        "css",
-        "../../README.md"
+        "css"
     ],
     "keywords": [
         "box",
