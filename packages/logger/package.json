@@ -41,8 +41,7 @@
     },
     "files": [
         "src",
-        "dist",
-        "../../README.md"
+        "dist"
     ],
     "keywords": [
         "box",
