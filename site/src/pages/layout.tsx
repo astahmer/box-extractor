@@ -37,7 +37,12 @@ export const MainLayout = ({ children }: PropsWithChildren) => {
                     <NavLink href="/">Home</NavLink>
                     <NavLink href="/playground">Playground</NavLink>
                     <NavLink href="/docs">Documentation</NavLink>
-                    <NavLink href="https://github.com/astahmer/box-extractor" rel="external" target="_blank">
+                    <NavLink
+                        href="https://github.com/astahmer/box-extractor"
+                        rel="external"
+                        target="_blank"
+                        display="block"
+                    >
                         <Box className="i-mdi-github" fontSize="2xl" />
                     </NavLink>
                     <NavLink
@@ -46,10 +51,9 @@ export const MainLayout = ({ children }: PropsWithChildren) => {
                         target="_blank"
                         display="flex"
                         alignItems="center"
-                        width="8"
                     >
                         <Box className="i-ri:cake-3-line" fontSize="2xl" color="purple.400" mr="1" />
-                        vanilla-extract
+                        <Box whiteSpace="nowrap">vanilla-extract</Box>
                     </NavLink>
                     <ColorModeToggle />
                 </Stack>

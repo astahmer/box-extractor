@@ -43,3 +43,11 @@ main {
     border-radius: 4px;
     background: #e3e3e3;
 }
+
+.dark .editorRangeHighlight {
+    background-color: #515c6d;
+}
+
+.light .editorRangeHighlight {
+    background-color: #ceddff;
+}

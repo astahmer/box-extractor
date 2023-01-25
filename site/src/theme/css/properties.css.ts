@@ -1,8 +1,8 @@
 import { defineProperties } from "@vanilla-extract/sprinkles";
 import { tokens, flatColors } from "@box-extractor/vanilla-theme";
-import { colorModeVars, darkMode, lightMode } from "./color-mode.css";
+import { colorModeVars, darkMode, lightMode, flatPrimaryColors } from "./color-mode.css";
 
-const colors = { ...flatColors, ...colorModeVars.color };
+const colors = { ...flatColors, ...colorModeVars.color, ...flatPrimaryColors };
 
 const flexAlign = ["stretch", "flex-start", "center", "flex-end", "space-around", "space-between"] as const;
 
@@ -46,109 +46,40 @@ export const interactiveProperties = defineProperties({
         active: { selector: "&:active,&[data-active]" },
         focus: { selector: "&:focus,&[data-focus]" },
         highlighted: { selector: "&[data-highlighted]" },
-        focusWithin: { selector: "&:focus-within" },
-        focusVisible: { selector: "&:focus-visible" },
-        disabled: {
-            selector: "&[disabled],&[aria-disabled=true],&[data-disabled]",
-        },
-        readOnly: {
-            selector: "&[aria-readonly=true],&[readonly],&[data-readonly]",
-        },
-        before: { selector: "&::before" },
-        after: { selector: "&::after" },
-        empty: { selector: "&:empty" },
-        expanded: { selector: "&[aria-expanded=true]" },
-        checked: { selector: "&[aria-checked=true],&[data-checked]" },
-        grabbed: { selector: "&[aria-grabbed=true],&[data-grabbed]" },
+        // focusWithin: { selector: "&:focus-within" },
+        // focusVisible: { selector: "&:focus-visible" },
+        // disabled: {
+        //     selector: "&[disabled],&[aria-disabled=true],&[data-disabled]",
+        // },
+        // readOnly: {
+        //     selector: "&[aria-readonly=true],&[readonly],&[data-readonly]",
+        // },
+        // before: { selector: "&::before" },
+        // after: { selector: "&::after" },
+        // empty: { selector: "&:empty" },
+        // expanded: { selector: "&[aria-expanded=true]" },
+        // checked: { selector: "&[aria-checked=true],&[data-checked]" },
         pressed: { selector: "&[aria-pressed=true],&[data-pressed]" },
-        invalid: { selector: "&[aria-invalid=true],&[data-invalid]" },
-        valid: { selector: "&[aria-invalid=false],&[data-valid]" },
-        loading: { selector: "&[aria-busy=true],&[data-loading]" },
-        selected: { selector: "&[aria-selected=true],&[data-selected]" },
-        hidden: { selector: "&[aria-hidden=true],&[data-hidden]" },
-        autofill: { selector: "&:-webkit-autofill" },
-        even: { selector: "&:nth-of-type(even)" },
-        odd: { selector: "&:nth-of-type(odd)" },
-        first: { selector: "&:first-of-type" },
-        last: { selector: "&:last-of-type" },
-        notFirst: { selector: "&:not(:first-of-type)" },
-        notLast: { selector: "&:not(:last-of-type)" },
-        visited: { selector: "&:visited" },
-        activeLink: { selector: "&[aria-current=page]" },
-        activeStep: { selector: "&[aria-current=step]" },
-        indeterminate: {
-            selector: "&:indeterminate,&[aria-checked=mixed],&[data-indeterminate]",
-        },
-        groupHover: {
-            selector:
-                "[role=group]:hover &,[role=group][data-hover] &,[data-group]:hover &,[data-group][data-hover] &,.group:hover &,.group[data-hover] &",
-        },
-        peerHover: {
-            selector: "[data-peer]:hover ~ &, [data-peer][data-hover] ~ &, .peer:hover ~ &, .peer[data-hover] ~ &",
-        },
-        groupFocus: {
-            selector:
-                "[role=group]:focus &,[role=group][data-focus] &,[data-group]:focus &,[data-group][data-focus] &,.group:focus &,.group[data-focus] &",
-        },
-        peerFocus: {
-            selector: "[data-peer]:focus ~ &, [data-peer][data-focus] ~ &, .peer:focus ~ &, .peer[data-focus] ~ &",
-        },
-        groupFocusVisible: {
-            selector: "&[role=group]:focus-visible[data-group]:focus-visible.group:focus-visible",
-        },
-        peerFocusVisible: {
-            selector: "[data-peer]:focus-visible ~ &, .peer:focus-visible ~ &",
-        },
-        groupActive: {
-            selector:
-                "[role=group]:active &,[role=group][data-active] &,[data-group]:active &,[data-group][data-active] &,.group:active &,.group[data-active] &",
-        },
-        peerActive: {
-            selector: "[data-peer]:active ~ &, [data-peer][data-active] ~ &, .peer:active ~ &, .peer[data-active] ~ &",
-        },
-        groupDisabled: {
-            selector:
-                "[role=group]:disabled &,[role=group][data-disabled] &,[data-group]:disabled &,[data-group][data-disabled] &,.group:disabled &,.group[data-disabled] &",
-        },
-        peerDisabled: {
-            selector:
-                "&[data-peer]:disabled ~ &,[data-peer][data-disabled] ~ &,.peer:disabled ~ &,.peer[data-disabled] ~ &",
-        },
-        groupInvalid: {
-            selector:
-                "[role=group]:invalid &,[role=group][data-invalid] &,[data-group]:invalid &,[data-group][data-invalid] &,.group:invalid &,.group[data-invalid] &",
-        },
-        peerInvalid: {
-            selector:
-                "&[data-peer]:invalid ~ &,[data-peer][data-invalid] ~ &,.peer:invalid ~ &,.peer[data-invalid] ~ &",
-        },
-        groupChecked: {
-            selector:
-                "[role=group]:checked &,[role=group][data-checked] &,[data-group]:checked &,[data-group][data-checked] &,.group:checked &,.group[data-checked] &",
-        },
-        peerChecked: {
-            selector:
-                "&[data-peer]:checked ~ &,[data-peer][data-checked] ~ &,.peer:checked ~ &,.peer[data-checked] ~ &",
-        },
-        groupFocusWithin: {
-            selector: "&[role=group]:focus-within &, [data-group]:focus-within &, .group:focus-within &",
-        },
-        peerFocusWithin: {
-            selector: "&[data-peer]:focus-within ~ &,.peer:focus-within ~ &",
-        },
-        peerPlaceholderShown: {
-            selector: "&[data-peer]::placeholder-shown ~ &,.peer::placeholder-shown ~ &",
-        },
-        placeholder: { selector: "&::placeholder" },
-        placeholderShown: { selector: "&::placeholder-shown" },
-        fullScreen: { selector: "&:fullscreen" },
-        selection: { selector: "&::selection" },
-        rtl: { selector: "&[dir=rtl] &,&[dir=rtl]" },
-        ltr: { selector: "&[dir=ltr] &,&[dir=ltr]" },
-        mediaDark: { "@media": "(prefers-color-scheme: dark)" },
-        mediaReduceMotion: { "@media": "(prefers-reduced-motion: reduce)" },
-        dark: { selector: `&[data-theme=dark] &,[data-theme=dark] &,.${darkMode} &` },
-        light: { selector: `&[data-theme=light] &,[data-theme=light] &,.${lightMode} &` },
+        // invalid: { selector: "&[aria-invalid=true],&[data-invalid]" },
+        // valid: { selector: "&[aria-invalid=false],&[data-valid]" },
+        // selected: { selector: "&[aria-selected=true],&[data-selected]" },
+        // hidden: { selector: "&[aria-hidden=true],&[data-hidden]" },
+        // even: { selector: "&:nth-of-type(even)" },
+        // odd: { selector: "&:nth-of-type(odd)" },
+        // first: { selector: "&:first-of-type" },
+        // last: { selector: "&:last-of-type" },
+        // notFirst: { selector: "&:not(:first-of-type)" },
+        // notLast: { selector: "&:not(:last-of-type)" },
+        // visited: { selector: "&:visited" },
+        // activeLink: { selector: "&[aria-current=page]" },
+        // activeStep: { selector: "&[aria-current=step]" },
+        // indeterminate: {
+        //     selector: "&:indeterminate,&[aria-checked=mixed],&[data-indeterminate]",
+        // },
+        // placeholder: { selector: "&::placeholder" },
+        // placeholderShown: { selector: "&::placeholder-shown" },
+        dark: { selector: `.${darkMode} &` },
+        light: { selector: `.${lightMode} &` },
         resizeHandleActive: { selector: "[data-resize-handle-active] &" },
         panelHorizontalActive: { selector: '[data-panel-group-direction="horizontal"] &' },
         panelVerticalActive: { selector: '[data-panel-group-direction="vertical"] &' },
