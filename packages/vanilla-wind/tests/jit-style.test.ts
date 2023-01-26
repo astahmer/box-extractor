@@ -1,16 +1,11 @@
 import type { BoxNodesMap, ExtractOptions } from "@box-extractor/core";
-import { extract, getBoxLiteralValue } from "@box-extractor/core";
-import { style } from "@vanilla-extract/css";
-import { Node, Project, SourceFile, ts } from "ts-morph";
+import { extract } from "@box-extractor/core";
+import { Project, SourceFile, ts } from "ts-morph";
 import { afterEach, expect, it } from "vitest";
 
 import { endFileScope, setFileScope } from "@vanilla-extract/css/fileScope";
-import { isPrimitive } from "pastable";
 import { createAdapterContext } from "../src/jit-style";
-
-type Nullable<T> = T | null | undefined;
-
-export const isNotNullish = <T>(element: Nullable<T>): element is T => element != null;
+import { generateStyleFromExtraction } from "../src/generateStyleFromExtraction";
 
 const createProject = () => {
     return new Project({
@@ -74,30 +69,8 @@ it("simple CallExpression extract + JIT style + replace call by generated classN
     ctx.setAdapter();
     setFileScope("test/jit-style.test.ts");
 
-    const toErase = new Set<Node>();
-    const toReplace = new Map<Node, string>();
-
-    extracted.forEach((propMap, name) => {
-        propMap.nodesByProp.forEach((nodeList, propName) => {
-            nodeList.forEach((box) => {
-                const value = getBoxLiteralValue(box);
-                const from = box.fromNode();
-                if (!from) return;
-
-                if (!(isPrimitive(value) && isNotNullish(value))) {
-                    // node.replaceWithText("");
-                    toErase.add(from);
-                    return;
-                }
-
-                const className = style({ [propName]: value }, `${name}_${propName}_${value}`);
-                // node.replaceWithText(className);
-                toReplace.set(from, className);
-
-                console.log({ name, propName, value, className, from: from.getKindName() });
-            });
-        });
-    });
+    const minimalStyles = generateStyleFromExtraction("minimalSprinkles", extracted.get("minimalSprinkles")!);
+    const twStyles = generateStyleFromExtraction("tw", extracted.get("tw")!);
 
     expect(extracted).toMatchInlineSnapshot(`
       {
@@ -157,8 +130,25 @@ it("simple CallExpression extract + JIT style + replace call by generated classN
       }
     `);
 
-    toErase.forEach((node) => node.replaceWithText(""));
-    toReplace.forEach((className, node) => node.replaceWithText(className));
+    expect(minimalStyles.classMap).toMatchInlineSnapshot(`
+      {
+          minimalSprinkles_color_brand: "minimalSprinkles_color_brand__1rxundp0",
+          "minimalSprinkles_color_red.100": "minimalSprinkles_color_red.100__1rxundp1",
+          minimalSprinkles_display_flex: "minimalSprinkles_display_flex__1rxundp2",
+      }
+    `);
+
+    minimalStyles.toErase.forEach((node) => node.replaceWithText(""));
+    minimalStyles.toReplace.forEach((className, node) => node.replaceWithText(className));
+
+    expect(twStyles.classMap).toMatchInlineSnapshot(`
+      {
+          tw_p_24: "tw_p_24__1rxundp3",
+          tw_rounded_lg: "tw_rounded_lg__1rxundp4",
+      }
+    `);
+    twStyles.toErase.forEach((node) => node.replaceWithText(""));
+    twStyles.toReplace.forEach((className, node) => node.replaceWithText(className));
 
     const { cssMap } = ctx.getCss();
     expect(cssMap).toMatchInlineSnapshot(`
