@@ -181,6 +181,7 @@ it("extract example.css.ts defineProperties arg result", () => {
                               ],
                           },
                           getNode: "ObjectLiteralExpression",
+                          fromNode: "CallExpression",
                       },
                   ],
                   defaultCondition: [
@@ -189,6 +190,7 @@ it("extract example.css.ts defineProperties arg result", () => {
                           value: "idle",
                           kind: "string",
                           getNode: "StringLiteral",
+                          fromNode: "CallExpression",
                       },
                   ],
                   properties: [
@@ -289,6 +291,7 @@ it("extract example.css.ts defineProperties arg result", () => {
                               ],
                           },
                           getNode: "ObjectLiteralExpression",
+                          fromNode: "CallExpression",
                       },
                   ],
                   shorthands: [
@@ -325,6 +328,7 @@ it("extract example.css.ts defineProperties arg result", () => {
                               ],
                           },
                           getNode: "ObjectLiteralExpression",
+                          fromNode: "CallExpression",
                       },
                   ],
               },

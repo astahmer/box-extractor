@@ -5,7 +5,7 @@ import type { ExtractedPropMap, PrimitiveType } from "./types";
 import { isNotNullish } from "./utils";
 
 const BoxKind = Symbol("BoxNode");
-type WithBoxSymbol = { [BoxKind]: true; getNode: () => Node };
+type WithBoxSymbol = { [BoxKind]: true; getNode: () => Node; fromNode: () => Node };
 
 export type ObjectType = WithBoxSymbol & { type: "object"; value: ExtractedPropMap; isEmpty?: boolean };
 export type LiteralKind = "array" | "string" | "number" | "boolean" | "null" | "undefined";
@@ -52,20 +52,33 @@ const getTypeOfLiteral = (value: PrimitiveType | PrimitiveType[]): LiteralKind =
 };
 
 const boxTypeFactory = {
-    object(value: ExtractedPropMap, node: Node): ObjectType {
-        return { [BoxKind]: true, type: "object", value, getNode: () => node };
+    object(value: ExtractedPropMap, node: Node) {
+        return { [BoxKind]: true, type: "object", value, getNode: () => node } as ObjectType;
     },
-    literal(value: PrimitiveType, node: Node): LiteralType {
-        return { [BoxKind]: true, type: "literal", value, kind: getTypeOfLiteral(value), getNode: () => node };
+    literal(value: PrimitiveType, node: Node) {
+        return {
+            [BoxKind]: true,
+            type: "literal",
+            value,
+            kind: getTypeOfLiteral(value),
+            getNode: () => node,
+        } as LiteralType;
     },
-    map(value: MapTypeValue, node: Node): MapType {
-        return { [BoxKind]: true, type: "map", value, getNode: () => node };
+    map(value: MapTypeValue, node: Node) {
+        return { [BoxKind]: true, type: "map", value, getNode: () => node } as MapType;
     },
-    list(value: BoxNode[], node: Node): ListType {
-        return { [BoxKind]: true, type: "list", value, getNode: () => node };
+    list(value: BoxNode[], node: Node) {
+        return { [BoxKind]: true, type: "list", value, getNode: () => node } as ListType;
     },
-    conditional(whenTrue: BoxNode, whenFalse: BoxNode, node: Node, kind: ConditionalKind): ConditionalType {
-        return { [BoxKind]: true, type: "conditional", whenTrue, whenFalse, kind, getNode: () => node };
+    conditional(whenTrue: BoxNode, whenFalse: BoxNode, node: Node, kind: ConditionalKind) {
+        return {
+            [BoxKind]: true,
+            type: "conditional",
+            whenTrue,
+            whenFalse,
+            kind,
+            getNode: () => node,
+        } as ConditionalType;
     },
     cast<T extends BoxNode>(value: unknown, node: Node): T | undefined {
         if (!value) return;
