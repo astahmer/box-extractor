@@ -72,6 +72,12 @@ export const Playground = () => {
                                         send({ type: "Update components", list: details.values });
                                     }}
                                 />
+                                <TagsInput
+                                    placeholder="Add functions"
+                                    onChange={(details) => {
+                                        send({ type: "Update functions", list: details.values });
+                                    }}
+                                />
                                 <Box ml="auto" display="flex" flexDirection="row" mt="4" alignItems="center">
                                     <Box color="white" mr="4">
                                         Toggle literal mode
