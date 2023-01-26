@@ -12,6 +12,7 @@ beforeAll(async () => {
     prettierConfig = await resolveConfig(path.resolve(pkgRoot, "../"));
 });
 
+// TODO internal test-utils package to re-use this
 expect.addSnapshotSerializer({
     serialize(value, config, indentation, depth, refs, printer) {
         if (depth === 0) {
@@ -29,7 +30,7 @@ expect.addSnapshotSerializer({
                                 return Object.fromEntries(value);
                             }
 
-                            if (typeof value === "function" && _key === "getNode") {
+                            if (typeof value === "function" && (_key === "getNode" || _key === "fromNode")) {
                                 const node = value();
                                 if (node instanceof Node) {
                                     return node.getKindName();
