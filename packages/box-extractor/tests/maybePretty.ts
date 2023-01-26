@@ -10,3 +10,5 @@ export function maybePretty(input: string, options?: Options | null): string {
         return input; // assume it's invalid syntax and ignore
     }
 }
+
+// TODO use dprint ? https://github.com/dsherret/ts-morph/blob/latest/dprint.json

@@ -67,67 +67,16 @@ export function defineProperties<DynamicProperties extends ConfigDynamicProperti
     options: OptionsProps<DynamicProperties>
 ): VanillWindFn<VanillaWindStyle<OptionsProps<DynamicProperties>>>;
 
-export function defineProperties(options: any): any {
-    return options;
+export function defineProperties<Options extends GenericPropsConfig>(options: Options): VanillWindFn<any> {
+    const fn = (_options: Options) => "";
+    fn.config = options;
+
+    return fn;
 }
-
-const brandColor = {
-    "brand.50": "#F7FAFC",
-    "brand.100": "#EFF6F8",
-    "brand.200": "#D7E8EE",
-    "brand.300": "#BFDAE4",
-    "brand.400": "#90BFD0",
-    "brand.500": "#60A3BC",
-    "brand.600": "#5693A9",
-    "brand.700": "#3A6271",
-    "brand.800": "#2B4955",
-    "brand.900": "#1D3138",
-};
-
-const tw = defineProperties({
-    conditions: {
-        small: { selector: ".small" },
-        large: { selector: ".large" },
-        dark: { selector: ".dark" },
-        light: { selector: ".light" },
-    },
-    defaultCondition: "small",
-    properties: {
-        color: true,
-        display: true,
-        backgroundColor: brandColor,
-        borderColor: brandColor,
-        width: {
-            "1/2": "50%",
-        },
-    },
-    shorthands: {
-        w: ["backgroundColor", "color"],
-    },
-});
-tw({
-    color: "#12321",
-    // backgroundColor: [{ dark: "brand.50", hover: "" }, { light: "brand.100"}],
-    display: { dark: "flex" },
-    // borderColor: { dark: "brand.50" },
-
-    // display: "flex"
-});
-
-// tw({
-//     p: 24,
-//     rounded: 'lg',
-//     bg: 'blue-500',
-//     hover: { bg: 'blue-700' },
-//     dark: {
-//       bg: 'zinc-800',
-//       hover: { bg: 'zinc-900' },
-//     },
-//   })
 
 type ShorthandMap<PropNames> = { [k: string]: PropNames[] };
 type DefaultCondition<Conditions> = keyof Conditions;
-type GenericPropsConfig = {
+export type GenericPropsConfig = {
     properties: ConfigDynamicProperties;
     conditions?: ConfigConditions;
     defaultCondition?: keyof ConfigConditions;
@@ -166,15 +115,49 @@ export type VanillaWindStyleWithShorthands<Config extends PropsWithShorthandsCon
     ShorthandsProps<Config>;
 
 export type VanillaWindStyleWithConditions<Config extends PropsWithConditionsConfig> =
-    SprinklesPropsWithConditions<Config>;
+    SprinklesPropsWithConditions<Config> & ConditionsProps<Config>;
 
 export type VanillaWindStyleWithConditionsAndShorthands<Config extends PropsWithConditionsAndShorthandsConfig<any>> =
-    SprinklesPropsWithConditions<Config> & ShorthandsPropsWithConditions<Config>;
+    SprinklesPropsWithConditions<Config> &
+        ShorthandsPropsWithConditions<Config> &
+        ConditionsPropsWithShorthands<Config>;
 
 type SprinklesProps<Config extends GenericPropsConfig> = {
     [Prop in keyof Config["properties"]]?: Prop extends keyof CSSProperties
         ? PropValue<Prop, Config["properties"][Prop]>
         : never;
+};
+
+type ConditionsProps<Config extends GenericPropsWithConditionsConfig> = {
+    [Condition in keyof Config["conditions"]]?: {
+        [Prop in keyof Config["properties"]]?: Prop extends keyof CSSProperties
+            ? MaybeCondPropValue<Prop, Config["properties"][Prop], Omit<Config["conditions"], Condition>>
+            : never;
+    };
+};
+
+type ConditionsPropsWithShorthands<
+    Config extends PropsWithConditionsAndShorthandsConfig<any>,
+    Conditions extends ConfigConditions = Config["conditions"]
+> = {
+    [ConditionName in keyof Conditions]?: {
+        [PropName in
+            | keyof Config["properties"]
+            | keyof Config["shorthands"]
+            | keyof Conditions]?: PropName extends keyof Config["properties"]
+            ? PropName extends keyof CSSProperties
+                ? MaybeCondPropValue<PropName, Config["properties"][PropName], Omit<Conditions, ConditionName>>
+                : never
+            : PropName extends keyof Config["shorthands"]
+            ? Config["shorthands"][PropName] extends Array<infer Prop>
+                ? Prop extends keyof CSSProperties
+                    ? MaybeCondPropValue<Prop, Config["properties"][Prop], Omit<Conditions, ConditionName>>
+                    : never
+                : never
+            : PropName extends keyof Omit<Conditions, ConditionName>
+            ? ConditionsPropsWithShorthands<Config, Omit<Conditions, ConditionName>>[PropName]
+            : never;
+    };
 };
 
 type SprinklesPropsWithConditions<Config extends GenericPropsWithConditionsConfig> = {
@@ -183,126 +166,37 @@ type SprinklesPropsWithConditions<Config extends GenericPropsWithConditionsConfi
         : never;
 };
 
-type ShorthandsProps<Config extends GenericPropsConfig> = {
-    [Shorthand in keyof NonNullable<Config["shorthands"]>]?: NonNullable<Config["shorthands"]>[Shorthand] extends Array<
-        infer Prop
-    >
+type ShorthandsProps<Config extends PropsWithShorthandsConfig<any>> = {
+    [Shorthand in keyof Config["shorthands"]]?: Config["shorthands"][Shorthand] extends Array<infer Prop>
         ? Prop extends keyof CSSProperties
             ? PropValue<Prop, Config["properties"][Prop]>
             : never
         : never;
 };
 
-type ShorthandsPropsWithConditions<Config extends GenericPropsWithConditionsConfig> = {
-    [Shorthand in keyof NonNullable<Config["shorthands"]>]?: NonNullable<Config["shorthands"]>[Shorthand] extends Array<
-        infer Prop
-    >
+type ShorthandsPropsWithConditions<Config extends PropsWithConditionsAndShorthandsConfig<any>> = {
+    [Shorthand in keyof Config["shorthands"]]?: Config["shorthands"][Shorthand] extends Array<infer Prop>
         ? Prop extends keyof CSSProperties
             ? MaybeCondPropValue<Prop, Config["properties"][Prop], Config["conditions"]>
             : never
         : never;
 };
 
-type CastPropValue<Name extends keyof CSSProperties, Value> = Value extends boolean
-    ? CSSProperties[Name]
-    : keyof Value | CSSProperties[Name];
-type PropValue<Name extends keyof CSSProperties, Value> = CastPropValue<Name, Value> | null;
+type PropValue<Name extends keyof CSSProperties, Value> =
+    | (Value extends boolean ? CSSProperties[Name] : keyof Value | CSSProperties[Name])
+    | null;
 
 type MaybeCondPropValue<
     Name extends keyof CSSProperties,
     Value,
     Conditions extends ConfigConditions
-> = ValueOrConditionObject<CastPropValue<Name, Value>, Conditions> | null;
+> = ValueOrConditionObject<PropValue<Name, Value>, Name, Omit<Conditions, Name>>;
 
-type ValueOrConditionObject<T, Conditions extends ConfigConditions> = T | Partial<Record<keyof Conditions, T | null>>;
-
-// type Aaazaz = NonNullable<typeof oui["shorthands"]>;
-// type Aaa = ShorthandsProperties<typeof oui>;
-
-// type Oui = SprinklesProps<typeof oui>;
-// const oazazaui: Oui = {
-//     color: "#23",
-//     width: "1/2",
-//     w: "fit-content",
-//     // w: "#23"
-// };
-
-// Conditional Dynamic Properties + Shorthands
-// export function definePropertiesRainbow<
-//     DynamicProperties extends ConfigDynamicProperties,
-//     Conditions extends ConfigConditions,
-//     Shorthands extends { [k: string]: Array<keyof DynamicProperties> }
-// >(
-//     options: OptionsConditionalDynamic<DynamicProperties, Conditions, Shorthands>
-// ): ReturnConditionalDynamic<DynamicProperties, Conditions> & ReturnShorthands<Shorthands>;
-
-// // Dynamic Properties + Shorthands
-// export function definePropertiesRainbow<
-//     DynamicProperties extends ConfigDynamicProperties,
-//     Shorthands extends { [k: string]: Array<keyof DynamicProperties> }
-// >(
-//     options: OptionsDynamic<DynamicProperties, Shorthands>
-// ): ReturnDynamic<DynamicProperties> & ReturnShorthands<Shorthands>;
-// export function definePropertiesRainbow(options: any): any {
-//     return options;
-// }
-
-// const rainbow = definePropertiesRainbow({
-//     properties: {
-//         color: true,
-//         width: {
-//             "1/2": "50%",
-//         },
-//     },
-// });
-// // rainbow.config.color.dynamicScale
-
-// type ConditionalMap<Conditions> = {
-//     default: string;
-//     conditions: Record<keyof Conditions, string>;
-// };
-
-// type ReturnConditionalDynamic<
-//     DynamicProperties extends ConfigDynamicProperties,
-//     Conditions extends ConfigConditions
-// > = {
-//     config: {
-//         [Property in keyof DynamicProperties]: {
-//             dynamic: ConditionalMap<Conditions>;
-//             dynamicScale: DynamicProperties[Property];
-//             name: Property;
-//             vars: ConditionalMap<Conditions>;
-//         };
-//     };
-// };
-// type ReturnDynamic<DynamicProperties extends ConfigDynamicProperties> = {
-//     config: {
-//         [Property in keyof DynamicProperties]: {
-//             dynamic: { default: string };
-//             dynamicScale: DynamicProperties[Property];
-//             name: Property;
-//             vars: { default: string };
-//         };
-//     };
-// };
-
-// type ReturnShorthands<Shorthands extends { [k: string]: Array<string | number | symbol> }> = {
-//     config: {
-//         [Shorthand in keyof Shorthands]: {
-//             mappings: Shorthands[Shorthand];
-//         };
-//     };
-// };
-
-/**
- * Simplify a type by merging intersections if possible
- * @param T - type to simplify
- */
-// export type Simplify<T> = T extends unknown ? { [K in keyof T]: T[K] } : T;
-
-// /**
-//  * Merge two types into a single type
-//  * @param T - first type
-//  * @param U - second type
-//  */
-// export type Merge<T, U> = Simplify<T & U>;
+type InnerValueOrConditionObject<Value, Conditions extends ConfigConditions> =
+    | Value
+    | Partial<Record<keyof Conditions, Value>>;
+type ValueOrConditionObject<Value, Name extends string, Conditions extends Omit<ConfigConditions, Name>> =
+    | Value
+    | {
+          [Condition in keyof Conditions]?: InnerValueOrConditionObject<Value, Omit<Conditions, Condition>>;
+      };
