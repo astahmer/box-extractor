@@ -51,7 +51,13 @@ export const extract = ({ ast, components: _components, functions: _functions, e
             const maybeNodes = extractJsxAttributeIdentifierValue(node);
             logger({ propName, maybeNodes });
 
-            const extractedNodes = castAsArray(maybeNodes).filter(isNotNullish) as BoxNode[];
+            const fromNode = () => node;
+            const extractedNodes = castAsArray(maybeNodes)
+                .filter(isNotNullish)
+                .map((box) => {
+                    box.fromNode = fromNode;
+                    return box;
+                }) as BoxNode[];
             localNodes.set(propName, (localNodes.get(propName) ?? []).concat(extractedNodes));
 
             extractedNodes.forEach((node) => {
@@ -71,12 +77,15 @@ export const extract = ({ ast, components: _components, functions: _functions, e
         spreadNodes.forEach((node) => {
             const objectOrMapType = extractJsxSpreadAttributeValues(node);
             const map = castObjectLikeAsMapValue(objectOrMapType, node);
+            const fromNode = () => node;
 
             const entries = mergeSpreadEntries({ map, propNameList });
             entries.forEach(([propName, propValue]) => {
                 logger.scoped("merge-spread", { jsx: true, propName, propValue });
 
                 propValue.forEach((value) => {
+                    value.fromNode = fromNode;
+
                     localNodes.set(propName, (localNodes.get(propName) ?? []).concat(value));
                     componentMap.nodesByProp.set(
                         propName,
@@ -117,11 +126,13 @@ export const extract = ({ ast, components: _components, functions: _functions, e
 
             const map = castObjectLikeAsMapValue(objectOrMapType, node);
             const entries = mergeSpreadEntries({ map, propNameList });
+            const fromNode = () => node;
 
             entries.forEach(([propName, propValue]) => {
                 logger.scoped("merge-spread", { fn: true, propName, propValue });
 
                 propValue.forEach((value) => {
+                    value.fromNode = fromNode;
                     localNodes.set(propName, (localNodes.get(propName) ?? []).concat(value));
                     fnMap.nodesByProp.set(propName, (fnMap.nodesByProp.get(propName) ?? []).concat(value));
                 });
