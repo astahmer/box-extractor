@@ -76,6 +76,12 @@ export function defineProperties<Options extends GenericPropsConfig>(options: Op
 
 type ShorthandMap<PropNames> = { [k: string]: PropNames[] };
 type DefaultCondition<Conditions> = keyof Conditions;
+
+// TODO aliases = { [k: string]: string[] }
+//  ex: { "flex": [{ "flex-grow": 1 }, { "flex-shrink": 1 }, { "flex-basis": "auto" }] }
+// ex: { "rounded": [{ "border-radius": "0.25rem" }] }
+// https://github.com/vanilla-extract-css/vanilla-extract/discussions/886
+
 export type GenericPropsConfig = {
     properties: ConfigDynamicProperties;
     conditions?: ConfigConditions;
