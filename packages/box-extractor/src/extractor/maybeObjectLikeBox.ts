@@ -5,7 +5,7 @@ import { createLogger } from "@box-extractor/logger";
 
 import { evaluateNode, isEvalError, safeEvaluateNode } from "./evaluate";
 // eslint-disable-next-line import/no-cycle
-import { getIdentifierReferenceValue, maybeBoxNode, maybeStringLiteral } from "./maybeBoxNode";
+import { getIdentifierReferenceValue, maybeBoxNode, maybePropName } from "./maybeBoxNode";
 import { box, castObjectLikeAsMapValue, BoxNode, isBoxNode, MapType, MapTypeValue, ObjectType } from "./type-factory";
 import { isNotNullish, unwrapExpression } from "./utils";
 
@@ -186,12 +186,17 @@ const getPropertyName = (property: ObjectLiteralElementLike) => {
         // { [computed]: "value" }
         if (Node.isComputedPropertyName(node)) {
             const expression = node.getExpression();
-            const computedPropName = maybeStringLiteral(expression);
+            const computedPropName = maybePropName(expression);
             if (isNotNullish(computedPropName)) return computedPropName;
         }
 
         // { "propName": "value" }
         if (Node.isStringLiteral(node)) {
+            return node.getLiteralText();
+        }
+
+        // { "propName": "value" }
+        if (Node.isNumericLiteral(node)) {
             return node.getLiteralText();
         }
     }

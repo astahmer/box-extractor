@@ -152,7 +152,41 @@ export const onlyStringLiteral = (box: MaybeBoxNodeReturn) => {
     }
 };
 
-export const maybeStringLiteral = (node: Node) => onlyStringLiteral(maybeBoxNode(node));
+const onlyNumberLiteral = (box: MaybeBoxNodeReturn) => {
+    if (!isNotNullish(box)) return;
+
+    if (typeof box === "number") {
+        return box;
+    }
+
+    if (isObject(box) && "type" in box && box.type === "literal" && typeof box.value === "number") {
+        return box.value;
+    }
+};
+
+// const onlyPrimitiveLiteral = (box: MaybeBoxNodeReturn) => {
+//     if (!isNotNullish(box)) return;
+
+//     if (typeof box === "string" || typeof box === "number" || typeof box === "boolean") {
+//         return box;
+//     }
+
+//     if (isObject(box) && "type" in box && box.type === "literal" && typeof box.value !== "object") {
+//         return box.value;
+//     }
+// };
+// const maybePrimitiveLiteral = (node: Node) => onlyPrimitiveLiteral(maybeBoxNode(node));
+
+const maybeStringLiteral = (node: Node): string | undefined => onlyStringLiteral(maybeBoxNode(node));
+
+export const maybePropName = (node: Node) => {
+    const boxed = maybeBoxNode(node);
+    const string = onlyStringLiteral(boxed);
+    if (string) return string;
+
+    const number = onlyNumberLiteral(boxed);
+    if (isNotNullish(number)) return String(number);
+};
 
 // <ColorBox color={isDark ? darkValue : "whiteAlpha.100"} />
 const maybeExpandConditionalExpression = ({
@@ -244,7 +278,7 @@ const findProperty = (node: ObjectLiteralElementLike, propName: string) => {
 
         if (Node.isComputedPropertyName(name)) {
             const expression = name.getExpression();
-            const computedPropName = maybeStringLiteral(expression);
+            const computedPropName = maybePropName(expression);
             // console.log({ computedPropName, propName, expression: expression.getText() });
 
             if (computedPropName === propName) {
@@ -278,6 +312,7 @@ const getPropValue = (initializer: ObjectLiteralExpression, propName: string) =>
         const propInit = property.getInitializer();
         if (!propInit) return;
 
+        // TODO ?
         const maybePropValue = maybeStringLiteral(propInit);
         if (maybePropValue) {
             return maybePropValue;
@@ -286,6 +321,7 @@ const getPropValue = (initializer: ObjectLiteralExpression, propName: string) =>
 
     if (Node.isShorthandPropertyAssignment(property)) {
         const propInit = property.getNameNode();
+        // TODO ?
         const maybePropValue = maybeStringLiteral(propInit);
 
         if (maybePropValue) {
@@ -301,7 +337,7 @@ const maybeTemplateStringValue = (template: TemplateExpression) => {
     const headValue = maybeStringLiteral(head);
     const tailValues = tail.map((t) => {
         const expression = t.getExpression();
-        return maybeStringLiteral(expression);
+        return maybePropName(expression);
     });
 
     // logger(({ head: head.getText(), headValue, tailValues }));
@@ -346,6 +382,7 @@ const maybePropIdentifierDefinitionValue = (elementAccessed: Identifier, propNam
                 const element = initializer.getElements()[index];
                 if (!element) return;
 
+                // TODO ?
                 return maybeStringLiteral(element);
             }
         }
@@ -395,8 +432,8 @@ const tryUnwrapBinaryExpression = (node: BinaryExpression) => {
     const left = unwrapExpression(node.getLeft());
     const right = unwrapExpression(node.getRight());
 
-    const leftValue = maybeStringLiteral(left);
-    const rightValue = maybeStringLiteral(right);
+    const leftValue = maybePropName(left);
+    const rightValue = maybePropName(right);
 
     // console.log({
     //     leftValue,
@@ -418,7 +455,7 @@ const getElementAccessedExpressionValue = (expression: ElementAccessExpression):
     if (!argExpr) return;
 
     const arg = unwrapExpression(argExpr);
-    const argValue = maybeStringLiteral(arg);
+    const argValue = maybePropName(arg);
 
     elAccessedLogger.lazy(() => ({
         arg: arg.getText(),
@@ -443,7 +480,7 @@ const getElementAccessedExpressionValue = (expression: ElementAccessExpression):
     if (Node.isBinaryExpression(arg)) {
         if (arg.getOperatorToken().getKind() !== ts.SyntaxKind.PlusToken) return;
 
-        const propName = tryUnwrapBinaryExpression(arg) ?? maybeStringLiteral(arg);
+        const propName = tryUnwrapBinaryExpression(arg) ?? maybePropName(arg);
 
         if (isNotNullish(propName) && Node.isIdentifier(elementAccessed)) {
             const maybeValue = maybePropIdentifierDefinitionValue(elementAccessed, propName);
@@ -521,6 +558,7 @@ const getElementAccessedExpressionValue = (expression: ElementAccessExpression):
 
     // <ColorBox color={xxx[aaa ? yyy : zzz]]} />
     if (Node.isConditionalExpression(arg)) {
+        // TODO maybePropName ?
         const propName = maybeStringLiteral(arg);
         elAccessedLogger({ isConditionalExpression: true, propName });
         // eslint-disable-next-line sonarjs/no-collapsible-if
@@ -537,6 +575,7 @@ const getElementAccessedExpressionValue = (expression: ElementAccessExpression):
         const whenTrueExpr = unwrapExpression(arg.getWhenTrue());
         const whenFalseExpr = unwrapExpression(arg.getWhenFalse());
 
+        // TODO ?
         const whenTrueValue = maybeStringLiteral(whenTrueExpr);
         const whenFalseValue = maybeStringLiteral(whenFalseExpr);
 
