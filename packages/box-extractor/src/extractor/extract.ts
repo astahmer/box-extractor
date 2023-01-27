@@ -6,8 +6,8 @@ import type { CallExpression, Identifier, JsxSpreadAttribute, Node } from "ts-mo
 import { extractCallExpressionValues } from "./extractCallExpressionIdentifierValues";
 import { extractJsxAttributeIdentifierValue } from "./extractJsxAttributeIdentifierValue";
 import { extractJsxSpreadAttributeValues } from "./extractJsxSpreadAttributeValues";
-import { castObjectLikeAsMapValue, BoxNode, MapTypeValue } from "./type-factory";
-import type { ExtractOptions, ListOrAll, BoxNodesMap, PropNodesMap } from "./types";
+import { castObjectLikeAsMapValue, BoxNode, MapTypeValue, box } from "./type-factory";
+import type { ExtractOptions, ListOrAll, BoxNodesMap, PropNodesMap, FunctionNodesMap, QueryBox } from "./types";
 import { castAsExtractableMap, isNotNullish } from "./utils";
 
 const logger = createLogger("box-ex:extractor:extract");
@@ -106,13 +106,14 @@ export const extract = ({ ast, components: _components, functions: _functions, e
     Object.entries(functions ?? {}).forEach(([functionName, component]) => {
         const propNameList = component.properties;
         const localNodes = new Map() as PropNodesMap["nodesByProp"];
-        extracted.set(functionName, { kind: "function", nodesByProp: localNodes });
+        const localList = [] as QueryBox[];
+        extracted.set(functionName, { kind: "function", nodesByProp: localNodes, queryList: localList });
 
         if (!extractMap.has(functionName)) {
-            extractMap.set(functionName, { kind: "function", nodesByProp: new Map() });
+            extractMap.set(functionName, { kind: "function", nodesByProp: new Map(), queryList: [] });
         }
 
-        const fnMap = extractMap.get(functionName)!;
+        const fnMap = extractMap.get(functionName)! as FunctionNodesMap;
         const fnSelector = `CallExpression:has(Identifier[name="${functionName}"])`;
         // <div className={colorSprinkles({ color: "blue.100" })}></ColorBox>
         //                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -127,6 +128,16 @@ export const extract = ({ ast, components: _components, functions: _functions, e
             const map = castObjectLikeAsMapValue(objectOrMapType, node);
             const entries = mergeSpreadEntries({ map, propNameList });
             const fromNode = () => node;
+
+            const mapAfterSpread = new Map() as MapTypeValue;
+            entries.forEach(([propName, propValue]) => {
+                mapAfterSpread.set(propName, propValue);
+            });
+
+            const query = { fromNode, box: box.map(mapAfterSpread, node) } as QueryBox;
+            query.box.fromNode = fromNode;
+            fnMap.queryList.push(query);
+            localList.push(query);
 
             entries.forEach(([propName, propValue]) => {
                 logger.scoped("merge-spread", { fn: true, propName, propValue });
