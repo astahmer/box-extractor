@@ -1,5 +1,5 @@
 export { ensureAbsolute } from "./extensions-helpers";
-export { extract } from "./extractor/extract";
+export { extract, query } from "./extractor/extract";
 export { getBoxLiteralValue } from "./extractor/getBoxLiteralValue";
 export type {
     BoxNode,
@@ -15,10 +15,13 @@ export type {
 export { isPrimitiveType } from "./extractor/type-factory";
 export type {
     BoxNodesMap,
+    ComponentNodesMap,
     Extractable,
     ExtractableMap,
     ExtractOptions,
+    FunctionNodesMap,
     PrimitiveType,
     PropNodesMap,
+    QueryBox,
 } from "./extractor/types";
-export { castAsExtractableMap } from "./extractor/utils";
+export { castAsExtractableMap, unwrapExpression } from "./extractor/utils";
