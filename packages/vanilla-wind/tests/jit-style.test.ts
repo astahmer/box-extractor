@@ -397,11 +397,22 @@ it("simple CallExpression extract + JIT style + replace call by generated classN
     twStyles.toReplace.forEach((className, node) => node.replaceWithText(`"${className}"`));
 
     const { cssMap } = ctx.getCss();
-    expect(cssMap).toMatchInlineSnapshot(`
-      {
-          "test/jit-style.test.ts":
-              ".minimalSprinkles_color_brand__1rxundp0 {\\n  color: var(--brand);\\n}\\n.minimalSprinkles_color_red\\\\.100__1rxundp1 {\\n  color: red.100;\\n}\\n.minimalSprinkles_display_flex__1rxundp2 {\\n  display: flex;\\n}\\n.tw_padding_24__1rxundp3 {\\n  padding: 24px;\\n}\\n.tw_borderRadius_lg__1rxundp4 {\\n  border-radius: 0.5rem;\\n}",
+    expect(cssMap.get("test/jit-style.test.ts")).toMatchInlineSnapshot(`
+      ".minimalSprinkles_color_brand__1rxundp0 {
+        color: var(--brand);
       }
+      .minimalSprinkles_color_red\\.100__1rxundp1 {
+        color: red.100;
+      }
+      .minimalSprinkles_display_flex__1rxundp2 {
+        display: flex;
+      }
+      .tw_padding_24__1rxundp3 {
+        padding: 24px;
+      }
+      .tw_borderRadius_lg__1rxundp4 {
+        border-radius: 0.5rem;
+      }"
     `);
 
     expect(sourceFile.getFullText()).toMatchInlineSnapshot(`
@@ -510,11 +521,13 @@ it("will generate multiple styles with nested conditions", () => {
 
     const tw = defineProperties({
         conditions: {
-            small: { selector: ".small" },
-            large: { selector: ".large" },
-            dark: { selector: ".dark" },
-            light: { selector: ".light" },
+            small: { selector: ".small &" },
+            large: { selector: ".large &" },
+            dark: { selector: ".dark &" },
+            light: { selector: ".light &" },
             hover: { selector: "&:hover" },
+            navItem: { selector: 'nav li > &' },
+            hoverNotActive: { selector: '&:hover:not(:active)' }
         },
         defaultCondition: "small",
         properties: {
@@ -549,6 +562,7 @@ it("will generate multiple styles with nested conditions", () => {
         rounded: "lg",
         bg: "blue.500",
         display: { dark: { hover: "table-footer-group" } },
+        navItem: { hoverNotActive: { color: "brand.100" } },
         hover: {
             bg: "whitesmoke",
             borderColor: undefined,
@@ -564,7 +578,9 @@ it("will generate multiple styles with nested conditions", () => {
             },
         },
         dark: {
+            p: 24,
             bg: "red.800",
+            backgroundColor: "whitesmoke",
             hover: {
                 color: "blue.600",
                 d: {
@@ -596,28 +612,32 @@ it("will generate multiple styles with nested conditions", () => {
     const tw = extracted.get("tw")! as FunctionNodesMap;
     const twStyles = generateStyleFromExtraction("tw", tw, configByName.get("tw")!.config);
 
+    expect(twStyles.classMap.size).toMatchInlineSnapshot("22");
     expect(twStyles.classMap).toMatchInlineSnapshot(`
       {
           "tw_backgroundColor_blue.500": "tw_backgroundColor_blue.500__1rxundp0",
           tw_padding_24: "tw_padding_24__1rxundp1",
           tw_borderRadius_lg: "tw_borderRadius_lg__1rxundp2",
-          "tw_display_dark.hover_table-footer-group": "tw_display_dark.hover_table-footer-group__1rxundp3",
-          tw_backgroundColor_hover_whitesmoke: "tw_backgroundColor_hover_whitesmoke__1rxundp4",
-          tw_borderRadius_hover_2xl: "tw_borderRadius_hover_2xl__1rxundp5",
-          tw_color_hover_darkseagreen: "tw_color_hover_darkseagreen__1rxundp6",
-          tw_width_hover_12px: "tw_width_hover_12px__1rxundp7",
-          tw_padding_hover_100px: "tw_padding_hover_100px__1rxundp8",
-          tw_padding_hover_4: "tw_padding_hover_4__1rxundp9",
-          "tw_display_hover.dark.large_flex": "tw_display_hover.dark.large_flex__1rxundpa",
-          "tw_display_hover.light_inline-flex": "tw_display_hover.light_inline-flex__1rxundpb",
-          "tw_backgroundColor_hover.dark_blue.700": "tw_backgroundColor_hover.dark_blue.700__1rxundpc",
-          "tw_backgroundColor_hover.light.large_red.200": "tw_backgroundColor_hover.light.large_red.200__1rxundpd",
-          "tw_backgroundColor_hover.light.dark_ThreeDHighlight":
-              "tw_backgroundColor_hover.light.dark_ThreeDHighlight__1rxundpe",
-          "tw_backgroundColor_dark_red.800": "tw_backgroundColor_dark_red.800__1rxundpf",
-          "tw_color_dark.hover_blue.600": "tw_color_dark.hover_blue.600__1rxundpg",
-          "tw_display_dark.hover.light_flex": "tw_display_dark.hover.light_flex__1rxundph",
-          "tw_display_dark.hover.large.small_contents": "tw_display_dark.hover.large.small_contents__1rxundpi",
+          "tw_display_dark_hover_table-footer-group": "tw_display_dark_hover_table-footer-group__1rxundp3",
+          "tw_color_navItem_hoverNotActive_brand.100": "tw_color_navItem_hoverNotActive_brand.100__1rxundp4",
+          tw_backgroundColor_hover_whitesmoke: "tw_backgroundColor_hover_whitesmoke__1rxundp5",
+          tw_borderRadius_hover_2xl: "tw_borderRadius_hover_2xl__1rxundp6",
+          tw_color_hover_darkseagreen: "tw_color_hover_darkseagreen__1rxundp7",
+          tw_width_hover_12px: "tw_width_hover_12px__1rxundp8",
+          tw_padding_hover_100px: "tw_padding_hover_100px__1rxundp9",
+          tw_padding_hover_4: "tw_padding_hover_4__1rxundpa",
+          tw_display_hover_dark_large_flex: "tw_display_hover_dark_large_flex__1rxundpb",
+          "tw_display_hover_light_inline-flex": "tw_display_hover_light_inline-flex__1rxundpc",
+          "tw_backgroundColor_hover_dark_blue.700": "tw_backgroundColor_hover_dark_blue.700__1rxundpd",
+          "tw_backgroundColor_hover_light_large_red.200": "tw_backgroundColor_hover_light_large_red.200__1rxundpe",
+          tw_backgroundColor_hover_light_dark_ThreeDHighlight:
+              "tw_backgroundColor_hover_light_dark_ThreeDHighlight__1rxundpf",
+          tw_padding_dark_24: "tw_padding_dark_24__1rxundpg",
+          "tw_backgroundColor_dark_red.800": "tw_backgroundColor_dark_red.800__1rxundph",
+          tw_backgroundColor_dark_whitesmoke: "tw_backgroundColor_dark_whitesmoke__1rxundpi",
+          "tw_color_dark_hover_blue.600": "tw_color_dark_hover_blue.600__1rxundpj",
+          tw_display_dark_hover_light_flex: "tw_display_dark_hover_light_flex__1rxundpk",
+          tw_display_dark_hover_large_small_contents: "tw_display_dark_hover_large_small_contents__1rxundpl",
       }
     `);
 
@@ -673,11 +693,13 @@ it("will generate multiple styles with nested conditions", () => {
 
           const tw = defineProperties({
               conditions: {
-                  small: { selector: ".small" },
-                  large: { selector: ".large" },
-                  dark: { selector: ".dark" },
-                  light: { selector: ".light" },
+                  small: { selector: ".small &" },
+                  large: { selector: ".large &" },
+                  dark: { selector: ".dark &" },
+                  light: { selector: ".light &" },
                   hover: { selector: "&:hover" },
+                  navItem: { selector: 'nav li > &' },
+                  hoverNotActive: { selector: '&:hover:not(:active)' }
               },
               defaultCondition: "small",
               properties: {
@@ -707,7 +729,76 @@ it("will generate multiple styles with nested conditions", () => {
               },
           });
 
-          const className = "tw_backgroundColor_blue.500__1rxundp0 tw_padding_24__1rxundp1 tw_borderRadius_lg__1rxundp2 tw_display_dark.hover_table-footer-group__1rxundp3 tw_backgroundColor_hover_whitesmoke__1rxundp4 tw_borderRadius_hover_2xl__1rxundp5 tw_color_hover_darkseagreen__1rxundp6 tw_width_hover_12px__1rxundp7 tw_padding_hover_100px__1rxundp8 tw_padding_hover_4__1rxundp9 tw_display_hover.dark.large_flex__1rxundpa tw_display_hover.light_inline-flex__1rxundpb tw_backgroundColor_hover.dark_blue.700__1rxundpc tw_backgroundColor_hover.light.large_red.200__1rxundpd tw_backgroundColor_hover.light.dark_ThreeDHighlight__1rxundpe tw_backgroundColor_dark_red.800__1rxundpf tw_color_dark.hover_blue.600__1rxundpg tw_display_dark.hover.light_flex__1rxundph tw_display_dark.hover.large.small_contents__1rxundpi";"
+          const className = "tw_backgroundColor_blue.500__1rxundp0 tw_padding_24__1rxundp1 tw_borderRadius_lg__1rxundp2 tw_display_dark_hover_table-footer-group__1rxundp3 tw_color_navItem_hoverNotActive_brand.100__1rxundp4 tw_backgroundColor_hover_whitesmoke__1rxundp5 tw_borderRadius_hover_2xl__1rxundp6 tw_color_hover_darkseagreen__1rxundp7 tw_width_hover_12px__1rxundp8 tw_padding_hover_100px__1rxundp9 tw_padding_hover_4__1rxundpa tw_display_hover_dark_large_flex__1rxundpb tw_display_hover_light_inline-flex__1rxundpc tw_backgroundColor_hover_dark_blue.700__1rxundpd tw_backgroundColor_hover_light_large_red.200__1rxundpe tw_backgroundColor_hover_light_dark_ThreeDHighlight__1rxundpf tw_padding_dark_24__1rxundpg tw_backgroundColor_dark_red.800__1rxundph tw_backgroundColor_dark_whitesmoke__1rxundpi tw_color_dark_hover_blue.600__1rxundpj tw_display_dark_hover_light_flex__1rxundpk tw_display_dark_hover_large_small_contents__1rxundpl";"
+    `);
+
+    expect(ctx.getCss().cssMap.get("test/jit-style.test.ts")).toMatchInlineSnapshot(`
+      ".tw_backgroundColor_blue\\.500__1rxundp0 {
+        background-color: #3182ce;
+      }
+      .tw_padding_24__1rxundp1 {
+        padding: 24;
+      }
+      .tw_borderRadius_lg__1rxundp2 {
+        border-radius: 0.5rem;
+      }
+      .dark .tw_display_dark_hover_table-footer-group__1rxundp3:hover {
+        display: table-footer-group;
+      }
+      nav li > .tw_color_navItem_hoverNotActive_brand\\.100__1rxundp4:hover:not(:active) {
+        color: #EFF6F8;
+      }
+       .tw_backgroundColor_hover_whitesmoke__1rxundp5:hover {
+        background-color: whitesmoke;
+      }
+       .tw_borderRadius_hover_2xl__1rxundp6:hover {
+        border-radius: 1rem;
+      }
+       .tw_color_hover_darkseagreen__1rxundp7:hover {
+        color: darkseagreen;
+      }
+       .tw_width_hover_12px__1rxundp8:hover {
+        width: 12px;
+      }
+       .tw_padding_hover_100px__1rxundp9:hover {
+        padding: 100px;
+      }
+       .tw_padding_hover_4__1rxundpa:hover {
+        padding: 4;
+      }
+      .dark.large .tw_display_hover_dark_large_flex__1rxundpb:hover {
+        display: flex;
+      }
+      .light .tw_display_hover_light_inline-flex__1rxundpc:hover {
+        display: inline-flex;
+      }
+      .dark .tw_backgroundColor_hover_dark_blue\\.700__1rxundpd:hover {
+        background-color: #2c5282;
+      }
+      .light.large .tw_backgroundColor_hover_light_large_red\\.200__1rxundpe:hover {
+        background-color: #FEB2B2;
+      }
+      .light.dark .tw_backgroundColor_hover_light_dark_ThreeDHighlight__1rxundpf:hover {
+        background-color: ThreeDHighlight;
+      }
+      .dark .tw_padding_dark_24__1rxundpg {
+        padding: 24;
+      }
+      .dark .tw_backgroundColor_dark_red\\.800__1rxundph {
+        background-color: #822727;
+      }
+      .dark .tw_backgroundColor_dark_whitesmoke__1rxundpi {
+        background-color: whitesmoke;
+      }
+      .dark .tw_color_dark_hover_blue\\.600__1rxundpj:hover {
+        color: #2b6cb0;
+      }
+      .dark.light .tw_display_dark_hover_light_flex__1rxundpk:hover {
+        display: flex;
+      }
+      .dark.large.small .tw_display_dark_hover_large_small_contents__1rxundpl:hover {
+        display: contents;
+      }"
     `);
 
     endFileScope();
