@@ -88,7 +88,10 @@ export function generateStyleFromExtraction(name: string, extracted: FunctionNod
 
                         const styleValue: StyleRule = { [propName]: value };
                         const rule: StyleRule = {};
+
                         const conditionPath = [] as string[];
+                        const conditions = [] as string[];
+                        const pseudoConditions = [] as string[];
 
                         let selector = "";
                         [argName, ...path].forEach((conditionName) => {
@@ -120,14 +123,36 @@ export function generateStyleFromExtraction(name: string, extracted: FunctionNod
                             }
 
                             if (condition.selector) {
-                                selector = [selector, condition.selector].filter(Boolean).join(" ");
-                                rule.selectors = {
-                                    [selector]: styleValue,
-                                };
+                                const apply =
+                                    condition.selector.startsWith(":") || condition.selector.startsWith("&:")
+                                        ? "pseudo"
+                                        : "selector";
+                                if (apply === "pseudo") {
+                                    pseudoConditions.push(condition.selector);
+                                } else {
+                                    conditions.push(
+                                        condition.selector.endsWith(" &")
+                                            ? condition.selector.slice(0, -1)
+                                            : condition.selector
+                                    );
+                                }
                             }
                         });
 
-                        const debugId = `${name}_${propName}_${conditionPath.join(".")}_${String(primitive)}`;
+                        selector = conditions.map((cond) => cond.trim()).join("");
+                        if (pseudoConditions.length > 0) {
+                            selector += " " + pseudoConditions.join("");
+                        }
+
+                        if (!selector.includes("&")) {
+                            selector += " &";
+                        }
+
+                        rule.selectors = {
+                            [selector]: styleValue,
+                        };
+
+                        const debugId = `${name}_${propName}_${conditionPath.join("_")}_${String(primitive)}`;
                         const className = style(rule, debugId);
                         classMap.set(debugId, className);
                         classNameList.add(className);
@@ -139,12 +164,17 @@ export function generateStyleFromExtraction(name: string, extracted: FunctionNod
                         //     path,
                         //     propName,
                         //     boxValue: box.value,
+                        //     // propValues,
+                        //     conditions,
+                        //     pseudoConditions,
+                        //     primitive,
                         //     value,
                         //     styleValue,
                         //     currentCondition: rule,
                         //     selector,
                         //     debugId,
                         //     className,
+                        //     parentRules,
                         // });
                     });
 
@@ -202,6 +232,7 @@ export function generateStyleFromExtraction(name: string, extracted: FunctionNod
             });
         });
 
+        // toReplace.set(query.box.fromNode(), style(Array.from(classNameList)));
         toReplace.set(query.box.fromNode(), Array.from(classNameList).join(" "));
     });
 

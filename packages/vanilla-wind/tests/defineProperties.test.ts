@@ -97,10 +97,10 @@ const tokens = {
 it("types are fine", () => {
     const tw = defineProperties({
         conditions: {
-            small: { selector: ".small" },
-            large: { selector: ".large" },
-            dark: { selector: ".dark" },
-            light: { selector: ".light" },
+            small: { selector: ".small &" },
+            large: { selector: ".large &" },
+            dark: { selector: ".dark &" },
+            light: { selector: ".light &" },
             hover: { selector: "&:hover" },
         },
         defaultCondition: "small",
@@ -151,6 +151,8 @@ it("types are fine", () => {
             },
         },
         dark: {
+            p: 24,
+            borderColor: "whitesmoke",
             bg: "red.800",
             hover: {
                 color: "blue.600",
