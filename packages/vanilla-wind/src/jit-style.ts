@@ -1,6 +1,5 @@
-import { Adapter, style } from "@vanilla-extract/css";
+import type { Adapter } from "@vanilla-extract/css";
 import { removeAdapter, setAdapter } from "@vanilla-extract/css/adapter";
-import { endFileScope, getFileScope, setFileScope } from "@vanilla-extract/css/fileScope";
 import { transformCss } from "@vanilla-extract/css/transformCss";
 import { IdentifierOption, parseFileScope, stringifyFileScope } from "@vanilla-extract/integration";
 
@@ -82,23 +81,6 @@ const getCssMap = (context: AdapterContext) => {
         cssMap,
     };
 };
-
-const main = () => {
-    const ctx = createAdapterContext("debug");
-    ctx.setAdapter();
-    setFileScope("site/jit-style.ts");
-
-    const transformTranslate = style({ transform: "translateX(2px)" });
-
-    const fs = getFileScope();
-
-    endFileScope();
-    ctx.removeAdapter();
-
-    console.log({ result: transformTranslate, fs });
-};
-// console.log(context.cssByFileScope.get(stringifyFileScope(fs)));
-// main()
 
 type AdapterContext = {
     cssByFileScope: Map<string, Css[]>;

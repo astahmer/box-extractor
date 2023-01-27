@@ -1,11 +1,12 @@
-import type { BoxNodesMap, ExtractOptions } from "@box-extractor/core";
+import { BoxNodesMap, ExtractOptions, getBoxLiteralValue, FunctionNodesMap, QueryBox } from "@box-extractor/core";
 import { extract } from "@box-extractor/core";
 import { Project, SourceFile, ts } from "ts-morph";
 import { afterEach, expect, it } from "vitest";
 
 import { endFileScope, setFileScope } from "@vanilla-extract/css/fileScope";
-import { createAdapterContext } from "../src/jit-style";
 import { generateStyleFromExtraction } from "../src/generateStyleFromExtraction";
+import { createAdapterContext } from "../src/jit-style";
+import type { GenericPropsConfig } from "../src/defineProperties";
 
 const createProject = () => {
     return new Project({
@@ -53,7 +54,46 @@ it("simple CallExpression extract + JIT style + replace call by generated classN
     const sourceFile = project.createSourceFile(
         "example.css.ts",
         `
-    import { minimalSprinkles } from "./minimalSprinkles.css";
+    const minimalSprinkles = defineProperties({
+        properties: {
+            color: {
+                brand: "var(--brand)",
+            }
+        },
+    });
+
+    const tokens = {
+        spacing: {
+            4: "4px",
+            8: "8px",
+            12: "12px",
+            16: "16px",
+            20: "20px",
+            24: "24px",
+        },
+        radii: {
+            none: "0",
+            sm: "0.125rem",
+            base: "0.25rem",
+            md: "0.375rem",
+            lg: "0.5rem",
+            xl: "0.75rem",
+            "2xl": "1rem",
+            "3xl": "1.5rem",
+            full: "9999px",
+        },
+    }
+
+    const tw = defineProperties({
+        properties: {
+            borderRadius: tokens.radii,
+            padding: tokens.spacing,
+        },
+        shorthands: {
+            p: ["padding"],
+            rounded: ["borderRadius"],
+        },
+    });
 
     export const MinimalSprinklesDemo = () => {
         return <div className={minimalSprinkles({ color: "brand" })}>
@@ -63,73 +103,246 @@ it("simple CallExpression extract + JIT style + replace call by generated classN
         { scriptKind: ts.ScriptKind.TSX }
     );
 
+    const extractDefs = extractFromCode(sourceFile, { functions: ["defineProperties"] });
+    const queryList = (extractDefs.get("defineProperties") as FunctionNodesMap).queryList;
+    expect(queryList).toMatchInlineSnapshot(`
+      [
+          {
+              fromNode: "CallExpression",
+              box: {
+                  type: "map",
+                  value: {
+                      properties: [
+                          {
+                              type: "map",
+                              value: {
+                                  color: [
+                                      {
+                                          type: "map",
+                                          value: {
+                                              brand: [
+                                                  {
+                                                      type: "literal",
+                                                      value: "var(--brand)",
+                                                      kind: "string",
+                                                      getNode: "StringLiteral",
+                                                  },
+                                              ],
+                                          },
+                                          getNode: "ObjectLiteralExpression",
+                                      },
+                                  ],
+                              },
+                              getNode: "ObjectLiteralExpression",
+                              fromNode: "CallExpression",
+                          },
+                      ],
+                  },
+                  getNode: "CallExpression",
+                  fromNode: "CallExpression",
+              },
+          },
+          {
+              fromNode: "CallExpression",
+              box: {
+                  type: "map",
+                  value: {
+                      properties: [
+                          {
+                              type: "map",
+                              value: {
+                                  borderRadius: [
+                                      {
+                                          type: "object",
+                                          value: {
+                                              none: "0",
+                                              sm: "0.125rem",
+                                              base: "0.25rem",
+                                              md: "0.375rem",
+                                              lg: "0.5rem",
+                                              xl: "0.75rem",
+                                              "2xl": "1rem",
+                                              "3xl": "1.5rem",
+                                              full: "9999px",
+                                          },
+                                          getNode: "PropertyAccessExpression",
+                                      },
+                                  ],
+                                  padding: [
+                                      {
+                                          type: "object",
+                                          value: {
+                                              "4": "4px",
+                                              "8": "8px",
+                                              "12": "12px",
+                                              "16": "16px",
+                                              "20": "20px",
+                                              "24": "24px",
+                                          },
+                                          getNode: "PropertyAccessExpression",
+                                      },
+                                  ],
+                              },
+                              getNode: "ObjectLiteralExpression",
+                              fromNode: "CallExpression",
+                          },
+                      ],
+                      shorthands: [
+                          {
+                              type: "map",
+                              value: {
+                                  p: [
+                                      {
+                                          type: "list",
+                                          value: [
+                                              {
+                                                  type: "literal",
+                                                  value: "padding",
+                                                  kind: "string",
+                                                  getNode: "StringLiteral",
+                                              },
+                                          ],
+                                          getNode: "ArrayLiteralExpression",
+                                      },
+                                  ],
+                                  rounded: [
+                                      {
+                                          type: "list",
+                                          value: [
+                                              {
+                                                  type: "literal",
+                                                  value: "borderRadius",
+                                                  kind: "string",
+                                                  getNode: "StringLiteral",
+                                              },
+                                          ],
+                                          getNode: "ArrayLiteralExpression",
+                                      },
+                                  ],
+                              },
+                              getNode: "ObjectLiteralExpression",
+                              fromNode: "CallExpression",
+                          },
+                      ],
+                  },
+                  getNode: "CallExpression",
+                  fromNode: "CallExpression",
+              },
+          },
+      ]
+    `);
+    expect(queryList.map((q) => getBoxLiteralValue(q.box))).toMatchInlineSnapshot(`
+      [
+          {
+              properties: {
+                  color: {
+                      brand: "var(--brand)",
+                  },
+              },
+          },
+          {
+              properties: {
+                  borderRadius: {
+                      none: "0",
+                      sm: "0.125rem",
+                      base: "0.25rem",
+                      md: "0.375rem",
+                      lg: "0.5rem",
+                      xl: "0.75rem",
+                      "2xl": "1rem",
+                      "3xl": "1.5rem",
+                      full: "9999px",
+                  },
+                  padding: {
+                      "4": "4px",
+                      "8": "8px",
+                      "12": "12px",
+                      "16": "16px",
+                      "20": "20px",
+                      "24": "24px",
+                  },
+              },
+              shorthands: {
+                  p: ["padding"],
+                  rounded: ["borderRadius"],
+              },
+          },
+      ]
+    `);
+
+    const configByName = new Map<string, { query: QueryBox; config: GenericPropsConfig }>();
+    queryList.forEach((query) => {
+        const from = query.fromNode();
+        const declaration = from.getParentIfKindOrThrow(ts.SyntaxKind.VariableDeclaration);
+        const nameNode = declaration.getNameNode();
+        const name = nameNode.getText();
+        configByName.set(name, { query, config: getBoxLiteralValue(query.box) as GenericPropsConfig });
+    });
+
     const extracted = extractFromCode(sourceFile, { functions: ["minimalSprinkles", "tw"] });
 
     const ctx = createAdapterContext("debug");
     ctx.setAdapter();
     setFileScope("test/jit-style.test.ts");
 
-    const minimalStyles = generateStyleFromExtraction("minimalSprinkles", extracted.get("minimalSprinkles")!);
-    const twStyles = generateStyleFromExtraction("tw", extracted.get("tw")!);
-
-    expect(extracted).toMatchInlineSnapshot(`
-      {
-          minimalSprinkles: {
-              kind: "function",
-              nodesByProp: {
-                  color: [
-                      {
-                          type: "literal",
-                          value: "brand",
-                          kind: "string",
-                          getNode: "StringLiteral",
-                          fromNode: "CallExpression",
-                      },
-                      {
-                          type: "literal",
-                          value: "red.100",
-                          kind: "string",
-                          getNode: "StringLiteral",
-                          fromNode: "CallExpression",
-                      },
-                  ],
-                  display: [
-                      {
-                          type: "literal",
-                          value: "flex",
-                          kind: "string",
-                          getNode: "StringLiteral",
-                          fromNode: "CallExpression",
-                      },
-                  ],
+    const minimalSprinkles = extracted.get("minimalSprinkles")! as FunctionNodesMap;
+    expect(minimalSprinkles.queryList).toMatchInlineSnapshot(`
+      [
+          {
+              fromNode: "CallExpression",
+              box: {
+                  type: "map",
+                  value: {
+                      color: [
+                          {
+                              type: "literal",
+                              value: "brand",
+                              kind: "string",
+                              getNode: "StringLiteral",
+                              fromNode: "CallExpression",
+                          },
+                      ],
+                  },
+                  getNode: "CallExpression",
+                  fromNode: "CallExpression",
               },
           },
-          tw: {
-              kind: "function",
-              nodesByProp: {
-                  p: [
-                      {
-                          type: "literal",
-                          value: "24",
-                          kind: "string",
-                          getNode: "NumericLiteral",
-                          fromNode: "CallExpression",
-                      },
-                  ],
-                  rounded: [
-                      {
-                          type: "literal",
-                          value: "lg",
-                          kind: "string",
-                          getNode: "StringLiteral",
-                          fromNode: "CallExpression",
-                      },
-                  ],
+          {
+              fromNode: "CallExpression",
+              box: {
+                  type: "map",
+                  value: {
+                      color: [
+                          {
+                              type: "literal",
+                              value: "red.100",
+                              kind: "string",
+                              getNode: "StringLiteral",
+                              fromNode: "CallExpression",
+                          },
+                      ],
+                      display: [
+                          {
+                              type: "literal",
+                              value: "flex",
+                              kind: "string",
+                              getNode: "StringLiteral",
+                              fromNode: "CallExpression",
+                          },
+                      ],
+                  },
+                  getNode: "CallExpression",
+                  fromNode: "CallExpression",
               },
           },
-      }
+      ]
     `);
 
+    const minimalStyles = generateStyleFromExtraction(
+        "minimalSprinkles",
+        minimalSprinkles,
+        configByName.get("minimalSprinkles")!.config
+    );
     expect(minimalStyles.classMap).toMatchInlineSnapshot(`
       {
           minimalSprinkles_color_brand: "minimalSprinkles_color_brand__1rxundp0",
@@ -138,35 +351,363 @@ it("simple CallExpression extract + JIT style + replace call by generated classN
       }
     `);
 
-    minimalStyles.toErase.forEach((node) => node.replaceWithText(""));
-    minimalStyles.toReplace.forEach((className, node) => node.replaceWithText(className));
+    minimalStyles.toReplace.forEach((className, node) => node.replaceWithText(`"${className}"`));
 
+    const tw = extracted.get("tw")! as FunctionNodesMap;
+    expect(tw.queryList).toMatchInlineSnapshot(`
+      [
+          {
+              fromNode: "CallExpression",
+              box: {
+                  type: "map",
+                  value: {
+                      p: [
+                          {
+                              type: "literal",
+                              value: "24",
+                              kind: "string",
+                              getNode: "NumericLiteral",
+                              fromNode: "CallExpression",
+                          },
+                      ],
+                      rounded: [
+                          {
+                              type: "literal",
+                              value: "lg",
+                              kind: "string",
+                              getNode: "StringLiteral",
+                              fromNode: "CallExpression",
+                          },
+                      ],
+                  },
+                  getNode: "CallExpression",
+                  fromNode: "CallExpression",
+              },
+          },
+      ]
+    `);
+
+    const twStyles = generateStyleFromExtraction("tw", tw, configByName.get("tw")!.config);
     expect(twStyles.classMap).toMatchInlineSnapshot(`
       {
-          tw_p_24: "tw_p_24__1rxundp3",
-          tw_rounded_lg: "tw_rounded_lg__1rxundp4",
+          tw_padding_24: "tw_padding_24__1rxundp3",
+          tw_borderRadius_lg: "tw_borderRadius_lg__1rxundp4",
       }
     `);
-    twStyles.toErase.forEach((node) => node.replaceWithText(""));
-    twStyles.toReplace.forEach((className, node) => node.replaceWithText(className));
+    twStyles.toReplace.forEach((className, node) => node.replaceWithText(`"${className}"`));
 
     const { cssMap } = ctx.getCss();
     expect(cssMap).toMatchInlineSnapshot(`
       {
           "test/jit-style.test.ts":
-              ".minimalSprinkles_color_brand__1rxundp0 {\\n  color: brand;\\n}\\n.minimalSprinkles_color_red\\\\.100__1rxundp1 {\\n  color: red.100;\\n}\\n.minimalSprinkles_display_flex__1rxundp2 {\\n  display: flex;\\n}\\n.tw_p_24__1rxundp3 {\\n  p: 24;\\n}\\n.tw_rounded_lg__1rxundp4 {\\n  rounded: lg;\\n}",
+              ".minimalSprinkles_color_brand__1rxundp0 {\\n  color: var(--brand);\\n}\\n.minimalSprinkles_color_red\\\\.100__1rxundp1 {\\n  color: red.100;\\n}\\n.minimalSprinkles_display_flex__1rxundp2 {\\n  display: flex;\\n}\\n.tw_padding_24__1rxundp3 {\\n  padding: 24px;\\n}\\n.tw_borderRadius_lg__1rxundp4 {\\n  border-radius: 0.5rem;\\n}",
       }
     `);
 
     expect(sourceFile.getFullText()).toMatchInlineSnapshot(`
       "
-          import { minimalSprinkles } from "./minimalSprinkles.css";
+          const minimalSprinkles = defineProperties({
+              properties: {
+                  color: {
+                      brand: "var(--brand)",
+                  }
+              },
+          });
+
+          const tokens = {
+              spacing: {
+                  4: "4px",
+                  8: "8px",
+                  12: "12px",
+                  16: "16px",
+                  20: "20px",
+                  24: "24px",
+              },
+              radii: {
+                  none: "0",
+                  sm: "0.125rem",
+                  base: "0.25rem",
+                  md: "0.375rem",
+                  lg: "0.5rem",
+                  xl: "0.75rem",
+                  "2xl": "1rem",
+                  "3xl": "1.5rem",
+                  full: "9999px",
+              },
+          }
+
+          const tw = defineProperties({
+              properties: {
+                  borderRadius: tokens.radii,
+                  padding: tokens.spacing,
+              },
+              shorthands: {
+                  p: ["padding"],
+                  rounded: ["borderRadius"],
+              },
+          });
 
           export const MinimalSprinklesDemo = () => {
-              return <div className={minimalSprinkles_color_brand__1rxundp0}>
-                  <div className={[minimalSprinkles_display_flex__1rxundp2, tw_rounded_lg__1rxundp4].join(' ')}></div>
+              return <div className={"minimalSprinkles_color_brand__1rxundp0"}>
+                  <div className={["minimalSprinkles_color_red.100__1rxundp1 minimalSprinkles_display_flex__1rxundp2", "tw_padding_24__1rxundp3 tw_borderRadius_lg__1rxundp4"].join(' ')}></div>
               </div>;
           };"
+    `);
+
+    endFileScope();
+    ctx.removeAdapter();
+});
+
+it("will generate multiple styles with nested conditions", () => {
+    const sourceFile = project.createSourceFile(
+        "multiple.css.ts",
+        `
+    const tokens = {
+        colors: {
+            "blue.50": "#ebf8ff",
+            "blue.100": "#bee3f8",
+            "blue.200": "#90cdf4",
+            "blue.300": "#63b3ed",
+            "blue.400": "#4299e1",
+            "blue.500": "#3182ce",
+            "blue.600": "#2b6cb0",
+            "blue.700": "#2c5282",
+            "blue.800": "#2a4365",
+            "blue.900": "#1A365D",
+            "red.50": "#FFF5F5",
+            "red.100": "#FED7D7",
+            "red.200": "#FEB2B2",
+            "red.300": "#FC8181",
+            "red.400": "#F56565",
+            "red.500": "#E53E3E",
+            "red.600": "#C53030",
+            "red.700": "#9B2C2C",
+            "red.800": "#822727",
+            "red.900": "#63171B",
+            "brand.50": "#F7FAFC",
+            "brand.100": "#EFF6F8",
+            "brand.200": "#D7E8EE",
+            "brand.300": "#BFDAE4",
+            "brand.400": "#90BFD0",
+            "brand.500": "#60A3BC",
+            "brand.600": "#5693A9",
+            "brand.700": "#3A6271",
+            "brand.800": "#2B4955",
+            "brand.900": "#1D3138",
+        },
+        radii: {
+            none: "0",
+            sm: "0.125rem",
+            base: "0.25rem",
+            md: "0.375rem",
+            lg: "0.5rem",
+            xl: "0.75rem",
+            "2xl": "1rem",
+            "3xl": "1.5rem",
+            full: "9999px",
+        },
+    };
+
+    const tw = defineProperties({
+        conditions: {
+            small: { selector: ".small" },
+            large: { selector: ".large" },
+            dark: { selector: ".dark" },
+            light: { selector: ".light" },
+            hover: { selector: "&:hover" },
+        },
+        defaultCondition: "small",
+        properties: {
+            display: true,
+            color: tokens.colors,
+            backgroundColor: tokens.colors,
+            borderColor: tokens.colors,
+            borderRadius: tokens.radii,
+            padding: {
+                4: "4px",
+                8: "8px",
+                12: "12px",
+                16: "16px",
+                20: "20px",
+                24: "24px",
+            },
+            width: {
+                "1/2": "50%",
+            },
+        },
+        shorthands: {
+            d: ["display"],
+            w: ["width"],
+            bg: ["backgroundColor"],
+            p: ["padding"],
+            rounded: ["borderRadius"],
+        },
+    });
+
+    const className = tw({
+        p: 24,
+        rounded: "lg",
+        bg: "blue.500",
+        display: { dark: { hover: "table-footer-group" } },
+        hover: {
+            bg: "whitesmoke",
+            borderColor: undefined,
+            borderRadius: "2xl",
+            color: "xxx".startsWith("xxx") ? "darkseagreen" : "red.200",
+            w: "falsy".startsWith("xxx") ? "1/2" : "12px",
+            padding: Math.random() > 0.5 ? "100px" : "4",
+            d: { dark: { large: "flex" } },
+            display: { light: "inline-flex" },
+            backgroundColor: {
+                dark: "blue.700",
+                light: { large: "red.200", dark: "ThreeDHighlight" },
+            },
+        },
+        dark: {
+            bg: "red.800",
+            hover: {
+                color: "blue.600",
+                d: {
+                    light: "flex",
+                    large: { small: "contents" },
+                },
+            },
+        },
+    });`
+    );
+
+    const extractDefs = extractFromCode(sourceFile, { functions: ["defineProperties"] });
+    const queryList = (extractDefs.get("defineProperties") as FunctionNodesMap).queryList;
+
+    const configByName = new Map<string, { query: QueryBox; config: GenericPropsConfig }>();
+    queryList.forEach((query) => {
+        const from = query.fromNode();
+        const declaration = from.getParentIfKindOrThrow(ts.SyntaxKind.VariableDeclaration);
+        const nameNode = declaration.getNameNode();
+        const name = nameNode.getText();
+        configByName.set(name, { query, config: getBoxLiteralValue(query.box) as GenericPropsConfig });
+    });
+
+    const ctx = createAdapterContext("debug");
+    ctx.setAdapter();
+    setFileScope("test/jit-style.test.ts");
+
+    const extracted = extractFromCode(sourceFile, { functions: ["tw"] });
+    const tw = extracted.get("tw")! as FunctionNodesMap;
+    const twStyles = generateStyleFromExtraction("tw", tw, configByName.get("tw")!.config);
+
+    expect(twStyles.classMap).toMatchInlineSnapshot(`
+      {
+          "tw_backgroundColor_blue.500": "tw_backgroundColor_blue.500__1rxundp0",
+          tw_padding_24: "tw_padding_24__1rxundp1",
+          tw_borderRadius_lg: "tw_borderRadius_lg__1rxundp2",
+          "tw_display_dark.hover_table-footer-group": "tw_display_dark.hover_table-footer-group__1rxundp3",
+          tw_backgroundColor_hover_whitesmoke: "tw_backgroundColor_hover_whitesmoke__1rxundp4",
+          tw_borderRadius_hover_2xl: "tw_borderRadius_hover_2xl__1rxundp5",
+          tw_color_hover_darkseagreen: "tw_color_hover_darkseagreen__1rxundp6",
+          tw_width_hover_12px: "tw_width_hover_12px__1rxundp7",
+          tw_padding_hover_100px: "tw_padding_hover_100px__1rxundp8",
+          tw_padding_hover_4: "tw_padding_hover_4__1rxundp9",
+          "tw_display_hover.dark.large_flex": "tw_display_hover.dark.large_flex__1rxundpa",
+          "tw_display_hover.light_inline-flex": "tw_display_hover.light_inline-flex__1rxundpb",
+          "tw_backgroundColor_hover.dark_blue.700": "tw_backgroundColor_hover.dark_blue.700__1rxundpc",
+          "tw_backgroundColor_hover.light.large_red.200": "tw_backgroundColor_hover.light.large_red.200__1rxundpd",
+          "tw_backgroundColor_hover.light.dark_ThreeDHighlight":
+              "tw_backgroundColor_hover.light.dark_ThreeDHighlight__1rxundpe",
+          "tw_backgroundColor_dark_red.800": "tw_backgroundColor_dark_red.800__1rxundpf",
+          "tw_color_dark.hover_blue.600": "tw_color_dark.hover_blue.600__1rxundpg",
+          "tw_display_dark.hover.light_flex": "tw_display_dark.hover.light_flex__1rxundph",
+          "tw_display_dark.hover.large.small_contents": "tw_display_dark.hover.large.small_contents__1rxundpi",
+      }
+    `);
+
+    twStyles.toReplace.forEach((className, node) => node.replaceWithText(`"${className}"`));
+
+    expect(sourceFile.getFullText()).toMatchInlineSnapshot(`
+      "
+          const tokens = {
+              colors: {
+                  "blue.50": "#ebf8ff",
+                  "blue.100": "#bee3f8",
+                  "blue.200": "#90cdf4",
+                  "blue.300": "#63b3ed",
+                  "blue.400": "#4299e1",
+                  "blue.500": "#3182ce",
+                  "blue.600": "#2b6cb0",
+                  "blue.700": "#2c5282",
+                  "blue.800": "#2a4365",
+                  "blue.900": "#1A365D",
+                  "red.50": "#FFF5F5",
+                  "red.100": "#FED7D7",
+                  "red.200": "#FEB2B2",
+                  "red.300": "#FC8181",
+                  "red.400": "#F56565",
+                  "red.500": "#E53E3E",
+                  "red.600": "#C53030",
+                  "red.700": "#9B2C2C",
+                  "red.800": "#822727",
+                  "red.900": "#63171B",
+                  "brand.50": "#F7FAFC",
+                  "brand.100": "#EFF6F8",
+                  "brand.200": "#D7E8EE",
+                  "brand.300": "#BFDAE4",
+                  "brand.400": "#90BFD0",
+                  "brand.500": "#60A3BC",
+                  "brand.600": "#5693A9",
+                  "brand.700": "#3A6271",
+                  "brand.800": "#2B4955",
+                  "brand.900": "#1D3138",
+              },
+              radii: {
+                  none: "0",
+                  sm: "0.125rem",
+                  base: "0.25rem",
+                  md: "0.375rem",
+                  lg: "0.5rem",
+                  xl: "0.75rem",
+                  "2xl": "1rem",
+                  "3xl": "1.5rem",
+                  full: "9999px",
+              },
+          };
+
+          const tw = defineProperties({
+              conditions: {
+                  small: { selector: ".small" },
+                  large: { selector: ".large" },
+                  dark: { selector: ".dark" },
+                  light: { selector: ".light" },
+                  hover: { selector: "&:hover" },
+              },
+              defaultCondition: "small",
+              properties: {
+                  display: true,
+                  color: tokens.colors,
+                  backgroundColor: tokens.colors,
+                  borderColor: tokens.colors,
+                  borderRadius: tokens.radii,
+                  padding: {
+                      4: "4px",
+                      8: "8px",
+                      12: "12px",
+                      16: "16px",
+                      20: "20px",
+                      24: "24px",
+                  },
+                  width: {
+                      "1/2": "50%",
+                  },
+              },
+              shorthands: {
+                  d: ["display"],
+                  w: ["width"],
+                  bg: ["backgroundColor"],
+                  p: ["padding"],
+                  rounded: ["borderRadius"],
+              },
+          });
+
+          const className = "tw_backgroundColor_blue.500__1rxundp0 tw_padding_24__1rxundp1 tw_borderRadius_lg__1rxundp2 tw_display_dark.hover_table-footer-group__1rxundp3 tw_backgroundColor_hover_whitesmoke__1rxundp4 tw_borderRadius_hover_2xl__1rxundp5 tw_color_hover_darkseagreen__1rxundp6 tw_width_hover_12px__1rxundp7 tw_padding_hover_100px__1rxundp8 tw_padding_hover_4__1rxundp9 tw_display_hover.dark.large_flex__1rxundpa tw_display_hover.light_inline-flex__1rxundpb tw_backgroundColor_hover.dark_blue.700__1rxundpc tw_backgroundColor_hover.light.large_red.200__1rxundpd tw_backgroundColor_hover.light.dark_ThreeDHighlight__1rxundpe tw_backgroundColor_dark_red.800__1rxundpf tw_color_dark.hover_blue.600__1rxundpg tw_display_dark.hover.light_flex__1rxundph tw_display_dark.hover.large.small_contents__1rxundpi";"
     `);
 
     endFileScope();
