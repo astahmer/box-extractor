@@ -2,7 +2,7 @@ import { Project, SourceFile, ts } from "ts-morph";
 import { afterEach, expect, it } from "vitest";
 import { extract } from "../src/extractor/extract";
 import { getBoxLiteralValue } from "../src/extractor/getBoxLiteralValue";
-import type { ExtractOptions, BoxNodesMap } from "../src/extractor/types";
+import type { ExtractOptions, BoxNodesMap, FunctionNodesMap } from "../src/extractor/types";
 // @ts-ignore
 import { default as ExtractSample } from "./ExtractSample?raw";
 
@@ -46,7 +46,7 @@ const config: ExtractOptions["components"] = {
 };
 
 const extractFromCode = (code: string, options?: Partial<ExtractOptions>) => {
-    const extractMap = new Map() as BoxNodesMap;
+    const extractMap = options?.extractMap ?? (new Map() as BoxNodesMap);
     const fileName = `file${fileCount++}.tsx`;
     sourceFile = project.createSourceFile(fileName, code, { scriptKind: ts.ScriptKind.TSX });
     // console.log(sourceFile.forEachDescendant((c) => [c.getKindName(), c.getText()]));
@@ -5270,5 +5270,396 @@ it("extract JsxAttribute > Identifier > StringLiteral tailwind-like", () => {
     `);
 });
 
+it("extract defineProperties config", () => {
+    const extractMap = new Map();
+    extractFromCode(
+        `
+    const tw = defineProperties({
+        conditions: {
+            small: { selector: ".small &" },
+            large: { selector: ".large &" },
+            dark: { selector: ".dark &" },
+            light: { selector: ".light &" },
+            hover: { selector: "&:hover" },
+            navItem: { selector: 'nav li > &' },
+            hoverNotActive: { selector: '&:hover:not(:active)' }
+        },
+        defaultCondition: "small",
+        properties: {
+            display: true,
+            color: tokens.colors,
+            backgroundColor: tokens.colors,
+            borderColor: tokens.colors,
+            borderRadius: tokens.radii,
+            padding: {
+                4: "4px",
+                8: "8px",
+                12: "12px",
+                16: "16px",
+                20: "20px",
+                24: "24px",
+            },
+            width: {
+                "1/2": "50%",
+            },
+        },
+        shorthands: {
+            d: ["display"],
+            w: ["width"],
+            bg: ["backgroundColor"],
+            p: ["padding"],
+            rounded: ["borderRadius"],
+        },
+    });
+    `,
+        { functions: ["defineProperties"], extractMap }
+    );
+    const definePropsConfig = extractMap.get("defineProperties") as FunctionNodesMap;
+
+    expect(definePropsConfig.queryList).toMatchInlineSnapshot(`
+      [
+          {
+              fromNode: "CallExpression",
+              box: {
+                  type: "map",
+                  value: {
+                      conditions: [
+                          {
+                              type: "map",
+                              value: {
+                                  small: [
+                                      {
+                                          type: "map",
+                                          value: {
+                                              selector: [
+                                                  {
+                                                      type: "literal",
+                                                      value: ".small &",
+                                                      kind: "string",
+                                                      getNode: "StringLiteral",
+                                                  },
+                                              ],
+                                          },
+                                          getNode: "ObjectLiteralExpression",
+                                      },
+                                  ],
+                                  large: [
+                                      {
+                                          type: "map",
+                                          value: {
+                                              selector: [
+                                                  {
+                                                      type: "literal",
+                                                      value: ".large &",
+                                                      kind: "string",
+                                                      getNode: "StringLiteral",
+                                                  },
+                                              ],
+                                          },
+                                          getNode: "ObjectLiteralExpression",
+                                      },
+                                  ],
+                                  dark: [
+                                      {
+                                          type: "map",
+                                          value: {
+                                              selector: [
+                                                  {
+                                                      type: "literal",
+                                                      value: ".dark &",
+                                                      kind: "string",
+                                                      getNode: "StringLiteral",
+                                                  },
+                                              ],
+                                          },
+                                          getNode: "ObjectLiteralExpression",
+                                      },
+                                  ],
+                                  light: [
+                                      {
+                                          type: "map",
+                                          value: {
+                                              selector: [
+                                                  {
+                                                      type: "literal",
+                                                      value: ".light &",
+                                                      kind: "string",
+                                                      getNode: "StringLiteral",
+                                                  },
+                                              ],
+                                          },
+                                          getNode: "ObjectLiteralExpression",
+                                      },
+                                  ],
+                                  hover: [
+                                      {
+                                          type: "map",
+                                          value: {
+                                              selector: [
+                                                  {
+                                                      type: "literal",
+                                                      value: "&:hover",
+                                                      kind: "string",
+                                                      getNode: "StringLiteral",
+                                                  },
+                                              ],
+                                          },
+                                          getNode: "ObjectLiteralExpression",
+                                      },
+                                  ],
+                                  navItem: [
+                                      {
+                                          type: "map",
+                                          value: {
+                                              selector: [
+                                                  {
+                                                      type: "literal",
+                                                      value: "nav li > &",
+                                                      kind: "string",
+                                                      getNode: "StringLiteral",
+                                                  },
+                                              ],
+                                          },
+                                          getNode: "ObjectLiteralExpression",
+                                      },
+                                  ],
+                                  hoverNotActive: [
+                                      {
+                                          type: "map",
+                                          value: {
+                                              selector: [
+                                                  {
+                                                      type: "literal",
+                                                      value: "&:hover:not(:active)",
+                                                      kind: "string",
+                                                      getNode: "StringLiteral",
+                                                  },
+                                              ],
+                                          },
+                                          getNode: "ObjectLiteralExpression",
+                                      },
+                                  ],
+                              },
+                              getNode: "ObjectLiteralExpression",
+                              fromNode: "CallExpression",
+                          },
+                      ],
+                      defaultCondition: [
+                          {
+                              type: "literal",
+                              value: "small",
+                              kind: "string",
+                              getNode: "StringLiteral",
+                              fromNode: "CallExpression",
+                          },
+                      ],
+                      properties: [
+                          {
+                              type: "map",
+                              value: {
+                                  display: [
+                                      {
+                                          type: "literal",
+                                          value: true,
+                                          kind: "boolean",
+                                          getNode: "TrueKeyword",
+                                      },
+                                  ],
+                                  color: [
+                                      {
+                                          type: "object",
+                                          value: {},
+                                          isEmpty: true,
+                                          getNode: "PropertyAccessExpression",
+                                      },
+                                  ],
+                                  backgroundColor: [
+                                      {
+                                          type: "object",
+                                          value: {},
+                                          isEmpty: true,
+                                          getNode: "PropertyAccessExpression",
+                                      },
+                                  ],
+                                  borderColor: [
+                                      {
+                                          type: "object",
+                                          value: {},
+                                          isEmpty: true,
+                                          getNode: "PropertyAccessExpression",
+                                      },
+                                  ],
+                                  borderRadius: [
+                                      {
+                                          type: "object",
+                                          value: {},
+                                          isEmpty: true,
+                                          getNode: "PropertyAccessExpression",
+                                      },
+                                  ],
+                                  padding: [
+                                      {
+                                          type: "map",
+                                          value: {
+                                              "4": [
+                                                  {
+                                                      type: "literal",
+                                                      value: "4px",
+                                                      kind: "string",
+                                                      getNode: "StringLiteral",
+                                                  },
+                                              ],
+                                              "8": [
+                                                  {
+                                                      type: "literal",
+                                                      value: "8px",
+                                                      kind: "string",
+                                                      getNode: "StringLiteral",
+                                                  },
+                                              ],
+                                              "12": [
+                                                  {
+                                                      type: "literal",
+                                                      value: "12px",
+                                                      kind: "string",
+                                                      getNode: "StringLiteral",
+                                                  },
+                                              ],
+                                              "16": [
+                                                  {
+                                                      type: "literal",
+                                                      value: "16px",
+                                                      kind: "string",
+                                                      getNode: "StringLiteral",
+                                                  },
+                                              ],
+                                              "20": [
+                                                  {
+                                                      type: "literal",
+                                                      value: "20px",
+                                                      kind: "string",
+                                                      getNode: "StringLiteral",
+                                                  },
+                                              ],
+                                              "24": [
+                                                  {
+                                                      type: "literal",
+                                                      value: "24px",
+                                                      kind: "string",
+                                                      getNode: "StringLiteral",
+                                                  },
+                                              ],
+                                          },
+                                          getNode: "ObjectLiteralExpression",
+                                      },
+                                  ],
+                                  width: [
+                                      {
+                                          type: "map",
+                                          value: {
+                                              "1/2": [
+                                                  {
+                                                      type: "literal",
+                                                      value: "50%",
+                                                      kind: "string",
+                                                      getNode: "StringLiteral",
+                                                  },
+                                              ],
+                                          },
+                                          getNode: "ObjectLiteralExpression",
+                                      },
+                                  ],
+                              },
+                              getNode: "ObjectLiteralExpression",
+                              fromNode: "CallExpression",
+                          },
+                      ],
+                      shorthands: [
+                          {
+                              type: "map",
+                              value: {
+                                  d: [
+                                      {
+                                          type: "list",
+                                          value: [
+                                              {
+                                                  type: "literal",
+                                                  value: "display",
+                                                  kind: "string",
+                                                  getNode: "StringLiteral",
+                                              },
+                                          ],
+                                          getNode: "ArrayLiteralExpression",
+                                      },
+                                  ],
+                                  w: [
+                                      {
+                                          type: "list",
+                                          value: [
+                                              {
+                                                  type: "literal",
+                                                  value: "width",
+                                                  kind: "string",
+                                                  getNode: "StringLiteral",
+                                              },
+                                          ],
+                                          getNode: "ArrayLiteralExpression",
+                                      },
+                                  ],
+                                  bg: [
+                                      {
+                                          type: "list",
+                                          value: [
+                                              {
+                                                  type: "literal",
+                                                  value: "backgroundColor",
+                                                  kind: "string",
+                                                  getNode: "StringLiteral",
+                                              },
+                                          ],
+                                          getNode: "ArrayLiteralExpression",
+                                      },
+                                  ],
+                                  p: [
+                                      {
+                                          type: "list",
+                                          value: [
+                                              {
+                                                  type: "literal",
+                                                  value: "padding",
+                                                  kind: "string",
+                                                  getNode: "StringLiteral",
+                                              },
+                                          ],
+                                          getNode: "ArrayLiteralExpression",
+                                      },
+                                  ],
+                                  rounded: [
+                                      {
+                                          type: "list",
+                                          value: [
+                                              {
+                                                  type: "literal",
+                                                  value: "borderRadius",
+                                                  kind: "string",
+                                                  getNode: "StringLiteral",
+                                              },
+                                          ],
+                                          getNode: "ArrayLiteralExpression",
+                                      },
+                                  ],
+                              },
+                              getNode: "ObjectLiteralExpression",
+                              fromNode: "CallExpression",
+                          },
+                      ],
+                  },
+                  getNode: "CallExpression",
+                  fromNode: "CallExpression",
+              },
+          },
+      ]
+    `);
+});
 // TODO nested valueOrNullable ?? fallback ?? fallback
 // TODO ElementAccessExpression with conditionals other than ternary
