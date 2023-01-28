@@ -23,7 +23,7 @@ export type ExtractOptions = {
     ast: SourceFile;
     components?: Extractable;
     functions?: Extractable;
-    extractMap: BoxNodesMap;
+    extractMap?: BoxNodesMap;
 };
 
 export type ExtractableMap = Record<string, { properties: ListOrAll }>;
