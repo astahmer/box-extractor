@@ -737,7 +737,7 @@ it("will generate multiple styles with nested conditions", () => {
         background-color: #3182ce;
       }
       .tw_padding_24__1rxundp1 {
-        padding: 24;
+        padding: 24px;
       }
       .tw_borderRadius_lg__1rxundp2 {
         border-radius: 0.5rem;
@@ -764,7 +764,7 @@ it("will generate multiple styles with nested conditions", () => {
         padding: 100px;
       }
        .tw_padding_hover_4__1rxundpa:hover {
-        padding: 4;
+        padding: 4px;
       }
       .dark.large .tw_display_hover_dark_large_flex__1rxundpb:hover {
         display: flex;
@@ -782,7 +782,7 @@ it("will generate multiple styles with nested conditions", () => {
         background-color: ThreeDHighlight;
       }
       .dark .tw_padding_dark_24__1rxundpg {
-        padding: 24;
+        padding: 24px;
       }
       .dark .tw_backgroundColor_dark_red\\.800__1rxundph {
         background-color: #822727;
