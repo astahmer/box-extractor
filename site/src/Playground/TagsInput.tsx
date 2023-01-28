@@ -5,7 +5,7 @@ import { box } from "../theme/Box";
 // import { box } from "../theme/Box";
 
 export function TagsInput({ placeholder, ...props }: Partial<tagsInput.Context> & { placeholder?: string }) {
-    const [state, send] = useMachine(tagsInput.machine({ id: useId(), value: ["Box"], ...props }));
+    const [state, send] = useMachine(tagsInput.machine({ id: useId(), ...props }));
     const api = tagsInput.connect(state, send, normalizeProps);
 
     return (
