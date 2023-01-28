@@ -22,6 +22,7 @@ export const ExtractedTreeMinimal = ({ extracted }: { extracted: BoxNodesMap }) 
 
     const service = usePlaygroundContext();
     const hidden = useSelector(service, (state) => state.context.hidden);
+    const search = useSelector(service, (state) => state.context.searchFilter);
 
     return (
         <Stack spacing="4" overflow="auto" boxSize="100%" pt="2" pb="10">
@@ -59,7 +60,9 @@ export const ExtractedTreeMinimal = ({ extracted }: { extracted: BoxNodesMap }) 
                                                 <Box fontWeight="bold" fontSize="md">
                                                     {propName} ({nodeList.length}):{" "}
                                                     {JSON.stringify(
-                                                        nodeList.map((node) => getBoxLiteralValue(node)),
+                                                        nodeList
+                                                            .filter((v) => (search ? v.type === search.slice(1) : true))
+                                                            .map((node) => getBoxLiteralValue(node)),
                                                         null,
                                                         2
                                                     )}
@@ -79,6 +82,7 @@ export const ExtractedTreeBasic = ({ extracted }: { extracted: BoxNodesMap }) =>
     const entries = Array.from(extracted.entries());
     const service = usePlaygroundContext();
     const hidden = useSelector(service, (state) => state.context.hidden);
+    const search = useSelector(service, (state) => state.context.searchFilter);
 
     return (
         <Stack spacing="2" overflow="auto" boxSize="100%" pt="2" pb="6">
@@ -118,16 +122,18 @@ export const ExtractedTreeBasic = ({ extracted }: { extracted: BoxNodesMap }) =>
                                                 </Box>
                                                 {/* style={{ display: "grid", gridTemplateColumns: "1fr 1fr" }} */}
                                                 <Box pt="2" pl="6">
-                                                    {nodeList.map((node, nodeIndex) => {
-                                                        return (
-                                                            <BasicBoxNode
-                                                                key={nodeIndex}
-                                                                name={name}
-                                                                propName={propName}
-                                                                node={node}
-                                                            />
-                                                        );
-                                                    })}
+                                                    {nodeList
+                                                        .filter((v) => (search ? v.type === search.slice(1) : true))
+                                                        .map((node, nodeIndex) => {
+                                                            return (
+                                                                <BasicBoxNode
+                                                                    key={nodeIndex}
+                                                                    name={name}
+                                                                    propName={propName}
+                                                                    node={node}
+                                                                />
+                                                            );
+                                                        })}
                                                 </Box>
                                             </Box>
                                         );
@@ -328,6 +334,8 @@ const PropNode = ({ name, propName, nodeList }: { name: string; propName: string
     const [isOpen, setOpen] = useState(true);
     const service = usePlaygroundContext();
 
+    const search = useSelector(service, (state) => state.context.searchFilter);
+
     return (
         <Box
             pl="4"
@@ -374,9 +382,11 @@ const PropNode = ({ name, propName, nodeList }: { name: string; propName: string
             </Box>
             {isOpen ? (
                 <Stack spacing="2" pt="4">
-                    {nodeList.map((node, nodeIndex) => {
-                        return <BoxNodeItem key={nodeIndex} name={name} propName={propName} node={node} />;
-                    })}
+                    {nodeList
+                        .filter((v) => (search ? v.type === search.slice(1) : true))
+                        .map((node, nodeIndex) => {
+                            return <BoxNodeItem key={nodeIndex} name={name} propName={propName} node={node} />;
+                        })}
                 </Stack>
             ) : null}
         </Box>
