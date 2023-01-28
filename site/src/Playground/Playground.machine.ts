@@ -149,7 +149,6 @@ export const playgroundMachine = createMachine(
                 return { ...ctx, viewMode: event.viewMode };
             }),
             updateSearchFilter: assign((ctx, event) => {
-                console.log("updateSearchFilter", event);
                 if (!event.search || !ctx.extracted) {
                     return {
                         ...ctx,
@@ -162,13 +161,26 @@ export const playgroundMachine = createMachine(
                     };
                 }
 
+                // special BoxNode.type filter
+                if (event.search.startsWith(":")) {
+                    return {
+                        ...ctx,
+                        searchFilter: event.search,
+                        hidden: {
+                            components: [],
+                            functions: [],
+                            propNames: [],
+                        },
+                    };
+                }
+
                 const search = event.search.toLowerCase();
                 const extractMap = ctx.extracted;
                 const hidden = {
-                    components: [] as string[],
-                    functions: [] as string[],
-                    propNames: [] as string[],
-                };
+                    components: [],
+                    functions: [],
+                    propNames: [],
+                } as PlaygroundContext["hidden"];
 
                 extractMap.forEach((propNodes, name) => {
                     const isDirectMatch = name.toLowerCase().startsWith(search);
@@ -181,7 +193,6 @@ export const playgroundMachine = createMachine(
                             propNames.push(name + "." + propName);
                         }
                     });
-                    console.log({ name, propNames });
 
                     if (propNames.length > 0) {
                         hidden.propNames.push(...propNames);
@@ -194,8 +205,6 @@ export const playgroundMachine = createMachine(
                         hidden.functions.push(name);
                     }
                 });
-
-                console.log(hidden);
 
                 return { ...ctx, searchFilter: event.search, hidden };
             }),
@@ -287,7 +296,6 @@ export const playgroundMachine = createMachine(
                         : `Identifier[name="${componentName}"]`;
                     const componentSelector = `:matches(JsxOpeningElement, JsxSelfClosingElement):has(${identifierSelector})`;
                     const identifierNodes = query<Identifier>(ctx.sourceFile, componentSelector) ?? [];
-                    console.log(identifierNodes);
 
                     if (identifierNodes.length === 0) return ctx;
 
