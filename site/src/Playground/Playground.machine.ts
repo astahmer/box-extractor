@@ -14,7 +14,13 @@ type PlaygroundContext = {
     extracted: BoxNodesMap | null;
     components: string[];
     functions: string[];
-    isLiteralMode: boolean;
+    viewMode: "minimal" | "basic" | "comfy";
+    searchFilter: string;
+    hidden: {
+        components: string[];
+        functions: string[];
+        propNames: string[];
+    };
     selectedNode: BoxNode | null;
     selectedIdentifier: string | null;
     selectedProp: string | null;
@@ -26,7 +32,8 @@ type PlaygroundEvent =
     | { type: "Update input"; value: string }
     | { type: "Update components"; list: string[] }
     | { type: "Update functions"; list: string[] }
-    | { type: "Toggle literal mode" }
+    | { type: "Update search filter"; search: string }
+    | { type: "Select mode"; viewMode: PlaygroundContext["viewMode"] }
     | { type: "Select identifier"; identifier: string }
     | { type: "Select prop"; identifier: string; prop: string }
     | { type: "Select node"; identifier: string; prop: string; node: BoxNode };
@@ -63,7 +70,13 @@ const initialContext: PlaygroundContext = {
     extracted: null,
     components: ["Box"],
     functions: [],
-    isLiteralMode: false,
+    viewMode: "basic",
+    searchFilter: "",
+    hidden: {
+        components: [],
+        functions: [],
+        propNames: [],
+    },
     selectedIdentifier: null,
     selectedProp: null,
     selectedNode: null,
@@ -93,7 +106,8 @@ export const playgroundMachine = createMachine(
                             "Update input": { actions: ["updateOutput"] },
                             "Update components": { actions: ["updateComponents", "updateOutput"] },
                             "Update functions": { actions: ["updateFunctions", "updateOutput"] },
-                            "Toggle literal mode": { actions: ["toggleLiteralMode"] },
+                            "Update search filter": { actions: ["updateSearchFilter"] },
+                            "Select mode": { actions: ["selectMode"] },
                             "Select identifier": { actions: ["selectIdentifier", "updateHighlight"] },
                             "Select prop": { actions: ["selectProp", "updateHighlight"] },
                             "Select node": { actions: ["selectNode", "updateHighlight"] },
@@ -131,8 +145,59 @@ export const playgroundMachine = createMachine(
             updateFunctions: assign((ctx, event) => {
                 return { ...ctx, functions: event.list };
             }),
-            toggleLiteralMode: assign((ctx, _event) => {
-                return { ...ctx, isLiteralMode: !ctx.isLiteralMode };
+            selectMode: assign((ctx, event) => {
+                return { ...ctx, viewMode: event.viewMode };
+            }),
+            updateSearchFilter: assign((ctx, event) => {
+                console.log("updateSearchFilter", event);
+                if (!event.search || !ctx.extracted) {
+                    return {
+                        ...ctx,
+                        searchFilter: "",
+                        hidden: {
+                            components: [],
+                            functions: [],
+                            propNames: [],
+                        },
+                    };
+                }
+
+                const search = event.search.toLowerCase();
+                const extractMap = ctx.extracted;
+                const hidden = {
+                    components: [] as string[],
+                    functions: [] as string[],
+                    propNames: [] as string[],
+                };
+
+                extractMap.forEach((propNodes, name) => {
+                    const isDirectMatch = name.toLowerCase().startsWith(search);
+                    if (isDirectMatch) return;
+
+                    const propNames = [] as string[];
+                    propNodes.nodesByProp.forEach((_nodes, propName) => {
+                        const isPropMatch = propName.toLowerCase().startsWith(search);
+                        if (!isPropMatch) {
+                            propNames.push(name + "." + propName);
+                        }
+                    });
+                    console.log({ name, propNames });
+
+                    if (propNames.length > 0) {
+                        hidden.propNames.push(...propNames);
+                        if (propNames.length !== propNodes.nodesByProp.size) return;
+                    }
+
+                    if (propNodes.kind === "component") {
+                        hidden.components.push(name);
+                    } else {
+                        hidden.functions.push(name);
+                    }
+                });
+
+                console.log(hidden);
+
+                return { ...ctx, searchFilter: event.search, hidden };
             }),
             selectIdentifier: assign((ctx, event) => {
                 return { ...ctx, selectedIdentifier: event.identifier };
