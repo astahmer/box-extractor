@@ -15,13 +15,14 @@ export interface Typegen0 {
     eventsCausingActions: {
         assignEditorRef: "Editor Loaded";
         selectIdentifier: "Select identifier";
+        selectMode: "Select mode";
         selectNode: "Select node";
         selectProp: "Select prop";
-        toggleLiteralMode: "Toggle literal mode";
         updateComponents: "Update components";
         updateFunctions: "Update functions";
         updateHighlight: "Select identifier" | "Select node" | "Select prop";
         updateOutput: "Update components" | "Update functions" | "Update input";
+        updateSearchFilter: "Update search filter";
     };
     eventsCausingDelays: {};
     eventsCausingGuards: {};
