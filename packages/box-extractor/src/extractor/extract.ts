@@ -12,7 +12,12 @@ import { castAsExtractableMap, isNotNullish } from "./utils";
 
 const logger = createLogger("box-ex:extractor:extract");
 
-export const extract = ({ ast, components: _components, functions: _functions, extractMap }: ExtractOptions) => {
+export const extract = ({
+    ast,
+    components: _components,
+    functions: _functions,
+    extractMap = new Map(),
+}: ExtractOptions) => {
     const components = castAsExtractableMap(_components ?? {});
     const functions = castAsExtractableMap(_functions ?? {});
 
