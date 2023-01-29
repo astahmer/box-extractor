@@ -4,7 +4,14 @@ import type { Node } from "ts-morph";
 import type { GenericPropsConfig } from "./defineProperties";
 
 // TODO mode = "atomic" | "grouped"
-export function generateStyleFromExtraction(name: string, extracted: FunctionNodesMap, config: GenericPropsConfig) {
+export function generateStyleFromExtraction(
+    name: string,
+    extracted: FunctionNodesMap,
+    config: GenericPropsConfig
+): {
+    toReplace: Map<Node, string>;
+    classMap: Map<string, string>;
+} {
     const toReplace = new Map<Node, string>();
     const classMap = new Map<string, string>();
 
@@ -52,7 +59,7 @@ export function generateStyleFromExtraction(name: string, extracted: FunctionNod
                                 : propValues?.[primitive as keyof typeof propValues] ?? primitive;
 
                         const debugId = `${name}_${argName}_${String(primitive)}`;
-                        const className = style({ [argName]: value }, debugId);
+                        const className = classMap.get(debugId) ?? style({ [argName]: value }, debugId);
                         classMap.set(debugId, className);
                         classNameList.add(className);
 
@@ -153,7 +160,7 @@ export function generateStyleFromExtraction(name: string, extracted: FunctionNod
                         };
 
                         const debugId = `${name}_${propName}_${conditionPath.join("_")}_${String(primitive)}`;
-                        const className = style(rule, debugId);
+                        const className = classMap.get(debugId) ?? style(rule, debugId);
                         classMap.set(debugId, className);
                         classNameList.add(className);
 
@@ -232,6 +239,9 @@ export function generateStyleFromExtraction(name: string, extracted: FunctionNod
             });
         });
 
+        if (classNameList.size === 0) return;
+
+        // grouped ?
         // toReplace.set(query.box.fromNode(), style(Array.from(classNameList)));
         toReplace.set(query.box.fromNode(), Array.from(classNameList).join(" "));
     });
