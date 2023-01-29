@@ -103,7 +103,6 @@ it("types are fine", () => {
             light: { selector: ".light &" },
             hover: { selector: "&:hover" },
         },
-        defaultCondition: "small",
         properties: {
             display: true,
             color: tokens.colors,
@@ -131,37 +130,120 @@ it("types are fine", () => {
         },
     });
 
-    tw({
-        p: 24,
-        rounded: "lg",
-        bg: "blue.500",
-        display: { dark: { hover: "table-footer-group" } },
-        hover: {
-            bg: "whitesmoke",
-            borderColor: undefined,
-            borderRadius: "2xl",
-            color: "xxx".startsWith("xxx") ? "darkseagreen" : "red.200",
-            w: "falsy".startsWith("xxx") ? "1/2" : "12px",
-            padding: Math.random() > 0.5 ? "100px" : "4",
-            d: { dark: { large: "flex" } },
-            display: { light: "inline-flex" },
-            backgroundColor: {
-                dark: "blue.700",
-                light: { large: "red.200", dark: "ThreeDHighlight" },
-            },
+    const atomicClass = defineProperties();
+
+    atomicClass({
+        accentColor: "mediumaquamarine",
+        display: "flex",
+    });
+
+    const atomicClassWithShorthands = defineProperties({
+        shorthands: {
+            d: ["display"],
+            w: ["width"],
+            bg: ["backgroundColor"],
         },
-        dark: {
-            p: 24,
-            borderColor: "whitesmoke",
-            bg: "red.800",
+    });
+
+    atomicClassWithShorthands({
+        d: "flex",
+        w: "100%",
+        height: "100vh",
+    });
+
+    const atomicClassWithShorthandsAndConditions = defineProperties({
+        conditions: {
+            small: { selector: ".small &" },
+            large: { selector: ".large &" },
+            dark: { selector: ".dark &" },
+            light: { selector: ".light &" },
+            hover: { selector: "&:hover" },
+        },
+        shorthands: {
+            d: ["display"],
+            w: ["width"],
+            bg: ["backgroundColor"],
+        },
+    });
+
+    atomicClassWithShorthandsAndConditions({
+        d: "flex",
+        w: {
             hover: {
-                color: "blue.600",
-                d: {
-                    light: "flex",
-                    large: { small: "contents" },
-                },
+                dark: "100%",
             },
         },
+        height: "100vh",
+        hover: {
+            flexDirection: "column",
+            bg: "black",
+        },
+    });
+
+    const all = defineProperties({
+        conditions: {
+            small: { selector: ".small &" },
+            large: { selector: ".large &" },
+            dark: { selector: ".dark &" },
+            light: { selector: ".light &" },
+            hover: { selector: "&:hover" },
+        },
+        properties: {
+            display: true,
+            color: tokens.colors,
+            backgroundColor: tokens.colors,
+            borderColor: tokens.colors,
+            borderRadius: tokens.radii,
+        },
+        shorthands: {
+            d: ["display"],
+        },
+    });
+
+    all({
+        d: {
+            dark: {
+                hover: "flex",
+            },
+            light: "grid",
+        },
+    });
+
+    tw({
+        bg: "blue.500",
+        backgroundColor: { dark: "blue.700", light: { large: "red.200" } },
+
+        // p: 24,
+        // p: 24,
+        // rounded: "lg",
+        // bg: "blue.500",
+        // display: { dark: { hover: "table-footer-group" } },
+        // hover: {
+        //     bg: "whitesmoke",
+        //     borderColor: undefined,
+        //     borderRadius: "2xl",
+        //     color: "xxx".startsWith("xxx") ? "darkseagreen" : "red.200",
+        //     w: "falsy".startsWith("xxx") ? "1/2" : "12px",
+        //     padding: Math.random() > 0.5 ? "100px" : "4",
+        //     d: { dark: { large: "flex" } },
+        //     display: { light: "inline-flex" },
+        //     backgroundColor: {
+        //         dark: "blue.700",
+        //         light: { large: "red.200", dark: "ThreeDHighlight" },
+        //     },
+        // },
+        // dark: {
+        //     p: 24,
+        //     borderColor: "whitesmoke",
+        //     bg: "red.800",
+        //     hover: {
+        //         color: "blue.600",
+        //         d: {
+        //             light: "flex",
+        //             large: { small: "contents" },
+        //         },
+        //     },
+        // },
     });
 
     expect(
