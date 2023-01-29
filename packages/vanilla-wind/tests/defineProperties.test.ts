@@ -135,6 +135,8 @@ it("types are fine", () => {
     atomicClass({
         accentColor: "mediumaquamarine",
         display: "flex",
+        // @ts-expect-error
+        azazas: 123, // invalid css prop name
     });
 
     const atomicClassWithShorthands = defineProperties({
@@ -142,6 +144,36 @@ it("types are fine", () => {
             d: ["display"],
             w: ["width"],
             bg: ["backgroundColor"],
+        },
+    });
+
+    defineProperties({
+        // @ts-expect-error
+        shorthands: {
+            d: ["display"],
+            w: ["width"],
+            bg: ["backgroundColor"],
+            shorthand: ["invalidProp"], // invalid css prop name
+        },
+    });
+
+    defineProperties({
+        properties: {
+            backgroundColor: tokens.colors,
+        },
+        shorthands: {
+            bg: ["backgroundColor"],
+        },
+    });
+
+    defineProperties({
+        // @ts-expect-error
+        properties: {
+            backgroundColor: tokens.colors,
+        },
+        shorthands: {
+            bg: ["backgroundColor"],
+            w: ["width"], // width is not defined as property
         },
     });
 
@@ -173,6 +205,8 @@ it("types are fine", () => {
                 dark: "100%",
             },
         },
+        // @ts-expect-error
+        invalidCssProp: "100%", // invalid css prop name
         height: "100vh",
         hover: {
             flexDirection: "column",

@@ -10,8 +10,6 @@ export type DynamicProp<Name extends keyof CSSProperties> = CssPropValue<Name> |
 export type ConfigDynamicProperties = {
     [Prop in keyof CSSProperties]?: DynamicProp<Prop> | undefined;
 };
-export type DynamicPropName = keyof ConfigDynamicProperties;
-
 export type ConfigConditions = {
     [conditionName: string]: {
         "@media"?: string;
