@@ -1,13 +1,13 @@
 import { BoxNode, FunctionNodesMap, isPrimitiveType, LiteralValue } from "@box-extractor/core";
 import { style, StyleRule } from "@vanilla-extract/css";
 import type { Node } from "ts-morph";
-import type { GenericPropsConfig } from "./defineProperties";
+import type { GenericConfig } from "./defineProperties";
 
 // TODO mode = "atomic" | "grouped"
 export function generateStyleFromExtraction(
     name: string,
     extracted: FunctionNodesMap,
-    config: GenericPropsConfig
+    config: GenericConfig
 ): {
     toReplace: Map<Node, string>;
     classMap: Map<string, string>;
@@ -15,9 +15,9 @@ export function generateStyleFromExtraction(
     const toReplace = new Map<Node, string>();
     const classMap = new Map<string, string>();
 
-    const shorthandNames = new Set(config.shorthands ? Object.keys(config.shorthands) : []);
-    const conditionNames = new Set(config.conditions ? Object.keys(config.conditions) : []);
-    const propertyNames = new Set(Object.keys(config.properties));
+    const shorthandNames = new Set(Object.keys(config.shorthands ?? {}));
+    const conditionNames = new Set(Object.keys(config.conditions ?? {}));
+    const propertyNames = new Set(Object.keys(config.properties ?? {}));
 
     // console.log({ name, config });
 
@@ -52,7 +52,7 @@ export function generateStyleFromExtraction(
 
                     if (path.length === 0) {
                         // use token value if defined / allow any CSS value if not
-                        const propValues = config.properties[argName as keyof typeof config.properties];
+                        const propValues = config.properties?.[argName as keyof typeof config.properties];
                         const value =
                             propValues === true
                                 ? primitive
@@ -87,7 +87,7 @@ export function generateStyleFromExtraction(
                     if (propNames.length === 0) return;
 
                     propNames.forEach((propName) => {
-                        const propValues = config.properties[propName as keyof typeof config.properties];
+                        const propValues = config.properties?.[propName as keyof typeof config.properties];
                         const value =
                             propValues === true
                                 ? primitive

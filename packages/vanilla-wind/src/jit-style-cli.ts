@@ -1,7 +1,7 @@
 import { extract, FunctionNodesMap, getBoxLiteralValue, QueryBox } from "@box-extractor/core";
 import { endFileScope, setFileScope } from "@vanilla-extract/css/fileScope";
 import { Project, ts } from "ts-morph";
-import type { GenericPropsConfig } from "./defineProperties";
+import type { GenericConfig } from "./defineProperties";
 import { generateStyleFromExtraction } from "./generateStyleFromExtraction";
 import { createAdapterContext } from "./jit-style";
 
@@ -41,13 +41,13 @@ export const main = () => {
     const extractedTheme = extract({ ast: theme, functions: ["defineProperties"] });
     const queryList = (extractedTheme.get("defineProperties") as FunctionNodesMap).queryList;
 
-    const configByName = new Map<string, { query: QueryBox; config: GenericPropsConfig }>();
+    const configByName = new Map<string, { query: QueryBox; config: GenericConfig }>();
     queryList.forEach((query) => {
         const from = query.fromNode();
         const declaration = from.getParentIfKindOrThrow(ts.SyntaxKind.VariableDeclaration);
         const nameNode = declaration.getNameNode();
         const name = nameNode.getText();
-        configByName.set(name, { query, config: getBoxLiteralValue(query.box) as GenericPropsConfig });
+        configByName.set(name, { query, config: getBoxLiteralValue(query.box) as GenericConfig });
     });
 
     const extractedUsage = extract({ ast: usage, functions: ["tw"] });

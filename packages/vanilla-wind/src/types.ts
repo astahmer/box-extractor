@@ -8,7 +8,7 @@ export type CssPropValue<Name extends keyof CSSProperties> = Record<string, CSSP
 export type DynamicProp<Name extends keyof CSSProperties> = CssPropValue<Name> | true;
 
 export type ConfigDynamicProperties = {
-    [Prop in keyof CSSProperties]?: DynamicProp<Prop>;
+    [Prop in keyof CSSProperties]?: DynamicProp<Prop> | undefined;
 };
 export type DynamicPropName = keyof ConfigDynamicProperties;
 
