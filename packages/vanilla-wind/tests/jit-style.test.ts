@@ -823,34 +823,12 @@ it("will generate multiple styles with nested conditions - grouped", () => {
 
     const extracted = extractFromCode(sourceFile, { functions: ["tw"] });
     const tw = extracted.get("tw")! as FunctionNodesMap;
-    const twStyles = generateStyleFromExtraction("tw", tw, configByName.get("tw")!.config);
+    const twStyles = generateStyleFromExtraction("tw", tw, configByName.get("tw")!.config, "grouped");
 
-    expect(twStyles.classMap.size).toMatchInlineSnapshot('22');
+    expect(twStyles.classMap.size).toMatchInlineSnapshot('1');
     expect(twStyles.classMap).toMatchInlineSnapshot(`
       {
-          "tw_backgroundColor_blue.500": "tw_backgroundColor_blue.500__1rxundp0",
-          tw_padding_24: "tw_padding_24__1rxundp1",
-          tw_borderRadius_lg: "tw_borderRadius_lg__1rxundp2",
-          "tw_display_dark_hover_table-footer-group": "tw_display_dark_hover_table-footer-group__1rxundp3",
-          "tw_color_navItem_hoverNotActive_brand.100": "tw_color_navItem_hoverNotActive_brand.100__1rxundp4",
-          tw_backgroundColor_hover_whitesmoke: "tw_backgroundColor_hover_whitesmoke__1rxundp5",
-          tw_borderRadius_hover_2xl: "tw_borderRadius_hover_2xl__1rxundp6",
-          tw_color_hover_darkseagreen: "tw_color_hover_darkseagreen__1rxundp7",
-          tw_width_hover_12px: "tw_width_hover_12px__1rxundp8",
-          tw_padding_hover_100px: "tw_padding_hover_100px__1rxundp9",
-          tw_padding_hover_4: "tw_padding_hover_4__1rxundpa",
-          tw_display_hover_dark_large_flex: "tw_display_hover_dark_large_flex__1rxundpb",
-          "tw_display_hover_light_inline-flex": "tw_display_hover_light_inline-flex__1rxundpc",
-          "tw_backgroundColor_hover_dark_blue.700": "tw_backgroundColor_hover_dark_blue.700__1rxundpd",
-          "tw_backgroundColor_hover_light_large_red.200": "tw_backgroundColor_hover_light_large_red.200__1rxundpe",
-          tw_backgroundColor_hover_light_dark_ThreeDHighlight:
-              "tw_backgroundColor_hover_light_dark_ThreeDHighlight__1rxundpf",
-          tw_padding_dark_24: "tw_padding_dark_24__1rxundpg",
-          "tw_backgroundColor_dark_red.800": "tw_backgroundColor_dark_red.800__1rxundph",
-          tw_backgroundColor_dark_whitesmoke: "tw_backgroundColor_dark_whitesmoke__1rxundpi",
-          "tw_color_dark_hover_blue.600": "tw_color_dark_hover_blue.600__1rxundpj",
-          tw_display_dark_hover_light_flex: "tw_display_dark_hover_light_flex__1rxundpk",
-          tw_display_dark_hover_large_small_contents: "tw_display_dark_hover_large_small_contents__1rxundpl",
+          _1rxundp0: "_1rxundp0",
       }
     `);
 
@@ -941,74 +919,50 @@ it("will generate multiple styles with nested conditions - grouped", () => {
           },
       });
 
-      const className = "tw_backgroundColor_blue.500__1rxundp0 tw_padding_24__1rxundp1 tw_borderRadius_lg__1rxundp2 tw_display_dark_hover_table-footer-group__1rxundp3 tw_color_navItem_hoverNotActive_brand.100__1rxundp4 tw_backgroundColor_hover_whitesmoke__1rxundp5 tw_borderRadius_hover_2xl__1rxundp6 tw_color_hover_darkseagreen__1rxundp7 tw_width_hover_12px__1rxundp8 tw_padding_hover_100px__1rxundp9 tw_padding_hover_4__1rxundpa tw_display_hover_dark_large_flex__1rxundpb tw_display_hover_light_inline-flex__1rxundpc tw_backgroundColor_hover_dark_blue.700__1rxundpd tw_backgroundColor_hover_light_large_red.200__1rxundpe tw_backgroundColor_hover_light_dark_ThreeDHighlight__1rxundpf tw_padding_dark_24__1rxundpg tw_backgroundColor_dark_red.800__1rxundph tw_backgroundColor_dark_whitesmoke__1rxundpi tw_color_dark_hover_blue.600__1rxundpj tw_display_dark_hover_light_flex__1rxundpk tw_display_dark_hover_large_small_contents__1rxundpl";"
+      const className = "_1rxundp0";"
     `);
 
     expect(ctx.getCss().cssMap.get("test/jit-style.test.ts")).toMatchInlineSnapshot(`
-      ".tw_backgroundColor_blue\\.500__1rxundp0 {
+      "._1rxundp0 {
         background-color: #3182ce;
-      }
-      .tw_padding_24__1rxundp1 {
         padding: 24px;
-      }
-      .tw_borderRadius_lg__1rxundp2 {
         border-radius: 0.5rem;
       }
-      .dark .tw_display_dark_hover_table-footer-group__1rxundp3:hover {
+      .dark ._1rxundp0:hover {
         display: table-footer-group;
-      }
-      nav li > .tw_color_navItem_hoverNotActive_brand\\.100__1rxundp4:hover:not(:active) {
-        color: #EFF6F8;
-      }
-       .tw_backgroundColor_hover_whitesmoke__1rxundp5:hover {
-        background-color: whitesmoke;
-      }
-       .tw_borderRadius_hover_2xl__1rxundp6:hover {
-        border-radius: 1rem;
-      }
-       .tw_color_hover_darkseagreen__1rxundp7:hover {
-        color: darkseagreen;
-      }
-       .tw_width_hover_12px__1rxundp8:hover {
-        width: 12px;
-      }
-       .tw_padding_hover_100px__1rxundp9:hover {
-        padding: 100px;
-      }
-       .tw_padding_hover_4__1rxundpa:hover {
-        padding: 4px;
-      }
-      .dark.large .tw_display_hover_dark_large_flex__1rxundpb:hover {
-        display: flex;
-      }
-      .light .tw_display_hover_light_inline-flex__1rxundpc:hover {
-        display: inline-flex;
-      }
-      .dark .tw_backgroundColor_hover_dark_blue\\.700__1rxundpd:hover {
         background-color: #2c5282;
-      }
-      .light.large .tw_backgroundColor_hover_light_large_red\\.200__1rxundpe:hover {
-        background-color: #FEB2B2;
-      }
-      .light.dark .tw_backgroundColor_hover_light_dark_ThreeDHighlight__1rxundpf:hover {
-        background-color: ThreeDHighlight;
-      }
-      .dark .tw_padding_dark_24__1rxundpg {
-        padding: 24px;
-      }
-      .dark .tw_backgroundColor_dark_red\\.800__1rxundph {
-        background-color: #822727;
-      }
-      .dark .tw_backgroundColor_dark_whitesmoke__1rxundpi {
-        background-color: whitesmoke;
-      }
-      .dark .tw_color_dark_hover_blue\\.600__1rxundpj:hover {
         color: #2b6cb0;
       }
-      .dark.light .tw_display_dark_hover_light_flex__1rxundpk:hover {
+      nav li > ._1rxundp0:hover:not(:active) {
+        color: #EFF6F8;
+      }
+       ._1rxundp0:hover {
+        background-color: whitesmoke;
+        border-radius: 1rem;
+        color: darkseagreen;
+        width: 12px;
+        padding: 4px;
+      }
+      .dark.large ._1rxundp0:hover {
         display: flex;
       }
-      .dark.large.small .tw_display_dark_hover_large_small_contents__1rxundpl:hover {
+      .light ._1rxundp0:hover {
+        display: inline-flex;
+      }
+      .light.large ._1rxundp0:hover {
+        background-color: #FEB2B2;
+      }
+      .light.dark ._1rxundp0:hover {
+        background-color: ThreeDHighlight;
+      }
+      .dark ._1rxundp0 {
+        padding: 24px;
+        background-color: whitesmoke;
+      }
+      .dark.light ._1rxundp0:hover {
+        display: flex;
+      }
+      .dark.large.small ._1rxundp0:hover {
         display: contents;
       }"
     `);
