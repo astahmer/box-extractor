@@ -1,0 +1,4 @@
+{
+    "main": "dist/box-extractor-vanilla-wind-jit.cjs.js",
+    "module": "dist/box-extractor-vanilla-wind-jit.esm.js"
+}
