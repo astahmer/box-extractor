@@ -1,5 +1,6 @@
 import { BoxNode, FunctionNodesMap, isPrimitiveType, LiteralValue } from "@box-extractor/core";
 import { style, StyleRule } from "@vanilla-extract/css";
+import { deepMerge } from "pastable";
 import type { Node } from "ts-morph";
 import type { GenericConfig } from "./defineProperties";
 
@@ -7,13 +8,15 @@ import type { GenericConfig } from "./defineProperties";
 export function generateStyleFromExtraction(
     name: string,
     extracted: FunctionNodesMap,
-    config: GenericConfig
+    config: GenericConfig,
+    mode: "atomic" | "grouped" = "atomic"
 ): {
     toReplace: Map<Node, string>;
     classMap: Map<string, string>;
 } {
     const toReplace = new Map<Node, string>();
     const classMap = new Map<string, string>();
+    const rules = new Map<string, StyleRule>();
 
     const shorthandNames = new Set(Object.keys(config.shorthands ?? {}));
     const conditionNames = new Set(Object.keys(config.conditions ?? {}));
@@ -59,9 +62,15 @@ export function generateStyleFromExtraction(
                                 : propValues?.[primitive as keyof typeof propValues] ?? primitive;
 
                         const debugId = `${name}_${argName}_${String(primitive)}`;
-                        const className = classMap.get(debugId) ?? style({ [argName]: value }, debugId);
-                        classMap.set(debugId, className);
-                        classNameList.add(className);
+                        const rule = { [argName]: value } as StyleRule;
+
+                        if (mode === "atomic") {
+                            const className = classMap.get(debugId) ?? style(rule, debugId);
+                            classMap.set(debugId, className);
+                            classNameList.add(className);
+                        }
+
+                        rules.set(debugId, rule);
 
                         // TODO logger
                         // console.log({ name, propName, value, className, from: from.getKindName() });
@@ -160,9 +169,14 @@ export function generateStyleFromExtraction(
                         };
 
                         const debugId = `${name}_${propName}_${conditionPath.join("_")}_${String(primitive)}`;
-                        const className = classMap.get(debugId) ?? style(rule, debugId);
-                        classMap.set(debugId, className);
-                        classNameList.add(className);
+
+                        if (mode === "atomic") {
+                            const className = classMap.get(debugId) ?? style(rule, debugId);
+                            classMap.set(debugId, className);
+                            classNameList.add(className);
+                        }
+
+                        rules.set(debugId, rule);
 
                         // TODO logger
                         // console.log({
@@ -239,11 +253,18 @@ export function generateStyleFromExtraction(
             });
         });
 
-        if (classNameList.size === 0) return;
+        if (mode === "grouped") {
+            const merged = deepMerge(Array.from(rules.values()));
+            const grouped = style(merged);
 
-        // grouped ?
-        // toReplace.set(query.box.fromNode(), style(Array.from(classNameList)));
-        toReplace.set(query.box.fromNode(), Array.from(classNameList).join(" "));
+            toReplace.set(query.box.fromNode(), grouped);
+            classMap.set(grouped, grouped);
+            return;
+        }
+
+        if (mode === "atomic" && classNameList.size > 0) {
+            toReplace.set(query.box.fromNode(), Array.from(classNameList).join(" "));
+        }
     });
 
     return { toReplace, classMap };
