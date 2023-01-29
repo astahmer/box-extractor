@@ -1,29 +1,37 @@
 import type { ConfigConditions, ConfigDynamicProperties, CSSProperties, DynamicPropName } from "./types";
 
-type OptionsProps<DynamicProperties extends ConfigDynamicProperties> = {
+type OptionsProps<DynamicProperties extends ConfigDynamicProperties, Strict extends boolean = false> = {
     properties: DynamicProperties;
+    strict?: Strict;
 };
 type OptionsPropsWithShorthands<
     DynamicProperties extends ConfigDynamicProperties,
-    Shorthands extends ShorthandMap<keyof DynamicProperties>
+    Shorthands extends ShorthandMap<keyof DynamicProperties>,
+    Strict extends boolean = false
 > = {
     properties: DynamicProperties;
     shorthands: Shorthands;
+    strict?: Strict;
 };
-type OptionsConditional<DynamicProperties extends ConfigDynamicProperties, Conditions extends ConfigConditions> = {
+type OptionsConditional<
+    DynamicProperties extends ConfigDynamicProperties,
+    Conditions extends ConfigConditions,
+    Strict extends boolean = false
+> = {
     properties: DynamicProperties;
     conditions: Conditions;
-    defaultCondition: keyof Conditions;
+    strict?: Strict;
 };
 type OptionsConditionalWithShorthands<
     DynamicProperties extends ConfigDynamicProperties,
     Conditions extends ConfigConditions,
-    Shorthands extends ShorthandMap<keyof DynamicProperties>
+    Shorthands extends ShorthandMap<keyof DynamicProperties>,
+    Strict extends boolean = false
 > = {
     properties: DynamicProperties;
     conditions: Conditions;
-    defaultCondition: keyof Conditions;
     shorthands: Shorthands;
+    strict?: Strict;
 };
 
 // function overloading DO matter, most specific first, first found first used
@@ -37,35 +45,38 @@ type OptionsConditionalWithShorthands<
 export function defineProperties<
     DynamicProperties extends ConfigDynamicProperties,
     Conditions extends ConfigConditions,
-    Shorthands extends { [k: string]: Array<keyof DynamicProperties> }
+    Shorthands extends { [k: string]: Array<keyof DynamicProperties> },
+    Strict extends boolean = false
 >(
-    options: OptionsConditionalWithShorthands<DynamicProperties, Conditions, Shorthands>
+    options: OptionsConditionalWithShorthands<DynamicProperties, Conditions, Shorthands, Strict>
 ): VanillWindFn<
     VanillaWindStyleWithConditionsAndShorthands<
-        OptionsConditionalWithShorthands<DynamicProperties, Conditions, Shorthands>
+        OptionsConditionalWithShorthands<DynamicProperties, Conditions, Shorthands, Strict>
     >
 >;
 
 // Conditional Dynamic Properties
 export function defineProperties<
     DynamicProperties extends ConfigDynamicProperties,
-    Conditions extends ConfigConditions
+    Conditions extends ConfigConditions,
+    Strict extends boolean = false
 >(
     options: OptionsConditional<DynamicProperties, Conditions>
-): VanillWindFn<VanillaWindStyleWithConditions<OptionsConditional<DynamicProperties, Conditions>>>;
+): VanillWindFn<VanillaWindStyleWithConditions<OptionsConditional<DynamicProperties, Conditions, Strict>>>;
 
 // Dynamic Properties + Shorthands
 export function defineProperties<
     DynamicProperties extends ConfigDynamicProperties,
-    Shorthands extends { [k: string]: Array<keyof DynamicProperties> }
+    Shorthands extends { [k: string]: Array<keyof DynamicProperties> },
+    Strict extends boolean = false
 >(
-    options: OptionsPropsWithShorthands<DynamicProperties, Shorthands>
-): VanillWindFn<VanillaWindStyleWithShorthands<OptionsPropsWithShorthands<DynamicProperties, Shorthands>>>;
+    options: OptionsPropsWithShorthands<DynamicProperties, Shorthands, Strict>
+): VanillWindFn<VanillaWindStyleWithShorthands<OptionsPropsWithShorthands<DynamicProperties, Shorthands, Strict>>>;
 
 // Dynamic Properties
-export function defineProperties<DynamicProperties extends ConfigDynamicProperties>(
-    options: OptionsProps<DynamicProperties>
-): VanillWindFn<VanillaWindStyle<OptionsProps<DynamicProperties>>>;
+export function defineProperties<DynamicProperties extends ConfigDynamicProperties, Strict extends boolean = false>(
+    options: OptionsProps<DynamicProperties, Strict>
+): VanillWindFn<VanillaWindStyle<OptionsProps<DynamicProperties, Strict>>>;
 
 export function defineProperties<Options extends GenericPropsConfig>(options: Options): VanillWindFn<any> {
     const fn = (_options: Options) => "";
@@ -75,7 +86,6 @@ export function defineProperties<Options extends GenericPropsConfig>(options: Op
 }
 
 type ShorthandMap<PropNames> = { [k: string]: PropNames[] };
-type DefaultCondition<Conditions> = keyof Conditions;
 
 // TODO aliases = { [k: string]: string[] }
 //  ex: { "flex": [{ "flex-grow": 1 }, { "flex-shrink": 1 }, { "flex-basis": "auto" }] }
@@ -85,33 +95,35 @@ type DefaultCondition<Conditions> = keyof Conditions;
 export type GenericPropsConfig = {
     properties: ConfigDynamicProperties;
     conditions?: ConfigConditions;
-    defaultCondition?: keyof ConfigConditions;
     shorthands?: ShorthandMap<string>;
+    strict?: boolean;
 };
 type GenericPropsWithConditionsConfig = {
     properties: ConfigDynamicProperties;
     conditions: ConfigConditions;
-    defaultCondition: DefaultCondition<any>;
     shorthands?: ShorthandMap<DynamicPropName>;
+    strict?: boolean;
 };
 
 type PropsWithShorthandsConfig<PropNames> = {
     properties: ConfigDynamicProperties;
     shorthands: { [k: string]: PropNames[] };
+    strict?: boolean;
 };
 type PropsConfig = {
     properties: ConfigDynamicProperties;
+    strict?: boolean;
 };
 type PropsWithConditionsConfig = {
     properties: ConfigDynamicProperties;
     conditions: ConfigConditions;
-    defaultCondition: DefaultCondition<any>;
+    strict?: boolean;
 };
 type PropsWithConditionsAndShorthandsConfig<PropNames> = {
     properties: ConfigDynamicProperties;
     conditions: ConfigConditions;
-    defaultCondition: DefaultCondition<any>;
     shorthands: { [k: string]: PropNames[] };
+    strict?: boolean;
 };
 
 type VanillWindFn<Props> = (props: Props) => string;
@@ -130,14 +142,19 @@ export type VanillaWindStyleWithConditionsAndShorthands<Config extends PropsWith
 
 type SprinklesProps<Config extends GenericPropsConfig> = {
     [Prop in keyof Config["properties"]]?: Prop extends keyof CSSProperties
-        ? PropValue<Prop, Config["properties"][Prop]>
+        ? PropValue<Prop, Config["properties"][Prop], Config["strict"]>
         : never;
 };
 
 type ConditionsProps<Config extends GenericPropsWithConditionsConfig> = {
     [Condition in keyof Config["conditions"]]?: {
         [Prop in keyof Config["properties"]]?: Prop extends keyof CSSProperties
-            ? MaybeCondPropValue<Prop, Config["properties"][Prop], Omit<Config["conditions"], Condition>>
+            ? MaybeCondPropValue<
+                  Prop,
+                  Config["properties"][Prop],
+                  Omit<Config["conditions"], Condition>,
+                  Config["strict"]
+              >
             : never;
     };
 };
@@ -152,12 +169,22 @@ type ConditionsPropsWithShorthands<
             | keyof Config["shorthands"]
             | keyof Conditions]?: PropName extends keyof Config["properties"]
             ? PropName extends keyof CSSProperties
-                ? MaybeCondPropValue<PropName, Config["properties"][PropName], Omit<Conditions, ConditionName>>
+                ? MaybeCondPropValue<
+                      PropName,
+                      Config["properties"][PropName],
+                      Omit<Conditions, ConditionName>,
+                      Config["strict"]
+                  >
                 : never
             : PropName extends keyof Config["shorthands"]
             ? Config["shorthands"][PropName] extends Array<infer Prop>
                 ? Prop extends keyof CSSProperties
-                    ? MaybeCondPropValue<Prop, Config["properties"][Prop], Omit<Conditions, ConditionName>>
+                    ? MaybeCondPropValue<
+                          Prop,
+                          Config["properties"][Prop],
+                          Omit<Conditions, ConditionName>,
+                          Config["strict"]
+                      >
                     : never
                 : never
             : PropName extends keyof Omit<Conditions, ConditionName>
@@ -168,14 +195,14 @@ type ConditionsPropsWithShorthands<
 
 type SprinklesPropsWithConditions<Config extends GenericPropsWithConditionsConfig> = {
     [Prop in keyof Config["properties"]]?: Prop extends keyof CSSProperties
-        ? MaybeCondPropValue<Prop, Config["properties"][Prop], Config["conditions"]>
+        ? MaybeCondPropValue<Prop, Config["properties"][Prop], Config["conditions"], Config["strict"]>
         : never;
 };
 
 type ShorthandsProps<Config extends PropsWithShorthandsConfig<any>> = {
     [Shorthand in keyof Config["shorthands"]]?: Config["shorthands"][Shorthand] extends Array<infer Prop>
         ? Prop extends keyof CSSProperties
-            ? PropValue<Prop, Config["properties"][Prop]>
+            ? PropValue<Prop, Config["properties"][Prop], Config["strict"]>
             : never
         : never;
 };
@@ -183,20 +210,25 @@ type ShorthandsProps<Config extends PropsWithShorthandsConfig<any>> = {
 type ShorthandsPropsWithConditions<Config extends PropsWithConditionsAndShorthandsConfig<any>> = {
     [Shorthand in keyof Config["shorthands"]]?: Config["shorthands"][Shorthand] extends Array<infer Prop>
         ? Prop extends keyof CSSProperties
-            ? MaybeCondPropValue<Prop, Config["properties"][Prop], Config["conditions"]>
+            ? MaybeCondPropValue<Prop, Config["properties"][Prop], Config["conditions"], Config["strict"]>
             : never
         : never;
 };
 
-type PropValue<Name extends keyof CSSProperties, Value> =
-    | (Value extends boolean ? CSSProperties[Name] : keyof Value | CSSProperties[Name])
+type PropValue<Name extends keyof CSSProperties, Value, Strict> =
+    | (Value extends boolean
+          ? CSSProperties[Name]
+          : Strict extends true | undefined
+          ? keyof Value
+          : keyof Value | CSSProperties[Name])
     | null;
 
 type MaybeCondPropValue<
     Name extends keyof CSSProperties,
     Value,
-    Conditions extends ConfigConditions
-> = ValueOrConditionObject<PropValue<Name, Value>, Name, Omit<Conditions, Name>>;
+    Conditions extends ConfigConditions,
+    Strict
+> = ValueOrConditionObject<PropValue<Name, Value, Strict>, Name, Omit<Conditions, Name>>;
 
 type InnerValueOrConditionObject<Value, Conditions extends ConfigConditions> =
     | Value
