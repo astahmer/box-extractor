@@ -54,7 +54,6 @@ export const tw = defineProperties({
         light: { selector: ".light &" },
         hover: { selector: "&:hover" },
     },
-    defaultCondition: "small",
     properties: {
         display: true,
         color: tokens.colors,

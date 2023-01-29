@@ -1,1 +1,1 @@
-export { type GenericPropsConfig, defineProperties } from "./defineProperties";
+export { type GenericConfig, defineProperties } from "./defineProperties";

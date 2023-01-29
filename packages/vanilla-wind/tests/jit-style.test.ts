@@ -6,7 +6,7 @@ import { afterEach, expect, it } from "vitest";
 import { endFileScope, setFileScope } from "@vanilla-extract/css/fileScope";
 import { generateStyleFromExtraction } from "../src/generateStyleFromExtraction";
 import { createAdapterContext } from "../src/jit-style";
-import type { GenericPropsConfig } from "../src/defineProperties";
+import type { GenericConfig } from "../src/defineProperties";
 
 const createProject = () => {
     return new Project({
@@ -270,13 +270,13 @@ it("simple CallExpression extract + JIT style + replace call by generated classN
       ]
     `);
 
-    const configByName = new Map<string, { query: QueryBox; config: GenericPropsConfig }>();
+    const configByName = new Map<string, { query: QueryBox; config: GenericConfig }>();
     queryList.forEach((query) => {
         const from = query.fromNode();
         const declaration = from.getParentIfKindOrThrow(ts.SyntaxKind.VariableDeclaration);
         const nameNode = declaration.getNameNode();
         const name = nameNode.getText();
-        configByName.set(name, { query, config: getBoxLiteralValue(query.box) as GenericPropsConfig });
+        configByName.set(name, { query, config: getBoxLiteralValue(query.box) as GenericConfig });
     });
 
     const extracted = extractFromCode(sourceFile, { functions: ["minimalSprinkles", "tw"] });
@@ -529,7 +529,6 @@ it("will generate multiple styles with nested conditions", () => {
             navItem: { selector: 'nav li > &' },
             hoverNotActive: { selector: '&:hover:not(:active)' }
         },
-        defaultCondition: "small",
         properties: {
             display: true,
             color: tokens.colors,
@@ -595,13 +594,13 @@ it("will generate multiple styles with nested conditions", () => {
     const extractDefs = extractFromCode(sourceFile, { functions: ["defineProperties"] });
     const queryList = (extractDefs.get("defineProperties") as FunctionNodesMap).queryList;
 
-    const configByName = new Map<string, { query: QueryBox; config: GenericPropsConfig }>();
+    const configByName = new Map<string, { query: QueryBox; config: GenericConfig }>();
     queryList.forEach((query) => {
         const from = query.fromNode();
         const declaration = from.getParentIfKindOrThrow(ts.SyntaxKind.VariableDeclaration);
         const nameNode = declaration.getNameNode();
         const name = nameNode.getText();
-        configByName.set(name, { query, config: getBoxLiteralValue(query.box) as GenericPropsConfig });
+        configByName.set(name, { query, config: getBoxLiteralValue(query.box) as GenericConfig });
     });
 
     const ctx = createAdapterContext("debug");
@@ -701,7 +700,6 @@ it("will generate multiple styles with nested conditions", () => {
                   navItem: { selector: 'nav li > &' },
                   hoverNotActive: { selector: '&:hover:not(:active)' }
               },
-              defaultCondition: "small",
               properties: {
                   display: true,
                   color: tokens.colors,
