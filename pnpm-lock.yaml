@@ -39,46 +39,44 @@ importers:
     specifiers:
       '@astahmer/eslint-config-react': ^0.1.5
       '@box-extractor/core': workspace:*
-      '@box-extractor/vanilla-extract': workspace:*
-      '@box-extractor/vanilla-theme': workspace:*
-      '@dessert-box/react': ^0.4.0
+      '@box-extractor/vanilla-theme': workspace:^0.2.7
+      '@box-extractor/vanilla-wind': workspace:^0.1.1
       '@types/react': ^18.0.15
       '@types/react-dom': ^18.0.6
-      '@vanilla-extract/css': ^1.9.2
-      '@vanilla-extract/sprinkles': ^1.5.0
+      '@vanilla-extract/css': ^1.9.3
       '@vitejs/plugin-react': ^2.0.0
       eslint: ^8.27.0
       pastable: ^2.1.0
       prettier: ^2.7.1
       react: ^18.2.0
       react-dom: ^18.2.0
-      react-error-boundary: ^3.1.4
+      ts-morph: ^17.0.1
       ts-pattern: ^4.0.5
       ts-toolbelt: ^9.6.0
       typescript: 4.9.4
       vite: ^3.0.4
+      vite-plugin-inspect: ^0.7.15
     dependencies:
-      '@box-extractor/core': link:../../packages/box-extractor
-      '@box-extractor/vanilla-extract': link:../../packages/vanilla-extract
       '@box-extractor/vanilla-theme': link:../../packages/vanilla-theme
-      '@dessert-box/react': 0.4.0_react@18.2.0
-      '@vanilla-extract/css': 1.9.2
-      '@vanilla-extract/sprinkles': 1.5.1_@vanilla-extract+css@1.9.2
+      '@box-extractor/vanilla-wind': link:../../packages/vanilla-wind
+      '@vanilla-extract/css': 1.9.3
       pastable: 2.1.0_react@18.2.0
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
-      react-error-boundary: 3.1.4_react@18.2.0
       ts-pattern: 4.0.6
     devDependencies:
       '@astahmer/eslint-config-react': 0.1.5_3r2pkokbcqgt5sx4g4bian4dka
+      '@box-extractor/core': link:../../packages/box-extractor
       '@types/react': 18.0.25
       '@types/react-dom': 18.0.8
       '@vitejs/plugin-react': 2.2.0_vite@3.2.3
       eslint: 8.27.0
       prettier: 2.7.1
+      ts-morph: 17.0.1
       ts-toolbelt: 9.6.0
       typescript: 4.9.4
       vite: 3.2.3
+      vite-plugin-inspect: 0.7.15_vite@3.2.3
 
   examples/react-rakkas:
     specifiers:
@@ -229,10 +227,10 @@ importers:
       '@box-extractor/logger': workspace:*
       '@types/debug': ^4.1.7
       '@vanilla-extract/css': ^1.9.2
-      '@vanilla-extract/esbuild-plugin': https://github.com/astahmer/box-extractor/raw/main/packages/vanilla-extract/ve-fork-tgz/vanilla-extract-esbuild-plugin.tgz
-      '@vanilla-extract/integration': https://github.com/astahmer/box-extractor/raw/main/packages/vanilla-extract/ve-fork-tgz/vanilla-extract-integration.tgz
-      '@vanilla-extract/sprinkles': https://github.com/astahmer/box-extractor/raw/main/packages/vanilla-extract/ve-fork-tgz/vanilla-extract-sprinkles.tgz
-      '@vanilla-extract/vite-plugin': https://github.com/astahmer/box-extractor/raw/main/packages/vanilla-extract/ve-fork-tgz/vanilla-extract-vite-plugin.tgz
+      '@vanilla-extract/esbuild-plugin': link:/Users/astahmer/dev/open-source/vanilla-extract/packages/esbuild-plugin
+      '@vanilla-extract/integration': link:/Users/astahmer/dev/open-source/vanilla-extract/packages/integration
+      '@vanilla-extract/sprinkles': link:/Users/astahmer/dev/open-source/vanilla-extract/packages/sprinkles
+      '@vanilla-extract/vite-plugin': link:/Users/astahmer/dev/open-source/vanilla-extract/packages/vite-plugin
       esbuild: ^0.16.7
       eval: ^0.1.8
       javascript-stringify: ^2.1.0
@@ -249,10 +247,10 @@ importers:
       '@box-extractor/core': link:../box-extractor
       '@box-extractor/logger': link:../logger
       '@vanilla-extract/css': 1.9.2
-      '@vanilla-extract/esbuild-plugin': '@github.com/astahmer/box-extractor/raw/main/packages/vanilla-extract/ve-fork-tgz/vanilla-extract-esbuild-plugin.tgz'
-      '@vanilla-extract/integration': '@github.com/astahmer/box-extractor/raw/main/packages/vanilla-extract/ve-fork-tgz/vanilla-extract-integration.tgz'
-      '@vanilla-extract/sprinkles': '@github.com/astahmer/box-extractor/raw/main/packages/vanilla-extract/ve-fork-tgz/vanilla-extract-sprinkles.tgz_@vanilla-extract+css@1.9.2'
-      '@vanilla-extract/vite-plugin': '@github.com/astahmer/box-extractor/raw/main/packages/vanilla-extract/ve-fork-tgz/vanilla-extract-vite-plugin.tgz_vite@3.2.3'
+      '@vanilla-extract/esbuild-plugin': link:../../../../open-source/vanilla-extract/packages/esbuild-plugin
+      '@vanilla-extract/integration': link:../../../../open-source/vanilla-extract/packages/integration
+      '@vanilla-extract/sprinkles': link:../../../../open-source/vanilla-extract/packages/sprinkles
+      '@vanilla-extract/vite-plugin': link:../../../../open-source/vanilla-extract/packages/vite-plugin
       esbuild: 0.16.7
       eval: 0.1.8
       javascript-stringify: 2.1.0
@@ -306,11 +304,11 @@ importers:
       '@box-extractor/core': link:../box-extractor
       '@box-extractor/logger': link:../logger
       '@vanilla-extract/css': 1.9.3
+      '@vanilla-extract/integration': 6.0.2
       csstype: 3.1.1
       pastable: 2.1.1
       ts-morph: 17.0.1
     devDependencies:
-      '@vanilla-extract/integration': 6.0.2
       prettier: 2.8.1
       ts-toolbelt: 9.6.0
       tsx: 3.12.1
@@ -1896,6 +1894,7 @@ packages:
     engines: {node: '>=6.9.0'}
     dependencies:
       regenerator-runtime: 0.13.10
+    dev: true
 
   /@babel/runtime/7.20.13:
     resolution: {integrity: sha512-gt3PKXs0DBoL9xCvOIIZ2NEqAGZqHjAnmVbfQtB620V0uReIQutpel14KcneZuer7UioY8ALKZ7iocavvzTNFA==}
@@ -2183,19 +2182,6 @@ packages:
       human-id: 1.0.2
       prettier: 2.8.1
     dev: true
-
-  /@dessert-box/core/0.2.0:
-    resolution: {integrity: sha512-Vqaec6i0cvS1r54kU6CfOQECi6dPWzz6DVVxJABOxqPmVk8fOSy6pIKsK0YyPFGRpZK/FXkJ1YhURUOW1OxOVQ==}
-    dev: false
-
-  /@dessert-box/react/0.4.0_react@18.2.0:
-    resolution: {integrity: sha512-r2sqkX4y+fDLtRGGpCitI5ckzLZl3DPMUhKBstf3qoZbfoAVHB0HRHgrfRni3F0qZZgXowR880lL8IDpPpRiGg==}
-    peerDependencies:
-      react: '>=16.8.0'
-    dependencies:
-      '@dessert-box/core': 0.2.0
-      react: 18.2.0
-    dev: false
 
   /@emotion/hash/0.9.0:
     resolution: {integrity: sha512-14FtKiHhy2QoPIzdTcvh//8OyBlknNs2nXRwIhG904opCby3l+9Xaf/wuPvICBF0rc1ZCNBd3nKe9cd2mecVkQ==}
@@ -2945,7 +2931,6 @@ packages:
       minimatch: 5.1.0
       mkdirp: 1.0.4
       path-browserify: 1.0.1
-    dev: false
 
   /@types/acorn/4.0.6:
     resolution: {integrity: sha512-veQTnWP+1D/xbxVrPC3zHnCZRjSrKfhbMUlEA43iMZLu7EsnTtkJklIuwrCPbOi8YkvDQAiW05VQQFvvz9oieQ==}
@@ -3085,7 +3070,6 @@ packages:
 
   /@types/node/18.11.18:
     resolution: {integrity: sha512-DHQpWGjyQKSHj3ebjFI/wRKcqQcdR+MoFBygntYOZytCqNfkd2ZC4ARDJ2DQqhjH5p85Nnd3jhUJIXrszFX/JA==}
-    dev: true
 
   /@types/node/18.11.9:
     resolution: {integrity: sha512-CRpX21/kGdzjOpFsZSkcrXMGIBWMGNIHXXBVFSH+ggkftxg+XYP20TESbh+zFvFj3EQOl5byk0HTRn1IL6hbqg==}
@@ -3614,7 +3598,6 @@ packages:
       outdent: 0.8.0
     transitivePeerDependencies:
       - supports-color
-    dev: true
 
   /@vanilla-extract/private/1.0.3:
     resolution: {integrity: sha512-17kVyLq3ePTKOkveHxXuIJZtGYs+cSoev7BlP+Lf4916qfDhk/HBjvlYDe8egrea7LNPHKwSZJK/bzZC+Q6AwQ==}
@@ -4057,7 +4040,6 @@ packages:
     resolution: {integrity: sha512-XnAIvQ8eM+kC6aULx6wuQiwVsnzsi9d3WxzV3FpWTGA19F621kwdbsAcFKXgKUHZWsy+mY6iL1sHTxWEFCytDA==}
     dependencies:
       balanced-match: 1.0.2
-    dev: false
 
   /braces/3.0.2:
     resolution: {integrity: sha512-b8um+L1RzM3WDSzvhm6gIz1yfTbBt6YTlcEKAvsmqCZZFw46z626lVj9j1yEPW33H5H+lBQpZMP1k8l+78Ha0A==}
@@ -4310,7 +4292,6 @@ packages:
 
   /code-block-writer/11.0.3:
     resolution: {integrity: sha512-NiujjUFB4SwScJq2bwbYUtXbZhBSlY6vYzm++3Q6oC+U+injTqfPYFK8wS9COOmb2lueqp0ZRB4nK1VYeHgNyw==}
-    dev: false
 
   /color-convert/1.9.3:
     resolution: {integrity: sha512-QfAUtd+vFdAtFQcC8CCyYt1fYWxSqAiK2cSD6zDB8N3cpsEBAvRxp9zOGg6G/SHHJYAT88/az/IuDGALsNVbGg==}
@@ -5717,7 +5698,7 @@ packages:
     resolution: {integrity: sha512-EzV94NYKoO09GLXGjXj9JIlXijVck4ONSr5wiCWDvhsvj5jxSrzTmRU/9C1DyB6uToszLs8aifA6NQ7lEQdvFw==}
     engines: {node: '>= 0.8'}
     dependencies:
-      '@types/node': 18.11.9
+      '@types/node': 18.11.18
       require-like: 0.1.2
     dev: false
 
@@ -7447,7 +7428,6 @@ packages:
     engines: {node: '>=10'}
     dependencies:
       brace-expansion: 2.0.1
-    dev: false
 
   /minimist-options/4.1.0:
     resolution: {integrity: sha512-Q4r8ghd80yhO/0j1O3B2BjweX3fiHg9cdOwjJd2J76Q135c+NDxGCqdYKQ1SKBuFfgWbAUzBfvYjPUEeNgqN1A==}
@@ -7478,7 +7458,6 @@ packages:
     resolution: {integrity: sha512-vVqVZQyf3WLx2Shd0qJ9xuvqgAyKPLAiqITEtqW0oIUjzo3PePDd6fW9iFz30ef7Ysp/oiWqbhszeGWW2T6Gzw==}
     engines: {node: '>=10'}
     hasBin: true
-    dev: false
 
   /monaco-editor/0.34.1:
     resolution: {integrity: sha512-FKc80TyiMaruhJKKPz5SpJPIjL+dflGvz4CpuThaPMc94AyN7SeC9HQ8hrvaxX7EyHdJcUY5i4D0gNyJj1vSZQ==}
@@ -7923,7 +7902,6 @@ packages:
 
   /path-browserify/1.0.1:
     resolution: {integrity: sha512-b7uo2UCUOYZcnF/3ID0lulOJi/bafxa1xPe7ZPsammBSpjSWQkjNxlt635YGS2MiR9GjvuXCtz2emr3jbsz98g==}
-    dev: false
 
   /path-exists/4.0.0:
     resolution: {integrity: sha512-ak9Qy5Q7jYb2Wwcey5Fpvg2KoAc/ZIhLSLOSBmRmygPsGwkVVt0fZa0qrtMz+m6tJTAHfZQ8FnmB4MG4LWy7/w==}
@@ -8042,23 +8020,6 @@ packages:
       yaml: 1.10.2
     dev: false
 
-  /postcss-load-config/3.1.4_postcss@8.4.21:
-    resolution: {integrity: sha512-6DiM4E7v4coTE4uzA8U//WhtPwyhiim3eyjEMFCnUpzbrkK9wJHgKDT2mR+HbtSrd/NubVaYTOpSpjUl8NQeRg==}
-    engines: {node: '>= 10'}
-    peerDependencies:
-      postcss: '>=8.0.9'
-      ts-node: '>=9.0.0'
-    peerDependenciesMeta:
-      postcss:
-        optional: true
-      ts-node:
-        optional: true
-    dependencies:
-      lilconfig: 2.0.6
-      postcss: 8.4.21
-      yaml: 1.10.2
-    dev: false
-
   /postcss/8.4.19:
     resolution: {integrity: sha512-h+pbPsyhlYj6N2ozBmHhHrs9DzGmbaarbLvWipMRO7RLS+v4onj26MPFXA5OBYFxyqYhUJK456SwDcY9H2/zsA==}
     engines: {node: ^10 || ^12 || >=14}
@@ -8082,6 +8043,7 @@ packages:
       nanoid: 3.3.4
       picocolors: 1.0.0
       source-map-js: 1.0.2
+    dev: true
 
   /preferred-pm/3.0.3:
     resolution: {integrity: sha512-+wZgbxNES/KlJs9q40F/1sfOd/j7f1O9JaHcW5Dsn3aUUOZg3L2bjpVUcKV2jvtElYfoTuQiNeMfQJ4kwUAhCQ==}
@@ -8233,16 +8195,6 @@ packages:
       react: 18.2.0
       scheduler: 0.23.0
 
-  /react-error-boundary/3.1.4_react@18.2.0:
-    resolution: {integrity: sha512-uM9uPzZJTF6wRQORmSrvOIgt4lJ9MC1sNgEOj2XGsDTRE4kmpWxg7ENK9EWNKJRMAOY9z0MuF4yIfl6gp4sotA==}
-    engines: {node: '>=10', npm: '>=6'}
-    peerDependencies:
-      react: '>=16.13.1'
-    dependencies:
-      '@babel/runtime': 7.20.1
-      react: 18.2.0
-    dev: false
-
   /react-highlight-words/0.20.0_react@18.2.0:
     resolution: {integrity: sha512-asCxy+jCehDVhusNmCBoxDf2mm1AJ//D+EzDx1m5K7EqsMBIHdZ5G4LdwbSEXqZq1Ros0G0UySWmAtntSph7XA==}
     peerDependencies:
@@ -8343,6 +8295,7 @@ packages:
 
   /regenerator-runtime/0.13.10:
     resolution: {integrity: sha512-KepLsg4dU12hryUO7bp/axHAKvwGOCV0sGloQtpagJ12ai+ojVDqkeGSiRX1zlq+kjIMZ1t7gpze+26QqtdGqw==}
+    dev: true
 
   /regenerator-runtime/0.13.11:
     resolution: {integrity: sha512-kY1AZVr2Ra+t+piVaJ4gxaFaReZVH40AKNo7UCX6W+dEwBo/2oZJzqfuN1qLq1oL45o56cPaTXELwrTh8Fpggg==}
@@ -9082,7 +9035,6 @@ packages:
     dependencies:
       '@ts-morph/common': 0.18.1
       code-block-writer: 11.0.3
-    dev: false
 
   /ts-pattern/4.0.6:
     resolution: {integrity: sha512-sFHQYD4KoysBi7e7a2mzDPvRBeqA4w+vEyRE+P5MU9VLq8eEYxgKCgD9RNEAT+itGRWUTYN+hry94GDPLb1/Yw==}
@@ -9251,6 +9203,10 @@ packages:
 
   /ufo/0.8.6:
     resolution: {integrity: sha512-fk6CmUgwKCfX79EzcDQQpSCMxrHstvbLswFChHS0Vump+kFkw7nJBfTZoC1j0bOGoY9I7R3n2DGek5ajbcYnOw==}
+    dev: true
+
+  /ufo/1.0.1:
+    resolution: {integrity: sha512-boAm74ubXHY7KJQZLlXrtMz52qFvpsbOxDcZOnw/Wf+LS4Mmyu7JxmzD4tDLtUQtmZECypJ0FrCz4QIe6dvKRA==}
     dev: true
 
   /unbox-primitive/1.0.2:
@@ -9519,6 +9475,25 @@ packages:
       esbuild: 0.14.54
       magic-string: 0.25.9
       vite: 3.2.3
+    dev: true
+
+  /vite-plugin-inspect/0.7.15_vite@3.2.3:
+    resolution: {integrity: sha512-oxeZCljacA/slhGFbDNlBqdhDU9fgdHL84i7Nz7DnaAIE7DhTiW2djanw3d/BKuZtduKUY82vRUQ4iaG917t2A==}
+    engines: {node: '>=14'}
+    peerDependencies:
+      vite: ^3.1.0 || ^4.0.0
+    dependencies:
+      '@antfu/utils': 0.7.2
+      '@rollup/pluginutils': 5.0.2
+      debug: 4.3.4
+      fs-extra: 11.1.0
+      kolorist: 1.6.0
+      sirv: 2.0.2
+      ufo: 1.0.1
+      vite: 3.2.3
+    transitivePeerDependencies:
+      - rollup
+      - supports-color
     dev: true
 
   /vite-plugin-ssr/0.4.62_vite@3.2.3:
@@ -9910,18 +9885,8 @@ packages:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
     dev: true
 
-  '@github.com/astahmer/box-extractor/raw/main/packages/vanilla-extract/ve-fork-tgz/vanilla-extract-esbuild-plugin.tgz':
-    resolution: {tarball: https://github.com/astahmer/box-extractor/raw/main/packages/vanilla-extract/ve-fork-tgz/vanilla-extract-esbuild-plugin.tgz}
-    name: '@vanilla-extract/esbuild-plugin'
-    version: 2.2.0
-    dependencies:
-      '@vanilla-extract/integration': '@github.com/astahmer/box-extractor/raw/main/packages/vanilla-extract/ve-fork-tgz/vanilla-extract-integration.tgz'
-    transitivePeerDependencies:
-      - supports-color
-    dev: false
-
   '@github.com/astahmer/box-extractor/raw/main/packages/vanilla-extract/ve-fork-tgz/vanilla-extract-integration.tgz':
-    resolution: {tarball: https://github.com/astahmer/box-extractor/raw/main/packages/vanilla-extract/ve-fork-tgz/vanilla-extract-integration.tgz}
+    resolution: {registry: https://registry.npmjs.org/, tarball: https://github.com/astahmer/box-extractor/raw/main/packages/vanilla-extract/ve-fork-tgz/vanilla-extract-integration.tgz}
     name: '@vanilla-extract/integration'
     version: 6.0.1
     dependencies:
@@ -9937,33 +9902,4 @@ packages:
       outdent: 0.8.0
     transitivePeerDependencies:
       - supports-color
-    dev: false
-
-  '@github.com/astahmer/box-extractor/raw/main/packages/vanilla-extract/ve-fork-tgz/vanilla-extract-sprinkles.tgz_@vanilla-extract+css@1.9.2':
-    resolution: {tarball: https://github.com/astahmer/box-extractor/raw/main/packages/vanilla-extract/ve-fork-tgz/vanilla-extract-sprinkles.tgz}
-    id: '@github.com/astahmer/box-extractor/raw/main/packages/vanilla-extract/ve-fork-tgz/vanilla-extract-sprinkles.tgz'
-    name: '@vanilla-extract/sprinkles'
-    version: 1.5.1
-    peerDependencies:
-      '@vanilla-extract/css': ^1.0.0
-    dependencies:
-      '@vanilla-extract/css': 1.9.2
-    dev: false
-
-  '@github.com/astahmer/box-extractor/raw/main/packages/vanilla-extract/ve-fork-tgz/vanilla-extract-vite-plugin.tgz_vite@3.2.3':
-    resolution: {tarball: https://github.com/astahmer/box-extractor/raw/main/packages/vanilla-extract/ve-fork-tgz/vanilla-extract-vite-plugin.tgz}
-    id: '@github.com/astahmer/box-extractor/raw/main/packages/vanilla-extract/ve-fork-tgz/vanilla-extract-vite-plugin.tgz'
-    name: '@vanilla-extract/vite-plugin'
-    version: 3.7.0
-    peerDependencies:
-      vite: ^2.2.3 || ^3.0.0
-    dependencies:
-      '@vanilla-extract/integration': '@github.com/astahmer/box-extractor/raw/main/packages/vanilla-extract/ve-fork-tgz/vanilla-extract-integration.tgz'
-      outdent: 0.8.0
-      postcss: 8.4.21
-      postcss-load-config: 3.1.4_postcss@8.4.21
-      vite: 3.2.3
-    transitivePeerDependencies:
-      - supports-color
-      - ts-node
     dev: false
