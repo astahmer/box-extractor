@@ -1,6 +1,5 @@
 import { createLogger } from "@box-extractor/logger";
 import { tsquery } from "@phenomnomnominal/tsquery";
-import { castAsArray } from "pastable";
 import {
     CallExpression,
     Identifier,
@@ -13,21 +12,21 @@ import {
 import { extractCallExpressionValues } from "./extractCallExpressionIdentifierValues";
 import { extractJsxAttributeIdentifierValue } from "./extractJsxAttributeIdentifierValue";
 import { extractJsxSpreadAttributeValues } from "./extractJsxSpreadAttributeValues";
-import { castObjectLikeAsMapValue, BoxNode, MapTypeValue, box } from "./type-factory";
+import { box, castObjectLikeAsMapValue, MapTypeValue } from "./type-factory";
 import type {
-    ExtractOptions,
-    ListOrAll,
     BoxNodesMap,
-    PropNodesMap,
-    FunctionNodesMap,
-    QueryBox,
     ComponentNodesMap,
+    ExtractOptions,
+    FunctionNodesMap,
+    ListOrAll,
+    PropNodesMap,
+    QueryFnBox,
     QueryComponentBox,
-    QueryComponentMap,
 } from "./types";
 import { castAsExtractableMap, isNotNullish } from "./utils";
 
 const logger = createLogger("box-ex:extractor:extract");
+type QueryComponentMap = Map<JsxOpeningElement | JsxSelfClosingElement, { name: string; props: MapTypeValue }>;
 
 export const extract = ({
     ast,
@@ -73,17 +72,12 @@ export const extract = ({
             const propName = node.getText();
             const propNodes = componentMap.nodesByProp.get(propName) ?? [];
 
-            const maybeNodes = extractJsxAttributeIdentifierValue(node);
-            logger({ propName, maybeNodes });
+            const maybeBox = extractJsxAttributeIdentifierValue(node);
+            if (!isNotNullish(maybeBox)) return;
 
-            const fromNode = () => node;
-            const extractedNodes = castAsArray(maybeNodes)
-                .filter(isNotNullish)
-                .map((box) => {
-                    box.fromNode = fromNode;
-                    return box;
-                }) as BoxNode[];
-            localNodes.set(propName, (localNodes.get(propName) ?? []).concat(extractedNodes));
+            logger({ propName, maybeBox });
+            maybeBox.fromNode = () => node;
+            localNodes.set(propName, (localNodes.get(propName) ?? []).concat(maybeBox));
 
             const parent = node.getFirstAncestor(
                 (n) => Node.isJsxOpeningElement(n) || Node.isJsxSelfClosingElement(n)
@@ -95,11 +89,9 @@ export const extract = ({
             }
 
             const parentRef = queryComponentMap.get(parent)!;
-            parentRef.props.set(propName, { type: "prop", nodes: extractedNodes });
+            parentRef.props.set(propName, [maybeBox]);
 
-            extractedNodes.forEach((node) => {
-                propNodes.push(node);
-            });
+            propNodes.push(maybeBox);
 
             if (propNodes.length > 0) {
                 componentMap.nodesByProp.set(propName, propNodes);
@@ -126,7 +118,7 @@ export const extract = ({
             }
 
             const parentRef = queryComponentMap.get(parent)!;
-            parentRef.props.set(`_SPREAD_${parentRef.props.size}`, { type: "spread", map });
+            parentRef.props.set(`_SPREAD_${parentRef.props.size}`, [box.map(map, node)]);
 
             const entries = mergeSpreadEntries({ map, propNameList });
             entries.forEach(([propName, propValue]) => {
@@ -145,7 +137,10 @@ export const extract = ({
         });
 
         queryComponentMap.forEach((ref, jsxNode) => {
-            const query = { name: ref.name, fromNode: () => jsxNode, props: ref.props } as QueryComponentBox;
+            const fromNode = () => jsxNode;
+            const query = { name: ref.name, fromNode, box: box.map(ref.props, jsxNode) } as QueryComponentBox;
+
+            query.box.fromNode = fromNode;
             componentMap.queryList.push(query);
             localList.push(query);
         });
@@ -161,7 +156,7 @@ export const extract = ({
     Object.entries(functions ?? {}).forEach(([functionName, component]) => {
         const propNameList = component.properties;
         const localNodes = new Map() as PropNodesMap["nodesByProp"];
-        const localList = [] as QueryBox[];
+        const localList = [] as QueryFnBox[];
         extracted.set(functionName, { kind: "function", nodesByProp: localNodes, queryList: localList });
 
         if (!extractMap.has(functionName)) {
@@ -189,7 +184,7 @@ export const extract = ({
                 mapAfterSpread.set(propName, propValue);
             });
 
-            const query = { fromNode, box: box.map(mapAfterSpread, node) } as QueryBox;
+            const query = { name: functionName, fromNode, box: box.map(mapAfterSpread, node) } as QueryFnBox;
             query.box.fromNode = fromNode;
             fnMap.queryList.push(query);
             localList.push(query);

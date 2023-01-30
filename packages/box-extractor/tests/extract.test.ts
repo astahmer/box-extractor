@@ -760,10 +760,10 @@ it("minimal - groups extract props in parent component instance", () => {
           {
               name: "ColorBox",
               fromNode: "JsxSelfClosingElement",
-              props: {
-                  color: {
-                      type: "prop",
-                      nodes: [
+              box: {
+                  type: "map",
+                  value: {
+                      color: [
                           {
                               type: "literal",
                               value: "red.200",
@@ -773,15 +773,17 @@ it("minimal - groups extract props in parent component instance", () => {
                           },
                       ],
                   },
+                  getNode: "JsxSelfClosingElement",
+                  fromNode: "JsxSelfClosingElement",
               },
           },
           {
               name: "ColorBox",
               fromNode: "JsxOpeningElement",
-              props: {
-                  color: {
-                      type: "prop",
-                      nodes: [
+              box: {
+                  type: "map",
+                  value: {
+                      color: [
                           {
                               type: "literal",
                               value: "yellow.300",
@@ -790,10 +792,7 @@ it("minimal - groups extract props in parent component instance", () => {
                               fromNode: "Identifier",
                           },
                       ],
-                  },
-                  backgroundColor: {
-                      type: "prop",
-                      nodes: [
+                      backgroundColor: [
                           {
                               type: "literal",
                               value: "blackAlpha.100",
@@ -802,30 +801,35 @@ it("minimal - groups extract props in parent component instance", () => {
                               fromNode: "Identifier",
                           },
                       ],
-                  },
-                  _SPREAD_2: {
-                      type: "spread",
-                      map: {
-                          display: [
-                              {
-                                  type: "literal",
-                                  value: "flex",
-                                  kind: "string",
-                                  getNode: "StringLiteral",
-                                  fromNode: "JsxSpreadAttribute",
+                      _SPREAD_2: [
+                          {
+                              type: "map",
+                              value: {
+                                  display: [
+                                      {
+                                          type: "literal",
+                                          value: "flex",
+                                          kind: "string",
+                                          getNode: "StringLiteral",
+                                          fromNode: "JsxSpreadAttribute",
+                                      },
+                                  ],
+                                  color: [
+                                      {
+                                          type: "literal",
+                                          value: "blue.100",
+                                          kind: "string",
+                                          getNode: "StringLiteral",
+                                          fromNode: "JsxSpreadAttribute",
+                                      },
+                                  ],
                               },
-                          ],
-                          color: [
-                              {
-                                  type: "literal",
-                                  value: "blue.100",
-                                  kind: "string",
-                                  getNode: "StringLiteral",
-                                  fromNode: "JsxSpreadAttribute",
-                              },
-                          ],
-                      },
+                              getNode: "JsxSpreadAttribute",
+                          },
+                      ],
                   },
+                  getNode: "JsxOpeningElement",
+                  fromNode: "JsxOpeningElement",
               },
           },
       ]
@@ -839,10 +843,10 @@ it("ExtractSample - groups extract props in parent component instance", () => {
           {
               name: "ColorBox",
               fromNode: "JsxSelfClosingElement",
-              props: {
-                  color: {
-                      type: "prop",
-                      nodes: [
+              box: {
+                  type: "map",
+                  value: {
+                      color: [
                           {
                               type: "literal",
                               value: "red.200",
@@ -852,15 +856,17 @@ it("ExtractSample - groups extract props in parent component instance", () => {
                           },
                       ],
                   },
+                  getNode: "JsxSelfClosingElement",
+                  fromNode: "JsxSelfClosingElement",
               },
           },
           {
               name: "ColorBox",
               fromNode: "JsxOpeningElement",
-              props: {
-                  color: {
-                      type: "prop",
-                      nodes: [
+              box: {
+                  type: "map",
+                  value: {
+                      color: [
                           {
                               type: "literal",
                               value: "yellow.300",
@@ -869,10 +875,7 @@ it("ExtractSample - groups extract props in parent component instance", () => {
                               fromNode: "Identifier",
                           },
                       ],
-                  },
-                  backgroundColor: {
-                      type: "prop",
-                      nodes: [
+                      backgroundColor: [
                           {
                               type: "literal",
                               value: "blackAlpha.100",
@@ -882,15 +885,17 @@ it("ExtractSample - groups extract props in parent component instance", () => {
                           },
                       ],
                   },
+                  getNode: "JsxOpeningElement",
+                  fromNode: "JsxOpeningElement",
               },
           },
           {
               name: "ColorBox",
               fromNode: "JsxOpeningElement",
-              props: {
-                  color: {
-                      type: "prop",
-                      nodes: [
+              box: {
+                  type: "map",
+                  value: {
+                      color: [
                           {
                               type: "conditional",
                               whenTrue: {
@@ -911,15 +916,17 @@ it("ExtractSample - groups extract props in parent component instance", () => {
                           },
                       ],
                   },
+                  getNode: "JsxOpeningElement",
+                  fromNode: "JsxOpeningElement",
               },
           },
           {
               name: "ColorBox",
               fromNode: "JsxOpeningElement",
-              props: {
-                  color: {
-                      type: "prop",
-                      nodes: [
+              box: {
+                  type: "map",
+                  value: {
+                      color: [
                           {
                               type: "literal",
                               value: "facebook.400",
@@ -929,15 +936,17 @@ it("ExtractSample - groups extract props in parent component instance", () => {
                           },
                       ],
                   },
+                  getNode: "JsxOpeningElement",
+                  fromNode: "JsxOpeningElement",
               },
           },
           {
               name: "ColorBox",
               fromNode: "JsxOpeningElement",
-              props: {
-                  color: {
-                      type: "prop",
-                      nodes: [
+              box: {
+                  type: "map",
+                  value: {
+                      color: [
                           {
                               type: "literal",
                               value: "gray.100",
@@ -947,15 +956,17 @@ it("ExtractSample - groups extract props in parent component instance", () => {
                           },
                       ],
                   },
+                  getNode: "JsxOpeningElement",
+                  fromNode: "JsxOpeningElement",
               },
           },
           {
               name: "ColorBox",
               fromNode: "JsxOpeningElement",
-              props: {
-                  color: {
-                      type: "prop",
-                      nodes: [
+              box: {
+                  type: "map",
+                  value: {
+                      color: [
                           {
                               type: "literal",
                               value: "facebook.500",
@@ -965,15 +976,17 @@ it("ExtractSample - groups extract props in parent component instance", () => {
                           },
                       ],
                   },
+                  getNode: "JsxOpeningElement",
+                  fromNode: "JsxOpeningElement",
               },
           },
           {
               name: "ColorBox",
               fromNode: "JsxOpeningElement",
-              props: {
-                  color: {
-                      type: "prop",
-                      nodes: [
+              box: {
+                  type: "map",
+                  value: {
+                      color: [
                           {
                               type: "conditional",
                               whenTrue: {
@@ -994,15 +1007,17 @@ it("ExtractSample - groups extract props in parent component instance", () => {
                           },
                       ],
                   },
+                  getNode: "JsxOpeningElement",
+                  fromNode: "JsxOpeningElement",
               },
           },
           {
               name: "ColorBox",
               fromNode: "JsxOpeningElement",
-              props: {
-                  color: {
-                      type: "prop",
-                      nodes: [
+              box: {
+                  type: "map",
+                  value: {
+                      color: [
                           {
                               type: "conditional",
                               whenTrue: {
@@ -1023,15 +1038,17 @@ it("ExtractSample - groups extract props in parent component instance", () => {
                           },
                       ],
                   },
+                  getNode: "JsxOpeningElement",
+                  fromNode: "JsxOpeningElement",
               },
           },
           {
               name: "ColorBox",
               fromNode: "JsxOpeningElement",
-              props: {
-                  color: {
-                      type: "prop",
-                      nodes: [
+              box: {
+                  type: "map",
+                  value: {
+                      color: [
                           {
                               type: "literal",
                               value: "gray.100",
@@ -1041,15 +1058,17 @@ it("ExtractSample - groups extract props in parent component instance", () => {
                           },
                       ],
                   },
+                  getNode: "JsxOpeningElement",
+                  fromNode: "JsxOpeningElement",
               },
           },
           {
               name: "ColorBox",
               fromNode: "JsxOpeningElement",
-              props: {
-                  color: {
-                      type: "prop",
-                      nodes: [
+              box: {
+                  type: "map",
+                  value: {
+                      color: [
                           {
                               type: "literal",
                               value: "facebook.900",
@@ -1059,123 +1078,17 @@ it("ExtractSample - groups extract props in parent component instance", () => {
                           },
                       ],
                   },
+                  getNode: "JsxOpeningElement",
+                  fromNode: "JsxOpeningElement",
               },
           },
           {
               name: "ColorBox",
               fromNode: "JsxOpeningElement",
-              props: {
-                  color: {
-                      type: "prop",
-                      nodes: [
-                          {
-                              type: "literal",
-                              value: "facebook.900",
-                              kind: "string",
-                              getNode: "StringLiteral",
-                              fromNode: "Identifier",
-                          },
-                      ],
-                  },
-              },
-          },
-          {
-              name: "ColorBox",
-              fromNode: "JsxOpeningElement",
-              props: {
-                  color: {
-                      type: "prop",
-                      nodes: [
-                          {
-                              type: "literal",
-                              value: "pink.100",
-                              kind: "string",
-                              getNode: "ElementAccessExpression",
-                              fromNode: "Identifier",
-                          },
-                      ],
-                  },
-              },
-          },
-          {
-              name: "ColorBox",
-              fromNode: "JsxOpeningElement",
-              props: {
-                  color: {
-                      type: "prop",
-                      nodes: [
-                          {
-                              type: "literal",
-                              value: "pink.100",
-                              kind: "string",
-                              getNode: "ElementAccessExpression",
-                              fromNode: "Identifier",
-                          },
-                      ],
-                  },
-              },
-          },
-          {
-              name: "ColorBox",
-              fromNode: "JsxOpeningElement",
-              props: {
-                  color: {
-                      type: "prop",
-                      nodes: [
-                          {
-                              type: "literal",
-                              value: "pink.100",
-                              kind: "string",
-                              getNode: "ElementAccessExpression",
-                              fromNode: "Identifier",
-                          },
-                      ],
-                  },
-              },
-          },
-          {
-              name: "ColorBox",
-              fromNode: "JsxOpeningElement",
-              props: {
-                  color: {
-                      type: "prop",
-                      nodes: [
-                          {
-                              type: "literal",
-                              value: "pink.100",
-                              kind: "string",
-                              getNode: "ElementAccessExpression",
-                              fromNode: "Identifier",
-                          },
-                      ],
-                  },
-              },
-          },
-          {
-              name: "ColorBox",
-              fromNode: "JsxOpeningElement",
-              props: {
-                  color: {
-                      type: "prop",
-                      nodes: [
-                          {
-                              type: "literal",
-                              value: "pink.100",
-                              kind: "string",
-                              getNode: "ElementAccessExpression",
-                              fromNode: "Identifier",
-                          },
-                      ],
-                  },
-              },
-          },
-          {
-              name: "ColorBox",
-              fromNode: "JsxOpeningElement",
-              props: {
-                  color: {
-                      type: "prop",
-                      nodes: [
+              box: {
+                  type: "map",
+                  value: {
+                      color: [
                           {
                               type: "literal",
                               value: "facebook.900",
@@ -1185,15 +1098,117 @@ it("ExtractSample - groups extract props in parent component instance", () => {
                           },
                       ],
                   },
+                  getNode: "JsxOpeningElement",
+                  fromNode: "JsxOpeningElement",
               },
           },
           {
               name: "ColorBox",
               fromNode: "JsxOpeningElement",
-              props: {
-                  color: {
-                      type: "prop",
-                      nodes: [
+              box: {
+                  type: "map",
+                  value: {
+                      color: [
+                          {
+                              type: "literal",
+                              value: "pink.100",
+                              kind: "string",
+                              getNode: "ElementAccessExpression",
+                              fromNode: "Identifier",
+                          },
+                      ],
+                  },
+                  getNode: "JsxOpeningElement",
+                  fromNode: "JsxOpeningElement",
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxOpeningElement",
+              box: {
+                  type: "map",
+                  value: {
+                      color: [
+                          {
+                              type: "literal",
+                              value: "pink.100",
+                              kind: "string",
+                              getNode: "ElementAccessExpression",
+                              fromNode: "Identifier",
+                          },
+                      ],
+                  },
+                  getNode: "JsxOpeningElement",
+                  fromNode: "JsxOpeningElement",
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxOpeningElement",
+              box: {
+                  type: "map",
+                  value: {
+                      color: [
+                          {
+                              type: "literal",
+                              value: "pink.100",
+                              kind: "string",
+                              getNode: "ElementAccessExpression",
+                              fromNode: "Identifier",
+                          },
+                      ],
+                  },
+                  getNode: "JsxOpeningElement",
+                  fromNode: "JsxOpeningElement",
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxOpeningElement",
+              box: {
+                  type: "map",
+                  value: {
+                      color: [
+                          {
+                              type: "literal",
+                              value: "pink.100",
+                              kind: "string",
+                              getNode: "ElementAccessExpression",
+                              fromNode: "Identifier",
+                          },
+                      ],
+                  },
+                  getNode: "JsxOpeningElement",
+                  fromNode: "JsxOpeningElement",
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxOpeningElement",
+              box: {
+                  type: "map",
+                  value: {
+                      color: [
+                          {
+                              type: "literal",
+                              value: "pink.100",
+                              kind: "string",
+                              getNode: "ElementAccessExpression",
+                              fromNode: "Identifier",
+                          },
+                      ],
+                  },
+                  getNode: "JsxOpeningElement",
+                  fromNode: "JsxOpeningElement",
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxOpeningElement",
+              box: {
+                  type: "map",
+                  value: {
+                      color: [
                           {
                               type: "literal",
                               value: "facebook.900",
@@ -1203,15 +1218,17 @@ it("ExtractSample - groups extract props in parent component instance", () => {
                           },
                       ],
                   },
+                  getNode: "JsxOpeningElement",
+                  fromNode: "JsxOpeningElement",
               },
           },
           {
               name: "ColorBox",
               fromNode: "JsxOpeningElement",
-              props: {
-                  color: {
-                      type: "prop",
-                      nodes: [
+              box: {
+                  type: "map",
+                  value: {
+                      color: [
                           {
                               type: "literal",
                               value: "facebook.900",
@@ -1221,15 +1238,37 @@ it("ExtractSample - groups extract props in parent component instance", () => {
                           },
                       ],
                   },
+                  getNode: "JsxOpeningElement",
+                  fromNode: "JsxOpeningElement",
               },
           },
           {
               name: "ColorBox",
               fromNode: "JsxOpeningElement",
-              props: {
-                  color: {
-                      type: "prop",
-                      nodes: [
+              box: {
+                  type: "map",
+                  value: {
+                      color: [
+                          {
+                              type: "literal",
+                              value: "facebook.900",
+                              kind: "string",
+                              getNode: "StringLiteral",
+                              fromNode: "Identifier",
+                          },
+                      ],
+                  },
+                  getNode: "JsxOpeningElement",
+                  fromNode: "JsxOpeningElement",
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxOpeningElement",
+              box: {
+                  type: "map",
+                  value: {
+                      color: [
                           {
                               type: "literal",
                               value: "gray.100",
@@ -1239,15 +1278,17 @@ it("ExtractSample - groups extract props in parent component instance", () => {
                           },
                       ],
                   },
+                  getNode: "JsxOpeningElement",
+                  fromNode: "JsxOpeningElement",
               },
           },
           {
               name: "ColorBox",
               fromNode: "JsxOpeningElement",
-              props: {
-                  color: {
-                      type: "prop",
-                      nodes: [
+              box: {
+                  type: "map",
+                  value: {
+                      color: [
                           {
                               type: "literal",
                               value: "gray.100",
@@ -1257,15 +1298,17 @@ it("ExtractSample - groups extract props in parent component instance", () => {
                           },
                       ],
                   },
+                  getNode: "JsxOpeningElement",
+                  fromNode: "JsxOpeningElement",
               },
           },
           {
               name: "ColorBox",
               fromNode: "JsxOpeningElement",
-              props: {
-                  color: {
-                      type: "prop",
-                      nodes: [
+              box: {
+                  type: "map",
+                  value: {
+                      color: [
                           {
                               type: "literal",
                               value: "gray.100",
@@ -1275,15 +1318,17 @@ it("ExtractSample - groups extract props in parent component instance", () => {
                           },
                       ],
                   },
+                  getNode: "JsxOpeningElement",
+                  fromNode: "JsxOpeningElement",
               },
           },
           {
               name: "ColorBox",
               fromNode: "JsxOpeningElement",
-              props: {
-                  color: {
-                      type: "prop",
-                      nodes: [
+              box: {
+                  type: "map",
+                  value: {
+                      color: [
                           {
                               type: "literal",
                               value: "gray.100",
@@ -1293,15 +1338,17 @@ it("ExtractSample - groups extract props in parent component instance", () => {
                           },
                       ],
                   },
+                  getNode: "JsxOpeningElement",
+                  fromNode: "JsxOpeningElement",
               },
           },
           {
               name: "ColorBox",
               fromNode: "JsxOpeningElement",
-              props: {
-                  color: {
-                      type: "prop",
-                      nodes: [
+              box: {
+                  type: "map",
+                  value: {
+                      color: [
                           {
                               type: "literal",
                               value: "gray.100",
@@ -1311,15 +1358,17 @@ it("ExtractSample - groups extract props in parent component instance", () => {
                           },
                       ],
                   },
+                  getNode: "JsxOpeningElement",
+                  fromNode: "JsxOpeningElement",
               },
           },
           {
               name: "ColorBox",
               fromNode: "JsxOpeningElement",
-              props: {
-                  color: {
-                      type: "prop",
-                      nodes: [
+              box: {
+                  type: "map",
+                  value: {
+                      color: [
                           {
                               type: "literal",
                               value: "gray.100",
@@ -1329,15 +1378,17 @@ it("ExtractSample - groups extract props in parent component instance", () => {
                           },
                       ],
                   },
+                  getNode: "JsxOpeningElement",
+                  fromNode: "JsxOpeningElement",
               },
           },
           {
               name: "ColorBox",
               fromNode: "JsxOpeningElement",
-              props: {
-                  color: {
-                      type: "prop",
-                      nodes: [
+              box: {
+                  type: "map",
+                  value: {
+                      color: [
                           {
                               type: "literal",
                               value: "gray.100",
@@ -1347,15 +1398,17 @@ it("ExtractSample - groups extract props in parent component instance", () => {
                           },
                       ],
                   },
+                  getNode: "JsxOpeningElement",
+                  fromNode: "JsxOpeningElement",
               },
           },
           {
               name: "ColorBox",
               fromNode: "JsxOpeningElement",
-              props: {
-                  color: {
-                      type: "prop",
-                      nodes: [
+              box: {
+                  type: "map",
+                  value: {
+                      color: [
                           {
                               type: "literal",
                               value: "gray.100",
@@ -1365,15 +1418,17 @@ it("ExtractSample - groups extract props in parent component instance", () => {
                           },
                       ],
                   },
+                  getNode: "JsxOpeningElement",
+                  fromNode: "JsxOpeningElement",
               },
           },
           {
               name: "ColorBox",
               fromNode: "JsxOpeningElement",
-              props: {
-                  color: {
-                      type: "prop",
-                      nodes: [
+              box: {
+                  type: "map",
+                  value: {
+                      color: [
                           {
                               type: "literal",
                               value: "gray.100",
@@ -1383,15 +1438,17 @@ it("ExtractSample - groups extract props in parent component instance", () => {
                           },
                       ],
                   },
+                  getNode: "JsxOpeningElement",
+                  fromNode: "JsxOpeningElement",
               },
           },
           {
               name: "ColorBox",
               fromNode: "JsxOpeningElement",
-              props: {
-                  color: {
-                      type: "prop",
-                      nodes: [
+              box: {
+                  type: "map",
+                  value: {
+                      color: [
                           {
                               type: "literal",
                               value: "gray.100",
@@ -1401,15 +1458,17 @@ it("ExtractSample - groups extract props in parent component instance", () => {
                           },
                       ],
                   },
+                  getNode: "JsxOpeningElement",
+                  fromNode: "JsxOpeningElement",
               },
           },
           {
               name: "ColorBox",
               fromNode: "JsxOpeningElement",
-              props: {
-                  color: {
-                      type: "prop",
-                      nodes: [
+              box: {
+                  type: "map",
+                  value: {
+                      color: [
                           {
                               type: "literal",
                               value: "gray.100",
@@ -1419,15 +1478,17 @@ it("ExtractSample - groups extract props in parent component instance", () => {
                           },
                       ],
                   },
+                  getNode: "JsxOpeningElement",
+                  fromNode: "JsxOpeningElement",
               },
           },
           {
               name: "ColorBox",
               fromNode: "JsxOpeningElement",
-              props: {
-                  color: {
-                      type: "prop",
-                      nodes: [
+              box: {
+                  type: "map",
+                  value: {
+                      color: [
                           {
                               type: "conditional",
                               whenTrue: {
@@ -1448,15 +1509,17 @@ it("ExtractSample - groups extract props in parent component instance", () => {
                           },
                       ],
                   },
+                  getNode: "JsxOpeningElement",
+                  fromNode: "JsxOpeningElement",
               },
           },
           {
               name: "ColorBox",
               fromNode: "JsxOpeningElement",
-              props: {
-                  color: {
-                      type: "prop",
-                      nodes: [
+              box: {
+                  type: "map",
+                  value: {
+                      color: [
                           {
                               type: "conditional",
                               whenTrue: {
@@ -1477,15 +1540,17 @@ it("ExtractSample - groups extract props in parent component instance", () => {
                           },
                       ],
                   },
+                  getNode: "JsxOpeningElement",
+                  fromNode: "JsxOpeningElement",
               },
           },
           {
               name: "ColorBox",
               fromNode: "JsxOpeningElement",
-              props: {
-                  color: {
-                      type: "prop",
-                      nodes: [
+              box: {
+                  type: "map",
+                  value: {
+                      color: [
                           {
                               type: "literal",
                               value: "gray.100",
@@ -1495,15 +1560,17 @@ it("ExtractSample - groups extract props in parent component instance", () => {
                           },
                       ],
                   },
+                  getNode: "JsxOpeningElement",
+                  fromNode: "JsxOpeningElement",
               },
           },
           {
               name: "ColorBox",
               fromNode: "JsxOpeningElement",
-              props: {
-                  color: {
-                      type: "prop",
-                      nodes: [
+              box: {
+                  type: "map",
+                  value: {
+                      color: [
                           {
                               type: "map",
                               value: {
@@ -1537,15 +1604,17 @@ it("ExtractSample - groups extract props in parent component instance", () => {
                           },
                       ],
                   },
+                  getNode: "JsxOpeningElement",
+                  fromNode: "JsxOpeningElement",
               },
           },
           {
               name: "ColorBox",
               fromNode: "JsxOpeningElement",
-              props: {
-                  backgroundColor: {
-                      type: "prop",
-                      nodes: [
+              box: {
+                  type: "map",
+                  value: {
+                      backgroundColor: [
                           {
                               type: "map",
                               value: {
@@ -1579,15 +1648,71 @@ it("ExtractSample - groups extract props in parent component instance", () => {
                           },
                       ],
                   },
+                  getNode: "JsxOpeningElement",
+                  fromNode: "JsxOpeningElement",
               },
           },
           {
               name: "ColorBox",
               fromNode: "JsxOpeningElement",
-              props: {
-                  color: {
-                      type: "prop",
-                      nodes: [
+              box: {
+                  type: "map",
+                  value: {
+                      color: [
+                          {
+                              type: "literal",
+                              value: "facebook.900",
+                              kind: "string",
+                              getNode: "StringLiteral",
+                              fromNode: "Identifier",
+                          },
+                      ],
+                      _SPREAD_1: [
+                          {
+                              type: "map",
+                              value: {},
+                              getNode: "JsxSpreadAttribute",
+                          },
+                      ],
+                  },
+                  getNode: "JsxOpeningElement",
+                  fromNode: "JsxOpeningElement",
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxOpeningElement",
+              box: {
+                  type: "map",
+                  value: {
+                      color: [
+                          {
+                              type: "literal",
+                              value: "facebook.900",
+                              kind: "string",
+                              getNode: "StringLiteral",
+                              fromNode: "Identifier",
+                          },
+                      ],
+                      _SPREAD_1: [
+                          {
+                              type: "map",
+                              value: {},
+                              getNode: "JsxSpreadAttribute",
+                          },
+                      ],
+                  },
+                  getNode: "JsxOpeningElement",
+                  fromNode: "JsxOpeningElement",
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxOpeningElement",
+              box: {
+                  type: "map",
+                  value: {
+                      color: [
                           {
                               type: "literal",
                               value: "facebook.900",
@@ -1597,59 +1722,17 @@ it("ExtractSample - groups extract props in parent component instance", () => {
                           },
                       ],
                   },
-                  _SPREAD_1: {
-                      type: "spread",
-                      map: {},
-                  },
+                  getNode: "JsxOpeningElement",
+                  fromNode: "JsxOpeningElement",
               },
           },
           {
               name: "ColorBox",
               fromNode: "JsxOpeningElement",
-              props: {
-                  color: {
-                      type: "prop",
-                      nodes: [
-                          {
-                              type: "literal",
-                              value: "facebook.900",
-                              kind: "string",
-                              getNode: "StringLiteral",
-                              fromNode: "Identifier",
-                          },
-                      ],
-                  },
-                  _SPREAD_1: {
-                      type: "spread",
-                      map: {},
-                  },
-              },
-          },
-          {
-              name: "ColorBox",
-              fromNode: "JsxOpeningElement",
-              props: {
-                  color: {
-                      type: "prop",
-                      nodes: [
-                          {
-                              type: "literal",
-                              value: "facebook.900",
-                              kind: "string",
-                              getNode: "StringLiteral",
-                              fromNode: "Identifier",
-                          },
-                      ],
-                  },
-              },
-          },
-          {
-              name: "ColorBox",
-              fromNode: "JsxOpeningElement",
-              props: {
-                  color: {
-                      type: "prop",
-                      nodes: [
+              box: {
+                  type: "map",
+                  value: {
+                      color: [
                           {
                               type: "literal",
                               value: "red.100",
@@ -1658,20 +1741,25 @@ it("ExtractSample - groups extract props in parent component instance", () => {
                               fromNode: "Identifier",
                           },
                       ],
+                      _SPREAD_1: [
+                          {
+                              type: "map",
+                              value: {},
+                              getNode: "JsxSpreadAttribute",
+                          },
+                      ],
                   },
-                  _SPREAD_1: {
-                      type: "spread",
-                      map: {},
-                  },
+                  getNode: "JsxOpeningElement",
+                  fromNode: "JsxOpeningElement",
               },
           },
           {
               name: "ColorBox",
               fromNode: "JsxOpeningElement",
-              props: {
-                  color: {
-                      type: "prop",
-                      nodes: [
+              box: {
+                  type: "map",
+                  value: {
+                      color: [
                           {
                               type: "literal",
                               value: "red.100",
@@ -1680,20 +1768,25 @@ it("ExtractSample - groups extract props in parent component instance", () => {
                               fromNode: "Identifier",
                           },
                       ],
+                      _SPREAD_1: [
+                          {
+                              type: "map",
+                              value: {},
+                              getNode: "JsxSpreadAttribute",
+                          },
+                      ],
                   },
-                  _SPREAD_1: {
-                      type: "spread",
-                      map: {},
-                  },
+                  getNode: "JsxOpeningElement",
+                  fromNode: "JsxOpeningElement",
               },
           },
           {
               name: "ColorBox",
               fromNode: "JsxSelfClosingElement",
-              props: {
-                  color: {
-                      type: "prop",
-                      nodes: [
+              box: {
+                  type: "map",
+                  value: {
+                      color: [
                           {
                               type: "literal",
                               value: "green.100",
@@ -1702,20 +1795,25 @@ it("ExtractSample - groups extract props in parent component instance", () => {
                               fromNode: "Identifier",
                           },
                       ],
+                      _SPREAD_1: [
+                          {
+                              type: "map",
+                              value: {},
+                              getNode: "JsxSpreadAttribute",
+                          },
+                      ],
                   },
-                  _SPREAD_1: {
-                      type: "spread",
-                      map: {},
-                  },
+                  getNode: "JsxSelfClosingElement",
+                  fromNode: "JsxSelfClosingElement",
               },
           },
           {
               name: "ColorBox",
               fromNode: "JsxSelfClosingElement",
-              props: {
-                  color: {
-                      type: "prop",
-                      nodes: [
+              box: {
+                  type: "map",
+                  value: {
+                      color: [
                           {
                               type: "literal",
                               value: "blue.100",
@@ -1724,20 +1822,25 @@ it("ExtractSample - groups extract props in parent component instance", () => {
                               fromNode: "Identifier",
                           },
                       ],
+                      _SPREAD_1: [
+                          {
+                              type: "map",
+                              value: {},
+                              getNode: "JsxSpreadAttribute",
+                          },
+                      ],
                   },
-                  _SPREAD_1: {
-                      type: "spread",
-                      map: {},
-                  },
+                  getNode: "JsxSelfClosingElement",
+                  fromNode: "JsxSelfClosingElement",
               },
           },
           {
               name: "ColorBox",
               fromNode: "JsxSelfClosingElement",
-              props: {
-                  color: {
-                      type: "prop",
-                      nodes: [
+              box: {
+                  type: "map",
+                  value: {
+                      color: [
                           {
                               type: "literal",
                               value: "yellow.100",
@@ -1746,20 +1849,25 @@ it("ExtractSample - groups extract props in parent component instance", () => {
                               fromNode: "Identifier",
                           },
                       ],
+                      _SPREAD_1: [
+                          {
+                              type: "map",
+                              value: {},
+                              getNode: "JsxSpreadAttribute",
+                          },
+                      ],
                   },
-                  _SPREAD_1: {
-                      type: "spread",
-                      map: {},
-                  },
+                  getNode: "JsxSelfClosingElement",
+                  fromNode: "JsxSelfClosingElement",
               },
           },
           {
               name: "ColorBox",
               fromNode: "JsxSelfClosingElement",
-              props: {
-                  color: {
-                      type: "prop",
-                      nodes: [
+              box: {
+                  type: "map",
+                  value: {
+                      color: [
                           {
                               type: "literal",
                               value: "orange.100",
@@ -1768,20 +1876,25 @@ it("ExtractSample - groups extract props in parent component instance", () => {
                               fromNode: "Identifier",
                           },
                       ],
+                      _SPREAD_1: [
+                          {
+                              type: "map",
+                              value: {},
+                              getNode: "JsxSpreadAttribute",
+                          },
+                      ],
                   },
-                  _SPREAD_1: {
-                      type: "spread",
-                      map: {},
-                  },
+                  getNode: "JsxSelfClosingElement",
+                  fromNode: "JsxSelfClosingElement",
               },
           },
           {
               name: "ColorBox",
               fromNode: "JsxSelfClosingElement",
-              props: {
-                  color: {
-                      type: "prop",
-                      nodes: [
+              box: {
+                  type: "map",
+                  value: {
+                      color: [
                           {
                               type: "literal",
                               value: "orange.300",
@@ -1790,20 +1903,25 @@ it("ExtractSample - groups extract props in parent component instance", () => {
                               fromNode: "Identifier",
                           },
                       ],
+                      _SPREAD_1: [
+                          {
+                              type: "map",
+                              value: {},
+                              getNode: "JsxSpreadAttribute",
+                          },
+                      ],
                   },
-                  _SPREAD_1: {
-                      type: "spread",
-                      map: {},
-                  },
+                  getNode: "JsxSelfClosingElement",
+                  fromNode: "JsxSelfClosingElement",
               },
           },
           {
               name: "ColorBox",
               fromNode: "JsxSelfClosingElement",
-              props: {
-                  color: {
-                      type: "prop",
-                      nodes: [
+              box: {
+                  type: "map",
+                  value: {
+                      color: [
                           {
                               type: "literal",
                               value: "red.100",
@@ -1812,20 +1930,25 @@ it("ExtractSample - groups extract props in parent component instance", () => {
                               fromNode: "Identifier",
                           },
                       ],
+                      _SPREAD_1: [
+                          {
+                              type: "map",
+                              value: {},
+                              getNode: "JsxSpreadAttribute",
+                          },
+                      ],
                   },
-                  _SPREAD_1: {
-                      type: "spread",
-                      map: {},
-                  },
+                  getNode: "JsxSelfClosingElement",
+                  fromNode: "JsxSelfClosingElement",
               },
           },
           {
               name: "ColorBox",
               fromNode: "JsxSelfClosingElement",
-              props: {
-                  color: {
-                      type: "prop",
-                      nodes: [
+              box: {
+                  type: "map",
+                  value: {
+                      color: [
                           {
                               type: "literal",
                               value: "orange.400",
@@ -1834,275 +1957,368 @@ it("ExtractSample - groups extract props in parent component instance", () => {
                               fromNode: "Identifier",
                           },
                       ],
+                      _SPREAD_1: [
+                          {
+                              type: "map",
+                              value: {},
+                              getNode: "JsxSpreadAttribute",
+                          },
+                      ],
                   },
-                  _SPREAD_1: {
-                      type: "spread",
-                      map: {},
-                  },
+                  getNode: "JsxSelfClosingElement",
+                  fromNode: "JsxSelfClosingElement",
               },
           },
           {
               name: "ColorBox",
               fromNode: "JsxOpeningElement",
-              props: {
-                  _SPREAD_0: {
-                      type: "spread",
-                      map: {
-                          color: [
-                              {
-                                  type: "literal",
-                                  value: "facebook.100",
-                                  kind: "string",
-                                  getNode: "StringLiteral",
-                                  fromNode: "JsxSpreadAttribute",
+              box: {
+                  type: "map",
+                  value: {
+                      _SPREAD_0: [
+                          {
+                              type: "map",
+                              value: {
+                                  color: [
+                                      {
+                                          type: "literal",
+                                          value: "facebook.100",
+                                          kind: "string",
+                                          getNode: "StringLiteral",
+                                          fromNode: "JsxSpreadAttribute",
+                                      },
+                                  ],
                               },
-                          ],
-                      },
+                              getNode: "JsxSpreadAttribute",
+                          },
+                      ],
                   },
+                  getNode: "JsxOpeningElement",
+                  fromNode: "JsxOpeningElement",
               },
           },
           {
               name: "ColorBox",
               fromNode: "JsxOpeningElement",
-              props: {
-                  _SPREAD_0: {
-                      type: "spread",
-                      map: {
-                          color: [
-                              {
-                                  type: "literal",
-                                  value: "blackAlpha.400",
-                                  kind: "string",
-                                  getNode: "StringLiteral",
-                                  fromNode: "JsxSpreadAttribute",
+              box: {
+                  type: "map",
+                  value: {
+                      _SPREAD_0: [
+                          {
+                              type: "map",
+                              value: {
+                                  color: [
+                                      {
+                                          type: "literal",
+                                          value: "blackAlpha.400",
+                                          kind: "string",
+                                          getNode: "StringLiteral",
+                                          fromNode: "JsxSpreadAttribute",
+                                      },
+                                  ],
                               },
-                          ],
-                      },
+                              getNode: "JsxSpreadAttribute",
+                          },
+                      ],
                   },
+                  getNode: "JsxOpeningElement",
+                  fromNode: "JsxOpeningElement",
               },
           },
           {
               name: "ColorBox",
               fromNode: "JsxOpeningElement",
-              props: {
-                  _SPREAD_0: {
-                      type: "spread",
-                      map: {
-                          color: [
-                              {
-                                  type: "literal",
-                                  value: "blackAlpha.400",
-                                  kind: "string",
-                                  getNode: "StringLiteral",
-                                  fromNode: "JsxSpreadAttribute",
+              box: {
+                  type: "map",
+                  value: {
+                      _SPREAD_0: [
+                          {
+                              type: "map",
+                              value: {
+                                  color: [
+                                      {
+                                          type: "literal",
+                                          value: "blackAlpha.400",
+                                          kind: "string",
+                                          getNode: "StringLiteral",
+                                          fromNode: "JsxSpreadAttribute",
+                                      },
+                                  ],
                               },
-                          ],
-                      },
+                              getNode: "JsxSpreadAttribute",
+                          },
+                      ],
                   },
+                  getNode: "JsxOpeningElement",
+                  fromNode: "JsxOpeningElement",
               },
           },
           {
               name: "ColorBox",
               fromNode: "JsxOpeningElement",
-              props: {
-                  _SPREAD_0: {
-                      type: "spread",
-                      map: {
-                          color: [
-                              {
-                                  type: "literal",
-                                  value: "facebook.200",
-                                  kind: "string",
-                                  getNode: "StringLiteral",
-                                  fromNode: "JsxSpreadAttribute",
+              box: {
+                  type: "map",
+                  value: {
+                      _SPREAD_0: [
+                          {
+                              type: "map",
+                              value: {
+                                  color: [
+                                      {
+                                          type: "literal",
+                                          value: "facebook.200",
+                                          kind: "string",
+                                          getNode: "StringLiteral",
+                                          fromNode: "JsxSpreadAttribute",
+                                      },
+                                  ],
+                                  backgroundColor: [
+                                      {
+                                          type: "literal",
+                                          value: "blackAlpha.100",
+                                          kind: "string",
+                                          getNode: "StringLiteral",
+                                          fromNode: "JsxSpreadAttribute",
+                                      },
+                                  ],
+                                  borderColor: [
+                                      {
+                                          type: "literal",
+                                          value: "blackAlpha.300",
+                                          kind: "string",
+                                          getNode: "StringLiteral",
+                                          fromNode: "JsxSpreadAttribute",
+                                      },
+                                  ],
                               },
-                          ],
-                          backgroundColor: [
-                              {
-                                  type: "literal",
-                                  value: "blackAlpha.100",
-                                  kind: "string",
-                                  getNode: "StringLiteral",
-                                  fromNode: "JsxSpreadAttribute",
-                              },
-                          ],
-                          borderColor: [
-                              {
-                                  type: "literal",
-                                  value: "blackAlpha.300",
-                                  kind: "string",
-                                  getNode: "StringLiteral",
-                                  fromNode: "JsxSpreadAttribute",
-                              },
-                          ],
-                      },
+                              getNode: "JsxSpreadAttribute",
+                          },
+                      ],
                   },
+                  getNode: "JsxOpeningElement",
+                  fromNode: "JsxOpeningElement",
               },
           },
           {
               name: "ColorBox",
               fromNode: "JsxOpeningElement",
-              props: {
-                  _SPREAD_0: {
-                      type: "spread",
-                      map: {
-                          color: [
-                              {
-                                  type: "literal",
-                                  value: "facebook.200",
-                                  kind: "string",
-                                  getNode: "StringLiteral",
-                                  fromNode: "JsxSpreadAttribute",
+              box: {
+                  type: "map",
+                  value: {
+                      _SPREAD_0: [
+                          {
+                              type: "map",
+                              value: {
+                                  color: [
+                                      {
+                                          type: "literal",
+                                          value: "facebook.200",
+                                          kind: "string",
+                                          getNode: "StringLiteral",
+                                          fromNode: "JsxSpreadAttribute",
+                                      },
+                                  ],
                               },
-                          ],
-                      },
+                              getNode: "JsxSpreadAttribute",
+                          },
+                      ],
                   },
+                  getNode: "JsxOpeningElement",
+                  fromNode: "JsxOpeningElement",
               },
           },
           {
               name: "ColorBox",
               fromNode: "JsxOpeningElement",
-              props: {
-                  _SPREAD_0: {
-                      type: "spread",
-                      map: {},
+              box: {
+                  type: "map",
+                  value: {
+                      _SPREAD_0: [
+                          {
+                              type: "map",
+                              value: {},
+                              getNode: "JsxSpreadAttribute",
+                          },
+                      ],
                   },
+                  getNode: "JsxOpeningElement",
+                  fromNode: "JsxOpeningElement",
               },
           },
           {
               name: "ColorBox",
               fromNode: "JsxOpeningElement",
-              props: {
-                  _SPREAD_0: {
-                      type: "spread",
-                      map: {
-                          color: [
-                              {
-                                  type: "literal",
-                                  value: "twitter.100",
-                                  kind: "string",
-                                  getNode: "CallExpression",
-                                  fromNode: "JsxSpreadAttribute",
+              box: {
+                  type: "map",
+                  value: {
+                      _SPREAD_0: [
+                          {
+                              type: "map",
+                              value: {
+                                  color: [
+                                      {
+                                          type: "literal",
+                                          value: "twitter.100",
+                                          kind: "string",
+                                          getNode: "CallExpression",
+                                          fromNode: "JsxSpreadAttribute",
+                                      },
+                                  ],
+                                  backgroundColor: [
+                                      {
+                                          type: "literal",
+                                          value: "twitter.200",
+                                          kind: "string",
+                                          getNode: "CallExpression",
+                                          fromNode: "JsxSpreadAttribute",
+                                      },
+                                  ],
                               },
-                          ],
-                          backgroundColor: [
-                              {
-                                  type: "literal",
-                                  value: "twitter.200",
-                                  kind: "string",
-                                  getNode: "CallExpression",
-                                  fromNode: "JsxSpreadAttribute",
-                              },
-                          ],
-                      },
+                              getNode: "JsxSpreadAttribute",
+                          },
+                      ],
                   },
+                  getNode: "JsxOpeningElement",
+                  fromNode: "JsxOpeningElement",
               },
           },
           {
               name: "ColorBox",
               fromNode: "JsxOpeningElement",
-              props: {
-                  _SPREAD_0: {
-                      type: "spread",
-                      map: {
-                          backgroundColor: [
-                              {
-                                  type: "literal",
-                                  value: "twitter.200",
-                                  kind: "string",
-                                  getNode: "CallExpression",
-                                  fromNode: "JsxSpreadAttribute",
+              box: {
+                  type: "map",
+                  value: {
+                      _SPREAD_0: [
+                          {
+                              type: "map",
+                              value: {
+                                  backgroundColor: [
+                                      {
+                                          type: "literal",
+                                          value: "twitter.200",
+                                          kind: "string",
+                                          getNode: "CallExpression",
+                                          fromNode: "JsxSpreadAttribute",
+                                      },
+                                  ],
+                                  color: [
+                                      {
+                                          type: "literal",
+                                          value: "orange.100",
+                                          kind: "string",
+                                          getNode: "StringLiteral",
+                                          fromNode: "JsxSpreadAttribute",
+                                      },
+                                  ],
                               },
-                          ],
-                          color: [
-                              {
-                                  type: "literal",
-                                  value: "orange.100",
-                                  kind: "string",
-                                  getNode: "StringLiteral",
-                                  fromNode: "JsxSpreadAttribute",
-                              },
-                          ],
-                      },
+                              getNode: "JsxSpreadAttribute",
+                          },
+                      ],
                   },
+                  getNode: "JsxOpeningElement",
+                  fromNode: "JsxOpeningElement",
               },
           },
           {
               name: "ColorBox",
               fromNode: "JsxOpeningElement",
-              props: {
-                  _SPREAD_0: {
-                      type: "spread",
-                      map: {
-                          backgroundColor: [
-                              {
-                                  type: "literal",
-                                  value: "twitter.200",
-                                  kind: "string",
-                                  getNode: "CallExpression",
-                                  fromNode: "JsxSpreadAttribute",
+              box: {
+                  type: "map",
+                  value: {
+                      _SPREAD_0: [
+                          {
+                              type: "map",
+                              value: {
+                                  backgroundColor: [
+                                      {
+                                          type: "literal",
+                                          value: "twitter.200",
+                                          kind: "string",
+                                          getNode: "CallExpression",
+                                          fromNode: "JsxSpreadAttribute",
+                                      },
+                                  ],
+                                  color: [
+                                      {
+                                          type: "literal",
+                                          value: "orange.200",
+                                          kind: "string",
+                                          getNode: "StringLiteral",
+                                          fromNode: "JsxSpreadAttribute",
+                                      },
+                                  ],
                               },
-                          ],
-                          color: [
-                              {
-                                  type: "literal",
-                                  value: "orange.200",
-                                  kind: "string",
-                                  getNode: "StringLiteral",
-                                  fromNode: "JsxSpreadAttribute",
-                              },
-                          ],
-                      },
+                              getNode: "JsxSpreadAttribute",
+                          },
+                      ],
                   },
+                  getNode: "JsxOpeningElement",
+                  fromNode: "JsxOpeningElement",
               },
           },
           {
               name: "ColorBox",
               fromNode: "JsxOpeningElement",
-              props: {
-                  _SPREAD_0: {
-                      type: "spread",
-                      map: {
-                          color: [
-                              {
-                                  type: "literal",
-                                  value: "orange.400",
-                                  kind: "string",
-                                  getNode: "StringLiteral",
-                                  fromNode: "JsxSpreadAttribute",
+              box: {
+                  type: "map",
+                  value: {
+                      _SPREAD_0: [
+                          {
+                              type: "map",
+                              value: {
+                                  color: [
+                                      {
+                                          type: "literal",
+                                          value: "orange.400",
+                                          kind: "string",
+                                          getNode: "StringLiteral",
+                                          fromNode: "JsxSpreadAttribute",
+                                      },
+                                  ],
                               },
-                          ],
-                      },
+                              getNode: "JsxSpreadAttribute",
+                          },
+                      ],
                   },
+                  getNode: "JsxOpeningElement",
+                  fromNode: "JsxOpeningElement",
               },
           },
           {
               name: "ColorBox",
               fromNode: "JsxOpeningElement",
-              props: {
-                  _SPREAD_0: {
-                      type: "spread",
-                      map: {
-                          color: [
-                              {
-                                  type: "literal",
-                                  value: "telegram.300",
-                                  kind: "string",
-                                  getNode: "StringLiteral",
-                                  fromNode: "JsxSpreadAttribute",
+              box: {
+                  type: "map",
+                  value: {
+                      _SPREAD_0: [
+                          {
+                              type: "map",
+                              value: {
+                                  color: [
+                                      {
+                                          type: "literal",
+                                          value: "telegram.300",
+                                          kind: "string",
+                                          getNode: "StringLiteral",
+                                          fromNode: "JsxSpreadAttribute",
+                                      },
+                                  ],
+                                  backgroundColor: [
+                                      {
+                                          type: "literal",
+                                          value: "telegram.400",
+                                          kind: "string",
+                                          getNode: "StringLiteral",
+                                          fromNode: "JsxSpreadAttribute",
+                                      },
+                                  ],
                               },
-                          ],
-                          backgroundColor: [
-                              {
-                                  type: "literal",
-                                  value: "telegram.400",
-                                  kind: "string",
-                                  getNode: "StringLiteral",
-                                  fromNode: "JsxSpreadAttribute",
-                              },
-                          ],
-                      },
+                              getNode: "JsxSpreadAttribute",
+                          },
+                      ],
                   },
+                  getNode: "JsxOpeningElement",
+                  fromNode: "JsxOpeningElement",
               },
           },
       ]
@@ -6688,6 +6904,7 @@ it("extract defineProperties config", () => {
     expect(definePropsConfig.queryList).toMatchInlineSnapshot(`
       [
           {
+              name: "defineProperties",
               fromNode: "CallExpression",
               box: {
                   type: "map",
