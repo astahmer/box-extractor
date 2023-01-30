@@ -1,4 +1,4 @@
-import { BoxNode, FunctionNodesMap, isPrimitiveType, LiteralValue } from "@box-extractor/core";
+import { BoxNode, isPrimitiveType, LiteralValue, PropNodesMap } from "@box-extractor/core";
 import { style, StyleRule } from "@vanilla-extract/css";
 import { deepMerge } from "pastable";
 import type { Node } from "ts-morph";
@@ -7,7 +7,7 @@ import type { GenericConfig } from "./defineProperties";
 // TODO mode = "atomic" | "grouped"
 export function generateStyleFromExtraction(
     name: string,
-    extracted: FunctionNodesMap,
+    extracted: PropNodesMap,
     config: GenericConfig,
     mode: "atomic" | "grouped" = "atomic"
 ): {
@@ -250,6 +250,10 @@ export function generateStyleFromExtraction(
 
             nodeList.forEach((box) => {
                 processValue(box);
+
+                if (extracted.kind === "component") {
+                    toReplace.set(box.fromNode(), "");
+                }
             });
         });
 
