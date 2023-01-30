@@ -1,13 +1,30 @@
 import { createLogger } from "@box-extractor/logger";
 import { tsquery } from "@phenomnomnominal/tsquery";
 import { castAsArray } from "pastable";
-import type { CallExpression, Identifier, JsxSpreadAttribute, Node } from "ts-morph";
+import {
+    CallExpression,
+    Identifier,
+    JsxOpeningElement,
+    JsxSelfClosingElement,
+    JsxSpreadAttribute,
+    Node,
+} from "ts-morph";
 
 import { extractCallExpressionValues } from "./extractCallExpressionIdentifierValues";
 import { extractJsxAttributeIdentifierValue } from "./extractJsxAttributeIdentifierValue";
 import { extractJsxSpreadAttributeValues } from "./extractJsxSpreadAttributeValues";
 import { castObjectLikeAsMapValue, BoxNode, MapTypeValue, box } from "./type-factory";
-import type { ExtractOptions, ListOrAll, BoxNodesMap, PropNodesMap, FunctionNodesMap, QueryBox } from "./types";
+import type {
+    ExtractOptions,
+    ListOrAll,
+    BoxNodesMap,
+    PropNodesMap,
+    FunctionNodesMap,
+    QueryBox,
+    ComponentNodesMap,
+    QueryComponentBox,
+    QueryComponentMap,
+} from "./types";
 import { castAsExtractableMap, isNotNullish } from "./utils";
 
 const logger = createLogger("box-ex:extractor:extract");
@@ -30,13 +47,14 @@ export const extract = ({
         const canTakeAllProp = propNameList === "all";
 
         const localNodes = new Map() as PropNodesMap["nodesByProp"];
-        extracted.set(componentName, { kind: "component", nodesByProp: localNodes });
+        const localList = [] as ComponentNodesMap["queryList"];
+        extracted.set(componentName, { kind: "component", nodesByProp: localNodes, queryList: localList });
 
         if (!extractMap.has(componentName)) {
-            extractMap.set(componentName, { kind: "component", nodesByProp: new Map() });
+            extractMap.set(componentName, { kind: "component", nodesByProp: new Map(), queryList: [] });
         }
 
-        const componentMap = extractMap.get(componentName)!;
+        const componentMap = extractMap.get(componentName)! as ComponentNodesMap;
         const identifierSelector = componentName.includes(".")
             ? `PropertyAccessExpression:has(Identifier[name="${componentName.split(".")[0]}"])`
             : `Identifier[name="${componentName}"]`;
@@ -47,6 +65,8 @@ export const extract = ({
         const propSelector = `${componentSelector} JsxAttribute > ${propIdentifier}`;
         // <ColorBox color="red.200" backgroundColor="blackAlpha.100" />
         //           ^^^^^           ^^^^^^^^^^^^^^^
+
+        const queryComponentMap = new Map() as QueryComponentMap;
 
         const identifierNodesFromJsxAttribute = query<Identifier>(ast, propSelector) ?? [];
         identifierNodesFromJsxAttribute.forEach((node) => {
@@ -64,6 +84,18 @@ export const extract = ({
                     return box;
                 }) as BoxNode[];
             localNodes.set(propName, (localNodes.get(propName) ?? []).concat(extractedNodes));
+
+            const parent = node.getFirstAncestor(
+                (n) => Node.isJsxOpeningElement(n) || Node.isJsxSelfClosingElement(n)
+            ) as JsxOpeningElement | JsxSelfClosingElement | undefined;
+            if (!parent) return;
+
+            if (!queryComponentMap.has(parent)) {
+                queryComponentMap.set(parent, { name: componentName, props: new Map() });
+            }
+
+            const parentRef = queryComponentMap.get(parent)!;
+            parentRef.props.set(propName, { type: "prop", nodes: extractedNodes });
 
             extractedNodes.forEach((node) => {
                 propNodes.push(node);
@@ -84,6 +116,18 @@ export const extract = ({
             const map = castObjectLikeAsMapValue(objectOrMapType, node);
             const fromNode = () => node;
 
+            const parent = node.getFirstAncestor(
+                (n) => Node.isJsxOpeningElement(n) || Node.isJsxSelfClosingElement(n)
+            ) as JsxOpeningElement | JsxSelfClosingElement | undefined;
+            if (!parent) return;
+
+            if (!queryComponentMap.has(parent)) {
+                queryComponentMap.set(parent, { name: componentName, props: new Map() });
+            }
+
+            const parentRef = queryComponentMap.get(parent)!;
+            parentRef.props.set(`_SPREAD_${parentRef.props.size}`, { type: "spread", map });
+
             const entries = mergeSpreadEntries({ map, propNameList });
             entries.forEach(([propName, propValue]) => {
                 logger.scoped("merge-spread", { jsx: true, propName, propValue });
@@ -98,6 +142,12 @@ export const extract = ({
                     );
                 });
             });
+        });
+
+        queryComponentMap.forEach((ref, jsxNode) => {
+            const query = { name: ref.name, fromNode: () => jsxNode, props: ref.props } as QueryComponentBox;
+            componentMap.queryList.push(query);
+            localList.push(query);
         });
 
         // console.log(extractedComponentPropValues);
