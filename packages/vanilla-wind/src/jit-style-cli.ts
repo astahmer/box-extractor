@@ -1,4 +1,4 @@
-import { extract, FunctionNodesMap, getBoxLiteralValue, QueryBox } from "@box-extractor/core";
+import { extract, FunctionNodesMap, getBoxLiteralValue, QueryFnBox } from "@box-extractor/core";
 import { endFileScope, setFileScope } from "@vanilla-extract/css/fileScope";
 import { Project, ts } from "ts-morph";
 import type { GenericConfig } from "./defineProperties";
@@ -41,7 +41,7 @@ export const main = () => {
     const extractedTheme = extract({ ast: theme, functions: ["defineProperties"] });
     const queryList = (extractedTheme.get("defineProperties") as FunctionNodesMap).queryList;
 
-    const configByName = new Map<string, { query: QueryBox; config: GenericConfig }>();
+    const configByName = new Map<string, { query: QueryFnBox; config: GenericConfig }>();
     queryList.forEach((query) => {
         const from = query.fromNode();
         const declaration = from.getParentIfKindOrThrow(ts.SyntaxKind.VariableDeclaration);

@@ -118,7 +118,9 @@ export const extract = ({
             }
 
             const parentRef = queryComponentMap.get(parent)!;
-            parentRef.props.set(`_SPREAD_${parentRef.props.size}`, [box.map(map, node)]);
+            const boxed = box.map(map, node);
+            boxed.fromNode = fromNode;
+            parentRef.props.set(`_SPREAD_${parentRef.props.size}`, [boxed]);
 
             const entries = mergeSpreadEntries({ map, propNameList });
             entries.forEach(([propName, propValue]) => {

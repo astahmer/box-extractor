@@ -566,6 +566,7 @@ it("types are fine", () => {
               },
               queryList: [
                   {
+                      name: "tw",
                       fromNode: "CallExpression",
                       box: {
                           type: "map",
