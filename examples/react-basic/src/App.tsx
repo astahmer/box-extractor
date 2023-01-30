@@ -1,19 +1,23 @@
+import { useState } from "react";
 import "./App.css";
-// import { VanillaThemeDemo } from "./components/VanillaThemeDemo";
-// import { Demo } from "./components/Demo";
-// import { MinimalSprinklesDemo } from "./components/MinimalSprinklesDemo";
-import { BoxDemo } from "./components/BoxDemo";
+import { tw } from "./theme";
 
 function App() {
+    const className = tw({ display: "flex", color: "orange" });
+    console.log({ className, another: tw({ color: "pink" }) }, "yes");
+
+    const [state, setState] = useState(0);
+    console.log(state);
+
     return (
-        <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
-            <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
-                <div style={{ display: "flex", flexDirection: "column", margin: "auto" }}>
-                    <div style={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
-                        {/* <Demo /> */}
-                        {/* <MinimalSprinklesDemo /> */}
-                        {/* <VanillaThemeDemo /> */}
-                        <BoxDemo />
+        <div className={tw({ display: "flex", flexDirection: "column", height: "100%" })}>
+            <div className={tw({ display: "flex", flexDirection: "column", height: "100%" })}>
+                <div className={tw({ display: "flex", flexDirection: "column", margin: "auto" })}>
+                    <div className={tw({ display: "flex", flexDirection: "column", justifyContent: "center" })}>
+                        <span className={tw({ color: "brand.500" })}>yes</span>
+                        <span onClick={() => setState((current) => current + 1)} className={tw({ color: "pink" })}>
+                            class: ({className})
+                        </span>
                     </div>
                 </div>
             </div>
