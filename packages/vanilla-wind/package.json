@@ -8,6 +8,10 @@
             "module": "./jit/dist/box-extractor-vanilla-wind-jit.esm.js",
             "default": "./jit/dist/box-extractor-vanilla-wind-jit.cjs.js"
         },
+        "./vite": {
+            "module": "./vite/dist/box-extractor-vanilla-wind-vite.esm.js",
+            "default": "./vite/dist/box-extractor-vanilla-wind-vite.cjs.js"
+        },
         ".": {
             "module": "./dist/box-extractor-vanilla-wind.esm.js",
             "default": "./dist/box-extractor-vanilla-wind.cjs.js"
@@ -53,13 +57,15 @@
     "preconstruct": {
         "entrypoints": [
             "index.ts",
-            "jit.ts"
+            "jit.ts",
+            "vite.ts"
         ]
     },
     "files": [
         "src",
         "dist",
-        "jit"
+        "jit",
+        "vite"
     ],
     "keywords": [
         "box",

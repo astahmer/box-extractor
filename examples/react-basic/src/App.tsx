@@ -14,7 +14,7 @@ function App() {
             <div className={tw({ display: "flex", flexDirection: "column", height: "100%" })}>
                 <div className={tw({ display: "flex", flexDirection: "column", margin: "auto" })}>
                     <div className={tw({ display: "flex", flexDirection: "column", justifyContent: "center" })}>
-                        <span className={tw({ color: "brand.500" })}>yes</span>
+                        <span className={tw({ color: "blue.500" })}>yes</span>
                         <span onClick={() => setState((current) => current + 1)} className={tw({ color: "pink" })}>
                             class: ({className})
                         </span>

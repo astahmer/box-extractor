@@ -7,6 +7,8 @@ import { createLogger } from "@box-extractor/logger";
 
 const logger = createLogger("box-ex:extractor:get-literal");
 
+// TODO weakmap cache on identifier to avoid re-parsing the same node
+// ex: { color: tokens.colors, backgroundColor: tokens.colors }
 const innerGetLiteralValue = (valueType: PrimitiveType | BoxNode | undefined): LiteralValue | undefined => {
     if (!valueType) return;
     if (isPrimitiveType(valueType)) return valueType;
