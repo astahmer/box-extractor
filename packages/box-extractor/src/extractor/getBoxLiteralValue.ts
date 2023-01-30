@@ -7,8 +7,7 @@ import { createLogger } from "@box-extractor/logger";
 
 const logger = createLogger("box-ex:extractor:get-literal");
 
-// TODO weakmap cache on identifier to avoid re-parsing the same node
-// ex: { color: tokens.colors, backgroundColor: tokens.colors }
+const cacheMap = new WeakMap();
 const innerGetLiteralValue = (valueType: PrimitiveType | BoxNode | undefined): LiteralValue | undefined => {
     if (!valueType) return;
     if (isPrimitiveType(valueType)) return valueType;
@@ -44,19 +43,24 @@ export const getBoxLiteralValue = (maybeBox: MaybeBoxNodeReturn): LiteralValue |
     if (!isNotNullish(maybeBox)) return;
     logger({ maybeBox });
 
+    if (cacheMap.has(maybeBox)) return cacheMap.get(maybeBox);
     if (Array.isArray(maybeBox)) {
         const values = maybeBox
             .map((valueType) => innerGetLiteralValue(valueType))
             .filter(isNotNullish) as SingleLiteralValue[];
         logger({ values });
 
-        if (values.length === 0) return;
-        if (values.length === 1) return values[0];
+        let result: any = values;
+        if (values.length === 0) result = undefined;
+        if (values.length === 1) result = values[0];
 
-        return values;
+        cacheMap.set(maybeBox, result);
+        return result;
     }
 
-    return innerGetLiteralValue(maybeBox);
+    const result = innerGetLiteralValue(maybeBox);
+    cacheMap.set(maybeBox, result);
+    return result;
 };
 
 export type BoxTraversalControl = {
