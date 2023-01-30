@@ -11,7 +11,7 @@ import ssr from "vite-plugin-ssr/plugin";
 import path from "path";
 import replace from "@rollup/plugin-replace";
 
-const replaceOptions = { __REPLACE_ME_TS_EVAL_PRESET_: "NONE" };
+const replaceOptions = { preventAssignment: true, __REPLACE_ME_TS_EVAL_PRESET_: "NONE" };
 
 // TODO pwa ?
 export default defineConfig((env) => {
