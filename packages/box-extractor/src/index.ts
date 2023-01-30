@@ -22,6 +22,7 @@ export type {
     FunctionNodesMap,
     PrimitiveType,
     PropNodesMap,
-    QueryBox,
+    QueryComponentBox,
+    QueryFnBox,
 } from "./extractor/types";
 export { castAsExtractableMap, unwrapExpression } from "./extractor/utils";

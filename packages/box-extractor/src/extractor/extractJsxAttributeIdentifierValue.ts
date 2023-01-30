@@ -36,7 +36,13 @@ export const extractJsxAttributeIdentifierValue = (identifier: Identifier) => {
         const maybeValue = maybeBoxNode(expression);
         logger({ extractJsx: true, maybeValue });
         // !maybeValue && console.log("maybeBoxNode empty", expression.getKindName(), expression.getText());
-        if (isNotNullish(maybeValue)) return maybeValue;
+        if (isNotNullish(maybeValue)) {
+            if (Array.isArray(maybeValue)) {
+                throw new TypeError("unexpected array");
+            }
+
+            return maybeValue;
+        }
 
         const maybeObject = maybeObjectLikeBox(expression);
         logger({ maybeObject });
