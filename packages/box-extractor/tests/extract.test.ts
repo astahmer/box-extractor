@@ -44,6 +44,11 @@ const config: ExtractOptions["components"] = {
         properties: ["color", "backgroundColor", "zIndex", "fontSize", "display", "mobile", "tablet", "desktop", "css"],
     },
 };
+const getExtract = (code: string, options: Omit<ExtractOptions, "ast">) => {
+    const fileName = `file${fileCount++}.tsx`;
+    sourceFile = project.createSourceFile(fileName, code, { scriptKind: ts.ScriptKind.TSX });
+    return extract({ ast: sourceFile, components: config, ...options });
+};
 
 const extractFromCode = (code: string, options?: Partial<ExtractOptions>) => {
     const extractMap = options?.extractMap ?? (new Map() as BoxNodesMap);
@@ -738,6 +743,1370 @@ it("extract JsxAttribute > StringLiteral (multiple)", () => {
               ],
           ]
         `);
+});
+
+it("minimal - groups extract props in parent component instance", () => {
+    const extracted = getExtract(
+        `
+    <ColorBox color="red.200" />
+    <ColorBox color="yellow.300" backgroundColor="blackAlpha.100" {...{ display: "flex", color: "blue.100" }}>
+    children
+</ColorBox>
+    `,
+        { components: ["ColorBox"] }
+    );
+    expect(extracted.get("ColorBox")!.queryList).toMatchInlineSnapshot(`
+      [
+          {
+              name: "ColorBox",
+              fromNode: "JsxSelfClosingElement",
+              props: {
+                  color: {
+                      type: "prop",
+                      nodes: [
+                          {
+                              type: "literal",
+                              value: "red.200",
+                              kind: "string",
+                              getNode: "StringLiteral",
+                              fromNode: "Identifier",
+                          },
+                      ],
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxOpeningElement",
+              props: {
+                  color: {
+                      type: "prop",
+                      nodes: [
+                          {
+                              type: "literal",
+                              value: "yellow.300",
+                              kind: "string",
+                              getNode: "StringLiteral",
+                              fromNode: "Identifier",
+                          },
+                      ],
+                  },
+                  backgroundColor: {
+                      type: "prop",
+                      nodes: [
+                          {
+                              type: "literal",
+                              value: "blackAlpha.100",
+                              kind: "string",
+                              getNode: "StringLiteral",
+                              fromNode: "Identifier",
+                          },
+                      ],
+                  },
+                  _SPREAD_2: {
+                      type: "spread",
+                      map: {
+                          display: [
+                              {
+                                  type: "literal",
+                                  value: "flex",
+                                  kind: "string",
+                                  getNode: "StringLiteral",
+                                  fromNode: "JsxSpreadAttribute",
+                              },
+                          ],
+                          color: [
+                              {
+                                  type: "literal",
+                                  value: "blue.100",
+                                  kind: "string",
+                                  getNode: "StringLiteral",
+                                  fromNode: "JsxSpreadAttribute",
+                              },
+                          ],
+                      },
+                  },
+              },
+          },
+      ]
+    `);
+});
+
+it("ExtractSample - groups extract props in parent component instance", () => {
+    const extracted = getExtract(ExtractSample, { components: ["ColorBox"] });
+    expect(extracted.get("ColorBox")!.queryList).toMatchInlineSnapshot(`
+      [
+          {
+              name: "ColorBox",
+              fromNode: "JsxSelfClosingElement",
+              props: {
+                  color: {
+                      type: "prop",
+                      nodes: [
+                          {
+                              type: "literal",
+                              value: "red.200",
+                              kind: "string",
+                              getNode: "StringLiteral",
+                              fromNode: "Identifier",
+                          },
+                      ],
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxOpeningElement",
+              props: {
+                  color: {
+                      type: "prop",
+                      nodes: [
+                          {
+                              type: "literal",
+                              value: "yellow.300",
+                              kind: "string",
+                              getNode: "StringLiteral",
+                              fromNode: "Identifier",
+                          },
+                      ],
+                  },
+                  backgroundColor: {
+                      type: "prop",
+                      nodes: [
+                          {
+                              type: "literal",
+                              value: "blackAlpha.100",
+                              kind: "string",
+                              getNode: "StringLiteral",
+                              fromNode: "Identifier",
+                          },
+                      ],
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxOpeningElement",
+              props: {
+                  color: {
+                      type: "prop",
+                      nodes: [
+                          {
+                              type: "conditional",
+                              whenTrue: {
+                                  type: "literal",
+                                  value: "cyan.400",
+                                  kind: "string",
+                                  getNode: "StringLiteral",
+                              },
+                              whenFalse: {
+                                  type: "literal",
+                                  value: "cyan.500",
+                                  kind: "string",
+                                  getNode: "StringLiteral",
+                              },
+                              kind: "ternary",
+                              getNode: "ConditionalExpression",
+                              fromNode: "Identifier",
+                          },
+                      ],
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxOpeningElement",
+              props: {
+                  color: {
+                      type: "prop",
+                      nodes: [
+                          {
+                              type: "literal",
+                              value: "facebook.400",
+                              kind: "string",
+                              getNode: "StringLiteral",
+                              fromNode: "Identifier",
+                          },
+                      ],
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxOpeningElement",
+              props: {
+                  color: {
+                      type: "prop",
+                      nodes: [
+                          {
+                              type: "literal",
+                              value: "gray.100",
+                              kind: "string",
+                              getNode: "StringLiteral",
+                              fromNode: "Identifier",
+                          },
+                      ],
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxOpeningElement",
+              props: {
+                  color: {
+                      type: "prop",
+                      nodes: [
+                          {
+                              type: "literal",
+                              value: "facebook.500",
+                              kind: "string",
+                              getNode: "ConditionalExpression",
+                              fromNode: "Identifier",
+                          },
+                      ],
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxOpeningElement",
+              props: {
+                  color: {
+                      type: "prop",
+                      nodes: [
+                          {
+                              type: "conditional",
+                              whenTrue: {
+                                  type: "literal",
+                                  value: "facebook.600",
+                                  kind: "string",
+                                  getNode: "StringLiteral",
+                              },
+                              whenFalse: {
+                                  type: "literal",
+                                  value: "gray.200",
+                                  kind: "string",
+                                  getNode: "StringLiteral",
+                              },
+                              kind: "ternary",
+                              getNode: "ConditionalExpression",
+                              fromNode: "Identifier",
+                          },
+                      ],
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxOpeningElement",
+              props: {
+                  color: {
+                      type: "prop",
+                      nodes: [
+                          {
+                              type: "conditional",
+                              whenTrue: {
+                                  type: "literal",
+                                  value: "gray.200",
+                                  kind: "string",
+                                  getNode: "StringLiteral",
+                              },
+                              whenFalse: {
+                                  type: "literal",
+                                  value: "gray.300",
+                                  kind: "string",
+                                  getNode: "StringLiteral",
+                              },
+                              kind: "ternary",
+                              getNode: "ConditionalExpression",
+                              fromNode: "Identifier",
+                          },
+                      ],
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxOpeningElement",
+              props: {
+                  color: {
+                      type: "prop",
+                      nodes: [
+                          {
+                              type: "literal",
+                              value: "gray.100",
+                              kind: "string",
+                              getNode: "PropertyAccessExpression",
+                              fromNode: "Identifier",
+                          },
+                      ],
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxOpeningElement",
+              props: {
+                  color: {
+                      type: "prop",
+                      nodes: [
+                          {
+                              type: "literal",
+                              value: "facebook.900",
+                              kind: "string",
+                              getNode: "ElementAccessExpression",
+                              fromNode: "Identifier",
+                          },
+                      ],
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxOpeningElement",
+              props: {
+                  color: {
+                      type: "prop",
+                      nodes: [
+                          {
+                              type: "literal",
+                              value: "facebook.900",
+                              kind: "string",
+                              getNode: "StringLiteral",
+                              fromNode: "Identifier",
+                          },
+                      ],
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxOpeningElement",
+              props: {
+                  color: {
+                      type: "prop",
+                      nodes: [
+                          {
+                              type: "literal",
+                              value: "pink.100",
+                              kind: "string",
+                              getNode: "ElementAccessExpression",
+                              fromNode: "Identifier",
+                          },
+                      ],
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxOpeningElement",
+              props: {
+                  color: {
+                      type: "prop",
+                      nodes: [
+                          {
+                              type: "literal",
+                              value: "pink.100",
+                              kind: "string",
+                              getNode: "ElementAccessExpression",
+                              fromNode: "Identifier",
+                          },
+                      ],
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxOpeningElement",
+              props: {
+                  color: {
+                      type: "prop",
+                      nodes: [
+                          {
+                              type: "literal",
+                              value: "pink.100",
+                              kind: "string",
+                              getNode: "ElementAccessExpression",
+                              fromNode: "Identifier",
+                          },
+                      ],
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxOpeningElement",
+              props: {
+                  color: {
+                      type: "prop",
+                      nodes: [
+                          {
+                              type: "literal",
+                              value: "pink.100",
+                              kind: "string",
+                              getNode: "ElementAccessExpression",
+                              fromNode: "Identifier",
+                          },
+                      ],
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxOpeningElement",
+              props: {
+                  color: {
+                      type: "prop",
+                      nodes: [
+                          {
+                              type: "literal",
+                              value: "pink.100",
+                              kind: "string",
+                              getNode: "ElementAccessExpression",
+                              fromNode: "Identifier",
+                          },
+                      ],
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxOpeningElement",
+              props: {
+                  color: {
+                      type: "prop",
+                      nodes: [
+                          {
+                              type: "literal",
+                              value: "facebook.900",
+                              kind: "string",
+                              getNode: "StringLiteral",
+                              fromNode: "Identifier",
+                          },
+                      ],
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxOpeningElement",
+              props: {
+                  color: {
+                      type: "prop",
+                      nodes: [
+                          {
+                              type: "literal",
+                              value: "facebook.900",
+                              kind: "string",
+                              getNode: "StringLiteral",
+                              fromNode: "Identifier",
+                          },
+                      ],
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxOpeningElement",
+              props: {
+                  color: {
+                      type: "prop",
+                      nodes: [
+                          {
+                              type: "literal",
+                              value: "facebook.900",
+                              kind: "string",
+                              getNode: "StringLiteral",
+                              fromNode: "Identifier",
+                          },
+                      ],
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxOpeningElement",
+              props: {
+                  color: {
+                      type: "prop",
+                      nodes: [
+                          {
+                              type: "literal",
+                              value: "gray.100",
+                              kind: "string",
+                              getNode: "ElementAccessExpression",
+                              fromNode: "Identifier",
+                          },
+                      ],
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxOpeningElement",
+              props: {
+                  color: {
+                      type: "prop",
+                      nodes: [
+                          {
+                              type: "literal",
+                              value: "gray.100",
+                              kind: "string",
+                              getNode: "ElementAccessExpression",
+                              fromNode: "Identifier",
+                          },
+                      ],
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxOpeningElement",
+              props: {
+                  color: {
+                      type: "prop",
+                      nodes: [
+                          {
+                              type: "literal",
+                              value: "gray.100",
+                              kind: "string",
+                              getNode: "ElementAccessExpression",
+                              fromNode: "Identifier",
+                          },
+                      ],
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxOpeningElement",
+              props: {
+                  color: {
+                      type: "prop",
+                      nodes: [
+                          {
+                              type: "literal",
+                              value: "gray.100",
+                              kind: "string",
+                              getNode: "ElementAccessExpression",
+                              fromNode: "Identifier",
+                          },
+                      ],
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxOpeningElement",
+              props: {
+                  color: {
+                      type: "prop",
+                      nodes: [
+                          {
+                              type: "literal",
+                              value: "gray.100",
+                              kind: "string",
+                              getNode: "ElementAccessExpression",
+                              fromNode: "Identifier",
+                          },
+                      ],
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxOpeningElement",
+              props: {
+                  color: {
+                      type: "prop",
+                      nodes: [
+                          {
+                              type: "literal",
+                              value: "gray.100",
+                              kind: "string",
+                              getNode: "ElementAccessExpression",
+                              fromNode: "Identifier",
+                          },
+                      ],
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxOpeningElement",
+              props: {
+                  color: {
+                      type: "prop",
+                      nodes: [
+                          {
+                              type: "literal",
+                              value: "gray.100",
+                              kind: "string",
+                              getNode: "ElementAccessExpression",
+                              fromNode: "Identifier",
+                          },
+                      ],
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxOpeningElement",
+              props: {
+                  color: {
+                      type: "prop",
+                      nodes: [
+                          {
+                              type: "literal",
+                              value: "gray.100",
+                              kind: "string",
+                              getNode: "ElementAccessExpression",
+                              fromNode: "Identifier",
+                          },
+                      ],
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxOpeningElement",
+              props: {
+                  color: {
+                      type: "prop",
+                      nodes: [
+                          {
+                              type: "literal",
+                              value: "gray.100",
+                              kind: "string",
+                              getNode: "ElementAccessExpression",
+                              fromNode: "Identifier",
+                          },
+                      ],
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxOpeningElement",
+              props: {
+                  color: {
+                      type: "prop",
+                      nodes: [
+                          {
+                              type: "literal",
+                              value: "gray.100",
+                              kind: "string",
+                              getNode: "ElementAccessExpression",
+                              fromNode: "Identifier",
+                          },
+                      ],
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxOpeningElement",
+              props: {
+                  color: {
+                      type: "prop",
+                      nodes: [
+                          {
+                              type: "literal",
+                              value: "gray.100",
+                              kind: "string",
+                              getNode: "ElementAccessExpression",
+                              fromNode: "Identifier",
+                          },
+                      ],
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxOpeningElement",
+              props: {
+                  color: {
+                      type: "prop",
+                      nodes: [
+                          {
+                              type: "conditional",
+                              whenTrue: {
+                                  type: "literal",
+                                  value: "gray.600",
+                                  kind: "string",
+                                  getNode: "StringLiteral",
+                              },
+                              whenFalse: {
+                                  type: "literal",
+                                  value: "gray.800",
+                                  kind: "string",
+                                  getNode: "StringLiteral",
+                              },
+                              kind: "ternary",
+                              getNode: "ConditionalExpression",
+                              fromNode: "Identifier",
+                          },
+                      ],
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxOpeningElement",
+              props: {
+                  color: {
+                      type: "prop",
+                      nodes: [
+                          {
+                              type: "conditional",
+                              whenTrue: {
+                                  type: "literal",
+                                  value: "gray.700",
+                                  kind: "string",
+                                  getNode: "ElementAccessExpression",
+                              },
+                              whenFalse: {
+                                  type: "literal",
+                                  value: "gray.100",
+                                  kind: "string",
+                                  getNode: "ElementAccessExpression",
+                              },
+                              kind: "ternary",
+                              getNode: "ConditionalExpression",
+                              fromNode: "Identifier",
+                          },
+                      ],
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxOpeningElement",
+              props: {
+                  color: {
+                      type: "prop",
+                      nodes: [
+                          {
+                              type: "literal",
+                              value: "gray.100",
+                              kind: "string",
+                              getNode: "PropertyAccessExpression",
+                              fromNode: "Identifier",
+                          },
+                      ],
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxOpeningElement",
+              props: {
+                  color: {
+                      type: "prop",
+                      nodes: [
+                          {
+                              type: "map",
+                              value: {
+                                  default: [
+                                      {
+                                          type: "literal",
+                                          value: "red.100",
+                                          kind: "string",
+                                          getNode: "StringLiteral",
+                                      },
+                                  ],
+                                  hover: [
+                                      {
+                                          type: "literal",
+                                          value: "green.100",
+                                          kind: "string",
+                                          getNode: "StringLiteral",
+                                      },
+                                  ],
+                                  focus: [
+                                      {
+                                          type: "literal",
+                                          value: "blue.100",
+                                          kind: "string",
+                                          getNode: "StringLiteral",
+                                      },
+                                  ],
+                              },
+                              getNode: "ObjectLiteralExpression",
+                              fromNode: "Identifier",
+                          },
+                      ],
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxOpeningElement",
+              props: {
+                  backgroundColor: {
+                      type: "prop",
+                      nodes: [
+                          {
+                              type: "map",
+                              value: {
+                                  default: [
+                                      {
+                                          type: "literal",
+                                          value: "orange.800",
+                                          kind: "string",
+                                          getNode: "StringLiteral",
+                                      },
+                                  ],
+                                  hover: [
+                                      {
+                                          type: "literal",
+                                          value: "telegram.200",
+                                          kind: "string",
+                                          getNode: "StringLiteral",
+                                      },
+                                  ],
+                                  focus: [
+                                      {
+                                          type: "literal",
+                                          value: "yellow.700",
+                                          kind: "string",
+                                          getNode: "StringLiteral",
+                                      },
+                                  ],
+                              },
+                              getNode: "ObjectLiteralExpression",
+                              fromNode: "Identifier",
+                          },
+                      ],
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxOpeningElement",
+              props: {
+                  color: {
+                      type: "prop",
+                      nodes: [
+                          {
+                              type: "literal",
+                              value: "facebook.900",
+                              kind: "string",
+                              getNode: "StringLiteral",
+                              fromNode: "Identifier",
+                          },
+                      ],
+                  },
+                  _SPREAD_1: {
+                      type: "spread",
+                      map: {},
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxOpeningElement",
+              props: {
+                  color: {
+                      type: "prop",
+                      nodes: [
+                          {
+                              type: "literal",
+                              value: "facebook.900",
+                              kind: "string",
+                              getNode: "StringLiteral",
+                              fromNode: "Identifier",
+                          },
+                      ],
+                  },
+                  _SPREAD_1: {
+                      type: "spread",
+                      map: {},
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxOpeningElement",
+              props: {
+                  color: {
+                      type: "prop",
+                      nodes: [
+                          {
+                              type: "literal",
+                              value: "facebook.900",
+                              kind: "string",
+                              getNode: "StringLiteral",
+                              fromNode: "Identifier",
+                          },
+                      ],
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxOpeningElement",
+              props: {
+                  color: {
+                      type: "prop",
+                      nodes: [
+                          {
+                              type: "literal",
+                              value: "red.100",
+                              kind: "string",
+                              getNode: "StringLiteral",
+                              fromNode: "Identifier",
+                          },
+                      ],
+                  },
+                  _SPREAD_1: {
+                      type: "spread",
+                      map: {},
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxOpeningElement",
+              props: {
+                  color: {
+                      type: "prop",
+                      nodes: [
+                          {
+                              type: "literal",
+                              value: "red.100",
+                              kind: "string",
+                              getNode: "StringLiteral",
+                              fromNode: "Identifier",
+                          },
+                      ],
+                  },
+                  _SPREAD_1: {
+                      type: "spread",
+                      map: {},
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxSelfClosingElement",
+              props: {
+                  color: {
+                      type: "prop",
+                      nodes: [
+                          {
+                              type: "literal",
+                              value: "green.100",
+                              kind: "string",
+                              getNode: "StringLiteral",
+                              fromNode: "Identifier",
+                          },
+                      ],
+                  },
+                  _SPREAD_1: {
+                      type: "spread",
+                      map: {},
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxSelfClosingElement",
+              props: {
+                  color: {
+                      type: "prop",
+                      nodes: [
+                          {
+                              type: "literal",
+                              value: "blue.100",
+                              kind: "string",
+                              getNode: "StringLiteral",
+                              fromNode: "Identifier",
+                          },
+                      ],
+                  },
+                  _SPREAD_1: {
+                      type: "spread",
+                      map: {},
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxSelfClosingElement",
+              props: {
+                  color: {
+                      type: "prop",
+                      nodes: [
+                          {
+                              type: "literal",
+                              value: "yellow.100",
+                              kind: "string",
+                              getNode: "StringLiteral",
+                              fromNode: "Identifier",
+                          },
+                      ],
+                  },
+                  _SPREAD_1: {
+                      type: "spread",
+                      map: {},
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxSelfClosingElement",
+              props: {
+                  color: {
+                      type: "prop",
+                      nodes: [
+                          {
+                              type: "literal",
+                              value: "orange.100",
+                              kind: "string",
+                              getNode: "StringLiteral",
+                              fromNode: "Identifier",
+                          },
+                      ],
+                  },
+                  _SPREAD_1: {
+                      type: "spread",
+                      map: {},
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxSelfClosingElement",
+              props: {
+                  color: {
+                      type: "prop",
+                      nodes: [
+                          {
+                              type: "literal",
+                              value: "orange.300",
+                              kind: "string",
+                              getNode: "StringLiteral",
+                              fromNode: "Identifier",
+                          },
+                      ],
+                  },
+                  _SPREAD_1: {
+                      type: "spread",
+                      map: {},
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxSelfClosingElement",
+              props: {
+                  color: {
+                      type: "prop",
+                      nodes: [
+                          {
+                              type: "literal",
+                              value: "red.100",
+                              kind: "string",
+                              getNode: "StringLiteral",
+                              fromNode: "Identifier",
+                          },
+                      ],
+                  },
+                  _SPREAD_1: {
+                      type: "spread",
+                      map: {},
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxSelfClosingElement",
+              props: {
+                  color: {
+                      type: "prop",
+                      nodes: [
+                          {
+                              type: "literal",
+                              value: "orange.400",
+                              kind: "string",
+                              getNode: "StringLiteral",
+                              fromNode: "Identifier",
+                          },
+                      ],
+                  },
+                  _SPREAD_1: {
+                      type: "spread",
+                      map: {},
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxOpeningElement",
+              props: {
+                  _SPREAD_0: {
+                      type: "spread",
+                      map: {
+                          color: [
+                              {
+                                  type: "literal",
+                                  value: "facebook.100",
+                                  kind: "string",
+                                  getNode: "StringLiteral",
+                                  fromNode: "JsxSpreadAttribute",
+                              },
+                          ],
+                      },
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxOpeningElement",
+              props: {
+                  _SPREAD_0: {
+                      type: "spread",
+                      map: {
+                          color: [
+                              {
+                                  type: "literal",
+                                  value: "blackAlpha.400",
+                                  kind: "string",
+                                  getNode: "StringLiteral",
+                                  fromNode: "JsxSpreadAttribute",
+                              },
+                          ],
+                      },
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxOpeningElement",
+              props: {
+                  _SPREAD_0: {
+                      type: "spread",
+                      map: {
+                          color: [
+                              {
+                                  type: "literal",
+                                  value: "blackAlpha.400",
+                                  kind: "string",
+                                  getNode: "StringLiteral",
+                                  fromNode: "JsxSpreadAttribute",
+                              },
+                          ],
+                      },
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxOpeningElement",
+              props: {
+                  _SPREAD_0: {
+                      type: "spread",
+                      map: {
+                          color: [
+                              {
+                                  type: "literal",
+                                  value: "facebook.200",
+                                  kind: "string",
+                                  getNode: "StringLiteral",
+                                  fromNode: "JsxSpreadAttribute",
+                              },
+                          ],
+                          backgroundColor: [
+                              {
+                                  type: "literal",
+                                  value: "blackAlpha.100",
+                                  kind: "string",
+                                  getNode: "StringLiteral",
+                                  fromNode: "JsxSpreadAttribute",
+                              },
+                          ],
+                          borderColor: [
+                              {
+                                  type: "literal",
+                                  value: "blackAlpha.300",
+                                  kind: "string",
+                                  getNode: "StringLiteral",
+                                  fromNode: "JsxSpreadAttribute",
+                              },
+                          ],
+                      },
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxOpeningElement",
+              props: {
+                  _SPREAD_0: {
+                      type: "spread",
+                      map: {
+                          color: [
+                              {
+                                  type: "literal",
+                                  value: "facebook.200",
+                                  kind: "string",
+                                  getNode: "StringLiteral",
+                                  fromNode: "JsxSpreadAttribute",
+                              },
+                          ],
+                      },
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxOpeningElement",
+              props: {
+                  _SPREAD_0: {
+                      type: "spread",
+                      map: {},
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxOpeningElement",
+              props: {
+                  _SPREAD_0: {
+                      type: "spread",
+                      map: {
+                          color: [
+                              {
+                                  type: "literal",
+                                  value: "twitter.100",
+                                  kind: "string",
+                                  getNode: "CallExpression",
+                                  fromNode: "JsxSpreadAttribute",
+                              },
+                          ],
+                          backgroundColor: [
+                              {
+                                  type: "literal",
+                                  value: "twitter.200",
+                                  kind: "string",
+                                  getNode: "CallExpression",
+                                  fromNode: "JsxSpreadAttribute",
+                              },
+                          ],
+                      },
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxOpeningElement",
+              props: {
+                  _SPREAD_0: {
+                      type: "spread",
+                      map: {
+                          backgroundColor: [
+                              {
+                                  type: "literal",
+                                  value: "twitter.200",
+                                  kind: "string",
+                                  getNode: "CallExpression",
+                                  fromNode: "JsxSpreadAttribute",
+                              },
+                          ],
+                          color: [
+                              {
+                                  type: "literal",
+                                  value: "orange.100",
+                                  kind: "string",
+                                  getNode: "StringLiteral",
+                                  fromNode: "JsxSpreadAttribute",
+                              },
+                          ],
+                      },
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxOpeningElement",
+              props: {
+                  _SPREAD_0: {
+                      type: "spread",
+                      map: {
+                          backgroundColor: [
+                              {
+                                  type: "literal",
+                                  value: "twitter.200",
+                                  kind: "string",
+                                  getNode: "CallExpression",
+                                  fromNode: "JsxSpreadAttribute",
+                              },
+                          ],
+                          color: [
+                              {
+                                  type: "literal",
+                                  value: "orange.200",
+                                  kind: "string",
+                                  getNode: "StringLiteral",
+                                  fromNode: "JsxSpreadAttribute",
+                              },
+                          ],
+                      },
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxOpeningElement",
+              props: {
+                  _SPREAD_0: {
+                      type: "spread",
+                      map: {
+                          color: [
+                              {
+                                  type: "literal",
+                                  value: "orange.400",
+                                  kind: "string",
+                                  getNode: "StringLiteral",
+                                  fromNode: "JsxSpreadAttribute",
+                              },
+                          ],
+                      },
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              fromNode: "JsxOpeningElement",
+              props: {
+                  _SPREAD_0: {
+                      type: "spread",
+                      map: {
+                          color: [
+                              {
+                                  type: "literal",
+                                  value: "telegram.300",
+                                  kind: "string",
+                                  getNode: "StringLiteral",
+                                  fromNode: "JsxSpreadAttribute",
+                              },
+                          ],
+                          backgroundColor: [
+                              {
+                                  type: "literal",
+                                  value: "telegram.400",
+                                  kind: "string",
+                                  getNode: "StringLiteral",
+                                  fromNode: "JsxSpreadAttribute",
+                              },
+                          ],
+                      },
+                  },
+              },
+          },
+      ]
+    `);
 });
 
 it("extract JsxAttribute > JsxExpression > StringLiteral", () => {
