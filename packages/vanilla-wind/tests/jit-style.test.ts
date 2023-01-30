@@ -1,6 +1,13 @@
-import { BoxNodesMap, ExtractOptions, getBoxLiteralValue, FunctionNodesMap, QueryBox } from "@box-extractor/core";
+import {
+    BoxNodesMap,
+    ExtractOptions,
+    getBoxLiteralValue,
+    FunctionNodesMap,
+    QueryFnBox,
+    ComponentNodesMap,
+} from "@box-extractor/core";
 import { extract } from "@box-extractor/core";
-import { Project, SourceFile, ts } from "ts-morph";
+import { Node, Project, SourceFile, ts } from "ts-morph";
 import { afterEach, expect, it } from "vitest";
 
 import { endFileScope, setFileScope } from "@vanilla-extract/css/fileScope";
@@ -108,6 +115,7 @@ it("simple CallExpression extract + JIT style + replace call by generated classN
     expect(queryList).toMatchInlineSnapshot(`
       [
           {
+              name: "defineProperties",
               fromNode: "CallExpression",
               box: {
                   type: "map",
@@ -143,6 +151,7 @@ it("simple CallExpression extract + JIT style + replace call by generated classN
               },
           },
           {
+              name: "defineProperties",
               fromNode: "CallExpression",
               box: {
                   type: "map",
@@ -270,7 +279,7 @@ it("simple CallExpression extract + JIT style + replace call by generated classN
       ]
     `);
 
-    const configByName = new Map<string, { query: QueryBox; config: GenericConfig }>();
+    const configByName = new Map<string, { query: QueryFnBox; config: GenericConfig }>();
     queryList.forEach((query) => {
         const from = query.fromNode();
         const declaration = from.getParentIfKindOrThrow(ts.SyntaxKind.VariableDeclaration);
@@ -289,6 +298,7 @@ it("simple CallExpression extract + JIT style + replace call by generated classN
     expect(minimalSprinkles.queryList).toMatchInlineSnapshot(`
       [
           {
+              name: "minimalSprinkles",
               fromNode: "CallExpression",
               box: {
                   type: "map",
@@ -308,6 +318,7 @@ it("simple CallExpression extract + JIT style + replace call by generated classN
               },
           },
           {
+              name: "minimalSprinkles",
               fromNode: "CallExpression",
               box: {
                   type: "map",
@@ -357,6 +368,7 @@ it("simple CallExpression extract + JIT style + replace call by generated classN
     expect(tw.queryList).toMatchInlineSnapshot(`
       [
           {
+              name: "tw",
               fromNode: "CallExpression",
               box: {
                   type: "map",
@@ -469,8 +481,7 @@ it("simple CallExpression extract + JIT style + replace call by generated classN
     ctx.removeAdapter();
 });
 
-const codeSample = `
-const tokens = {
+const themeConfig = `const tokens = {
     colors: {
         "blue.50": "#ebf8ff",
         "blue.100": "#bee3f8",
@@ -551,7 +562,10 @@ const tw = defineProperties({
         p: ["padding"],
         rounded: ["borderRadius"],
     },
-});
+});`;
+
+const codeSample = `
+${themeConfig}
 
 const className = tw({
     p: 24,
@@ -593,7 +607,7 @@ it("will generate multiple styles with nested conditions", () => {
     const extractDefs = extractFromCode(sourceFile, { functions: ["defineProperties"] });
     const queryList = (extractDefs.get("defineProperties") as FunctionNodesMap).queryList;
 
-    const configByName = new Map<string, { query: QueryBox; config: GenericConfig }>();
+    const configByName = new Map<string, { query: QueryFnBox; config: GenericConfig }>();
     queryList.forEach((query) => {
         const from = query.fromNode();
         const declaration = from.getParentIfKindOrThrow(ts.SyntaxKind.VariableDeclaration);
@@ -808,7 +822,7 @@ it("will generate multiple styles with nested conditions - grouped", () => {
     const extractDefs = extractFromCode(sourceFile, { functions: ["defineProperties"] });
     const queryList = (extractDefs.get("defineProperties") as FunctionNodesMap).queryList;
 
-    const configByName = new Map<string, { query: QueryBox; config: GenericConfig }>();
+    const configByName = new Map<string, { query: QueryFnBox; config: GenericConfig }>();
     queryList.forEach((query) => {
         const from = query.fromNode();
         const declaration = from.getParentIfKindOrThrow(ts.SyntaxKind.VariableDeclaration);
@@ -825,7 +839,7 @@ it("will generate multiple styles with nested conditions - grouped", () => {
     const tw = extracted.get("tw")! as FunctionNodesMap;
     const twStyles = generateStyleFromExtraction("tw", tw, configByName.get("tw")!.config, "grouped");
 
-    expect(twStyles.classMap.size).toMatchInlineSnapshot('1');
+    expect(twStyles.classMap.size).toMatchInlineSnapshot("1");
     expect(twStyles.classMap).toMatchInlineSnapshot(`
       {
           _1rxundp0: "_1rxundp0",
@@ -964,6 +978,197 @@ it("will generate multiple styles with nested conditions - grouped", () => {
       }
       .dark.large.small ._1rxundp0:hover {
         display: contents;
+      }"
+    `);
+
+    endFileScope();
+    ctx.removeAdapter();
+});
+
+it("minimal example with <Box /> component", () => {
+    const sourceFile = project.createSourceFile(
+        "with-box.tsx",
+        `
+    ${themeConfig}
+
+    const Box = ({ _styled, className, ...props }) => {
+        return <div {...props} className={[_styled, className ?? ''].join(' ')} />;
+    };
+
+    const defaultStyle = { fontSize: "12px", fontWeight: "bold" }
+
+    const Demo = () => {
+        return (
+            <Box {...{ flexDirection: "column", ...defaultStyle }} display="flex" padding={4} backgroundColor="blue.500" borderRadius="lg" />
+        );
+    }
+    `
+    );
+
+    const extractDefs = extractFromCode(sourceFile, { functions: ["defineProperties"] });
+    const queryList = (extractDefs.get("defineProperties") as FunctionNodesMap).queryList;
+
+    const configByName = new Map<string, { query: QueryFnBox; config: GenericConfig }>();
+    queryList.forEach((query) => {
+        const from = query.fromNode();
+        const declaration = from.getParentIfKindOrThrow(ts.SyntaxKind.VariableDeclaration);
+        const nameNode = declaration.getNameNode();
+        const name = nameNode.getText();
+        configByName.set(name, { query, config: getBoxLiteralValue(query.box) as GenericConfig });
+    });
+
+    const ctx = createAdapterContext("debug");
+    ctx.setAdapter();
+    setFileScope("test/jit-style.test.ts");
+
+    const name = "Box";
+    const extractResult = extractFromCode(sourceFile, { components: [name] });
+    const extracted = extractResult.get(name)! as ComponentNodesMap;
+
+    // TODO `tw`
+    const conf = configByName.get("tw")!;
+    const boxStyles = generateStyleFromExtraction(name, extracted, conf.config);
+
+    expect(boxStyles.classMap.size).toMatchInlineSnapshot("4");
+    expect(boxStyles.classMap).toMatchInlineSnapshot(`
+      {
+          Box_display_flex: "Box_display_flex__1rxundp0",
+          Box_padding_4: "Box_padding_4__1rxundp1",
+          "Box_backgroundColor_blue.500": "Box_backgroundColor_blue.500__1rxundp2",
+          Box_borderRadius_lg: "Box_borderRadius_lg__1rxundp3",
+      }
+    `);
+
+    const classList = new Set<string>();
+    boxStyles.toReplace.forEach((className, node) => {
+        console.log({ node: node.getText(), kind: node.getKindName(), className });
+        if (Node.isJsxSelfClosingElement(node) || Node.isJsxOpeningElement(node)) {
+            node.addAttribute({ name: "_styled", initializer: `"${className}"` });
+        } else if (Node.isIdentifier(node)) {
+            const jsxAttribute = node.getParentIfKind(ts.SyntaxKind.JsxAttribute);
+            if (jsxAttribute) {
+                jsxAttribute.remove();
+            }
+        } else if (Node.isJsxSpreadAttribute(node)) {
+            // TODO only remove the props needed rather than the whole spread, this is a bit too aggressive
+            // also, remove the spread if it's empty
+            node.remove();
+        }
+        // node.replaceWithText("");
+        classList.add(className);
+    });
+
+    expect(sourceFile.getFullText()).toMatchInlineSnapshot(`
+      "
+          const tokens = {
+          colors: {
+              "blue.50": "#ebf8ff",
+              "blue.100": "#bee3f8",
+              "blue.200": "#90cdf4",
+              "blue.300": "#63b3ed",
+              "blue.400": "#4299e1",
+              "blue.500": "#3182ce",
+              "blue.600": "#2b6cb0",
+              "blue.700": "#2c5282",
+              "blue.800": "#2a4365",
+              "blue.900": "#1A365D",
+              "red.50": "#FFF5F5",
+              "red.100": "#FED7D7",
+              "red.200": "#FEB2B2",
+              "red.300": "#FC8181",
+              "red.400": "#F56565",
+              "red.500": "#E53E3E",
+              "red.600": "#C53030",
+              "red.700": "#9B2C2C",
+              "red.800": "#822727",
+              "red.900": "#63171B",
+              "brand.50": "#F7FAFC",
+              "brand.100": "#EFF6F8",
+              "brand.200": "#D7E8EE",
+              "brand.300": "#BFDAE4",
+              "brand.400": "#90BFD0",
+              "brand.500": "#60A3BC",
+              "brand.600": "#5693A9",
+              "brand.700": "#3A6271",
+              "brand.800": "#2B4955",
+              "brand.900": "#1D3138",
+          },
+          radii: {
+              none: "0",
+              sm: "0.125rem",
+              base: "0.25rem",
+              md: "0.375rem",
+              lg: "0.5rem",
+              xl: "0.75rem",
+              "2xl": "1rem",
+              "3xl": "1.5rem",
+              full: "9999px",
+          },
+      };
+
+      const tw = defineProperties({
+          conditions: {
+              small: { selector: ".small &" },
+              large: { selector: ".large &" },
+              dark: { selector: ".dark &" },
+              light: { selector: ".light &" },
+              hover: { selector: "&:hover" },
+              navItem: { selector: 'nav li > &' },
+              hoverNotActive: { selector: '&:hover:not(:active)' }
+          },
+          properties: {
+              display: true,
+              color: tokens.colors,
+              backgroundColor: tokens.colors,
+              borderColor: tokens.colors,
+              borderRadius: tokens.radii,
+              padding: {
+                  4: "4px",
+                  8: "8px",
+                  12: "12px",
+                  16: "16px",
+                  20: "20px",
+                  24: "24px",
+              },
+              width: {
+                  "1/2": "50%",
+              },
+          },
+          shorthands: {
+              d: ["display"],
+              w: ["width"],
+              bg: ["backgroundColor"],
+              p: ["padding"],
+              rounded: ["borderRadius"],
+          },
+      });
+
+          const Box = ({ _styled, className, ...props }) => {
+              return <div {...props} className={[_styled, className ?? ''].join(' ')} />;
+          };
+
+          const defaultStyle = { fontSize: "12px", fontWeight: "bold" }
+
+          const Demo = () => {
+              return (
+                  <Box _styled="Box_display_flex__1rxundp0 Box_padding_4__1rxundp1 Box_backgroundColor_blue.500__1rxundp2 Box_borderRadius_lg__1rxundp3" />
+              );
+          }
+          "
+    `);
+
+    expect(ctx.getCss().cssMap.get("test/jit-style.test.ts")).toMatchInlineSnapshot(`
+      ".Box_display_flex__1rxundp0 {
+        display: flex;
+      }
+      .Box_padding_4__1rxundp1 {
+        padding: 4px;
+      }
+      .Box_backgroundColor_blue\\.500__1rxundp2 {
+        background-color: #3182ce;
+      }
+      .Box_borderRadius_lg__1rxundp3 {
+        border-radius: 0.5rem;
       }"
     `);
 
