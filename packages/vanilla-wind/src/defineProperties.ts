@@ -150,7 +150,9 @@ type AnyPropsAndConditions = AnyProps & AnyConditions;
 type AnyPropsAndConditionsAndShorthands<PropNames> = AnyConditions & AnyPropsAndShorthands<PropNames>;
 type AnyConditionsAndShorthands<PropNames> = AnyConditions & TShorthandsByPropNames<PropNames>;
 
-type TReturnFn<Props> = (props: Props) => string;
+export type TReturnFn<Props> = (props: Props) => string;
+export type ThemeProps<ThemeFn extends TReturnFn<any>> = Parameters<ThemeFn>[0];
+export type WithStyledProps<ThemeFn extends TReturnFn<any>> = ThemeProps<ThemeFn> & { _styled?: never };
 
 type OptConditionsOnly<Config extends AnyConditions> = SprinklesWithoutPropsWithConditions<Config> &
     ConditionsWithoutProps<Config>;

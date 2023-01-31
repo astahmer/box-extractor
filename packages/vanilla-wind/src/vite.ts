@@ -7,6 +7,9 @@ import { ensureAbsolute, extract, FunctionNodesMap, getBoxLiteralValue, unwrapEx
 import type { GenericConfig } from "./defineProperties";
 import { createAdapterContext, generateStyleFromExtraction } from "./jit";
 import { endFileScope, setFileScope } from "@vanilla-extract/css/fileScope";
+import evalCode from "eval";
+import fs from "node:fs";
+import esbuild from "esbuild";
 
 const extractThemeConfig = (sourceFile: SourceFile) => {
     const configByName = new Map<string, GenericConfig>();
@@ -42,7 +45,7 @@ const extractThemeConfig = (sourceFile: SourceFile) => {
         const name = nameNode.getText();
         const conf = getBoxLiteralValue(query.box) as GenericConfig;
         configByName.set(name, conf);
-        console.log({ name, conf });
+        // console.log({ name, conf });
     });
 
     return configByName;
@@ -58,6 +61,9 @@ export const vanillaWind = (
         /** if you know your theme(s) config(s) beforehand, use this so there will be less AST parsing needed */
         themeConfig?: Map<string, GenericConfig>;
         skipThemeExtract?: boolean;
+        /** if you know your component names + theme config associated beforehand, use this so there will be less AST parsing needed */
+        components?: Array<{ name: string; themeName: string }>;
+        // TypeReference:has(Identifier[name="WithStyledProps"]):has(TypeQuery)
 
         tsConfigFilePath?: string;
         /**
@@ -144,6 +150,7 @@ export const vanillaWind = (
                             jsxFactory: "React.createElement",
                             jsxFragmentFactory: "React.Fragment",
                             module: ts.ModuleKind.ESNext,
+                            moduleResolution: ts.ModuleResolutionKind.NodeNext,
                             target: ts.ScriptTarget.ESNext,
                             noUnusedParameters: false,
                             declaration: false,
@@ -163,8 +170,20 @@ export const vanillaWind = (
 
                 if (options.themePath) {
                     const themePath = ensureAbsolute(options.themePath, config.root);
-                    const themeFile = project.addSourceFileAtPath(themePath);
-                    extractThemeConfig(themeFile).forEach((conf, name) => configByName.set(name, conf));
+                    const content = fs.readFileSync(themePath, "utf8");
+                    const transformed = esbuild.transformSync(content, {
+                        platform: "node",
+                        loader: "ts",
+                        format: "cjs",
+                        target: "es2019",
+                    });
+                    const mod = evalCode(transformed.code, themePath, { process }, true) as Record<string, unknown>;
+                    Object.keys(mod).forEach((key) => {
+                        const conf = (mod[key] as any)?.config as GenericConfig;
+                        if (conf) {
+                            configByName.set(key, conf);
+                        }
+                    });
                 }
             },
             configureServer(_server) {
@@ -224,7 +243,14 @@ export const vanillaWind = (
                         functionNames.push(name);
                     }
                 });
-                if (functionNames.length === 0) return null;
+
+                const usedComponentNames = [] as NonNullable<typeof options.components>;
+                (options?.components ?? []).forEach((component) => {
+                    if (code.includes(`<${component.name}`)) {
+                        usedComponentNames.push(component);
+                    }
+                });
+                if (functionNames.length === 0 && usedComponentNames.length === 0) return null;
 
                 const sourceFile = project.createSourceFile(id.endsWith(".tsx") ? id : id + ".tsx", code, {
                     overwrite: true,
@@ -239,12 +265,50 @@ export const vanillaWind = (
                     const extractResult = extract({ ast: sourceFile, functions: [name] });
                     const extracted = extractResult.get(name)! as FunctionNodesMap;
 
-                    const conf = configByName.get(name)!;
+                    const conf = configByName.get(name);
+                    if (!conf) {
+                        console.warn(`no config found for ${name}() usage. (skipped)`);
+                        return;
+                    }
+
                     const result = generateStyleFromExtraction(name, extracted, conf);
                     result.toReplace.forEach((className, node) => {
                         if (node.wasForgotten()) return;
-                        console.log({ className, node: node.getText(), kind: node.getKindName() });
+                        // console.log({ className, node: node.getText(), kind: node.getKindName() });
                         node.replaceWithText(`"${className}"`);
+                    });
+                });
+
+                // console.log({ usedComponentNames });
+                usedComponentNames.forEach((component) => {
+                    const name = component.name;
+                    const themeName = component.themeName;
+                    const extractResult = extract({ ast: sourceFile, components: [name] });
+                    const extracted = extractResult.get(name)! as FunctionNodesMap;
+
+                    const conf = configByName.get(themeName);
+                    if (!conf) {
+                        console.warn(`no config found for <${name} /> usage. (skipped)`);
+                        return;
+                    }
+
+                    const result = generateStyleFromExtraction(themeName, extracted, conf);
+                    console.log({ result: result.classMap });
+
+                    result.toReplace.forEach((className, node) => {
+                        console.log({ node: node.getText(), kind: node.getKindName(), className });
+                        if (Node.isJsxSelfClosingElement(node) || Node.isJsxOpeningElement(node)) {
+                            node.addAttribute({ name: "_styled", initializer: `"${className}"` });
+                        } else if (Node.isIdentifier(node)) {
+                            const jsxAttribute = node.getParentIfKind(ts.SyntaxKind.JsxAttribute);
+                            if (jsxAttribute) {
+                                jsxAttribute.remove();
+                            }
+                        } else if (Node.isJsxSpreadAttribute(node)) {
+                            // TODO only remove the props needed rather than the whole spread, this is a bit too aggressive
+                            // also, remove the spread if it's empty
+                            node.remove();
+                        }
                     });
                 });
 
