@@ -212,6 +212,8 @@ export const extract = ({
  * // color: "blue" wins / color: "red" is ignored
  */
 function mergeSpreadEntries({ map, propNameList: maybePropNameList }: { map: MapTypeValue; propNameList: ListOrAll }) {
+    if (map.size <= 1) return Array.from(map.entries());
+
     const foundPropList = new Set<string>();
     const canTakeAllProp = maybePropNameList === "all";
     const propNameList = canTakeAllProp ? [] : maybePropNameList;
