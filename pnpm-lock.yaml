@@ -288,6 +288,8 @@ importers:
       '@vanilla-extract/css': ^1.9.2
       '@vanilla-extract/integration': ^6.0.2
       csstype: ^3.1.1
+      esbuild: ^0.16.7
+      eval: ^0.1.8
       pastable: ^2.1.0
       prettier: ^2.7.1
       ts-morph: ^17.0.1
@@ -302,6 +304,8 @@ importers:
       '@vanilla-extract/css': 1.9.3
       '@vanilla-extract/integration': 6.0.2
       csstype: 3.1.1
+      esbuild: 0.16.7
+      eval: 0.1.8
       pastable: 2.1.1
       ts-morph: 17.0.1
     devDependencies:
