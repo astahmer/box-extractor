@@ -9,6 +9,8 @@ const logger = createLogger("box-ex:extractor:evaluator");
 // replaced dyanmicaly
 const envPreset = "__REPLACE_ME_TS_EVAL_PRESET_";
 
+const cacheMap = new WeakMap();
+
 /**
  * Evaluates with strict policies restrictions
  * @see https://github.com/wessberg/ts-evaluator#setting-up-policies
@@ -16,6 +18,11 @@ const envPreset = "__REPLACE_ME_TS_EVAL_PRESET_";
 const evaluateExpression = (node: Expression, morphTypeChecker: TypeChecker) => {
     const compilerNode = node.compilerNode;
     const typeChecker = morphTypeChecker.compilerObject;
+
+    const symbol = node.getSymbol();
+    if (symbol && cacheMap.has(symbol)) {
+        return cacheMap.get(symbol);
+    }
 
     const result = evaluate({
         node: compilerNode as any,
@@ -27,7 +34,7 @@ const evaluateExpression = (node: Expression, morphTypeChecker: TypeChecker) => 
             console: false,
             maxOps: Number.POSITIVE_INFINITY,
             maxOpDuration: 1000,
-            io: { read: false, write: false },
+            io: { read: true, write: false },
             process: { exit: false, spawnChild: false },
         },
         environment: {
@@ -40,7 +47,13 @@ const evaluateExpression = (node: Expression, morphTypeChecker: TypeChecker) => 
         compilerNodeKind: node.getKindName(),
         result: result.success ? result.value : { name: result.reason.name, reason: result.reason.message },
     });
-    return result.success ? result.value : TsEvalError;
+
+    const expr = result.success ? result.value : TsEvalError;
+    if (symbol) {
+        cacheMap.set(symbol, expr);
+    }
+
+    return expr;
 };
 
 export const safeEvaluateNode = <T>(node: Expression) => {
