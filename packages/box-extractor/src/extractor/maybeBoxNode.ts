@@ -8,14 +8,19 @@ import type {
     ObjectLiteralElementLike,
     ObjectLiteralExpression,
     PropertyAccessExpression,
+    PropertySignature,
     TemplateExpression,
+    TypeLiteralNode,
+    TypeNode,
 } from "ts-morph";
 import { Node, ts } from "ts-morph";
 
 import { safeEvaluateNode } from "./evaluate";
 // eslint-disable-next-line import/no-cycle
+import { getNameLiteral } from "./getNameLiteral";
+// eslint-disable-next-line import/no-cycle
 import { maybeObjectLikeBox, MaybeObjectLikeBoxReturn } from "./maybeObjectLikeBox";
-import { box, BoxNode, ConditionalKind, isBoxNode } from "./type-factory";
+import { box, BoxNode, ConditionalKind, isBoxNode, LiteralValue } from "./type-factory";
 import type { ExtractedPropMap, PrimitiveType } from "./types";
 import { isNotNullish, unwrapExpression } from "./utils";
 
@@ -61,7 +66,7 @@ export function maybeBoxNode(node: Node): MaybeBoxNodeReturn {
     if (Node.isIdentifier(node)) {
         const value = getIdentifierReferenceValue(node);
         if (isNotNullish(value) && !Node.isNode(value)) {
-            return value;
+            return box.cast(value, node);
         }
     }
 
@@ -301,10 +306,10 @@ const getPropValue = (initializer: ObjectLiteralExpression, propName: string) =>
 
     logger.lazyScoped("get-prop", () => ({
         propName,
-        property: property?.getText(),
-        properties: initializer.getProperties().map((p) => p.getText()),
+        property: property?.getText().slice(0, 100),
         propertyKind: property?.getKindName(),
-        initializer: initializer.getText(),
+        properties: initializer.getProperties().map((p) => p.getText().slice(0, 100)),
+        initializer: initializer.getText().slice(0, 100),
         initializerKind: initializer.getKindName(),
     }));
 
@@ -348,21 +353,37 @@ const maybeTemplateStringValue = (template: TemplateExpression) => {
     }
 };
 
-const maybePropIdentifierDefinitionValue = (elementAccessed: Identifier, propName: string) => {
+const maybePropIdentifierDefinitionValue = (elementAccessed: Identifier, propName: string): LiteralValue => {
     const defs = elementAccessed.getDefinitionNodes();
     while (defs.length > 0) {
         const def = unwrapExpression(defs.shift()!);
         logger.lazyScoped("id-def", () => ({
-            def: def?.getText(),
-            elementAccessed: elementAccessed.getText(),
+            def: def?.getText()?.slice(0, 100),
+            elementAccessed: elementAccessed.getText()?.slice(0, 100),
             kind: def?.getKindName(),
-            type: def?.getType().getText(),
+            type: def?.getType().getText()?.slice(0, 100),
             propName,
         }));
 
         if (Node.isVariableDeclaration(def)) {
             const init = def.getInitializer();
-            if (!init) return;
+            logger.lazyScoped("id-def", () => ({
+                initializer: init?.getText(),
+                kind: init?.getKindName(),
+                propName,
+            }));
+
+            if (!init) {
+                const type = def.getTypeNode();
+                if (!type) return;
+
+                if (Node.isTypeLiteral(type)) {
+                    const propValue = getTypeLiteralNodePropValue(type, propName);
+                    if (isNotNullish(propValue)) return propValue;
+                }
+
+                return;
+            }
 
             const initializer = unwrapExpression(init);
             logger.lazyScoped("id-def", () => ({
@@ -389,6 +410,61 @@ const maybePropIdentifierDefinitionValue = (elementAccessed: Identifier, propNam
     }
 };
 
+const getTypeLiteralNodePropValue = (type: TypeLiteralNode, propName: string) => {
+    const members = type.getMembers();
+    const prop = members.find((member) => Node.isPropertySignature(member) && member.getName() === propName);
+
+    logger.scoped("type", { prop: prop?.getText(), propKind: prop?.getKindName() });
+
+    if (Node.isPropertySignature(prop) && prop.isReadonly()) {
+        const propType = prop.getTypeNode();
+        if (!propType) return;
+
+        logger.lazyScoped("type", () => ({
+            propType: propType.getText(),
+            propTypeKind: propType.getKindName(),
+            propName,
+        }));
+
+        const propValue = getTypeNodeValue(propType);
+        logger.scoped("type", { propName, propValue });
+        if (isNotNullish(propValue)) return propValue;
+    }
+};
+
+const getTypeNodeValue = (type: TypeNode): LiteralValue => {
+    if (Node.isLiteralTypeNode(type)) {
+        const literal = type.getLiteral();
+        if (Node.isStringLiteral(literal)) {
+            logger.scoped("type-value", { str: literal.getLiteralText() });
+            return literal.getLiteralText();
+        }
+    }
+
+    if (Node.isTypeLiteral(type)) {
+        const members = type.getMembers();
+        if (!members.some((member) => !Node.isPropertySignature(member) || !member.isReadonly())) {
+            const props = members as PropertySignature[];
+            const entries = props
+                .map((member) => {
+                    const nameNode = member.getNameNode();
+                    const nameText = nameNode.getText();
+                    const name = getNameLiteral(nameNode);
+                    logger({ nameNode: nameText, nameNodeKind: nameNode.getKindName(), name });
+                    if (!name) return;
+
+                    const value = getTypeLiteralNodePropValue(type, nameText);
+                    return [name, value] as const;
+                })
+                .filter(isNotNullish);
+
+            const obj = Object.fromEntries(entries);
+            logger.scoped("type-value", { obj });
+            return obj;
+        }
+    }
+};
+
 export const getIdentifierReferenceValue = (identifier: Identifier) => {
     const defs = identifier.getDefinitionNodes();
     while (defs.length > 0) {
@@ -404,7 +480,22 @@ export const getIdentifierReferenceValue = (identifier: Identifier) => {
         // const staticColor =
         if (Node.isVariableDeclaration(def)) {
             const init = def.getInitializer();
-            if (!init) return;
+            logger.lazyScoped("id-ref", () => ({
+                initializer: init?.getText(),
+                kind: init?.getKindName(),
+            }));
+
+            if (!init) {
+                const type = def.getTypeNode();
+                if (!type) return;
+
+                if (Node.isTypeLiteral(type)) {
+                    const maybeTypeValue = getTypeNodeValue(type);
+                    if (isNotNullish(maybeTypeValue)) return maybeTypeValue;
+                }
+
+                return;
+            }
 
             const initializer = unwrapExpression(init);
             const maybeValue = maybeBoxNode(initializer);
@@ -473,7 +564,7 @@ const getElementAccessedExpressionValue = (expression: ElementAccessExpression):
         const maybeValue = maybePropIdentifierDefinitionValue(elementAccessed, argValue);
         if (!maybeValue) return;
 
-        return box.literal(maybeValue, expression);
+        return box.cast(maybeValue, expression);
     }
 
     // <ColorBox color={xxx[yyy + "zzz"]} />
@@ -486,7 +577,7 @@ const getElementAccessedExpressionValue = (expression: ElementAccessExpression):
             const maybeValue = maybePropIdentifierDefinitionValue(elementAccessed, propName);
             if (!maybeValue) return;
 
-            return box.literal(maybeValue, expression);
+            return box.cast(maybeValue, expression);
         }
     }
 
@@ -498,7 +589,7 @@ const getElementAccessedExpressionValue = (expression: ElementAccessExpression):
             const maybeValue = maybePropIdentifierDefinitionValue(elementAccessed, propName);
             if (!maybeValue) return;
 
-            return box.literal(maybeValue, expression);
+            return box.cast(maybeValue, expression);
         }
     }
 
@@ -525,7 +616,7 @@ const getElementAccessedExpressionValue = (expression: ElementAccessExpression):
             const maybeValue = maybePropIdentifierDefinitionValue(elementAccessed, propName);
             if (!maybeValue) return;
 
-            return box.literal(maybeValue, expression);
+            return box.cast(maybeValue, expression);
         }
     }
 
@@ -568,7 +659,7 @@ const getElementAccessedExpressionValue = (expression: ElementAccessExpression):
                 const maybeValue = maybePropIdentifierDefinitionValue(elementAccessed, propName);
                 if (!maybeValue) return;
 
-                return box.literal(maybeValue, expression);
+                return box.cast(maybeValue, expression);
             }
         }
 
@@ -600,15 +691,15 @@ const getElementAccessedExpressionValue = (expression: ElementAccessExpression):
             }
 
             if (whenTrueResolved && !whenFalseResolved) {
-                return box.literal(whenTrueResolved, whenTrueExpr);
+                return box.cast(whenTrueResolved, whenTrueExpr);
             }
 
             if (!whenTrueResolved && whenFalseResolved) {
-                return box.literal(whenFalseResolved, whenFalseExpr);
+                return box.cast(whenFalseResolved, whenFalseExpr);
             }
 
-            const whenTrue = box.literal(whenTrueResolved, whenTrueExpr);
-            const whenFalse = box.literal(whenFalseResolved, whenFalseExpr);
+            const whenTrue = box.cast(whenTrueResolved, whenTrueExpr)!;
+            const whenFalse = box.cast(whenFalseResolved, whenFalseExpr)!;
 
             return box.conditional(whenTrue, whenFalse, arg, "ternary");
         }
@@ -638,14 +729,28 @@ const getArrayElementValueAtIndex = (array: ArrayLiteralExpression, index: numbe
     }
 };
 
-const getPropertyAccessedExpressionValue = (expression: PropertyAccessExpression) => {
+const getPropertyAccessedExpressionValue = (expression: PropertyAccessExpression): LiteralValue => {
     const maybeValue = safeEvaluateNode<PrimitiveType | PrimitiveType[] | ExtractedPropMap>(expression);
+    logger.scoped("prop-access-value", { maybeValue, expression: expression.getText().slice(0, 100) });
     if (isNotNullish(maybeValue)) return maybeValue;
 
     const propName = expression.getName();
     const elementAccessed = unwrapExpression(expression.getExpression());
 
+    logger.scoped("prop-access-value", {
+        propName,
+        elementAccessed: elementAccessed.getText().slice(0, 100),
+        elementAccessedKind: elementAccessed.getKindName(),
+    });
+
     if (Node.isIdentifier(elementAccessed)) {
         return maybePropIdentifierDefinitionValue(elementAccessed, propName);
+    }
+
+    if (Node.isPropertyAccessExpression(elementAccessed)) {
+        const propValue = getPropertyAccessedExpressionValue(elementAccessed);
+        if (isNotNullish(propValue) && isObject(propValue) && !Array.isArray(propValue)) {
+            return propValue[propName] as LiteralValue;
+        }
     }
 };
