@@ -42,11 +42,30 @@ const evaluateExpression = (node: Expression, morphTypeChecker: TypeChecker) => 
         },
     });
 
-    logger({
-        compilerNode: compilerNode.getText(),
-        compilerNodeKind: node.getKindName(),
-        result: result.success ? result.value : { name: result.reason.name, reason: result.reason.message },
-    });
+    logger({ compilerNode: compilerNode.getText(), compilerNodeKind: node.getKindName() });
+    if (result.success) {
+        logger.scoped("success", result.value);
+    } else {
+        logger.scoped("error", result.reason.stack);
+        logger.lazyScoped("error-reason", () => ({
+            result: {
+                name: result.reason.name,
+                reason: result.reason.message,
+                atNode: {
+                    path: result.reason.node.getSourceFile().fileName + ":" + result.reason.node.getFullStart(),
+                    start: result.reason.node.getFullStart(),
+                    end: result.reason.node.getEnd(),
+                    text: result.reason.node.getText().slice(0, 100),
+                    kind: ts.SyntaxKind[result.reason.node.kind],
+                },
+            },
+        }));
+
+        logger.scoped("trace");
+        if (logger.isEnabled(logger.namespace + ":trace")) {
+            console.trace();
+        }
+    }
 
     const expr = result.success ? result.value : TsEvalError;
     if (symbol) {
