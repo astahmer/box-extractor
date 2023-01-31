@@ -29,7 +29,7 @@ type PossibleColorWithVariants = UnionOf<ColorsMapWithTheirVariantsAndDefault>;
 function chakraColorVariantsToRecordOfAppThemeColorKeys<T extends keyof ColorsMapWithTheirVariantsAndDefault>(name: T) {
     return Object.fromEntries(
         Object.entries(colors[name]).map(([num, value]) => [num === "DEFAULT" ? name : `${name}.${num}`, value])
-    ) as Record<T, ColorsMapWithTheirVariantsAndDefault[T]>;
+    );
 }
 
 function flatMapColorsWithVariants(themeColors: ChakraThemeColors) {
@@ -43,8 +43,7 @@ function flatMapColorsWithVariants(themeColors: ChakraThemeColors) {
             const colorMap = chakraColorVariantsToRecordOfAppThemeColorKeys(
                 key as keyof ColorsMapWithTheirVariantsAndDefault
             );
-            let colorVariant: ColorsWithVariants;
-            for (colorVariant in colorMap) {
+            for (const colorVariant in colorMap) {
                 themeMap[colorVariant as PossibleColorWithVariants] = colorMap[colorVariant] + " !important";
             }
         }
