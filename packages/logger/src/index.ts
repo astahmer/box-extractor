@@ -125,6 +125,7 @@ export function createLogger(name: string, _onEmit?: Reporter): CreateLoggerRetu
     const logFn = isEnabled(name) ? logger.bind(0, name, onEmit, "debug", color) : noop;
 
     return Object.assign(logFn, {
+        namespace: name,
         extend: (scoped: string) => createLogger(`${name}:${scoped}`, onEmit),
         scoped: (scoped: string, ...messages: unknown[]) => {
             const namespace = `${name}:${scoped}`;
@@ -143,14 +144,17 @@ export function createLogger(name: string, _onEmit?: Reporter): CreateLoggerRetu
 
             loggerFn(fn());
         },
+        isEnabled: (namespace?: string) => isEnabled(namespace ?? name),
     });
 }
 
 type CreateLoggerReturn = ((...args: unknown[]) => void) & {
+    namespace: string;
     extend: (scoped: string) => CreateLoggerReturn;
     scoped: (scoped: string, ...messages: unknown[]) => void;
     lazy: (fn: () => any) => void;
     lazyScoped: (scoped: string, fn: () => any) => void;
+    isEnabled: (namespace?: string) => boolean;
 };
 
 /**
