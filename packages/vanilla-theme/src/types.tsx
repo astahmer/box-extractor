@@ -1,8 +1,8 @@
 import type { AnySprinklesFn, SprinkleConditionsNames } from "@box-extractor/vanilla-extract";
 
-export type EscapeHatchProps<T> = {
-    [K in keyof T as K extends keyof React.CSSProperties ? `__${K}` : number]: Exclude<T[K], object> | (string & {});
-};
+// export type EscapeHatchProps<T> = {
+//     [K in keyof T as K extends keyof React.CSSProperties ? `__${K}` : number]: Exclude<T[K], object> | (string & {});
+// };
 
 export type Tokens<SprinklesFn extends AnySprinklesFn> = Parameters<SprinklesFn>[0];
 
