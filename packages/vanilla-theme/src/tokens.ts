@@ -65,7 +65,7 @@ const typography = {
         "8xl": "6rem",
         "9xl": "8rem",
     },
-};
+} as const;
 
 // https://github.com/chakra-ui/chakra-ui/blob/05b19899b02e17b4ee16045c9e5065fa835f0159/packages/components/theme/src/foundations/z-index.ts#L1-L15
 const zIndices = {
@@ -82,7 +82,7 @@ const zIndices = {
     skipLink: "1600",
     toast: "1700",
     tooltip: "1800",
-};
+} as const;
 
 // https://github.com/chakra-ui/chakra-ui/blob/05b19899b02e17b4ee16045c9e5065fa835f0159/packages/components/theme/src/foundations/shadows.ts#L17
 const shadows = {
@@ -97,7 +97,7 @@ const shadows = {
     inner: "inset 0 2px 4px 0 rgba(0,0,0,0.06)",
     none: "none",
     "dark-lg": "rgba(0, 0, 0, 0.1) 0px 0px 0px 1px, rgba(0, 0, 0, 0.2) 0px 5px 10px, rgba(0, 0, 0, 0.4) 0px 15px 40px",
-};
+} as const;
 
 // https://github.com/chakra-ui/chakra-ui/blob/05b19899b02e17b4ee16045c9e5065fa835f0159/packages/components/theme/src/foundations/spacing.ts#L22
 const space = {
@@ -146,7 +146,7 @@ const borders = {
     "2px": "2px",
     "4px": "4px",
     "8px": "8px",
-};
+} as const;
 
 // https://github.com/chakra-ui/chakra-ui/blob/05b19899b02e17b4ee16045c9e5065fa835f0159/packages/components/theme/src/foundations/radius.ts#L1-L12
 const radii = {
@@ -159,7 +159,7 @@ const radii = {
     "2xl": "1rem",
     "3xl": "1.5rem",
     full: "9999px",
-};
+} as const;
 
 // https://github.com/chakra-ui/chakra-ui/blob/05b19899b02e17b4ee16045c9e5065fa835f0159/packages/components/theme/src/foundations/sizes.ts#L3-L36
 const largeSizes = {
@@ -181,14 +181,14 @@ const largeSizes = {
     "7xl": "80rem",
     "8xl": "90rem",
     prose: "60ch",
-};
+} as const;
 
 const container = {
     sm: "640px",
     md: "768px",
     lg: "1024px",
     xl: "1280px",
-};
+} as const;
 
 const percentsRecord = {
     auto: "auto",
@@ -199,7 +199,7 @@ const percentsRecord = {
     "100%": "100%",
     "100vh": "100vh",
     "100vw": "100vw",
-};
+} as const;
 
 const positions = {
     auto: "auto",
@@ -208,7 +208,7 @@ const positions = {
     "0%": "0%",
     "50%": "50%",
     "100%": "100%",
-};
+} as const;
 
 const aligns = {
     stretch: "stretch",
@@ -219,13 +219,13 @@ const aligns = {
     "space-around": "space-around",
     "space-between": "space-between",
     "space-evenly": "space-evenly",
-};
+} as const;
 
 const sizes = {
     ...space,
     ...largeSizes,
     ...percentsRecord,
-};
+} as const;
 
 export const tokens = {
     colors,
@@ -240,4 +240,4 @@ export const tokens = {
     shadows,
     positions,
     aligns,
-};
+} as const;

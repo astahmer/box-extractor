@@ -1,0 +1,13 @@
+{
+    "extends": "../../tsconfig.json",
+    "compilerOptions": {
+        // "isolatedModules": true, // https://preconstruct.tools/guides/building-typescript-packages
+        "noEmit": true,
+        "target": "ES2019",
+        "moduleResolution": "Node",
+        "declaration": true,
+        "declarationMap": true,
+        "sourceMap": true
+    },
+    "exclude": ["node_modules", "dist"]
+}
