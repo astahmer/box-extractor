@@ -1039,7 +1039,6 @@ it("minimal example with <Box /> component", () => {
       }
     `);
 
-    const classList = new Set<string>();
     boxStyles.toReplace.forEach((className, node) => {
         console.log({ node: node.getText(), kind: node.getKindName(), className });
         if (Node.isJsxSelfClosingElement(node) || Node.isJsxOpeningElement(node)) {
@@ -1054,8 +1053,6 @@ it("minimal example with <Box /> component", () => {
             // also, remove the spread if it's empty
             node.remove();
         }
-        // node.replaceWithText("");
-        classList.add(className);
     });
 
     expect(sourceFile.getFullText()).toMatchInlineSnapshot(`
