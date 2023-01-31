@@ -28,6 +28,7 @@
         "@vanilla-extract/sprinkles": ">= 1.5"
     },
     "devDependencies": {
+        "@types/node": "^18.11.9",
         "pastable": "^2.1.0",
         "ts-toolbelt": "^9.6.0",
         "tsup": "^6.5.0"

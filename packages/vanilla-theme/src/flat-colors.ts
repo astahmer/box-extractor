@@ -1,60 +1,186 @@
-import type { NonUndefined } from "pastable/typings";
-import type { Keys } from "ts-toolbelt/out/Any/Keys";
-import type { KnownKeys } from "ts-toolbelt/out/Any/KnownKeys";
-import type { UnionOf } from "ts-toolbelt/out/Object/UnionOf";
-import { colors } from "./color-palette";
-
-export const flatColors = flatMapColorsWithVariants(colors);
-
-type ChakraThemeColors = typeof colors;
-
-type PossibleThemeColorKey = SimpleColors | PossibleColorWithVariants;
-
-type AppThemeColorMap = {
-    [P in keyof ChakraThemeColors[keyof ChakraThemeColors] as PossibleThemeColorKey]: string;
-};
-
-type SimpleColors = NonObjectKeys<ChakraThemeColors>;
-type ColorsWithVariants = NonStringKeys<ChakraThemeColors>;
-
-type ColorsMapWithTheirVariants = {
-    [Prop in ColorsWithVariants]: Exclude<KnownKeys<ChakraThemeColors[Prop]>, "DEFAULT">;
-};
-type ColorsMapWithTheirVariantsAndDefault = {
-    [Color in Keys<ColorsMapWithTheirVariants>]: `${Color}.${ColorsMapWithTheirVariants[Color]}`;
-};
-type PossibleColorWithVariants = UnionOf<ColorsMapWithTheirVariantsAndDefault>;
-
-// Inspired by https://github.com/kesne/vanilla-tailwind/blob/main/src/theme.css.ts
-function chakraColorVariantsToRecordOfAppThemeColorKeys<T extends keyof ColorsMapWithTheirVariantsAndDefault>(name: T) {
-    return Object.fromEntries(
-        Object.entries(colors[name]).map(([num, value]) => [num === "DEFAULT" ? name : `${name}.${num}`, value])
-    );
-}
-
-function flatMapColorsWithVariants(themeColors: ChakraThemeColors) {
-    const themeMap = {} as AppThemeColorMap;
-
-    let key: keyof typeof themeColors;
-    for (key in themeColors) {
-        if (typeof themeColors[key] === "string") {
-            themeMap[key as SimpleColors] = (themeColors[key] as string) + " !important";
-        } else {
-            const colorMap = chakraColorVariantsToRecordOfAppThemeColorKeys(
-                key as keyof ColorsMapWithTheirVariantsAndDefault
-            );
-            for (const colorVariant in colorMap) {
-                themeMap[colorVariant as PossibleColorWithVariants] = colorMap[colorVariant] + " !important";
-            }
-        }
-    }
-
-    return themeMap;
-}
-
-type NonObjectKeys<T extends object> = {
-    [K in keyof T]-?: NonUndefined<T[K]> extends object ? never : K;
-}[keyof T];
-type NonStringKeys<T extends object> = {
-    [K in keyof T]-?: NonUndefined<T[K]> extends string ? never : K;
-}[keyof T];
+export const flatColors = {
+    "transparent": "transparent !important",
+    "current": "currentColor !important",
+    "black": "#000000 !important",
+    "white": "#FFFFFF !important",
+    "whiteAlpha.50": "rgba(255, 255, 255, 0.04) !important",
+    "whiteAlpha.100": "rgba(255, 255, 255, 0.06) !important",
+    "whiteAlpha.200": "rgba(255, 255, 255, 0.08) !important",
+    "whiteAlpha.300": "rgba(255, 255, 255, 0.16) !important",
+    "whiteAlpha.400": "rgba(255, 255, 255, 0.24) !important",
+    "whiteAlpha.500": "rgba(255, 255, 255, 0.36) !important",
+    "whiteAlpha.600": "rgba(255, 255, 255, 0.48) !important",
+    "whiteAlpha.700": "rgba(255, 255, 255, 0.64) !important",
+    "whiteAlpha.800": "rgba(255, 255, 255, 0.80) !important",
+    "whiteAlpha.900": "rgba(255, 255, 255, 0.92) !important",
+    "blackAlpha.50": "rgba(0, 0, 0, 0.04) !important",
+    "blackAlpha.100": "rgba(0, 0, 0, 0.06) !important",
+    "blackAlpha.200": "rgba(0, 0, 0, 0.08) !important",
+    "blackAlpha.300": "rgba(0, 0, 0, 0.16) !important",
+    "blackAlpha.400": "rgba(0, 0, 0, 0.24) !important",
+    "blackAlpha.500": "rgba(0, 0, 0, 0.36) !important",
+    "blackAlpha.600": "rgba(0, 0, 0, 0.48) !important",
+    "blackAlpha.700": "rgba(0, 0, 0, 0.64) !important",
+    "blackAlpha.800": "rgba(0, 0, 0, 0.80) !important",
+    "blackAlpha.900": "rgba(0, 0, 0, 0.92) !important",
+    "gray.50": "#F7FAFC !important",
+    "gray.100": "#EDF2F7 !important",
+    "gray.200": "#E2E8F0 !important",
+    "gray.300": "#CBD5E0 !important",
+    "gray.400": "#A0AEC0 !important",
+    "gray.500": "#718096 !important",
+    "gray.600": "#4A5568 !important",
+    "gray.700": "#2D3748 !important",
+    "gray.800": "#1A202C !important",
+    "gray.900": "#171923 !important",
+    "red.50": "#FFF5F5 !important",
+    "red.100": "#FED7D7 !important",
+    "red.200": "#FEB2B2 !important",
+    "red.300": "#FC8181 !important",
+    "red.400": "#F56565 !important",
+    "red.500": "#E53E3E !important",
+    "red.600": "#C53030 !important",
+    "red.700": "#9B2C2C !important",
+    "red.800": "#822727 !important",
+    "red.900": "#63171B !important",
+    "orange.50": "#FFFAF0 !important",
+    "orange.100": "#FEEBC8 !important",
+    "orange.200": "#FBD38D !important",
+    "orange.300": "#F6AD55 !important",
+    "orange.400": "#ED8936 !important",
+    "orange.500": "#DD6B20 !important",
+    "orange.600": "#C05621 !important",
+    "orange.700": "#9C4221 !important",
+    "orange.800": "#7B341E !important",
+    "orange.900": "#652B19 !important",
+    "yellow.50": "#FFFFF0 !important",
+    "yellow.100": "#FEFCBF !important",
+    "yellow.200": "#FAF089 !important",
+    "yellow.300": "#F6E05E !important",
+    "yellow.400": "#ECC94B !important",
+    "yellow.500": "#D69E2E !important",
+    "yellow.600": "#B7791F !important",
+    "yellow.700": "#975A16 !important",
+    "yellow.800": "#744210 !important",
+    "yellow.900": "#5F370E !important",
+    "green.50": "#F0FFF4 !important",
+    "green.100": "#C6F6D5 !important",
+    "green.200": "#9AE6B4 !important",
+    "green.300": "#68D391 !important",
+    "green.400": "#48BB78 !important",
+    "green.500": "#38A169 !important",
+    "green.600": "#2F855A !important",
+    "green.700": "#276749 !important",
+    "green.800": "#22543D !important",
+    "green.900": "#1C4532 !important",
+    "teal.50": "#E6FFFA !important",
+    "teal.100": "#B2F5EA !important",
+    "teal.200": "#81E6D9 !important",
+    "teal.300": "#4FD1C5 !important",
+    "teal.400": "#38B2AC !important",
+    "teal.500": "#319795 !important",
+    "teal.600": "#2C7A7B !important",
+    "teal.700": "#285E61 !important",
+    "teal.800": "#234E52 !important",
+    "teal.900": "#1D4044 !important",
+    "blue.50": "#ebf8ff !important",
+    "blue.100": "#bee3f8 !important",
+    "blue.200": "#90cdf4 !important",
+    "blue.300": "#63b3ed !important",
+    "blue.400": "#4299e1 !important",
+    "blue.500": "#3182ce !important",
+    "blue.600": "#2b6cb0 !important",
+    "blue.700": "#2c5282 !important",
+    "blue.800": "#2a4365 !important",
+    "blue.900": "#1A365D !important",
+    "cyan.50": "#EDFDFD !important",
+    "cyan.100": "#C4F1F9 !important",
+    "cyan.200": "#9DECF9 !important",
+    "cyan.300": "#76E4F7 !important",
+    "cyan.400": "#0BC5EA !important",
+    "cyan.500": "#00B5D8 !important",
+    "cyan.600": "#00A3C4 !important",
+    "cyan.700": "#0987A0 !important",
+    "cyan.800": "#086F83 !important",
+    "cyan.900": "#065666 !important",
+    "purple.50": "#FAF5FF !important",
+    "purple.100": "#E9D8FD !important",
+    "purple.200": "#D6BCFA !important",
+    "purple.300": "#B794F4 !important",
+    "purple.400": "#9F7AEA !important",
+    "purple.500": "#805AD5 !important",
+    "purple.600": "#6B46C1 !important",
+    "purple.700": "#553C9A !important",
+    "purple.800": "#44337A !important",
+    "purple.900": "#322659 !important",
+    "pink.50": "#FFF5F7 !important",
+    "pink.100": "#FED7E2 !important",
+    "pink.200": "#FBB6CE !important",
+    "pink.300": "#F687B3 !important",
+    "pink.400": "#ED64A6 !important",
+    "pink.500": "#D53F8C !important",
+    "pink.600": "#B83280 !important",
+    "pink.700": "#97266D !important",
+    "pink.800": "#702459 !important",
+    "pink.900": "#521B41 !important",
+    "linkedin.50": "#E8F4F9 !important",
+    "linkedin.100": "#CFEDFB !important",
+    "linkedin.200": "#9BDAF3 !important",
+    "linkedin.300": "#68C7EC !important",
+    "linkedin.400": "#34B3E4 !important",
+    "linkedin.500": "#00A0DC !important",
+    "linkedin.600": "#008CC9 !important",
+    "linkedin.700": "#0077B5 !important",
+    "linkedin.800": "#005E93 !important",
+    "linkedin.900": "#004471 !important",
+    "facebook.50": "#E8F4F9 !important",
+    "facebook.100": "#D9DEE9 !important",
+    "facebook.200": "#B7C2DA !important",
+    "facebook.300": "#6482C0 !important",
+    "facebook.400": "#4267B2 !important",
+    "facebook.500": "#385898 !important",
+    "facebook.600": "#314E89 !important",
+    "facebook.700": "#29487D !important",
+    "facebook.800": "#223B67 !important",
+    "facebook.900": "#1E355B !important",
+    "messenger.50": "#D0E6FF !important",
+    "messenger.100": "#B9DAFF !important",
+    "messenger.200": "#A2CDFF !important",
+    "messenger.300": "#7AB8FF !important",
+    "messenger.400": "#2E90FF !important",
+    "messenger.500": "#0078FF !important",
+    "messenger.600": "#0063D1 !important",
+    "messenger.700": "#0052AC !important",
+    "messenger.800": "#003C7E !important",
+    "messenger.900": "#002C5C !important",
+    "whatsapp.50": "#dffeec !important",
+    "whatsapp.100": "#b9f5d0 !important",
+    "whatsapp.200": "#90edb3 !important",
+    "whatsapp.300": "#65e495 !important",
+    "whatsapp.400": "#3cdd78 !important",
+    "whatsapp.500": "#22c35e !important",
+    "whatsapp.600": "#179848 !important",
+    "whatsapp.700": "#0c6c33 !important",
+    "whatsapp.800": "#01421c !important",
+    "whatsapp.900": "#001803 !important",
+    "twitter.50": "#E5F4FD !important",
+    "twitter.100": "#C8E9FB !important",
+    "twitter.200": "#A8DCFA !important",
+    "twitter.300": "#83CDF7 !important",
+    "twitter.400": "#57BBF5 !important",
+    "twitter.500": "#1DA1F2 !important",
+    "twitter.600": "#1A94DA !important",
+    "twitter.700": "#1681BF !important",
+    "twitter.800": "#136B9E !important",
+    "twitter.900": "#0D4D71 !important",
+    "telegram.50": "#E3F2F9 !important",
+    "telegram.100": "#C5E4F3 !important",
+    "telegram.200": "#A2D4EC !important",
+    "telegram.300": "#7AC1E4 !important",
+    "telegram.400": "#47A9DA !important",
+    "telegram.500": "#0088CC !important",
+    "telegram.600": "#007AB8 !important",
+    "telegram.700": "#006BA1 !important",
+    "telegram.800": "#005885 !important",
+    "telegram.900": "#003F5E !important"
+} as const;
