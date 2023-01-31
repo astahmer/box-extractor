@@ -414,20 +414,20 @@ const getTypeLiteralNodePropValue = (type: TypeLiteralNode, propName: string) =>
     const members = type.getMembers();
     const prop = members.find((member) => Node.isPropertySignature(member) && member.getName() === propName);
 
-    logger.scoped("type", { prop: prop?.getText(), propKind: prop?.getKindName() });
+    logger.scoped("type", { prop: prop?.getText().slice(0, 20), propKind: prop?.getKindName() });
 
     if (Node.isPropertySignature(prop) && prop.isReadonly()) {
         const propType = prop.getTypeNode();
         if (!propType) return;
 
         logger.lazyScoped("type", () => ({
-            propType: propType.getText(),
+            propType: propType.getText().slice(0, 20),
             propTypeKind: propType.getKindName(),
             propName,
         }));
 
         const propValue = getTypeNodeValue(propType);
-        logger.scoped("type", { propName, propValue });
+        logger.scoped("type", { propName, hasPropValue: isNotNullish(propValue) });
         if (isNotNullish(propValue)) return propValue;
     }
 };
@@ -459,7 +459,7 @@ const getTypeNodeValue = (type: TypeNode): LiteralValue => {
                 .filter(isNotNullish);
 
             const obj = Object.fromEntries(entries);
-            logger.scoped("type-value", { obj });
+            logger.lazyScoped("type-value", () => ({ obj: Object.keys(obj) }));
             return obj;
         }
     }
@@ -489,6 +489,7 @@ export const getIdentifierReferenceValue = (identifier: Identifier) => {
                 const type = def.getTypeNode();
                 if (!type) return;
 
+                logger.scoped("id-type", { type: type.getText().slice(0, 100), kind: type.getKindName() });
                 if (Node.isTypeLiteral(type)) {
                     const maybeTypeValue = getTypeNodeValue(type);
                     if (isNotNullish(maybeTypeValue)) return maybeTypeValue;
