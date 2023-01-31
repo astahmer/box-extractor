@@ -5,5 +5,9 @@ import { vanillaWind } from "@box-extractor/vanilla-wind/vite";
 
 // https://vitejs.dev/config/
 export default defineConfig((_env) => ({
-    plugins: [vanillaWind({ themePath: "./src/theme.ts" }), Inspect({}), react()],
+    plugins: [
+        vanillaWind({ themePath: "./src/theme.ts", components: [{ name: "Box", themeName: "tw" }] }),
+        Inspect({}),
+        react(),
+    ],
 }));

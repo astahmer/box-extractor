@@ -1,4 +1,5 @@
-import { useState } from "react";
+import type { ThemeProps, WithStyledProps } from "@box-extractor/vanilla-wind";
+import { PropsWithChildren, useState } from "react";
 import "./App.css";
 import { tw } from "./theme";
 
@@ -18,11 +19,19 @@ function App() {
                         <span onClick={() => setState((current) => current + 1)} className={tw({ color: "pink" })}>
                             class: ({className})
                         </span>
+                        <Box color="red.200" fontSize="4xl">
+                            boxboxbox
+                        </Box>
                     </div>
                 </div>
             </div>
         </div>
     );
 }
+
+const Box = (props: WithStyledProps<typeof tw> & PropsWithChildren) => {
+    const { _styled, children, ...rest } = props as Omit<typeof props, keyof ThemeProps<typeof tw>>;
+    return <div className={_styled}>{children}</div>;
+};
 
 export default App;
