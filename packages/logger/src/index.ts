@@ -5,6 +5,7 @@ import pc from "picocolors";
 // needed for preconstruct
 // eslint-disable-next-line unicorn/import-style, unicorn/prefer-node-protocol
 import util from "util";
+import humanize from "humanize-duration";
 
 if (typeof process !== "undefined" && typeof util !== "undefined" && util?.inspect?.defaultOptions)
     util.inspect.defaultOptions.depth = 6;
@@ -82,7 +83,9 @@ const logger = (
  * taken from debug
  * https://github.com/debug-js/debug/blob/d1616622e4d404863c5a98443f755b4006e971dc/src/browser.js#L27
  */
+const colorMap = new Map<string, number>();
 function selectColor(namespace: string): number {
+    if (colorMap.has(namespace)) return colorMap.get(namespace)!;
     let hash = 0;
 
     for (let i = 0; i < namespace.length; i++) {
@@ -90,7 +93,9 @@ function selectColor(namespace: string): number {
         hash = Math.trunc(hash); // Convert to 32bit integer
     }
 
-    return colors[Math.abs(hash) % colors.length]!;
+    const result = colors[Math.abs(hash) % colors.length]!;
+    colorMap.set(namespace, result);
+    return result;
 }
 
 const colors = [
@@ -106,11 +111,30 @@ const withColor = (color: LogEvent["color"], str: string) => {
 
 // ~ Reporter
 
+const humanizeOptions = {
+    units: ["m", "s", "ms"],
+    delimiter: " ",
+    language: "shortEn",
+    languages: {
+        shortEn: {
+            m: () => "min",
+            s: () => "sec",
+            ms: () => "ms",
+        },
+    },
+} as humanize.Options;
+
+let prevTime = Date.now();
 export const default_reporter: Reporter = (event) => {
     const fn = console[event.level === "fatal" ? "error" : event.level];
     const color = event.color;
 
-    fn(pc.bold(withColor(color, event.name)), ...event.messages);
+    // Set `diff` timestamp
+    const now = Date.now();
+    const diff = now - prevTime;
+    prevTime = now;
+
+    fn(pc.bold(withColor(color, event.name)), ...event.messages, pc.dim(`+${humanize(diff, humanizeOptions)}`));
 };
 
 // ~ Public api
@@ -128,6 +152,8 @@ export function createLogger(name: string, _onEmit?: Reporter): CreateLoggerRetu
         namespace: name,
         extend: (scoped: string) => createLogger(`${name}:${scoped}`, onEmit),
         scoped: (scoped: string, ...messages: unknown[]) => {
+            if (!isEnabled(name + scoped)) return;
+
             const namespace = `${name}:${scoped}`;
             const loggerFn = scopedCache.get(namespace) ?? createLogger(namespace, onEmit);
             if (!scopedCache.has(namespace)) scopedCache.set(namespace, loggerFn);
@@ -138,6 +164,8 @@ export function createLogger(name: string, _onEmit?: Reporter): CreateLoggerRetu
             logFn(fn());
         },
         lazyScoped: (scoped: string, fn: () => any) => {
+            if (!isEnabled(name + scoped)) return;
+
             const namespace = `${name}:${scoped}`;
             const loggerFn = scopedCache.get(namespace) ?? createLogger(namespace, onEmit);
             if (!scopedCache.has(namespace)) scopedCache.set(namespace, loggerFn);
