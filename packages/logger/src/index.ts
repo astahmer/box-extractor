@@ -7,8 +7,13 @@ import pc from "picocolors";
 import util from "util";
 import humanize from "humanize-duration";
 
-if (typeof process !== "undefined" && typeof util !== "undefined" && util?.inspect?.defaultOptions)
-    util.inspect.defaultOptions.depth = 6;
+if (typeof process !== "undefined" && typeof util !== "undefined" && util?.inspect?.defaultOptions) {
+    util.inspect.defaultOptions.depth = 3;
+    util.inspect.defaultOptions.breakLength = 100;
+    util.inspect.defaultOptions.maxArrayLength = 50;
+    util.inspect.defaultOptions.maxStringLength = 100;
+    util.inspect.defaultOptions.compact = true;
+}
 
 export type LogEvent = {
     name: string;
@@ -79,12 +84,18 @@ const logger = (
     reporter({ name, level, color, messages });
 };
 
+let canUseColors = true;
+// @ts-expect-error
+if (typeof process !== "undefined" && (process?.env?.["NODE_DISABLE_COLORS"] || process?.env?.["FORCE_COLOR"] == 1))
+    canUseColors = false;
+
 /**
  * taken from debug
  * https://github.com/debug-js/debug/blob/d1616622e4d404863c5a98443f755b4006e971dc/src/browser.js#L27
  */
 const colorMap = new Map<string, number>();
 function selectColor(namespace: string): number {
+    if (!canUseColors) return 0;
     if (colorMap.has(namespace)) return colorMap.get(namespace)!;
     let hash = 0;
 
@@ -105,6 +116,7 @@ const colors = [
 ];
 
 const withColor = (color: LogEvent["color"], str: string) => {
+    if (!canUseColors) return str;
     const colorCode = "\u001B[3" + (color < 8 ? color : "8;5;" + color);
     return `${colorCode};1m${str} \u001B[0m`;
 };
@@ -134,7 +146,11 @@ export const default_reporter: Reporter = (event) => {
     const diff = now - prevTime;
     prevTime = now;
 
-    fn(pc.bold(withColor(color, event.name)), ...event.messages, pc.dim(`+${humanize(diff, humanizeOptions)}`));
+    fn(
+        pc.bold(withColor(color, event.name)),
+        ...event.messages,
+        pc.bold(withColor(color, `+${humanize(diff, humanizeOptions)}`))
+    );
 };
 
 // ~ Public api
