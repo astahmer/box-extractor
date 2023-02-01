@@ -26,6 +26,7 @@
     "author": "Alexandre Stahmer <alexandre.stahmer@gmail.com>",
     "license": "ISC",
     "dependencies": {
+        "humanize-duration": "^3.28.0",
         "picocolors": "^1.0.0"
     },
     "preconstruct": {
@@ -60,5 +61,8 @@
     "sideEffects": false,
     "publishConfig": {
         "access": "public"
+    },
+    "devDependencies": {
+        "@types/humanize-duration": "^3.27.1"
     }
 }
