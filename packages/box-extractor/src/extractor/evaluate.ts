@@ -9,7 +9,7 @@ const logger = createLogger("box-ex:extractor:evaluator");
 // replaced dyanmicaly
 const envPreset = "__REPLACE_ME_TS_EVAL_PRESET_";
 
-const cacheMap = new WeakMap();
+const cacheMap = new WeakMap<Expression, unknown>();
 
 /**
  * Evaluates with strict policies restrictions
@@ -19,9 +19,8 @@ const evaluateExpression = (node: Expression, morphTypeChecker: TypeChecker) => 
     const compilerNode = node.compilerNode;
     const typeChecker = morphTypeChecker.compilerObject;
 
-    const symbol = node.getSymbol();
-    if (symbol && cacheMap.has(symbol)) {
-        return cacheMap.get(symbol);
+    if (cacheMap.has(node)) {
+        return cacheMap.get(node);
     }
 
     const result = evaluate({
@@ -42,7 +41,7 @@ const evaluateExpression = (node: Expression, morphTypeChecker: TypeChecker) => 
         },
     });
 
-    logger({ compilerNode: compilerNode.getText(), compilerNodeKind: node.getKindName() });
+    logger({ compilerNodeKind: node.getKindName() });
     if (result.success) {
         logger.scoped("success", result.value);
     } else {
@@ -68,9 +67,7 @@ const evaluateExpression = (node: Expression, morphTypeChecker: TypeChecker) => 
     }
 
     const expr = result.success ? result.value : TsEvalError;
-    if (symbol) {
-        cacheMap.set(symbol, expr);
-    }
+    cacheMap.set(node, expr);
 
     return expr;
 };
