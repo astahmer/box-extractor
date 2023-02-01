@@ -59,7 +59,8 @@ export const findAllTransitiveComponents = ({ transitiveMap, ...options }: FindA
             const wrapper = getAncestorComponent(jsxNode) as Identifier | StringLiteral;
             if (!wrapper) return;
 
-            const name = unquote(getNameLiteral(wrapper));
+            const nameLiteral = getNameLiteral(wrapper);
+            const name = unquote(nameLiteral);
             if (!name) return;
             if (wrapperNodes.has(name) || options.components.includes(name)) return;
 

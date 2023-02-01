@@ -25,53 +25,61 @@ import type { ExtractedPropMap, PrimitiveType } from "./types";
 import { isNotNullish, unwrapExpression } from "./utils";
 
 const logger = createLogger("box-ex:extractor:maybe-box");
+const cacheMap = new WeakMap<Node, MaybeBoxNodeReturn>();
 
 export type MaybeBoxNodeReturn = BoxNode | BoxNode[] | undefined;
 export function maybeBoxNode(node: Node): MaybeBoxNodeReturn {
-    logger({ kind: node.getKindName() });
+    const isCached = cacheMap.has(node);
+    logger({ kind: node.getKindName(), isCached });
+    if (isCached) return cacheMap.get(node);
+
+    const cache = (value: MaybeBoxNodeReturn) => {
+        cacheMap.set(node, value);
+        return value;
+    };
 
     // <ColorBox color={"xxx"} />
     if (Node.isStringLiteral(node)) {
-        return box.literal(node.getLiteralText(), node);
+        return cache(box.literal(node.getLiteralText(), node));
     }
 
     // <ColorBox color={[xxx, yyy, zzz]} />
     if (Node.isArrayLiteralExpression(node)) {
         const boxes = node.getElements().map((element) => {
             const maybeBox = maybeBoxNode(element);
-            if (!maybeBox) return box.unresolvable(element);
+            if (!maybeBox) return cache(box.unresolvable(element));
 
             return Array.isArray(maybeBox) ? box.list(maybeBox, node) : maybeBox;
         });
 
-        return box.list(boxes, node);
+        return cache(box.list(boxes as any, node));
     }
 
     // <ColorBox color={`xxx`} />
     if (Node.isNoSubstitutionTemplateLiteral(node)) {
-        return box.literal(node.getLiteralText(), node);
+        return cache(box.literal(node.getLiteralText(), node));
     }
 
     // <ColorBox color={123} />
     if (Node.isNumericLiteral(node)) {
-        return box.literal(node.getLiteralText(), node);
+        return cache(box.literal(node.getLiteralText(), node));
     }
 
     // <ColorBox bool={true} falsy={false} />
     if (Node.isTrueLiteral(node) || Node.isFalseLiteral(node)) {
-        return box.literal(node.getLiteralValue(), node);
+        return cache(box.literal(node.getLiteralValue(), node));
     }
 
     // <ColorBox color={staticColor} />
     if (Node.isIdentifier(node)) {
         const value = getIdentifierReferenceValue(node);
         if (isNotNullish(value) && !Node.isNode(value)) {
-            return box.cast(value, node);
+            return cache(box.cast(value, node));
         }
     }
 
     if (Node.isTemplateHead(node)) {
-        return box.literal(node.getLiteralText(), node);
+        return cache(box.literal(node.getLiteralText(), node));
     }
 
     // <ColorBox color={`${xxx}yyy`} />
@@ -79,7 +87,7 @@ export function maybeBoxNode(node: Node): MaybeBoxNodeReturn {
         const maybeString = maybeTemplateStringValue(node);
         if (!maybeString) return;
 
-        return box.literal(maybeString, node);
+        return cache(box.literal(maybeString, node));
     }
 
     // <ColorBox color={xxx[yyy]} /> / <ColorBox color={xxx["zzz"]} />
@@ -90,13 +98,13 @@ export function maybeBoxNode(node: Node): MaybeBoxNodeReturn {
     // <ColorBox color={xxx.yyy} />
     if (Node.isPropertyAccessExpression(node)) {
         const evaluated = getPropertyAccessedExpressionValue(node)!;
-        return box.cast(evaluated, node);
+        return cache(box.cast(evaluated, node));
     }
 
     // <ColorBox color={isDark ? darkValue : "whiteAlpha.100"} />
     if (Node.isConditionalExpression(node)) {
         const maybeValue = safeEvaluateNode<PrimitiveType | PrimitiveType[] | ExtractedPropMap>(node);
-        if (isNotNullish(maybeValue)) return box.cast(maybeValue, node);
+        if (isNotNullish(maybeValue)) return cache(box.cast(maybeValue, node));
 
         // unresolvable condition will return both possible outcome
         const whenTrueExpr = unwrapExpression(node.getWhenTrue());
@@ -108,7 +116,7 @@ export function maybeBoxNode(node: Node): MaybeBoxNodeReturn {
     // <ColorBox color={fn()} />
     if (Node.isCallExpression(node)) {
         const maybeValue = safeEvaluateNode<PrimitiveType | ExtractedPropMap>(node);
-        return box.cast(maybeValue, node);
+        return cache(box.cast(maybeValue, node));
     }
 
     if (Node.isBinaryExpression(node)) {
@@ -117,7 +125,7 @@ export function maybeBoxNode(node: Node): MaybeBoxNodeReturn {
             const maybeString = tryUnwrapBinaryExpression(node) ?? safeEvaluateNode<string>(node);
             if (!maybeString) return;
 
-            return box.literal(maybeString, node);
+            return cache(box.literal(maybeString, node));
         } else if (
             operatorKind === ts.SyntaxKind.BarBarToken ||
             operatorKind === ts.SyntaxKind.QuestionQuestionToken ||
@@ -410,11 +418,15 @@ const maybePropIdentifierDefinitionValue = (elementAccessed: Identifier, propNam
     }
 };
 
-const typeLiteralCache = new WeakMap();
-const getTypeLiteralNodePropValue = (type: TypeLiteralNode, propName: string) => {
-    const symbol = type.getSymbol();
-    if (symbol && typeLiteralCache.has(symbol)) {
-        return typeLiteralCache.get(symbol);
+const typeLiteralCache = new WeakMap<TypeLiteralNode, null | Map<string, LiteralValue>>();
+const getTypeLiteralNodePropValue = (type: TypeLiteralNode, propName: string): LiteralValue => {
+    if (typeLiteralCache.has(type)) {
+        const map = typeLiteralCache.get(type);
+        if (map === null) return;
+
+        if (map?.has(propName)) {
+            return map.get(propName);
+        }
     }
 
     const members = type.getMembers();
@@ -428,9 +440,7 @@ const getTypeLiteralNodePropValue = (type: TypeLiteralNode, propName: string) =>
     if (Node.isPropertySignature(prop) && prop.isReadonly()) {
         const propType = prop.getTypeNode();
         if (!propType) {
-            if (symbol) {
-                typeLiteralCache.set(symbol, undefined);
-            }
+            typeLiteralCache.set(type, null);
 
             return;
         }
@@ -444,24 +454,24 @@ const getTypeLiteralNodePropValue = (type: TypeLiteralNode, propName: string) =>
         const propValue = getTypeNodeValue(propType);
         logger.scoped("type", { propName, hasPropValue: isNotNullish(propValue) });
         if (isNotNullish(propValue)) {
-            if (symbol) {
-                typeLiteralCache.set(symbol, propValue);
+            if (!typeLiteralCache.has(type)) {
+                typeLiteralCache.set(type, new Map());
             }
+
+            const map = typeLiteralCache.get(type)!;
+            map.set(propName, propValue);
 
             return propValue;
         }
     }
 
-    if (symbol) {
-        typeLiteralCache.set(symbol, undefined);
-    }
+    typeLiteralCache.set(type, null);
 };
 
 const typeNodeCache = new WeakMap();
 const getTypeNodeValue = (type: TypeNode): LiteralValue => {
-    const symbol = type.getSymbol();
-    if (symbol && typeNodeCache.has(symbol)) {
-        return typeNodeCache.get(symbol);
+    if (typeNodeCache.has(type)) {
+        return typeNodeCache.get(type);
     }
 
     if (Node.isLiteralTypeNode(type)) {
@@ -469,9 +479,7 @@ const getTypeNodeValue = (type: TypeNode): LiteralValue => {
         if (Node.isStringLiteral(literal)) {
             const result = literal.getLiteralText();
             logger.scoped("type-value", { result });
-            if (symbol) {
-                typeNodeCache.set(symbol, result);
-            }
+            typeNodeCache.set(type, result);
 
             return result;
         }
@@ -496,20 +504,16 @@ const getTypeNodeValue = (type: TypeNode): LiteralValue => {
 
             const result = Object.fromEntries(entries);
             // logger.lazyScoped("type-value", () => ({ obj: Object.keys(obj) }));
-            if (symbol) {
-                typeNodeCache.set(symbol, result);
-            }
+            typeNodeCache.set(type, result);
 
             return result;
         }
     }
 
-    if (symbol) {
-        typeNodeCache.set(symbol, undefined);
-    }
+    typeNodeCache.set(type, undefined);
 };
 
-export const getIdentifierReferenceValue = (identifier: Identifier) => {
+export const getIdentifierReferenceValue = (identifier: Identifier): LiteralValue | BoxNode => {
     const defs = identifier.getDefinitionNodes();
     while (defs.length > 0) {
         const def = unwrapExpression(defs.shift()!);

@@ -1,7 +1,8 @@
 import { createLogger } from "@box-extractor/logger";
 import { Node } from "ts-morph";
 // eslint-disable-next-line import/no-cycle
-import { getIdentifierReferenceValue } from "./maybeBoxNode";
+import { getIdentifierReferenceValue, onlyStringLiteral } from "./maybeBoxNode";
+import { isBoxNode } from "./type-factory";
 
 const logger = createLogger("box-ex:extractor:name");
 
@@ -16,7 +17,12 @@ export function getNameLiteral(wrapper: Node) {
         if (typeof maybeValue === "string") return maybeValue;
         if (typeof maybeValue === "number") return maybeValue.toString();
         if (typeof maybeValue === "boolean") return maybeValue.toString();
-        if (typeof maybeValue === "object" && maybeValue === null) return "null";
+        if (isBoxNode(maybeValue)) {
+            const value = onlyStringLiteral(maybeValue);
+            if (value) return value;
+        }
+
+        if (typeof maybeValue === "object") return "null";
 
         return wrapper.getText();
     }
