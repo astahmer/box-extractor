@@ -1,15 +1,28 @@
 import path from "node:path";
 import { createFilter, FilterPattern, normalizePath, Plugin, ResolvedConfig, ViteDevServer } from "vite";
 
-import { Node, Project, SourceFile, ts } from "ts-morph";
+import { Identifier, Node, Project, SourceFile, ts } from "ts-morph";
 
-import { ensureAbsolute, extract, FunctionNodesMap, getBoxLiteralValue, unwrapExpression } from "@box-extractor/core";
+import {
+    ensureAbsolute,
+    extract,
+    FunctionNodesMap,
+    getBoxLiteralValue,
+    query,
+    unwrapExpression,
+    getAncestorComponent,
+    getNameLiteral,
+    unquote,
+} from "@box-extractor/core";
 import type { GenericConfig } from "./defineProperties";
 import { createAdapterContext, generateStyleFromExtraction } from "./jit";
 import { endFileScope, setFileScope } from "@vanilla-extract/css/fileScope";
 import evalCode from "eval";
 import fs from "node:fs";
 import esbuild from "esbuild";
+import { createLogger } from "@box-extractor/logger";
+
+const logger = createLogger("box-ex:vanilla-wind:vite");
 
 const extractThemeConfig = (sourceFile: SourceFile) => {
     const configByName = new Map<string, GenericConfig>();
@@ -27,25 +40,30 @@ const extractThemeConfig = (sourceFile: SourceFile) => {
         const isVanillaWind = identifier.getDefinitions().some((def) => {
             const declaration = def.getDeclarationNode();
             if (!declaration) return false;
+
+            const sourcePath = declaration.getSourceFile().getFilePath();
+            if (sourcePath.includes("vanilla-wind/dist")) return true;
+            logger.scoped("extract-theme", {
+                declaration: declaration.getText().slice(0, 20),
+                kind: declaration.getKindName(),
+            });
+
             if (!Node.isImportSpecifier(declaration)) return false;
 
             const importedFrom = declaration.getImportDeclaration().getModuleSpecifierValue();
-            // console.log({
-            //     declaration: declaration.getText().slice(0, 20),
-            //     kind: declaration.getKindName(),
-            //     importedFrom,
-            // });
             return importedFrom === "@box-extractor/vanilla-wind";
         });
-        // console.log({ id, isVanillaWind });
+        logger.scoped("extract-theme", { sourceFile: sourceFile.getFilePath(), isVanillaWind });
         if (!isVanillaWind) return;
 
         // console.log({ from: from.getText(), parent: from.getParentOrThrow().getText() });
         const nameNode = declaration.getNameNode();
         const name = nameNode.getText();
+        // TODO replace getBoxLiteralValue with specific treatment
         const conf = getBoxLiteralValue(query.box) as GenericConfig;
         configByName.set(name, conf);
-        // console.log({ name, conf });
+
+        logger.scoped("extract-theme", { name });
     });
 
     return configByName;
@@ -53,6 +71,11 @@ const extractThemeConfig = (sourceFile: SourceFile) => {
 
 const tsConfigFilePath = "tsconfig.json";
 const virtualExtCss = ".jit.css";
+
+// TODO fix HMR when saving a file with defineProperties (=invalidate)
+// TODO add component ref finder
+
+const normalizeTsx = (id: string) => normalizePath(id.endsWith(".tsx") ? id : id + ".tsx");
 
 export const vanillaWind = (
     options: {
@@ -87,9 +110,12 @@ export const vanillaWind = (
     let project: Project;
     let isIncluded: ReturnType<typeof createFilter>;
 
-    const configByName = new Map<string, GenericConfig>();
+    const configByThemeName = new Map<string, GenericConfig>();
+    const themeNameByComponentName = new Map<string, string>();
+    // const themePathList = new Set<string>(); // TODO
+
     if (options.themeConfig) {
-        options.themeConfig.forEach((conf, name) => configByName.set(name, conf));
+        options.themeConfig.forEach((conf, name) => configByThemeName.set(name, conf));
     }
 
     const cssMap = new Map<string, string>();
@@ -97,6 +123,7 @@ export const vanillaWind = (
     const getAbsoluteFileId = (source: string) => normalizePath(path.join(config?.root ?? "", source));
     const shouldSkipThemeExtract = options.skipThemeExtract ?? options.themePath !== undefined ?? false;
 
+    // TODO try with 1 global adapter ? + official vanilla-extract plugin since it might clash
     // const ctx = createAdapterContext("debug");
     // ctx.setAdapter();
     // setFileScope("vanilla-wind.css.ts", "vanilla-wind");
@@ -106,7 +133,7 @@ export const vanillaWind = (
         enforce: "pre",
         name: "vanilla-wind:theme-extract",
         transform(code, id, _options) {
-            if (!isIncluded(id)) return null;
+            if (!isIncluded(id)) return null; // TODO ?
 
             // avoid full AST-parsing if possible
             if (!code.includes("defineProperties(")) {
@@ -114,29 +141,89 @@ export const vanillaWind = (
                 return null;
             }
 
-            const sourceFile = project.createSourceFile(id.endsWith(".tsx") ? id : id + ".tsx", code, {
+            const filePath = normalizeTsx(id);
+            const sourceFile = project.createSourceFile(filePath, code, {
                 overwrite: true,
                 scriptKind: ts.ScriptKind.TSX,
             });
 
-            extractThemeConfig(sourceFile).forEach((conf, name) => configByName.set(name, conf));
+            const extracted = extractThemeConfig(sourceFile);
+            extracted.forEach((conf, name) => {
+                configByThemeName.set(name, conf);
+                logger("extracted theme config", { name });
+            });
+
+            // if (extracted.size > 0) {
+            //     themePathList.add(filePath);
+            // }
 
             return null;
         },
-        // watchChange(id) {
-        //     // console.log({ id, change });
-        //     if (project && isIncluded(id)) {
-        //         const sourceFile = project.getSourceFile(normalizePath(id));
+        watchChange(id) {
+            if (project && isIncluded(id)) {
+                const sourceFile = project.getSourceFile(normalizeTsx(id));
 
-        //         sourceFile && project.removeSourceFile(sourceFile);
-        //     }
-        // },
+                if (sourceFile) {
+                    project.removeSourceFile(sourceFile);
+                }
+            }
+        },
+    } as Plugin;
+
+    // TODO option to disable it
+    const rootComponentFinderPlugin = {
+        enforce: "pre",
+        name: "vanilla-wind:root-component-finder",
+        transform(code, id, _options) {
+            if (!isIncluded(id)) return null;
+
+            // avoid full AST-parsing if possible
+            if (!code.includes("WithStyledProps")) {
+                // logger("no used component/functions found", id);
+                return null;
+            }
+
+            const sourceFile = project.addSourceFileAtPathIfExists(normalizeTsx(id));
+            if (!sourceFile) return null;
+
+            const identifier = query<Identifier>(
+                sourceFile,
+                'TypeReference:has(Identifier[name="WithStyledProps"]) > TypeQuery > Identifier'
+            )[0];
+            if (!identifier) return null;
+
+            const component = getAncestorComponent(identifier);
+            if (!component) return null;
+
+            const themeName = unquote(getNameLiteral(identifier));
+            const componentName = unquote(getNameLiteral(component));
+
+            themeNameByComponentName.set(componentName, themeName);
+            logger.scoped("root-component-finder", { themeName, componentName });
+        },
+        watchChange(id) {
+            if (project && isIncluded(id)) {
+                const sourceFile = project.getSourceFile(normalizeTsx(id));
+
+                if (sourceFile) {
+                    project.removeSourceFile(sourceFile);
+                }
+            }
+        },
     } as Plugin;
 
     return [
         {
             enforce: "pre",
             name: "vanilla-wind:config",
+            buildStart() {
+                if (options.themePath) {
+                    const themePath = ensureAbsolute(options.themePath, config.root);
+                    // themePathList.add(themePath);
+                    this.addWatchFile(themePath);
+                    logger("watching", { themePath });
+                }
+            },
             configResolved(resolvedConfig) {
                 config = resolvedConfig;
 
@@ -162,11 +249,9 @@ export const vanillaWind = (
                         tsConfigFilePath: tsConfigPath,
                     });
 
-                isIncluded = createFilter(
-                    options.include ?? /\.[jt]sx?$/,
-                    options.exclude ?? [/node_modules/, /\.css\.ts$/],
-                    { resolve: root }
-                );
+                isIncluded = createFilter(options.include ?? /\.[jt]sx?$/, options.exclude ?? [/node_modules/], {
+                    resolve: root,
+                });
 
                 if (options.themePath) {
                     const themePath = ensureAbsolute(options.themePath, config.root);
@@ -178,10 +263,12 @@ export const vanillaWind = (
                         target: "es2019",
                     });
                     const mod = evalCode(transformed.code, themePath, { process }, true) as Record<string, unknown>;
+                    logger("evaluated theme config", { themePath });
                     Object.keys(mod).forEach((key) => {
-                        const conf = (mod[key] as any)?.config as GenericConfig;
+                        const conf = typeof mod[key] === "function" && ((mod[key] as any)?.config as GenericConfig);
                         if (conf) {
-                            configByName.set(key, conf);
+                            configByThemeName.set(key, conf);
+                            logger("found theme config", { key });
                         }
                     });
                 }
@@ -190,6 +277,7 @@ export const vanillaWind = (
                 server = _server;
             },
         },
+        rootComponentFinderPlugin,
         ...(shouldSkipThemeExtract ? ([] as Plugin[]) : [themeExtractPlugin]),
         {
             enforce: "pre",
@@ -227,7 +315,6 @@ export const vanillaWind = (
                 }
 
                 if (!validId.endsWith(virtualExtCss)) {
-                    console.log({ id, css });
                     return;
                 }
 
@@ -238,21 +325,25 @@ export const vanillaWind = (
 
                 // avoid full AST-parsing if possible
                 const functionNames = [] as string[];
-                Array.from(configByName.keys()).forEach((name) => {
+                Array.from(configByThemeName.keys()).forEach((name) => {
                     if (code.includes(`${name}(`)) {
                         functionNames.push(name);
                     }
                 });
 
-                const usedComponentNames = [] as NonNullable<typeof options.components>;
-                (options?.components ?? []).forEach((component) => {
-                    if (code.includes(`<${component.name}`)) {
-                        usedComponentNames.push(component);
-                    }
-                });
-                if (functionNames.length === 0 && usedComponentNames.length === 0) return null;
+                const componentNames = [] as NonNullable<typeof options.components>;
+                (options?.components ?? [])
+                    .concat(
+                        Array.from(themeNameByComponentName.entries()).map(([name, themeName]) => ({ name, themeName }))
+                    )
+                    .forEach((component) => {
+                        if (code.includes(`<${component.name}`)) {
+                            componentNames.push(component);
+                        }
+                    });
+                if (functionNames.length === 0 && componentNames.length === 0) return null;
 
-                const sourceFile = project.createSourceFile(id.endsWith(".tsx") ? id : id + ".tsx", code, {
+                const sourceFile = project.createSourceFile(normalizeTsx(id), code, {
                     overwrite: true,
                     scriptKind: ts.ScriptKind.TSX,
                 });
@@ -261,13 +352,14 @@ export const vanillaWind = (
                 ctx.setAdapter();
                 setFileScope(id);
 
+                logger({ id, functionNames, componentNames });
                 functionNames.forEach((name) => {
                     const extractResult = extract({ ast: sourceFile, functions: [name] });
                     const extracted = extractResult.get(name)! as FunctionNodesMap;
 
-                    const conf = configByName.get(name);
+                    const conf = configByThemeName.get(name);
                     if (!conf) {
-                        console.warn(`no config found for ${name}() usage. (skipped)`);
+                        logger(`no config found for ${name}() usage. (skipped)`);
                         return;
                     }
 
@@ -279,24 +371,23 @@ export const vanillaWind = (
                     });
                 });
 
-                // console.log({ usedComponentNames });
-                usedComponentNames.forEach((component) => {
+                componentNames.forEach((component) => {
                     const name = component.name;
                     const themeName = component.themeName;
                     const extractResult = extract({ ast: sourceFile, components: [name] });
                     const extracted = extractResult.get(name)! as FunctionNodesMap;
 
-                    const conf = configByName.get(themeName);
+                    const conf = configByThemeName.get(themeName);
                     if (!conf) {
-                        console.warn(`no config found for <${name} /> usage. (skipped)`);
+                        logger(`no config found for <${name} /> usage. (skipped)`);
                         return;
                     }
 
                     const result = generateStyleFromExtraction(themeName, extracted, conf);
-                    console.log({ result: result.classMap });
+                    logger({ result: result.classMap });
 
                     result.toReplace.forEach((className, node) => {
-                        console.log({ node: node.getText(), kind: node.getKindName(), className });
+                        // console.log({ node: node.getText(), kind: node.getKindName(), className });
                         if (Node.isJsxSelfClosingElement(node) || Node.isJsxOpeningElement(node)) {
                             node.addAttribute({ name: "_styled", initializer: `"${className}"` });
                         } else if (Node.isIdentifier(node)) {
@@ -319,19 +410,13 @@ export const vanillaWind = (
                 endFileScope();
                 ctx.removeAdapter();
 
-                // console.log({
-                //     id,
-                //     css,
-                //     absoluteId,
-                //     current: cssMap.get(absoluteId),
-                //     hasDiff: cssMap.get(absoluteId) !== css,
-                // });
+                logger({ absoluteId, current: cssMap.get(absoluteId), hasDiff: cssMap.get(absoluteId) !== css });
                 if (server && cssMap.has(absoluteId) && cssMap.get(absoluteId) !== css) {
                     const { moduleGraph } = server;
                     const [module] = Array.from(moduleGraph.getModulesByFile(absoluteId) ?? []);
 
                     if (module) {
-                        // console.log("invalidating");
+                        logger("invalidating", absoluteId);
                         moduleGraph.invalidateModule(module);
 
                         // Vite uses this timestamp to add `?t=` query string automatically for HMR.
@@ -344,6 +429,15 @@ export const vanillaWind = (
                 return {
                     code: `import "${absoluteId}";\n` + sourceFile.getFullText(),
                 };
+            },
+            watchChange(id) {
+                if (project && isIncluded(id)) {
+                    const sourceFile = project.getSourceFile(normalizeTsx(id));
+
+                    if (sourceFile) {
+                        project.removeSourceFile(sourceFile);
+                    }
+                }
             },
         },
     ] as Plugin[];
