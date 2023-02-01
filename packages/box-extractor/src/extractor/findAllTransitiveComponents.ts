@@ -106,7 +106,7 @@ export const findAllTransitiveComponents = ({ transitiveMap, ...options }: FindA
     return namesWithSpread;
 };
 
-function getAncestorComponent(node: Node) {
+export function getAncestorComponent(node: Node) {
     let result: Node | undefined;
 
     node.getParentWhile((node) => {
