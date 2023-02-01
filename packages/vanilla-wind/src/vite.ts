@@ -28,20 +28,23 @@ const extractThemeConfig = (sourceFile: SourceFile) => {
     const configByName = new Map<string, GenericConfig>();
     const extractedTheme = extract({ ast: sourceFile, functions: ["defineProperties"] });
     const queryList = (extractedTheme.get("defineProperties") as FunctionNodesMap).queryList;
+    const from = sourceFile.getFilePath().toString();
+    logger.scoped("extract-theme", { from, queryList: queryList.length });
 
     queryList.forEach((query) => {
-        const from = query.fromNode();
-        const declaration = from.getParentIfKind(ts.SyntaxKind.VariableDeclaration);
+        const fromNode = query.fromNode();
+        const declaration = fromNode.getParentIfKind(ts.SyntaxKind.VariableDeclaration);
         if (!declaration) return;
 
-        const identifier = unwrapExpression(from.getExpression());
+        const identifier = unwrapExpression(fromNode.getExpression());
         if (!Node.isIdentifier(identifier)) return;
 
         const isVanillaWind = identifier.getDefinitions().some((def) => {
             const declaration = def.getDeclarationNode();
             if (!declaration) return false;
 
-            const sourcePath = declaration.getSourceFile().getFilePath();
+            const sourcePath = declaration.getSourceFile().getFilePath().toString();
+            logger.scoped("extract-theme", { from, sourcePath });
             if (sourcePath.includes("vanilla-wind/dist")) return true;
             logger.scoped("extract-theme", {
                 declaration: declaration.getText().slice(0, 20),
@@ -53,7 +56,7 @@ const extractThemeConfig = (sourceFile: SourceFile) => {
             const importedFrom = declaration.getImportDeclaration().getModuleSpecifierValue();
             return importedFrom === "@box-extractor/vanilla-wind";
         });
-        logger.scoped("extract-theme", { sourceFile: sourceFile.getFilePath(), isVanillaWind });
+        logger.scoped("extract-theme", { sourceFile: sourceFile.getFilePath().toString(), isVanillaWind });
         if (!isVanillaWind) return;
 
         // console.log({ from: from.getText(), parent: from.getParentOrThrow().getText() });
@@ -72,7 +75,6 @@ const extractThemeConfig = (sourceFile: SourceFile) => {
 const tsConfigFilePath = "tsconfig.json";
 const virtualExtCss = ".jit.css";
 
-// TODO fix HMR when saving a file with defineProperties (=invalidate)
 // TODO add component ref finder
 
 const normalizeTsx = (id: string) => normalizePath(id.endsWith(".tsx") ? id : id + ".tsx");
@@ -83,7 +85,6 @@ export const vanillaWind = (
         themePath?: string;
         /** if you know your theme(s) config(s) beforehand, use this so there will be less AST parsing needed */
         themeConfig?: Map<string, GenericConfig>;
-        skipThemeExtract?: boolean;
         /** if you know your component names + theme config associated beforehand, use this so there will be less AST parsing needed */
         components?: Array<{ name: string; themeName: string }>;
         // TypeReference:has(Identifier[name="WithStyledProps"]):has(TypeQuery)
@@ -112,36 +113,90 @@ export const vanillaWind = (
 
     const configByThemeName = new Map<string, GenericConfig>();
     const themeNameByComponentName = new Map<string, string>();
-    // const themePathList = new Set<string>(); // TODO
+    const themePathList = new Set<string>(); // TODO
 
     if (options.themeConfig) {
         options.themeConfig.forEach((conf, name) => configByThemeName.set(name, conf));
     }
 
-    const cssMap = new Map<string, string>();
+    const cssCacheMap = new Map<string, string>();
+    const themeCacheMap = new Map<string, string>();
+    const componentsCacheMap = new Map<string, string>();
 
     const getAbsoluteFileId = (source: string) => normalizePath(path.join(config?.root ?? "", source));
-    const shouldSkipThemeExtract = options.skipThemeExtract ?? options.themePath !== undefined ?? false;
+    const evalTheme = (themePath: string, content: string) => {
+        const transformed = esbuild.transformSync(content, {
+            platform: "node",
+            loader: "ts",
+            format: "cjs",
+            target: "es2019",
+        });
+        const mod = evalCode(transformed.code, themePath, { process }, true) as Record<string, unknown>;
+        logger("evaluated theme config", { themePath });
+
+        const themeNameList = [] as string[];
+        Object.keys(mod).forEach((key) => {
+            const conf = typeof mod[key] === "function" && ((mod[key] as any)?.config as GenericConfig);
+            if (conf) {
+                configByThemeName.set(key, conf);
+                themeNameList.push(key);
+                logger("found theme config", { key });
+            }
+        });
+
+        return themeNameList;
+    };
 
     // TODO try with 1 global adapter ? + official vanilla-extract plugin since it might clash
     // const ctx = createAdapterContext("debug");
     // ctx.setAdapter();
     // setFileScope("vanilla-wind.css.ts", "vanilla-wind");
 
-    // only used if skipThemeExtract !== false
     const themeExtractPlugin = {
         enforce: "pre",
         name: "vanilla-wind:theme-extract",
-        transform(code, id, _options) {
-            if (!isIncluded(id)) return null; // TODO ?
+        // Re-parse theme files when they change
+        async handleHotUpdate({ file, modules }) {
+            if (!themePathList.has(file)) return;
+            try {
+                const virtuals: any[] = [];
+                const invalidate = () => {
+                    const found = server.moduleGraph.getModulesByFile(file);
+                    found?.forEach((m) => {
+                        virtuals.push(m);
+                        server.moduleGraph.invalidateModule(m);
+                        logger("invalidate HMR", { file: m.id });
+                    });
+                };
 
-            // avoid full AST-parsing if possible
-            if (!code.includes("defineProperties(")) {
-                // logger("no used component/functions found", id);
+                invalidate();
+                // load new CSS
+                await server.ssrLoadModule(file);
+                return [...modules, ...virtuals];
+            } catch (error) {
+                console.error(error);
+                throw error;
+            }
+        },
+        transform(code, id, _options) {
+            if (!isIncluded(id)) return null;
+
+            const validId = id.split("?")[0]!;
+
+            if (themeCacheMap.has(validId) && themeCacheMap.get(validId) === code) {
+                logger.scoped("theme-extract", "[CACHED] no diff", validId);
                 return null;
             }
 
-            const filePath = normalizeTsx(id);
+            themeCacheMap.set(validId, code);
+
+            // avoid full AST-parsing if possible
+            if (!code.includes("defineProperties(")) {
+                themeCacheMap.delete(validId);
+                return null;
+            }
+
+            const filePath = normalizeTsx(validId);
             const sourceFile = project.createSourceFile(filePath, code, {
                 overwrite: true,
                 scriptKind: ts.ScriptKind.TSX,
@@ -150,15 +205,16 @@ export const vanillaWind = (
             const extracted = extractThemeConfig(sourceFile);
             extracted.forEach((conf, name) => {
                 configByThemeName.set(name, conf);
-                logger("extracted theme config", { name });
+                logger.scoped("theme-extract", "extracted theme config", { name });
             });
 
-            // if (extracted.size > 0) {
-            //     themePathList.add(filePath);
-            // }
+            if (extracted.size > 0) {
+                themePathList.add(filePath);
+            }
 
             return null;
         },
+        // TODO check if useful ?
         watchChange(id) {
             if (project && isIncluded(id)) {
                 const sourceFile = project.getSourceFile(normalizeTsx(id));
@@ -170,36 +226,48 @@ export const vanillaWind = (
         },
     } as Plugin;
 
-    // TODO option to disable it
     const rootComponentFinderPlugin = {
         enforce: "pre",
         name: "vanilla-wind:root-component-finder",
         transform(code, id, _options) {
             if (!isIncluded(id)) return null;
 
+            const validId = id.split("?")[0]!;
+
             // avoid full AST-parsing if possible
             if (!code.includes("WithStyledProps")) {
                 // logger("no used component/functions found", id);
+                componentsCacheMap.delete(validId);
                 return null;
             }
 
-            const sourceFile = project.addSourceFileAtPathIfExists(normalizeTsx(id));
+            if (componentsCacheMap.has(validId) && componentsCacheMap.get(validId) === code) {
+                logger.scoped("root-component-finder", "[CACHED] no diff", validId);
+                return null;
+            }
+
+            componentsCacheMap.set(validId, code);
+
+            const sourceFile = project.createSourceFile(normalizeTsx(validId), code, {
+                overwrite: true,
+                scriptKind: ts.ScriptKind.TSX,
+            });
             if (!sourceFile) return null;
 
-            const identifier = query<Identifier>(
+            const identifierList = query<Identifier>(
                 sourceFile,
                 'TypeReference:has(Identifier[name="WithStyledProps"]) > TypeQuery > Identifier'
-            )[0];
-            if (!identifier) return null;
+            );
+            identifierList.forEach((identifier) => {
+                const component = getAncestorComponent(identifier);
+                if (!component) return null;
 
-            const component = getAncestorComponent(identifier);
-            if (!component) return null;
+                const themeName = unquote(getNameLiteral(identifier));
+                const componentName = unquote(getNameLiteral(component));
 
-            const themeName = unquote(getNameLiteral(identifier));
-            const componentName = unquote(getNameLiteral(component));
-
-            themeNameByComponentName.set(componentName, themeName);
-            logger.scoped("root-component-finder", { themeName, componentName });
+                themeNameByComponentName.set(componentName, themeName);
+                logger.scoped("root-component-finder", { themeName, componentName });
+            });
         },
         watchChange(id) {
             if (project && isIncluded(id)) {
@@ -219,7 +287,7 @@ export const vanillaWind = (
             buildStart() {
                 if (options.themePath) {
                     const themePath = ensureAbsolute(options.themePath, config.root);
-                    // themePathList.add(themePath);
+                    themePathList.add(themePath);
                     this.addWatchFile(themePath);
                     logger("watching", { themePath });
                 }
@@ -256,29 +324,15 @@ export const vanillaWind = (
                 if (options.themePath) {
                     const themePath = ensureAbsolute(options.themePath, config.root);
                     const content = fs.readFileSync(themePath, "utf8");
-                    const transformed = esbuild.transformSync(content, {
-                        platform: "node",
-                        loader: "ts",
-                        format: "cjs",
-                        target: "es2019",
-                    });
-                    const mod = evalCode(transformed.code, themePath, { process }, true) as Record<string, unknown>;
-                    logger("evaluated theme config", { themePath });
-                    Object.keys(mod).forEach((key) => {
-                        const conf = typeof mod[key] === "function" && ((mod[key] as any)?.config as GenericConfig);
-                        if (conf) {
-                            configByThemeName.set(key, conf);
-                            logger("found theme config", { key });
-                        }
-                    });
+                    evalTheme(themePath, content);
                 }
             },
             configureServer(_server) {
                 server = _server;
             },
         },
+        themeExtractPlugin,
         rootComponentFinderPlugin,
-        ...(shouldSkipThemeExtract ? ([] as Plugin[]) : [themeExtractPlugin]),
         {
             enforce: "pre",
             name: "vanilla-wind:usage-extract",
@@ -295,7 +349,7 @@ export const vanillaWind = (
                 // There should always be an entry in the `cssMap` here.
                 // The only valid scenario for a missing one is if someone had written
                 // a file in their app using the .jit.css extension
-                if (cssMap.has(absoluteId)) {
+                if (cssCacheMap.has(absoluteId)) {
                     // Keep the original query string for HMR.
                     return absoluteId + (query ? `?${query}` : "");
                 }
@@ -304,11 +358,11 @@ export const vanillaWind = (
                 const [validId] = id.split("?");
                 if (!validId) return;
 
-                if (!cssMap.has(validId)) {
+                if (!cssCacheMap.has(validId)) {
                     return;
                 }
 
-                const css = cssMap.get(validId);
+                const css = cssCacheMap.get(validId);
 
                 if (typeof css !== "string") {
                     return;
@@ -322,6 +376,8 @@ export const vanillaWind = (
             },
             transform(code, id, _options) {
                 if (!isIncluded(id)) return null;
+
+                const validId = id.split("?")[0]!;
 
                 // avoid full AST-parsing if possible
                 const functionNames = [] as string[];
@@ -341,18 +397,22 @@ export const vanillaWind = (
                             componentNames.push(component);
                         }
                     });
-                if (functionNames.length === 0 && componentNames.length === 0) return null;
 
-                const sourceFile = project.createSourceFile(normalizeTsx(id), code, {
+                if (functionNames.length === 0 && componentNames.length === 0) {
+                    return null;
+                }
+
+                const sourceFile = project.createSourceFile(normalizeTsx(validId), code, {
                     overwrite: true,
                     scriptKind: ts.ScriptKind.TSX,
                 });
 
+                const absoluteId = validId + virtualExtCss;
                 const ctx = createAdapterContext("debug");
                 ctx.setAdapter();
-                setFileScope(id);
+                setFileScope(validId);
 
-                logger({ id, functionNames, componentNames });
+                logger({ id: validId, functionNames, componentNames });
                 functionNames.forEach((name) => {
                     const extractResult = extract({ ast: sourceFile, functions: [name] });
                     const extracted = extractResult.get(name)! as FunctionNodesMap;
@@ -366,6 +426,7 @@ export const vanillaWind = (
                     const result = generateStyleFromExtraction(name, extracted, conf);
                     result.toReplace.forEach((className, node) => {
                         if (node.wasForgotten()) return;
+
                         // console.log({ className, node: node.getText(), kind: node.getKindName() });
                         node.replaceWithText(`"${className}"`);
                     });
@@ -404,19 +465,17 @@ export const vanillaWind = (
                 });
 
                 const styles = ctx.getCss();
-                const css = styles.cssMap.get(id)!;
-                const absoluteId = id + virtualExtCss;
+                const css = styles.cssMap.get(validId)!;
 
                 endFileScope();
                 ctx.removeAdapter();
 
-                logger({ absoluteId, current: cssMap.get(absoluteId), hasDiff: cssMap.get(absoluteId) !== css });
-                if (server && cssMap.has(absoluteId) && cssMap.get(absoluteId) !== css) {
+                if (server && cssCacheMap.has(absoluteId) && cssCacheMap.get(absoluteId) !== css) {
                     const { moduleGraph } = server;
                     const [module] = Array.from(moduleGraph.getModulesByFile(absoluteId) ?? []);
 
                     if (module) {
-                        logger("invalidating", absoluteId);
+                        logger("invalidating after css change", absoluteId);
                         moduleGraph.invalidateModule(module);
 
                         // Vite uses this timestamp to add `?t=` query string automatically for HMR.
@@ -424,7 +483,7 @@ export const vanillaWind = (
                     }
                 }
 
-                cssMap.set(absoluteId, css);
+                cssCacheMap.set(absoluteId, css);
 
                 return {
                     code: `import "${absoluteId}";\n` + sourceFile.getFullText(),
