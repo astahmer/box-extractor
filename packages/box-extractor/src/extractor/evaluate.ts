@@ -55,7 +55,7 @@ const evaluateExpression = (node: Expression, morphTypeChecker: TypeChecker) => 
                     path: result.reason.node.getSourceFile().fileName + ":" + result.reason.node.getFullStart(),
                     start: result.reason.node.getFullStart(),
                     end: result.reason.node.getEnd(),
-                    text: result.reason.node.getText().slice(0, 100),
+                    // text: result.reason.node.getText().slice(0, 100),
                     kind: ts.SyntaxKind[result.reason.node.kind],
                 },
             },
