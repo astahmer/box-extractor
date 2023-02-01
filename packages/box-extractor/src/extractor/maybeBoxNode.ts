@@ -304,12 +304,12 @@ const getPropValue = (initializer: ObjectLiteralExpression, propName: string) =>
     const property =
         initializer.getProperty(propName) ?? initializer.getProperties().find((p) => findProperty(p, propName));
 
-    logger.lazyScoped("get-prop", () => ({
+    logger.scoped("get-prop", () => ({
         propName,
-        property: property?.getText().slice(0, 100),
+        // property: property?.getText().slice(0, 100),
         propertyKind: property?.getKindName(),
-        properties: initializer.getProperties().map((p) => p.getText().slice(0, 100)),
-        initializer: initializer.getText().slice(0, 100),
+        // properties: initializer.getProperties().map((p) => p.getText().slice(0, 100)),
+        // initializer: initializer.getText().slice(0, 100),
         initializerKind: initializer.getKindName(),
     }));
 
@@ -357,21 +357,21 @@ const maybePropIdentifierDefinitionValue = (elementAccessed: Identifier, propNam
     const defs = elementAccessed.getDefinitionNodes();
     while (defs.length > 0) {
         const def = unwrapExpression(defs.shift()!);
-        logger.lazyScoped("id-def", () => ({
-            def: def?.getText()?.slice(0, 100),
-            elementAccessed: elementAccessed.getText()?.slice(0, 100),
+        logger.scoped("id-def", {
+            // def: def?.getText()?.slice(0, 100),
+            // elementAccessed: elementAccessed.getText()?.slice(0, 100),
             kind: def?.getKindName(),
-            type: def?.getType().getText()?.slice(0, 100),
+            // type: def?.getType().getText()?.slice(0, 100),
             propName,
-        }));
+        });
 
         if (Node.isVariableDeclaration(def)) {
             const init = def.getInitializer();
-            logger.lazyScoped("id-def", () => ({
+            logger("id-def", {
                 initializer: init?.getText(),
                 kind: init?.getKindName(),
                 propName,
-            }));
+            });
 
             if (!init) {
                 const type = def.getTypeNode();
@@ -386,11 +386,11 @@ const maybePropIdentifierDefinitionValue = (elementAccessed: Identifier, propNam
             }
 
             const initializer = unwrapExpression(init);
-            logger.lazyScoped("id-def", () => ({
+            logger.scoped("id-def", {
                 initializer: initializer.getText(),
                 kind: initializer.getKindName(),
                 propName,
-            }));
+            });
 
             if (Node.isObjectLiteralExpression(initializer)) {
                 return getPropValue(initializer, propName);
@@ -410,34 +410,70 @@ const maybePropIdentifierDefinitionValue = (elementAccessed: Identifier, propNam
     }
 };
 
+const typeLiteralCache = new WeakMap();
 const getTypeLiteralNodePropValue = (type: TypeLiteralNode, propName: string) => {
+    const symbol = type.getSymbol();
+    if (symbol && typeLiteralCache.has(symbol)) {
+        return typeLiteralCache.get(symbol);
+    }
+
     const members = type.getMembers();
     const prop = members.find((member) => Node.isPropertySignature(member) && member.getName() === propName);
 
-    logger.scoped("type", { prop: prop?.getText().slice(0, 20), propKind: prop?.getKindName() });
+    logger.scoped("type", {
+        // prop: prop?.getText().slice(0, 20),
+        propKind: prop?.getKindName(),
+    });
 
     if (Node.isPropertySignature(prop) && prop.isReadonly()) {
         const propType = prop.getTypeNode();
-        if (!propType) return;
+        if (!propType) {
+            if (symbol) {
+                typeLiteralCache.set(symbol, undefined);
+            }
 
-        logger.lazyScoped("type", () => ({
-            propType: propType.getText().slice(0, 20),
-            propTypeKind: propType.getKindName(),
-            propName,
-        }));
+            return;
+        }
+
+        // logger.lazyScoped("type", () => ({
+        //     propType: propType.getText().slice(0, 20),
+        //     propTypeKind: propType.getKindName(),
+        //     propName,
+        // }));
 
         const propValue = getTypeNodeValue(propType);
         logger.scoped("type", { propName, hasPropValue: isNotNullish(propValue) });
-        if (isNotNullish(propValue)) return propValue;
+        if (isNotNullish(propValue)) {
+            if (symbol) {
+                typeLiteralCache.set(symbol, propValue);
+            }
+
+            return propValue;
+        }
+    }
+
+    if (symbol) {
+        typeLiteralCache.set(symbol, undefined);
     }
 };
 
+const typeNodeCache = new WeakMap();
 const getTypeNodeValue = (type: TypeNode): LiteralValue => {
+    const symbol = type.getSymbol();
+    if (symbol && typeNodeCache.has(symbol)) {
+        return typeNodeCache.get(symbol);
+    }
+
     if (Node.isLiteralTypeNode(type)) {
         const literal = type.getLiteral();
         if (Node.isStringLiteral(literal)) {
-            logger.scoped("type-value", { str: literal.getLiteralText() });
-            return literal.getLiteralText();
+            const result = literal.getLiteralText();
+            logger.scoped("type-value", { result });
+            if (symbol) {
+                typeNodeCache.set(symbol, result);
+            }
+
+            return result;
         }
     }
 
@@ -450,7 +486,7 @@ const getTypeNodeValue = (type: TypeNode): LiteralValue => {
                     const nameNode = member.getNameNode();
                     const nameText = nameNode.getText();
                     const name = getNameLiteral(nameNode);
-                    logger({ nameNode: nameText, nameNodeKind: nameNode.getKindName(), name });
+                    logger({ nameNodeKind: nameNode.getKindName(), name });
                     if (!name) return;
 
                     const value = getTypeLiteralNodePropValue(type, nameText);
@@ -458,10 +494,18 @@ const getTypeNodeValue = (type: TypeNode): LiteralValue => {
                 })
                 .filter(isNotNullish);
 
-            const obj = Object.fromEntries(entries);
-            logger.lazyScoped("type-value", () => ({ obj: Object.keys(obj) }));
-            return obj;
+            const result = Object.fromEntries(entries);
+            // logger.lazyScoped("type-value", () => ({ obj: Object.keys(obj) }));
+            if (symbol) {
+                typeNodeCache.set(symbol, result);
+            }
+
+            return result;
         }
+    }
+
+    if (symbol) {
+        typeNodeCache.set(symbol, undefined);
     }
 };
 
@@ -480,7 +524,7 @@ export const getIdentifierReferenceValue = (identifier: Identifier) => {
         // const staticColor =
         if (Node.isVariableDeclaration(def)) {
             const init = def.getInitializer();
-            logger.lazyScoped("id-ref", () => ({
+            logger.scoped("id-ref", () => ({
                 initializer: init?.getText(),
                 kind: init?.getKindName(),
             }));
@@ -489,7 +533,7 @@ export const getIdentifierReferenceValue = (identifier: Identifier) => {
                 const type = def.getTypeNode();
                 if (!type) return;
 
-                logger.scoped("id-type", { type: type.getText().slice(0, 100), kind: type.getKindName() });
+                logger.scoped("id-type", { kind: type.getKindName() });
                 if (Node.isTypeLiteral(type)) {
                     const maybeTypeValue = getTypeNodeValue(type);
                     if (isNotNullish(maybeTypeValue)) return maybeTypeValue;
@@ -732,7 +776,7 @@ const getArrayElementValueAtIndex = (array: ArrayLiteralExpression, index: numbe
 
 const getPropertyAccessedExpressionValue = (expression: PropertyAccessExpression): LiteralValue => {
     const maybeValue = safeEvaluateNode<PrimitiveType | PrimitiveType[] | ExtractedPropMap>(expression);
-    logger.scoped("prop-access-value", { maybeValue, expression: expression.getText().slice(0, 100) });
+    logger.scoped("prop-access-value", { maybeValue: Boolean(maybeValue) });
     if (isNotNullish(maybeValue)) return maybeValue;
 
     const propName = expression.getName();
@@ -740,7 +784,7 @@ const getPropertyAccessedExpressionValue = (expression: PropertyAccessExpression
 
     logger.scoped("prop-access-value", {
         propName,
-        elementAccessed: elementAccessed.getText().slice(0, 100),
+        // elementAccessed: elementAccessed.getText().slice(0, 100),
         elementAccessedKind: elementAccessed.getKindName(),
     });
 
