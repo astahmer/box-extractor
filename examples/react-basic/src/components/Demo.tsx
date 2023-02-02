@@ -1,7 +1,8 @@
 /* eslint-disable unicorn/no-abusive-eslint-disable */
 /* eslint-disable */
+import type { WithStyledProps } from "@box-extractor/vanilla-wind";
 import { PropsWithChildren, useState } from "react";
-import { themeSprinkles } from "@box-extractor/vanilla-theme/css";
+import { tw } from "../theme";
 
 const staticColor = "gray.100" as const;
 const staticColor2 = "gray.200" as any;
@@ -64,10 +65,10 @@ export const Demo = () => {
                         <input type="checkbox" onChange={() => setIsShown((current) => !current)} />
                     </div>
                     {/* <DessertBox>box</DessertBox> */}
-                    <div className={themeSprinkles({ color: "blue.100" })}>blue100 without ColorBox</div>
-                    <div {...{ className: themeSprinkles({ color: "blue.200" }) }}>blue200 without ColorBox</div>
-                    <div {...{ ...{ className: themeSprinkles({ color: "blue.300" }) } }}>blue300 without ColorBox</div>
-                    <div {...{ ...{ className: themeSprinkles(anotherObject as any) } }}>blue400 without ColorBox</div>
+                    <div className={tw({ color: "blue.100" })}>blue100 without ColorBox</div>
+                    <div {...{ className: tw({ color: "blue.200" }) }}>blue200 without ColorBox</div>
+                    <div {...{ ...{ className: tw({ color: "blue.300" }) } }}>blue300 without ColorBox</div>
+                    <div {...{ ...{ className: tw(anotherObject as any) } }}>blue400 without ColorBox</div>
                     {/* self closing */}
                     <ColorBox color="red.200" />
 
@@ -216,8 +217,8 @@ export const Demo = () => {
     );
 };
 
-const ColorBox = ({ children, ...props }: PropsWithChildren<ThemeSpr>) => {
-    return <div className={themeSprinkles(props)} children={children} />;
+const ColorBox = ({ children, ...props }: PropsWithChildren<WithStyledProps<typeof tw>>) => {
+    return <div className={tw(props)} children={children} />;
 };
 
 // const Box = ColorBox

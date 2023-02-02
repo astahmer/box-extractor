@@ -1,7 +1,10 @@
-// import { defineProperties, ThemeProps, WithStyledProps } from "@box-extractor/vanilla-wind";
-// import { PropsWithChildren, useState } from "react";
-import { useState } from "react";
+import { defineProperties, ThemeProps, WithStyledProps } from "@box-extractor/vanilla-wind";
+import { PropsWithChildren, useState } from "react";
+// import { useState } from "react";
 import "./App.css";
+import { BoxDemo } from "./components/BoxDemo";
+// import { Demo } from "./components/Demo";
+import { MinimalSprinklesDemo } from "./components/MinimalSprinklesDemo";
 import { tw } from "./theme";
 
 function App() {
@@ -20,15 +23,18 @@ function App() {
                         <span onClick={() => setState((current) => current + 1)} className={tw({ color: "pink" })}>
                             class: ({className})
                         </span>
+                        <BoxDemo />
+                        <MinimalSprinklesDemo />
+                        {/* <Demo /> */}
                         {/* <Box color="red.200" fontSize="4xl">
                             boxboxbox
                         </Box> */}
-                        {/* <AnotherBox padding="20" backgroundColor="green.200">
-                            {`<AnotherBox padding="20" backgroundColor="green.200">texta</AnotherBox`}
-                        </AnotherBox> */}
-                        {/* <BoxWithAnotherTheme background="brand">
+                        <AnotherBox padding="20" backgroundColor="green.200" color="blue">
+                            {'<AnotherBox padding="20" backgroundColor="green.200">texta</AnotherBox'}
+                        </AnotherBox>
+                        <BoxWithAnotherTheme background="brand">
                             BoxWithAnotherThemeBoxWithAnotherThemeBoxWithAnotherTheme
-                        </BoxWithAnotherTheme> */}
+                        </BoxWithAnotherTheme>
                     </div>
                 </div>
             </div>
@@ -41,22 +47,22 @@ function App() {
 //     return <div className={_styled}>{children}</div>;
 // };
 
-// // const AnotherBox = (props: WithStyledProps<typeof tw> & PropsWithChildren) => {
-// //     const { _styled, children, ...rest } = props as Omit<typeof props, keyof ThemeProps<typeof tw>>;
-// //     return <div className={_styled}>{children}</div>;
-// // };
+const AnotherBox = (props: WithStyledProps<typeof tw> & PropsWithChildren) => {
+    const { _styled, children, ...rest } = props as Omit<typeof props, keyof ThemeProps<typeof tw>>;
+    return <div className={_styled}>{children}</div>;
+};
 
-// const anotherTheme = defineProperties({
-//     properties: {
-//         background: {
-//             brand: "black",
-//         },
-//     },
-// });
+const anotherTheme = defineProperties({
+    properties: {
+        background: {
+            brand: "black",
+        },
+    },
+});
 
-// const BoxWithAnotherTheme = (props: WithStyledProps<typeof anotherTheme> & PropsWithChildren) => {
-//     const { _styled, children, ...rest } = props as Omit<typeof props, keyof ThemeProps<typeof anotherTheme>>;
-//     return <div className={_styled}>{children}</div>;
-// };
+const BoxWithAnotherTheme = (props: WithStyledProps<typeof anotherTheme> & PropsWithChildren) => {
+    const { _styled, children, ...rest } = props as Omit<typeof props, keyof ThemeProps<typeof anotherTheme>>;
+    return <div className={_styled}>{children}</div>;
+};
 
 export default App;
