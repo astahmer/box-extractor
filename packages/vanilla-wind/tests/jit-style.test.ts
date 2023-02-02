@@ -1025,7 +1025,6 @@ it("minimal example with <Box /> component", () => {
     const extractResult = extractFromCode(sourceFile, { components: [name] });
     const extracted = extractResult.get(name)! as ComponentNodesMap;
 
-    // TODO `tw`
     const conf = configByName.get("tw")!;
     const boxStyles = generateStyleFromExtraction(name, extracted, conf.config);
 
@@ -1040,7 +1039,7 @@ it("minimal example with <Box /> component", () => {
     `);
 
     boxStyles.toReplace.forEach((className, node) => {
-        console.log({ node: node.getText(), kind: node.getKindName(), className });
+        // console.log({ node: node.getText(), kind: node.getKindName(), className });
         if (Node.isJsxSelfClosingElement(node) || Node.isJsxOpeningElement(node)) {
             node.addAttribute({ name: "_styled", initializer: `"${className}"` });
         } else if (Node.isIdentifier(node)) {

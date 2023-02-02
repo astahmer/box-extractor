@@ -3,9 +3,9 @@ import { BoxNode, isPrimitiveType, LiteralValue, SingleLiteralValue } from "./ty
 import type { PrimitiveType } from "./types";
 import { isNotNullish } from "./utils";
 import type { MaybeBoxNodeReturn } from "./maybeBoxNode";
-import { createLogger } from "@box-extractor/logger";
+// import { createLogger } from "@box-extractor/logger";
 
-const logger = createLogger("box-ex:extractor:get-literal");
+// const logger = createLogger("box-ex:extractor:get-literal");
 
 const cacheMap = new WeakMap();
 const innerGetLiteralValue = (valueType: PrimitiveType | BoxNode | undefined): LiteralValue | undefined => {
@@ -41,14 +41,14 @@ const innerGetLiteralValue = (valueType: PrimitiveType | BoxNode | undefined): L
 
 export const getBoxLiteralValue = (maybeBox: MaybeBoxNodeReturn): LiteralValue | undefined => {
     if (!isNotNullish(maybeBox)) return;
-    logger({ maybeBox });
+    // logger({ maybeBox });
 
     if (cacheMap.has(maybeBox)) return cacheMap.get(maybeBox);
     if (Array.isArray(maybeBox)) {
         const values = maybeBox
             .map((valueType) => innerGetLiteralValue(valueType))
             .filter(isNotNullish) as SingleLiteralValue[];
-        logger({ values });
+        // logger({ values });
 
         let result: any = values;
         if (values.length === 0) result = undefined;
