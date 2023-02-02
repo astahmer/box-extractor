@@ -108,7 +108,7 @@ export const vanillaWind = (
 
     const configByThemeName = new Map<string, GenericConfig>();
     const themeNameByComponentName = new Map<string, string>();
-    const themePathList = new Set<string>(); // TODO
+    const themePathList = new Set<string>();
 
     if (options.themeConfig) {
         options.themeConfig.forEach((conf, name) => configByThemeName.set(name, conf));
