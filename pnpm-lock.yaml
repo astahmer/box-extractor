@@ -214,9 +214,11 @@ importers:
   packages/logger:
     specifiers:
       '@types/humanize-duration': ^3.27.1
+      callsites: ^4.0.0
       humanize-duration: ^3.28.0
       picocolors: ^1.0.0
     dependencies:
+      callsites: 4.0.0
       humanize-duration: 3.28.0
       picocolors: 1.0.0
     devDependencies:
@@ -4140,6 +4142,11 @@ packages:
     resolution: {integrity: sha512-P8BjAsXvZS+VIDUI11hHCQEv74YT67YUi5JJFNWIqL235sBmjX4+qx9Muvls5ivyNENctx46xQLQ3aTuE7ssaQ==}
     engines: {node: '>=6'}
     dev: true
+
+  /callsites/4.0.0:
+    resolution: {integrity: sha512-y3jRROutgpKdz5vzEhWM34TidDU8vkJppF8dszITeb1PQmSqV3DTxyV8G/lyO/DNvtE1YTedehmw9MPZsCBHxQ==}
+    engines: {node: '>=12.20'}
+    dev: false
 
   /camelcase-keys/6.2.2:
     resolution: {integrity: sha512-YrwaA0vEKazPBkn0ipTiMpSajYDSe+KjQfrjhcBMxJt/znbvlHd8Pw/Vamaz5EB4Wfhs3SUR3Z9mwRu/P3s3Yg==}

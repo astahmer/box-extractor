@@ -5,13 +5,14 @@ import pc from "picocolors";
 // needed for preconstruct
 // eslint-disable-next-line unicorn/import-style, unicorn/prefer-node-protocol
 import util from "util";
+import type { CallSite } from "callsites";
 import humanize from "humanize-duration";
 
 if (typeof process !== "undefined" && typeof util !== "undefined" && util?.inspect?.defaultOptions) {
     util.inspect.defaultOptions.depth = 3;
     util.inspect.defaultOptions.breakLength = 100;
     util.inspect.defaultOptions.maxArrayLength = 50;
-    util.inspect.defaultOptions.maxStringLength = 100;
+    util.inspect.defaultOptions.maxStringLength = 200;
     util.inspect.defaultOptions.compact = true;
 }
 
@@ -72,6 +73,15 @@ const isEnabled = (name: string) => {
 
 if (typeof process !== "undefined" && process.env["DEBUG"]) enable(process.env["DEBUG"]);
 
+function callsites(): CallSite[] {
+    const _prepareStackTrace = Error.prepareStackTrace;
+    Error.prepareStackTrace = (_, stack) => stack;
+    // @ts-expect-error
+    const stack = new Error().stack.slice(1); // eslint-disable-line unicorn/error-message
+    Error.prepareStackTrace = _prepareStackTrace;
+    return stack as any;
+}
+
 // ~ Logger
 
 const logger = (
@@ -126,6 +136,8 @@ const withColor = (color: LogEvent["color"], str: string) => {
 const humanizeOptions = {
     units: ["m", "s", "ms"],
     delimiter: " ",
+    spacer: "",
+    round: true,
     language: "shortEn",
     languages: {
         shortEn: {
@@ -135,6 +147,10 @@ const humanizeOptions = {
         },
     },
 } as humanize.Options;
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+let DEBUG_STACK = false;
+if (typeof process !== "undefined" && process.env["DEBUG_STACK"]) DEBUG_STACK = true;
 
 let prevTime = Date.now();
 export const default_reporter: Reporter = (event) => {
@@ -146,8 +162,18 @@ export const default_reporter: Reporter = (event) => {
     const diff = now - prevTime;
     prevTime = now;
 
+    let stack: CallSite | undefined;
+    if (DEBUG_STACK) {
+        const fullstack = callsites();
+        const stackIndex = fullstack.findIndex((s) => s.getFileName() !== __filename);
+        stack = fullstack[stackIndex];
+    }
+
     fn(
         pc.bold(withColor(color, event.name)),
+        stack
+            ? pc.dim("[" + stack.getFileName() + ":" + stack.getLineNumber() + ":" + stack.getColumnNumber() + "]")
+            : "",
         ...event.messages,
         pc.bold(withColor(color, `+${humanize(diff, humanizeOptions)}`))
     );
