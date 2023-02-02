@@ -26,6 +26,7 @@
     "author": "Alexandre Stahmer <alexandre.stahmer@gmail.com>",
     "license": "ISC",
     "dependencies": {
+        "callsites": "^4.0.0",
         "humanize-duration": "^3.28.0",
         "picocolors": "^1.0.0"
     },
