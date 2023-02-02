@@ -1,10 +1,12 @@
 import { BoxNode, isPrimitiveType, LiteralValue, PropNodesMap } from "@box-extractor/core";
+import { createLogger } from "@box-extractor/logger";
 import { style, StyleRule } from "@vanilla-extract/css";
 import { deepMerge } from "pastable";
 import type { Node } from "ts-morph";
 import type { GenericConfig } from "./defineProperties";
 
-// TODO mode = "atomic" | "grouped"
+const logger = createLogger("box-ex:vanilla-wind:generateStyleFromExtraction");
+
 export function generateStyleFromExtraction(
     name: string,
     extracted: PropNodesMap,
@@ -22,7 +24,7 @@ export function generateStyleFromExtraction(
     const conditionNames = new Set(Object.keys(config.conditions ?? {}));
     const propertyNames = new Set(Object.keys(config.properties ?? {}));
 
-    // console.log({ name, config });
+    logger({ name, mode });
 
     extracted.queryList.forEach((query) => {
         const classNameList = new Set<string>();
@@ -72,8 +74,7 @@ export function generateStyleFromExtraction(
 
                         rules.set(debugId, rule);
 
-                        // TODO logger
-                        // console.log({ name, propName, value, className, from: from.getKindName() });
+                        logger.scoped("style", { literal: true, debugId });
                         return;
                     }
 
@@ -178,25 +179,7 @@ export function generateStyleFromExtraction(
 
                         rules.set(debugId, rule);
 
-                        // TODO logger
-                        // console.log({
-                        //     name,
-                        //     argName,
-                        //     path,
-                        //     propName,
-                        //     boxValue: box.value,
-                        //     // propValues,
-                        //     conditions,
-                        //     pseudoConditions,
-                        //     primitive,
-                        //     value,
-                        //     styleValue,
-                        //     currentCondition: rule,
-                        //     selector,
-                        //     debugId,
-                        //     className,
-                        //     parentRules,
-                        // });
+                        logger.scoped("style", { conditional: true, debugId });
                     });
 
                     return;
@@ -260,6 +243,7 @@ export function generateStyleFromExtraction(
         if (mode === "grouped") {
             const merged = deepMerge(Array.from(rules.values()));
             const grouped = style(merged);
+            logger.scoped("style", { name, grouped });
 
             toReplace.set(query.box.fromNode(), grouped);
             classMap.set(grouped, grouped);
@@ -267,6 +251,7 @@ export function generateStyleFromExtraction(
         }
 
         if (mode === "atomic" && classNameList.size > 0) {
+            logger.scoped("style", { name, classNameList: classNameList.size });
             toReplace.set(query.box.fromNode(), Array.from(classNameList).join(" "));
         }
     });
