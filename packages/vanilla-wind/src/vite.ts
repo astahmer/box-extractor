@@ -21,6 +21,7 @@ import evalCode from "eval";
 import fs from "node:fs";
 import esbuild from "esbuild";
 import { createLogger } from "@box-extractor/logger";
+import { match } from "ts-pattern";
 
 const logger = createLogger("box-ex:vanilla-wind:vite");
 
@@ -74,6 +75,12 @@ const virtualExtCss = ".jit.css";
 
 const normalizeTsx = (id: string) => normalizePath(id.endsWith(".tsx") ? id : id + ".tsx");
 
+const hasStyledFn = (code: string, styledFn: string) => code.includes(`${styledFn}(`);
+const hasStyledComponent = (code: string, styledComponent: string) => code.includes(`<${styledComponent}`);
+const hasStyledType = (code: string, styledFn: string) => code.includes(`WithStyledProps<typeof ${styledFn}>`);
+const hasAnyStyled = (code: string, name: string) =>
+    hasStyledFn(code, name) || hasStyledComponent(code, name) || hasStyledType(code, name);
+
 export const vanillaWind = (
     options: {
         /** if you only use 1 theme definition in a dedicated file, use this so there will be less AST parsing needed */
@@ -117,6 +124,7 @@ export const vanillaWind = (
     const cssCacheMap = new Map<string, string>();
     const themeCacheMap = new Map<string, string>();
     const componentsCacheMap = new Map<string, string>();
+    const transformedMap = new Map<string, string>();
 
     const getAbsoluteFileId = (source: string) => normalizePath(path.join(config?.root ?? "", source));
     const evalTheme = async (themePath: string, content: string) => {
@@ -140,6 +148,49 @@ export const vanillaWind = (
         });
 
         return themeNameList;
+    };
+
+    /** HMR after new styled element was found: new theme fn (defineProperties) / component usage / component definition annotated with WithStyled */
+    const onStyledFound = async (nameList: string[], kind: "function" | "component" | "type" | "any") => {
+        if (nameList.length === 0) return;
+        if (!server) return;
+
+        logger.scoped("on-found", { transformedMap: Array.from(transformedMap.keys()) });
+
+        const moduleGraph = server.moduleGraph;
+        const hasStyled = match(kind)
+            .with("function", () => hasStyledFn)
+            .with("component", () => hasStyledComponent)
+            .with("type", () => hasStyledType)
+            .with("any", () => hasAnyStyled)
+            .exhaustive();
+
+        const timestamp = Date.now();
+        const promises = [] as Array<Promise<void>>;
+        transformedMap.forEach((code, id) => {
+            const [mod] = Array.from(moduleGraph.getModulesByFile(id) ?? []);
+            if (!mod) return;
+
+            nameList.forEach((name) => {
+                const hasStyledKind = hasStyled(code, name);
+                logger.scoped("on-found", { name, hasStyledKind, id });
+                if (!hasStyledKind) return;
+
+                moduleGraph.invalidateModule(mod);
+                // Vite uses this timestamp to add `?t=` query string automatically for HMR.
+                mod.lastHMRTimestamp = (mod as any).lastInvalidationTimestamp || timestamp;
+                promises.push(server.reloadModule(mod));
+
+                mod.importers.forEach((importer) => {
+                    moduleGraph.invalidateModule(importer);
+                    // Vite uses this timestamp to add `?t=` query string automatically for HMR.
+                    importer.lastHMRTimestamp = (importer as any).lastInvalidationTimestamp || timestamp;
+                    promises.push(server.reloadModule(importer));
+                });
+            });
+        });
+
+        return Promise.all(promises);
     };
 
     // TODO try with 1 global adapter ? + official vanilla-extract plugin since it might clash
@@ -256,31 +307,17 @@ export const vanillaWind = (
                 });
 
                 if (extracted.size > 0) {
+                    logger.scoped("theme-extract", "new themes found: ", Array.from(extracted.keys()));
                     const absoluteId = ensureAbsolute(validId, config.root);
 
-                    const moduleGraph = server.moduleGraph;
-                    const [module] = Array.from(moduleGraph.getModulesByFile(absoluteId) ?? []);
-                    if (!themePathList.has(absoluteId) && module) {
-                        logger.scoped("theme-extract", "new theme found, reloading importers modules of", module.id);
-                        module.importers.forEach(async (imported) => {
-                            imported.isSelfAccepting = false;
-                            await server.reloadModule(imported);
-                        });
+                    if (!themePathList.has(absoluteId)) {
+                        logger.scoped("theme-extract", "reloading importers modules of", absoluteId);
+                        logger({ root: config.root });
+
+                        await onStyledFound(Array.from(extracted.keys()), "any");
                     }
 
                     themePathList.add(absoluteId);
-
-                    if (module) {
-                        const timestamp = Date.now();
-
-                        module.importers.forEach((imported) => {
-                            logger.scoped("theme-extract", "invalidating after theme change", imported.id);
-
-                            moduleGraph.invalidateModule(imported);
-                            // Vite uses this timestamp to add `?t=` query string automatically for HMR.
-                            imported.lastHMRTimestamp = (imported as any).lastInvalidationTimestamp || timestamp;
-                        });
-                    }
                 }
 
                 return null;
@@ -299,13 +336,13 @@ export const vanillaWind = (
         {
             enforce: "pre",
             name: "vanilla-wind:root-component-finder",
-            transform(code, id, _options) {
+            async transform(code, id, _options) {
                 if (!isIncluded(id)) return null;
 
                 const validId = id.split("?")[0]!;
 
                 // avoid full AST-parsing if possible
-                if (!code.includes("WithStyledProps")) {
+                if (!code.includes("WithStyledProps<")) {
                     // logger("no used component/functions found", id);
                     componentsCacheMap.delete(validId);
                     return null;
@@ -328,6 +365,7 @@ export const vanillaWind = (
                     sourceFile,
                     'TypeReference:has(Identifier[name="WithStyledProps"]) > TypeQuery > Identifier'
                 );
+                const foundComponentNameList = new Set<string>();
                 identifierList.forEach((identifier) => {
                     const component = getAncestorComponent(identifier);
                     if (!component) return null;
@@ -335,9 +373,22 @@ export const vanillaWind = (
                     const themeName = unquote(getNameLiteral(identifier));
                     const componentName = unquote(getNameLiteral(component));
 
+                    if (themeNameByComponentName.get(componentName) !== themeName) {
+                        foundComponentNameList.add(componentName);
+                    }
+
                     themeNameByComponentName.set(componentName, themeName);
                     logger.scoped("root-component-finder", { themeName, componentName });
                 });
+
+                if (foundComponentNameList.size > 0) {
+                    logger.scoped(
+                        "root-component-finder",
+                        "new components found: ",
+                        Array.from(foundComponentNameList)
+                    );
+                    await onStyledFound(Array.from(foundComponentNameList), "component");
+                }
             },
             // watchChange(id) {
             //     if (project && isIncluded(id)) {
@@ -390,11 +441,7 @@ export const vanillaWind = (
 
                 return css;
             },
-            // shouldTransformCachedModule(options) {
-            //     logger.scoped("usage", { shouldTransformCachedModule: true, id: options.id });
-            //     return true;
-            // },
-            transform(code, id, _options) {
+            async transform(code, id, _options) {
                 if (!isIncluded(id)) return null;
 
                 const validId = id.split("?")[0]!;
@@ -404,26 +451,31 @@ export const vanillaWind = (
                     return null;
                 }
 
+                transformedMap.set(validId, code);
+
+                const functionNames = Array.from(configByThemeName.keys());
+                const componentNames = (options?.components ?? []).concat(
+                    Array.from(themeNameByComponentName.entries()).map(([name, themeName]) => ({ name, themeName }))
+                );
+                const names = { functions: functionNames, components: componentNames };
+                logger.scoped("usage", names);
+
                 // avoid full AST-parsing if possible
-                const functionNames = [] as string[];
-                Array.from(configByThemeName.keys()).forEach((name) => {
+                const functionsNameFound = [] as string[];
+                functionNames.forEach((name) => {
                     if (code.includes(`${name}(`)) {
-                        functionNames.push(name);
+                        functionsNameFound.push(name);
                     }
                 });
 
-                const componentNames = [] as NonNullable<typeof options.components>;
-                (options?.components ?? [])
-                    .concat(
-                        Array.from(themeNameByComponentName.entries()).map(([name, themeName]) => ({ name, themeName }))
-                    )
-                    .forEach((component) => {
-                        if (code.includes(`<${component.name}`)) {
-                            componentNames.push(component);
-                        }
-                    });
+                const componentNamesFound = [] as NonNullable<typeof options.components>;
+                componentNames.forEach((component) => {
+                    if (code.includes(`<${component.name}`)) {
+                        componentNamesFound.push(component);
+                    }
+                });
 
-                if (functionNames.length === 0 && componentNames.length === 0) {
+                if (functionsNameFound.length === 0 && componentNamesFound.length === 0) {
                     return null;
                 }
 
@@ -437,8 +489,12 @@ export const vanillaWind = (
                 ctx.setAdapter();
                 setFileScope(validId);
 
-                logger.scoped("usage", { id: validId, functionNames, componentNames });
-                functionNames.forEach((name) => {
+                logger.scoped("usage", {
+                    id: validId,
+                    functionNames: functionsNameFound,
+                    componentNames: componentNamesFound,
+                });
+                functionsNameFound.forEach((name) => {
                     logger.scoped("usage", `extracting ${name}() usage...`);
                     const extractResult = extract({ ast: sourceFile, functions: [name] });
                     const extracted = extractResult.get(name)! as FunctionNodesMap;
@@ -459,7 +515,7 @@ export const vanillaWind = (
                     });
                 });
 
-                componentNames.forEach((component) => {
+                componentNamesFound.forEach((component) => {
                     const name = component.name;
                     const themeName = component.themeName;
                     logger.scoped("usage", `extracting <${name} /> usage...`);
