@@ -9,11 +9,11 @@ import type { CallSite } from "callsites";
 import humanize from "humanize-duration";
 
 if (typeof process !== "undefined" && typeof util !== "undefined" && util?.inspect?.defaultOptions) {
-    util.inspect.defaultOptions.depth = 3;
+    if (process.env["DEBUG_DEPTH"]) util.inspect.defaultOptions.depth = Number(process.env["DEBUG_DEPTH"]);
     util.inspect.defaultOptions.breakLength = 100;
     util.inspect.defaultOptions.maxArrayLength = 50;
     util.inspect.defaultOptions.maxStringLength = 200;
-    util.inspect.defaultOptions.compact = true;
+    // util.inspect.defaultOptions.compact = true;
 }
 
 export type LogEvent = {
