@@ -1,8 +1,8 @@
-import { BoxNode, isPrimitiveType, LiteralValue, PropNodesMap } from "@box-extractor/core";
+import { box, BoxNode, isPrimitiveType, LiteralValue, PropNodesMap } from "@box-extractor/core";
 import { createLogger } from "@box-extractor/logger";
 import { style, StyleRule } from "@vanilla-extract/css";
 import { deepMerge } from "pastable";
-import type { Node } from "ts-morph";
+import { Node } from "ts-morph";
 import type { GenericConfig } from "./defineProperties";
 
 const logger = createLogger("box-ex:vanilla-wind:generateStyleFromExtraction");
@@ -40,19 +40,19 @@ export function generateStyleFromExtraction(
         }
 
         argMap.forEach((nodeList, argName) => {
-            const processValue = (box: BoxNode, path: string[] = []) => {
+            const processValue = (boxNode: BoxNode, path: string[] = []) => {
                 // console.log({ name, argName, path });
 
                 if (
-                    box.type === "empty-initializer" ||
-                    box.type === "unresolvable" ||
-                    (box.type === "object" && box.isEmpty)
+                    box.isEmptyInitializer(boxNode) ||
+                    box.isUnresolvable(boxNode) ||
+                    (box.isObject(boxNode) && boxNode.isEmpty)
                 ) {
                     return;
                 }
 
-                if (box.type === "literal") {
-                    const primitive = box.value;
+                if (box.isLiteral(boxNode)) {
+                    const primitive = boxNode.value;
                     if (!isNotNullish(primitive) || typeof primitive === "boolean") return;
 
                     if (path.length === 0) {
@@ -185,14 +185,14 @@ export function generateStyleFromExtraction(
                     return;
                 }
 
-                if (box.type === "map") {
-                    box.value.forEach((propNodeList, propName) => {
+                if (box.isMap(boxNode)) {
+                    boxNode.value.forEach((propNodeList, propName) => {
                         propNodeList.forEach((propNode) => processValue(propNode, [...path, propName]));
                     });
                     return;
                 }
 
-                if (box.type === "object") {
+                if (box.isObject(boxNode)) {
                     const processLiteralValue = (literal: LiteralValue, nestedPath: string[]) => {
                         if (Array.isArray(literal)) return;
                         if (isPrimitiveType(literal)) {
@@ -212,22 +212,22 @@ export function generateStyleFromExtraction(
                         }
                     };
 
-                    Object.entries(box.value).forEach(([propName, literal]) => {
+                    Object.entries(boxNode.value).forEach(([propName, literal]) => {
                         processLiteralValue(literal, [...path, propName]);
                     });
 
                     return;
                 }
 
-                if (box.type === "conditional") {
-                    processValue(box.whenTrue, path);
-                    processValue(box.whenFalse, path);
+                if (box.isConditional(boxNode)) {
+                    processValue(boxNode.whenTrue, path);
+                    processValue(boxNode.whenFalse, path);
                     // console.log({ name, argName, path, box });
                     return;
                 }
 
-                if (box.type === "list") {
-                    box.value.forEach((listNode) => processValue(listNode, path));
+                if (box.isList(boxNode)) {
+                    boxNode.value.forEach((listNode) => processValue(listNode, path));
                 }
             };
 
@@ -235,7 +235,16 @@ export function generateStyleFromExtraction(
                 processValue(box);
 
                 if (extracted.kind === "component") {
-                    toReplace.set(box.fromNode(), "");
+                    const node = box.getNode();
+                    if (Node.isJsxSpreadAttribute(node)) {
+                        toReplace.set(node, "");
+                        return;
+                    }
+
+                    const jsxAttribute = box.getStack()[0];
+                    if (Node.isJsxAttribute(jsxAttribute)) {
+                        toReplace.set(jsxAttribute, "");
+                    }
                 }
             });
         });
@@ -245,14 +254,14 @@ export function generateStyleFromExtraction(
             const grouped = style(merged);
             logger.scoped("style", { name, grouped });
 
-            toReplace.set(query.box.fromNode(), grouped);
+            toReplace.set(query.box.getNode(), grouped);
             classMap.set(grouped, grouped);
             return;
         }
 
         if (mode === "atomic" && classNameList.size > 0) {
             logger.scoped("style", { name, classNameList: classNameList.size });
-            toReplace.set(query.box.fromNode(), Array.from(classNameList).join(" "));
+            toReplace.set(query.box.getNode(), Array.from(classNameList).join(" "));
         }
     });
 
