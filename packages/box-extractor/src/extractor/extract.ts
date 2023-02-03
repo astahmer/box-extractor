@@ -76,7 +76,6 @@ export const extract = ({
             if (!isNotNullish(maybeBox)) return;
 
             logger({ propName, maybeBox });
-            maybeBox.fromNode = () => node;
             localNodes.set(propName, (localNodes.get(propName) ?? []).concat(maybeBox));
 
             const parent = node.getFirstAncestor(
@@ -106,7 +105,6 @@ export const extract = ({
         spreadNodes.forEach((node) => {
             const objectOrMapType = extractJsxSpreadAttributeValues(node);
             const map = castObjectLikeAsMapValue(objectOrMapType, node);
-            const fromNode = () => node;
 
             const parent = node.getFirstAncestor(
                 (n) => Node.isJsxOpeningElement(n) || Node.isJsxSelfClosingElement(n)
@@ -117,9 +115,10 @@ export const extract = ({
                 queryComponentMap.set(parent, { name: componentName, props: new Map() });
             }
 
+            const stack = [parent];
+
             const parentRef = queryComponentMap.get(parent)!;
-            const boxed = box.map(map, node);
-            boxed.fromNode = fromNode;
+            const boxed = box.map(map, node, stack);
             parentRef.props.set(`_SPREAD_${parentRef.props.size}`, [boxed]);
 
             const entries = mergeSpreadEntries({ map, propNameList });
@@ -127,8 +126,6 @@ export const extract = ({
                 logger.scoped("merge-spread", { jsx: true, propName, propValue });
 
                 propValue.forEach((value) => {
-                    value.fromNode = fromNode;
-
                     localNodes.set(propName, (localNodes.get(propName) ?? []).concat(value));
                     componentMap.nodesByProp.set(
                         propName,
@@ -140,9 +137,9 @@ export const extract = ({
 
         queryComponentMap.forEach((ref, jsxNode) => {
             const fromNode = () => jsxNode;
-            const query = { name: ref.name, fromNode, box: box.map(ref.props, jsxNode) } as QueryComponentBox;
+            // TODO ?
+            const query = { name: ref.name, fromNode, box: box.map(ref.props, jsxNode, []) } as QueryComponentBox;
 
-            query.box.fromNode = fromNode;
             componentMap.queryList.push(query);
             localList.push(query);
         });
@@ -179,15 +176,17 @@ export const extract = ({
 
             const map = castObjectLikeAsMapValue(objectOrMapType, node);
             const entries = mergeSpreadEntries({ map, propNameList });
-            const fromNode = () => node;
 
             const mapAfterSpread = new Map() as MapTypeValue;
             entries.forEach(([propName, propValue]) => {
                 mapAfterSpread.set(propName, propValue);
             });
 
-            const query = { name: functionName, fromNode, box: box.map(mapAfterSpread, node) } as QueryFnBox;
-            query.box.fromNode = fromNode;
+            const query = {
+                name: functionName,
+                fromNode: () => node,
+                box: box.map(mapAfterSpread, node, objectOrMapType.getStack()),
+            } as QueryFnBox;
             fnMap.queryList.push(query);
             localList.push(query);
 
@@ -195,7 +194,6 @@ export const extract = ({
                 logger.scoped("merge-spread", { fn: true, propName, propValue });
 
                 propValue.forEach((value) => {
-                    value.fromNode = fromNode;
                     localNodes.set(propName, (localNodes.get(propName) ?? []).concat(value));
                     fnMap.nodesByProp.set(propName, (fnMap.nodesByProp.get(propName) ?? []).concat(value));
                 });
