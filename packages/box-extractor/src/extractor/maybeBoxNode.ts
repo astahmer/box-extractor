@@ -375,7 +375,7 @@ const maybePropIdentifierDefinitionValue = (elementAccessed: Identifier, propNam
 
         if (Node.isVariableDeclaration(def)) {
             const init = def.getInitializer();
-            logger("id-def", {
+            logger.scoped("id-def", {
                 initializer: init?.getText(),
                 kind: init?.getKindName(),
                 propName,
@@ -411,8 +411,64 @@ const maybePropIdentifierDefinitionValue = (elementAccessed: Identifier, propNam
                 const element = initializer.getElements()[index];
                 if (!element) return;
 
-                // TODO ?
+                // TODO -> maybeBoxNode + test case
                 return maybeStringLiteral(element);
+            }
+        }
+
+        if (Node.isBindingElement(def)) {
+            const parent = def.getParent();
+
+            logger.scoped("id-def", { parent: parent?.getKindName() });
+            if (!parent) return;
+
+            const grandParent = parent.getParent();
+            logger.scoped("id-def", { grandParent: grandParent?.getKindName() });
+            if (!grandParent) return;
+
+            if (Node.isArrayBindingPattern(parent)) {
+                const index = parent.getChildIndex();
+                if (Number.isNaN(index)) return;
+
+                if (Node.isVariableDeclaration(grandParent)) {
+                    const init = grandParent.getInitializer();
+                    logger.scoped("id-def", { grandParentIniti: init?.getKindName() });
+                    if (!init) return;
+
+                    const initializer = unwrapExpression(init);
+                    if (!Node.isArrayLiteralExpression(initializer)) return;
+
+                    const element = initializer.getElements()[index + 1];
+                    logger.scoped("id-def", { index, propName, elementKind: element?.getKindName() });
+                    if (!element) return;
+
+                    const maybeObject = maybeObjectLikeBox(element);
+                    if (!isNotNullish(maybeObject)) return;
+
+                    logger.scoped("id-def", {
+                        propName,
+                        maybeObject,
+                        value:
+                            maybeObject.type === "object"
+                                ? maybeObject.value[propName]
+                                : maybeObject.value.get(propName),
+                        boxed: box.cast(
+                            maybeObject.type === "object"
+                                ? maybeObject.value[propName]
+                                : maybeObject.value.get(propName),
+                            elementAccessed
+                        ),
+                    });
+                    return box.cast(
+                        maybeObject.type === "object" ? maybeObject.value[propName] : maybeObject.value.get(propName),
+                        elementAccessed
+                    );
+                }
+            }
+
+            // TODO ?
+            if (Node.isObjectBindingPattern(parent)) {
+                //
             }
         }
     }
@@ -793,6 +849,7 @@ const getPropertyAccessedExpressionValue = (expression: PropertyAccessExpression
     });
 
     if (Node.isIdentifier(elementAccessed)) {
+        // ici
         return maybePropIdentifierDefinitionValue(elementAccessed, propName);
     }
 

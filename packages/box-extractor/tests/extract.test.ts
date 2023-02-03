@@ -7270,5 +7270,125 @@ it("extract defineProperties config", () => {
       ]
     `);
 });
+
+it("extract CallExpression > ObjectLiteralExpression > PropertyAssignment > Identifier > ArrayBindingPattern", () => {
+    expect(
+        extractFromCode(
+            `
+            export const [coreThemeClass, coreThemeVars] = [
+                "_1dghp000",
+                {
+                  "backgroundColor": {
+                    "error": "var(--backgroundColor-error__1dghp00s)",
+                    "warning": "var(--backgroundColor-warning__1dghp00t)"
+                  },
+                }
+              ];
+
+            export const properties = defineProperties({
+            properties: {
+                display: true,
+                backgroundColor: coreThemeVars.backgroundColor,
+            },
+            shorthands: {
+                margin: ["marginTop"],
+            }
+            });
+        `,
+            { components: [], functions: ["defineProperties"] }
+        )
+    ).toMatchInlineSnapshot(`
+      [
+          [
+              "defineProperties",
+              [
+                  [
+                      "properties",
+                      {
+                          display: true,
+                          backgroundColor: {
+                              error: "var(--backgroundColor-error__1dghp00s)",
+                              warning: "var(--backgroundColor-warning__1dghp00t)",
+                          },
+                      },
+                  ],
+                  [
+                      "shorthands",
+                      {
+                          margin: ["marginTop"],
+                      },
+                  ],
+              ],
+              {
+                  properties: [
+                      {
+                          type: "map",
+                          value: {
+                              display: [
+                                  {
+                                      type: "literal",
+                                      value: true,
+                                      kind: "boolean",
+                                      getNode: "TrueKeyword",
+                                  },
+                              ],
+                              backgroundColor: [
+                                  {
+                                      type: "map",
+                                      value: {
+                                          error: [
+                                              {
+                                                  type: "literal",
+                                                  value: "var(--backgroundColor-error__1dghp00s)",
+                                                  kind: "string",
+                                                  getNode: "StringLiteral",
+                                              },
+                                          ],
+                                          warning: [
+                                              {
+                                                  type: "literal",
+                                                  value: "var(--backgroundColor-warning__1dghp00t)",
+                                                  kind: "string",
+                                                  getNode: "StringLiteral",
+                                              },
+                                          ],
+                                      },
+                                      getNode: "ObjectLiteralExpression",
+                                  },
+                              ],
+                          },
+                          getNode: "ObjectLiteralExpression",
+                          fromNode: "CallExpression",
+                      },
+                  ],
+                  shorthands: [
+                      {
+                          type: "map",
+                          value: {
+                              margin: [
+                                  {
+                                      type: "list",
+                                      value: [
+                                          {
+                                              type: "literal",
+                                              value: "marginTop",
+                                              kind: "string",
+                                              getNode: "StringLiteral",
+                                          },
+                                      ],
+                                      getNode: "ArrayLiteralExpression",
+                                  },
+                              ],
+                          },
+                          getNode: "ObjectLiteralExpression",
+                          fromNode: "CallExpression",
+                      },
+                  ],
+              },
+          ],
+      ]
+    `);
+});
+
 // TODO nested valueOrNullable ?? fallback ?? fallback
 // TODO ElementAccessExpression with conditionals other than ternary
