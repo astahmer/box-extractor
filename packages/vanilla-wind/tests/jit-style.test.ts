@@ -116,53 +116,80 @@ it("simple CallExpression extract + JIT style + replace call by generated classN
       [
           {
               name: "defineProperties",
-              fromNode: "CallExpression",
               box: {
+                  stack: ["ObjectLiteralExpression"],
                   type: "map",
+                  node: "CallExpression",
                   value: {
                       properties: [
                           {
+                              stack: ["ObjectLiteralExpression", "PropertyAssignment", "ObjectLiteralExpression"],
                               type: "map",
+                              node: "ObjectLiteralExpression",
                               value: {
                                   color: [
                                       {
+                                          stack: [
+                                              "ObjectLiteralExpression",
+                                              "PropertyAssignment",
+                                              "ObjectLiteralExpression",
+                                              "PropertyAssignment",
+                                              "ObjectLiteralExpression",
+                                          ],
                                           type: "map",
+                                          node: "ObjectLiteralExpression",
                                           value: {
                                               brand: [
                                                   {
+                                                      stack: [
+                                                          "ObjectLiteralExpression",
+                                                          "PropertyAssignment",
+                                                          "ObjectLiteralExpression",
+                                                          "PropertyAssignment",
+                                                          "ObjectLiteralExpression",
+                                                          "PropertyAssignment",
+                                                          "StringLiteral",
+                                                      ],
                                                       type: "literal",
+                                                      node: "StringLiteral",
                                                       value: "var(--brand)",
                                                       kind: "string",
-                                                      getNode: "StringLiteral",
                                                   },
                                               ],
                                           },
-                                          getNode: "ObjectLiteralExpression",
                                       },
                                   ],
                               },
-                              getNode: "ObjectLiteralExpression",
-                              fromNode: "CallExpression",
                           },
                       ],
                   },
-                  getNode: "CallExpression",
-                  fromNode: "CallExpression",
               },
           },
           {
               name: "defineProperties",
-              fromNode: "CallExpression",
               box: {
+                  stack: ["ObjectLiteralExpression"],
                   type: "map",
+                  node: "CallExpression",
                   value: {
                       properties: [
                           {
+                              stack: ["ObjectLiteralExpression", "PropertyAssignment", "ObjectLiteralExpression"],
                               type: "map",
+                              node: "ObjectLiteralExpression",
                               value: {
                                   borderRadius: [
                                       {
+                                          stack: [
+                                              "ObjectLiteralExpression",
+                                              "PropertyAssignment",
+                                              "ObjectLiteralExpression",
+                                              "PropertyAssignment",
+                                              "PropertyAccessExpression",
+                                              "Identifier",
+                                          ],
                                           type: "object",
+                                          node: "PropertyAccessExpression",
                                           value: {
                                               none: "0",
                                               sm: "0.125rem",
@@ -174,12 +201,20 @@ it("simple CallExpression extract + JIT style + replace call by generated classN
                                               "3xl": "1.5rem",
                                               full: "9999px",
                                           },
-                                          getNode: "PropertyAccessExpression",
                                       },
                                   ],
                                   padding: [
                                       {
+                                          stack: [
+                                              "ObjectLiteralExpression",
+                                              "PropertyAssignment",
+                                              "ObjectLiteralExpression",
+                                              "PropertyAssignment",
+                                              "PropertyAccessExpression",
+                                              "Identifier",
+                                          ],
                                           type: "object",
+                                          node: "PropertyAccessExpression",
                                           value: {
                                               "4": "4px",
                                               "8": "8px",
@@ -188,54 +223,77 @@ it("simple CallExpression extract + JIT style + replace call by generated classN
                                               "20": "20px",
                                               "24": "24px",
                                           },
-                                          getNode: "PropertyAccessExpression",
                                       },
                                   ],
                               },
-                              getNode: "ObjectLiteralExpression",
-                              fromNode: "CallExpression",
                           },
                       ],
                       shorthands: [
                           {
+                              stack: ["ObjectLiteralExpression", "PropertyAssignment", "ObjectLiteralExpression"],
                               type: "map",
+                              node: "ObjectLiteralExpression",
                               value: {
                                   p: [
                                       {
+                                          stack: [
+                                              "ObjectLiteralExpression",
+                                              "PropertyAssignment",
+                                              "ObjectLiteralExpression",
+                                              "PropertyAssignment",
+                                              "ArrayLiteralExpression",
+                                          ],
                                           type: "list",
+                                          node: "ArrayLiteralExpression",
                                           value: [
                                               {
+                                                  stack: [
+                                                      "ObjectLiteralExpression",
+                                                      "PropertyAssignment",
+                                                      "ObjectLiteralExpression",
+                                                      "PropertyAssignment",
+                                                      "ArrayLiteralExpression",
+                                                  ],
                                                   type: "literal",
+                                                  node: "StringLiteral",
                                                   value: "padding",
                                                   kind: "string",
-                                                  getNode: "StringLiteral",
                                               },
                                           ],
-                                          getNode: "ArrayLiteralExpression",
                                       },
                                   ],
                                   rounded: [
                                       {
+                                          stack: [
+                                              "ObjectLiteralExpression",
+                                              "PropertyAssignment",
+                                              "ObjectLiteralExpression",
+                                              "PropertyAssignment",
+                                              "ArrayLiteralExpression",
+                                          ],
                                           type: "list",
+                                          node: "ArrayLiteralExpression",
                                           value: [
                                               {
+                                                  stack: [
+                                                      "ObjectLiteralExpression",
+                                                      "PropertyAssignment",
+                                                      "ObjectLiteralExpression",
+                                                      "PropertyAssignment",
+                                                      "ArrayLiteralExpression",
+                                                  ],
                                                   type: "literal",
+                                                  node: "StringLiteral",
                                                   value: "borderRadius",
                                                   kind: "string",
-                                                  getNode: "StringLiteral",
                                               },
                                           ],
-                                          getNode: "ArrayLiteralExpression",
                                       },
                                   ],
                               },
-                              getNode: "ObjectLiteralExpression",
-                              fromNode: "CallExpression",
                           },
                       ],
                   },
-                  getNode: "CallExpression",
-                  fromNode: "CallExpression",
               },
           },
       ]
@@ -299,51 +357,49 @@ it("simple CallExpression extract + JIT style + replace call by generated classN
       [
           {
               name: "minimalSprinkles",
-              fromNode: "CallExpression",
               box: {
+                  stack: ["ObjectLiteralExpression"],
                   type: "map",
+                  node: "CallExpression",
                   value: {
                       color: [
                           {
+                              stack: ["ObjectLiteralExpression", "PropertyAssignment", "StringLiteral"],
                               type: "literal",
+                              node: "StringLiteral",
                               value: "brand",
                               kind: "string",
-                              getNode: "StringLiteral",
-                              fromNode: "CallExpression",
                           },
                       ],
                   },
-                  getNode: "CallExpression",
-                  fromNode: "CallExpression",
               },
           },
           {
               name: "minimalSprinkles",
-              fromNode: "CallExpression",
               box: {
+                  stack: ["ObjectLiteralExpression"],
                   type: "map",
+                  node: "CallExpression",
                   value: {
                       color: [
                           {
+                              stack: ["ObjectLiteralExpression", "PropertyAssignment", "StringLiteral"],
                               type: "literal",
+                              node: "StringLiteral",
                               value: "red.100",
                               kind: "string",
-                              getNode: "StringLiteral",
-                              fromNode: "CallExpression",
                           },
                       ],
                       display: [
                           {
+                              stack: ["ObjectLiteralExpression", "PropertyAssignment", "StringLiteral"],
                               type: "literal",
+                              node: "StringLiteral",
                               value: "flex",
                               kind: "string",
-                              getNode: "StringLiteral",
-                              fromNode: "CallExpression",
                           },
                       ],
                   },
-                  getNode: "CallExpression",
-                  fromNode: "CallExpression",
               },
           },
       ]
@@ -369,31 +425,30 @@ it("simple CallExpression extract + JIT style + replace call by generated classN
       [
           {
               name: "tw",
-              fromNode: "CallExpression",
               box: {
+                  stack: ["ObjectLiteralExpression"],
                   type: "map",
+                  node: "CallExpression",
                   value: {
                       p: [
                           {
+                              stack: ["ObjectLiteralExpression", "PropertyAssignment", "NumericLiteral"],
                               type: "literal",
+                              node: "NumericLiteral",
                               value: "24",
                               kind: "string",
-                              getNode: "NumericLiteral",
-                              fromNode: "CallExpression",
                           },
                       ],
                       rounded: [
                           {
+                              stack: ["ObjectLiteralExpression", "PropertyAssignment", "StringLiteral"],
                               type: "literal",
+                              node: "StringLiteral",
                               value: "lg",
                               kind: "string",
-                              getNode: "StringLiteral",
-                              fromNode: "CallExpression",
                           },
                       ],
                   },
-                  getNode: "CallExpression",
-                  fromNode: "CallExpression",
               },
           },
       ]
@@ -1042,11 +1097,8 @@ it("minimal example with <Box /> component", () => {
         // console.log({ node: node.getText(), kind: node.getKindName(), className });
         if (Node.isJsxSelfClosingElement(node) || Node.isJsxOpeningElement(node)) {
             node.addAttribute({ name: "_styled", initializer: `"${className}"` });
-        } else if (Node.isIdentifier(node)) {
-            const jsxAttribute = node.getParentIfKind(ts.SyntaxKind.JsxAttribute);
-            if (jsxAttribute) {
-                jsxAttribute.remove();
-            }
+        } else if (Node.isJsxAttribute(node)) {
+            node.remove();
         } else if (Node.isJsxSpreadAttribute(node)) {
             // TODO only remove the props needed rather than the whole spread, this is a bit too aggressive
             // also, remove the spread if it's empty
