@@ -117,7 +117,7 @@ const getObjectLiteralExpressionPropPairs = (expression: ObjectLiteralExpression
 
             const maybeValue = maybeBoxNode(initializer);
             if (isNotNullish(maybeValue)) {
-                const value = box.cast(maybeValue, initializer);
+                const value = box.cast(maybeValue, initializer, initializer);
                 if (!value) return;
 
                 extractedPropValues.push([propName, [value]]);

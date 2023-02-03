@@ -1,7 +1,6 @@
 import { Project, SourceFile, ts } from "ts-morph";
 import { afterEach, expect, it } from "vitest";
 import { extract } from "../src/extractor/extract";
-import type { MapType } from "../src/extractor/type-factory";
 import type { ExtractOptions } from "../src/extractor/types";
 // @ts-ignore
 import { default as ThemeSample } from "./samples/theme?raw";
