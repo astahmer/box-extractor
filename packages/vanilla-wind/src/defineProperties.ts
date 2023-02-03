@@ -132,6 +132,7 @@ export function defineProperties<Options extends GenericConfig>(options?: any): 
 
 // TODO 2nd argument on defineProperties + TReturnFn = style generation options to override plugin global options ?
 // ex: `const style = defineProperties({ ... }, { mode: "atomic" })` and `className={style({ ... }, { mode: "grouped" })}`
+// TODO 2nd argument add option to rm config at runtime
 
 export type GenericConfig = {
     properties?: ConfigDynamicProperties;
