@@ -17,7 +17,7 @@ const replaceOptions = { preventAssignment: true, __REPLACE_ME_TS_EVAL_PRESET_: 
 export default defineConfig((env) => {
     const config: UserConfig = {
         ssr: {
-            external: ["ts-toolbelt", "picocolors"],
+            external: ["ts-toolbelt", "picocolors", "humanize-duration"],
         },
         plugins: [
             UnoCSS({ presets: [presetIcons({})] }),
