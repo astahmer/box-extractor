@@ -6,83 +6,25 @@ import { Identifier, Node, Project, SourceFile, ts } from "ts-morph";
 import {
     ensureAbsolute,
     extract,
+    extractFunctionFrom,
     FunctionNodesMap,
-    getBoxLiteralValue,
-    query,
-    unwrapExpression,
     getAncestorComponent,
     getNameLiteral,
+    query,
     unquote,
-    MapType,
 } from "@box-extractor/core";
-import type { GenericConfig } from "./defineProperties";
-import { createAdapterContext, generateStyleFromExtraction } from "./jit";
+import { createLogger } from "@box-extractor/logger";
+import { createTheme } from "@vanilla-extract/css";
 import { endFileScope, setFileScope } from "@vanilla-extract/css/fileScope";
+import esbuild from "esbuild";
 import evalCode from "eval";
 import fs from "node:fs";
-import esbuild from "esbuild";
-import { createLogger } from "@box-extractor/logger";
 import { match } from "ts-pattern";
-import { createTheme } from "@vanilla-extract/css";
 import type { Contract, MapLeafNodes } from "./createTheme";
+import type { GenericConfig } from "./defineProperties";
+import { createAdapterContext, generateStyleFromExtraction } from "./jit";
 
 const logger = createLogger("box-ex:vanilla-wind:vite");
-
-const isImportedFrom = (
-    identifier: Identifier,
-    importName: string,
-    canImportSourcePath?: (sourcePath: string) => boolean
-) => {
-    return identifier.getDefinitions().some((def) => {
-        const declaration = def.getDeclarationNode();
-        if (!declaration) return false;
-
-        const sourcePath = declaration.getSourceFile().getFilePath().toString();
-        logger.scoped("imported-from", { kind: declaration.getKindName(), sourcePath });
-        if (canImportSourcePath?.(sourcePath)) return true;
-
-        if (!Node.isImportSpecifier(declaration)) return false;
-
-        const importedFrom = declaration.getImportDeclaration().getModuleSpecifierValue();
-        return importedFrom === importName;
-    });
-};
-
-const extractFunctionFrom = <Result>(
-    sourceFile: SourceFile,
-    functionName: string,
-    importName?: string,
-    canImportSourcePath?: (sourcePath: string) => boolean
-) => {
-    const resultByName = new Map<string, { result: Result; queryBox: MapType }>();
-    const extractedTheme = extract({ ast: sourceFile, functions: [functionName] });
-    const queryList = (extractedTheme.get(functionName) as FunctionNodesMap).queryList;
-    const from = sourceFile.getFilePath().toString();
-    logger.scoped("extract-function-from", { from, queryList: queryList.length });
-
-    queryList.forEach((query) => {
-        const fromNode = query.fromNode();
-        const declaration = fromNode.getParentIfKind(ts.SyntaxKind.VariableDeclaration);
-        if (!declaration) return;
-
-        const identifier = unwrapExpression(fromNode.getExpression());
-        if (!Node.isIdentifier(identifier)) return;
-
-        const isImportedFromValid = importName ? isImportedFrom(identifier, importName, canImportSourcePath) : true;
-        logger.scoped("extract-function-from", { isImportedFromValid });
-        if (!isImportedFromValid) return;
-
-        const nameNode = declaration.getNameNode();
-        const name = nameNode.getText();
-        // TODO replace getBoxLiteralValue with specific treatment
-        const result = getBoxLiteralValue(query.box) as Result;
-        resultByName.set(name, { result, queryBox: query.box });
-
-        logger.scoped("extract-function-from", { name });
-    });
-
-    return resultByName;
-};
 
 const extractThemeConfig = (sourceFile: SourceFile) => {
     const configByName = new Map<string, GenericConfig>();
@@ -99,7 +41,6 @@ const extractThemeConfig = (sourceFile: SourceFile) => {
 
 const tsConfigFilePath = "tsconfig.json";
 const virtualExtCss = ".jit.css";
-// const virtualVanillaExtractCss = ".vanilla-extract.css";
 
 // TODO add component ref finder
 
