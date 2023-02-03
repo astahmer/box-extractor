@@ -30,11 +30,8 @@ expect.addSnapshotSerializer({
                                 return Object.fromEntries(value);
                             }
 
-                            if (typeof value === "function" && (_key === "getNode" || _key === "fromNode")) {
-                                const node = value();
-                                if (node instanceof Node) {
-                                    return node.getKindName();
-                                }
+                            if (Node.isNode(value)) {
+                                return value.getKindName();
                             }
 
                             return value;

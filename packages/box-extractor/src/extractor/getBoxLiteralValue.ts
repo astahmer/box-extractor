@@ -1,38 +1,31 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { BoxNode, isPrimitiveType, LiteralValue, SingleLiteralValue } from "./type-factory";
-import type { PrimitiveType } from "./types";
-import { isNotNullish } from "./utils";
 import type { MaybeBoxNodeReturn } from "./maybeBoxNode";
+import { box, BoxNode, LiteralValue, SingleLiteralValue } from "./type-factory";
+import { isNotNullish } from "./utils";
 // import { createLogger } from "@box-extractor/logger";
 
 // const logger = createLogger("box-ex:extractor:get-literal");
 
 const cacheMap = new WeakMap();
-const innerGetLiteralValue = (valueType: PrimitiveType | BoxNode | undefined): LiteralValue | undefined => {
-    if (!valueType) return;
-    if (isPrimitiveType(valueType)) return valueType;
-    if (valueType.type === "literal") return valueType.value;
-    if (valueType.type === "unresolvable") return;
-
-    if (valueType.type === "object") {
-        if (valueType.isEmpty) return;
-        return valueType.value;
-    }
-
-    if (valueType.type === "map") {
-        const entries = Array.from(valueType.value.entries())
+const innerGetLiteralValue = (node: BoxNode | undefined): LiteralValue | undefined => {
+    if (!node) return;
+    if (box.isUnresolvable(node)) return;
+    if (box.isLiteral(node)) return node.value;
+    if (box.isObject(node)) return node.value;
+    if (box.isMap(node)) {
+        const entries = Array.from(node.value.entries())
             .map(([key, value]) => [key, getBoxLiteralValue(value)])
             .filter(([_key, value]) => isNotNullish(value));
 
         return Object.fromEntries(entries);
     }
 
-    if (valueType.type === "list") {
-        return valueType.value.map((value) => getBoxLiteralValue(value)).filter(isNotNullish) as LiteralValue;
+    if (box.isList(node)) {
+        return node.value.map((value) => getBoxLiteralValue(value)).filter(isNotNullish) as LiteralValue;
     }
 
-    if (valueType.type === "conditional") {
-        return [valueType.whenTrue, valueType.whenFalse]
+    if (box.isConditional(node)) {
+        return [node.whenTrue, node.whenFalse]
             .map((value) => getBoxLiteralValue(value))
             .filter(isNotNullish)
             .flat();
@@ -156,7 +149,7 @@ export const visitBoxNode = <T>(
             return returnValue;
         };
 
-        if (node.type === "map") {
+        if (box.isMap(node)) {
             let result: T | undefined;
             node.value.forEach((innerNode) => {
                 if (stop) return stopReturnValue;
@@ -168,7 +161,7 @@ export const visitBoxNode = <T>(
             return result === upReturnValue ? undefined : result;
         }
 
-        if (node.type === "conditional") {
+        if (box.isConditional(node)) {
             const result = getResult(node.whenTrue) || getResult(node.whenFalse);
             return result === upReturnValue ? undefined : result;
         }
