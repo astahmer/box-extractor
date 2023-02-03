@@ -102,14 +102,21 @@ export const isPrimitiveType = (value: unknown): value is PrimitiveType => {
 export type SingleLiteralValue = PrimitiveType | Record<string, unknown>;
 export type LiteralValue = SingleLiteralValue | SingleLiteralValue[];
 
-const toBoxType = (value: undefined | BoxNode | ExtractedPropMap | PrimitiveType | PrimitiveType[], node: Node) => {
+const toBoxType = (
+    value: undefined | BoxNode | ExtractedPropMap | PrimitiveType | PrimitiveType[],
+    node: Node
+): BoxNode | BoxNode[] | LiteralType[] | undefined => {
     if (!isNotNullish(value)) return;
     if (isObject(value) && !Array.isArray(value)) {
         if (isBoxNode(value)) return value;
         return box.object(value, node);
     }
 
-    if (Array.isArray(value)) return value.map((item) => box.literal(item, node));
+    if (Array.isArray(value)) {
+        if (value.length === 1) return toBoxType(value[0], node);
+        return value.map((item) => toBoxType(item, node) as BoxNode);
+    }
+
     if (isPrimitiveType(value)) return box.literal(value, node);
 };
 
