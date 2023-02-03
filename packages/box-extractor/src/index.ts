@@ -11,6 +11,7 @@ export { getNameLiteral, unquote } from "./extractor/getNameLiteral";
 export type {
     BoxNode,
     ConditionalType,
+    EmptyInitializerType,
     ListType,
     LiteralType,
     LiteralValue,
@@ -19,7 +20,17 @@ export type {
     ObjectType,
     SingleLiteralValue,
 } from "./extractor/type-factory";
-export { isPrimitiveType } from "./extractor/type-factory";
+export {
+    box,
+    BoxNodeConditional,
+    BoxNodeEmptyInitializer,
+    BoxNodeList,
+    BoxNodeLiteral,
+    BoxNodeMap,
+    BoxNodeObject,
+    BoxNodeUnresolvable,
+    isPrimitiveType,
+} from "./extractor/type-factory";
 export type {
     BoxNodesMap,
     ComponentNodesMap,

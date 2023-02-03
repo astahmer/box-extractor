@@ -17,12 +17,14 @@ export const extractJsxAttributeIdentifierValue = (identifier: Identifier) => {
     //           ^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
     // identifier = `color` (and then backgroundColor)
     // parent = `color="red.200"` (and then backgroundColor="blackAlpha.100")
+
     const initializer = parent.getInitializer();
-    if (!initializer) return box.emptyInitializer(identifier);
+    const stack = [parent, initializer] as Node[];
+    if (!initializer) return box.emptyInitializer(identifier, stack);
 
     if (Node.isStringLiteral(initializer)) {
         // initializer = `"red.200"` (and then "blackAlpha.100")
-        return box.literal(initializer.getLiteralText(), initializer);
+        return box.literal(initializer.getLiteralText(), initializer, stack);
     }
 
     // <ColorBox color={xxx} />
@@ -33,7 +35,8 @@ export const extractJsxAttributeIdentifierValue = (identifier: Identifier) => {
         const expression = unwrapExpression(expr);
         if (!expression) return;
 
-        const maybeValue = maybeBoxNode(expression);
+        stack.push(expression);
+        const maybeValue = maybeBoxNode(expression, stack);
         logger({ extractJsx: true, maybeValue });
         // !maybeValue && console.log("maybeBoxNode empty", expression.getKindName(), expression.getText());
         if (isNotNullish(maybeValue)) {
@@ -44,7 +47,7 @@ export const extractJsxAttributeIdentifierValue = (identifier: Identifier) => {
             return maybeValue;
         }
 
-        const maybeObject = maybeObjectLikeBox(expression);
+        const maybeObject = maybeObjectLikeBox(expression, stack);
         logger({ maybeObject });
         // console.log("expr", expression.getKindName(), expression.getText());
         if (isNotNullish(maybeObject)) return maybeObject;

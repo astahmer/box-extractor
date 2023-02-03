@@ -1,5 +1,5 @@
 import type { CallExpression, JsxOpeningElement, JsxSelfClosingElement, SourceFile } from "ts-morph";
-import type { BoxNode, LiteralValue, MapType } from "./type-factory";
+import type { BoxNode, BoxNodeMap, LiteralValue } from "./type-factory";
 
 // https://github.com/vanilla-extract-css/vanilla-extract/discussions/91#discussioncomment-2653340
 // critical css = Box context + collect
@@ -11,13 +11,13 @@ export type ExtractedPropMap = Record<string, LiteralValue>;
 
 export type BoxNodeMapKind = "component" | "function";
 
-export type QueryFnBox = { name: string; fromNode: () => CallExpression; box: MapType };
+export type QueryFnBox = { name: string; fromNode: () => CallExpression; box: BoxNodeMap };
 export type FunctionNodesMap = { kind: "function"; nodesByProp: Map<string, BoxNode[]>; queryList: QueryFnBox[] };
 
 export type QueryComponentBox = {
     name: string;
     fromNode: () => JsxOpeningElement | JsxSelfClosingElement;
-    box: MapType;
+    box: BoxNodeMap;
 };
 export type ComponentNodesMap = {
     kind: "component";
