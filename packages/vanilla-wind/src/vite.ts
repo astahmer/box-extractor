@@ -250,7 +250,7 @@ export const vanillaWind = (
 
                 const toReplace = new Map<Node, string>();
                 extracted.forEach((extract, name) => {
-                    const fromNode = extract.queryBox.fromNode();
+                    const fromNode = extract.queryBox.getNode();
                     const theme = createTheme(extract.result);
 
                     toReplace.set(fromNode, `${JSON.stringify(theme, null, 4)} as const`);
@@ -421,8 +421,14 @@ export const vanillaWind = (
                     const component = getAncestorComponent(identifier);
                     if (!component) return null;
 
-                    const themeName = unquote(getNameLiteral(identifier));
-                    const componentName = unquote(getNameLiteral(component));
+                    const [themeNameStr, componentNameStr] = [
+                        getNameLiteral(identifier, []),
+                        getNameLiteral(component, []),
+                    ];
+                    if (!themeNameStr || !componentNameStr) return null;
+
+                    const themeName = unquote(themeNameStr);
+                    const componentName = unquote(componentNameStr);
 
                     if (themeNameByComponentName.get(componentName) !== themeName) {
                         foundComponentNameList.add(componentName);
@@ -586,11 +592,8 @@ export const vanillaWind = (
                         // console.log({ node: node.getText(), kind: node.getKindName(), className });
                         if (Node.isJsxSelfClosingElement(node) || Node.isJsxOpeningElement(node)) {
                             node.addAttribute({ name: "_styled", initializer: `"${className}"` });
-                        } else if (Node.isIdentifier(node)) {
-                            const jsxAttribute = node.getParentIfKind(ts.SyntaxKind.JsxAttribute);
-                            if (jsxAttribute) {
-                                jsxAttribute.remove();
-                            }
+                        } else if (Node.isJsxAttribute(node)) {
+                            node.remove();
                         } else if (Node.isJsxSpreadAttribute(node)) {
                             // TODO only remove the props needed rather than the whole spread, this is a bit too aggressive
                             // also, remove the spread if it's empty
