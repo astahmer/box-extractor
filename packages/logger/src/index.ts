@@ -31,7 +31,7 @@ const namespaceLists = {
     skips: [] as RegExp[],
 };
 
-const enable = (namespaces: string) => {
+export const enableLogs = (namespaces: string) => {
     let i;
     const split = (typeof namespaces === "string" ? namespaces : "").split(/[\s,]+/);
     const len = split.length;
@@ -56,6 +56,8 @@ const enable = (namespaces: string) => {
 
     namespaceLists.allows = allows;
     namespaceLists.skips = skips;
+
+    return namespaceLists;
 };
 
 const isEnabled = (name: string) => {
@@ -71,7 +73,7 @@ const isEnabled = (name: string) => {
     return false;
 };
 
-if (typeof process !== "undefined" && process.env["DEBUG"]) enable(process.env["DEBUG"]);
+if (typeof process !== "undefined" && process.env["DEBUG"]) enableLogs(process.env["DEBUG"]);
 
 function callsites(): CallSite[] {
     const _prepareStackTrace = Error.prepareStackTrace;
