@@ -445,24 +445,11 @@ const maybePropIdentifierDefinitionValue = (elementAccessed: Identifier, propNam
                     const maybeObject = maybeObjectLikeBox(element);
                     if (!isNotNullish(maybeObject)) return;
 
-                    logger.scoped("id-def", {
-                        propName,
-                        maybeObject,
-                        value:
-                            maybeObject.type === "object"
-                                ? maybeObject.value[propName]
-                                : maybeObject.value.get(propName),
-                        boxed: box.cast(
-                            maybeObject.type === "object"
-                                ? maybeObject.value[propName]
-                                : maybeObject.value.get(propName),
-                            elementAccessed
-                        ),
-                    });
-                    return box.cast(
-                        maybeObject.type === "object" ? maybeObject.value[propName] : maybeObject.value.get(propName),
-                        elementAccessed
-                    );
+                    const propValue =
+                        maybeObject.type === "object" ? maybeObject.value[propName] : maybeObject.value.get(propName);
+                    logger.scoped("id-def", { propName, propValue });
+
+                    return box.cast(propValue, elementAccessed, elementAccessed);
                 }
             }
 

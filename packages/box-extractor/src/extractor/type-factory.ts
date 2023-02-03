@@ -80,10 +80,19 @@ const boxTypeFactory = {
             getNode: () => node,
         } as ConditionalType;
     },
-    cast<T extends BoxNode>(value: unknown, node: Node): T | undefined {
+    cast<T extends BoxNode>(value: unknown, node: Node, from?: Node): T | undefined {
         if (!value) return;
-        if (isBoxNode(value)) return value as T;
-        return toBoxType(value as any, node) as T;
+        // console.log("isBoxNode", isBoxNode(value), value);
+        if (isBoxNode(value)) {
+            if (from) value.fromNode = () => from;
+            // else if (!value.fromNode) value.fromNode = () => node;
+            return value as T;
+        }
+
+        const boxed = toBoxType(value as any, node) as T;
+        if (from) boxed.fromNode = () => from;
+        // else if (!boxed.fromNode) boxed.fromNode = () => node;
+        return boxed;
     },
     //
     emptyObject: (node: Node) =>
@@ -91,6 +100,11 @@ const boxTypeFactory = {
     emptyInitializer: (node: Node) =>
         ({ [BoxKind]: true, type: "empty-initializer", getNode: () => node } as EmptyInitializerType),
     unresolvable: (node: Node) => ({ [BoxKind]: true, type: "unresolvable", getNode: () => node } as UnresolvableType),
+    from: (current: BoxNode | undefined, node: Node) => {
+        if (!current) return;
+        current.fromNode = () => node;
+        return current;
+    },
 };
 
 export const box = boxTypeFactory;
