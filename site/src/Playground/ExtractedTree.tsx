@@ -1,14 +1,15 @@
 import {
+    box,
     BoxNode,
+    BoxNodeConditional,
+    BoxNodeEmptyInitializer,
+    BoxNodeList,
+    BoxNodeLiteral,
+    BoxNodeMap,
+    BoxNodeObject,
     BoxNodesMap,
     getBoxLiteralValue,
-    LiteralType,
-    ObjectType,
-    ConditionalType,
-    ListType,
-    MapType,
 } from "@box-extractor/core";
-import type { EmptyInitializerType } from "@box-extractor/core/dist/declarations/src/extractor/type-factory";
 import { useSelector } from "@xstate/react";
 import { useState } from "react";
 import { match } from "ts-pattern";
@@ -153,7 +154,7 @@ const BasicBoxNode = ({ name, propName, node }: { name: string; propName: string
     const selectNode = () => service.send({ type: "Select node", identifier: name, prop: propName, node });
     const line = node.getNode().getStartLineNumber();
 
-    if (node.type === "unresolvable") {
+    if (box.isUnresolvable(node)) {
         return (
             <Box backgroundColor={{ light: "brand.600", dark: "brand.800" }} borderRadius="lg">
                 <Box
@@ -174,7 +175,7 @@ const BasicBoxNode = ({ name, propName, node }: { name: string; propName: string
         );
     }
 
-    if (node.type === "object" && node.isEmpty) {
+    if (box.isObject(node) && node.isEmpty) {
         return (
             <Box backgroundColor={{ light: "brand.600", dark: "brand.800" }} borderRadius="lg">
                 <Box
@@ -195,7 +196,7 @@ const BasicBoxNode = ({ name, propName, node }: { name: string; propName: string
         );
     }
 
-    if (node.type === "literal") {
+    if (box.isLiteral(node)) {
         return (
             <Box backgroundColor={{ light: "brand.600", dark: "brand.800" }} borderRadius="lg">
                 <Box
@@ -237,21 +238,23 @@ const BasicBoxNode = ({ name, propName, node }: { name: string; propName: string
                 <Box pl="4">
                     {match(node.type)
                         .with("object", () => (
-                            <BoxNodeObjectType name={name} propName={propName} node={node as ObjectType} />
+                            <BoxNodeObjectRow name={name} propName={propName} node={node as BoxNodeObject} />
                         ))
-                        .with("list", () => <BoxNodeArray name={name} propName={propName} node={node as ListType} />)
-                        .with("map", () => <BoxNodeMapType name={name} propName={propName} node={node as MapType} />)
+                        .with("list", () => (
+                            <BoxNodeListRow name={name} propName={propName} node={node as BoxNodeList} />
+                        ))
+                        .with("map", () => <BoxNodeMapRow name={name} propName={propName} node={node as BoxNodeMap} />)
                         .with("conditional", () => (
-                            <BoxNodeCondtionalType name={name} propName={propName} node={node as ConditionalType} />
+                            <BoxNodeCondtionalRow name={name} propName={propName} node={node as BoxNodeConditional} />
                         ))
                         .with("empty-initializer", () => (
-                            <BoxNodeEmptyInitializer
+                            <BoxNodeEmptyInitializerRow
                                 name={name}
                                 propName={propName}
-                                node={node as EmptyInitializerType}
+                                node={node as BoxNodeEmptyInitializer}
                             />
                         ))
-                        .exhaustive()}
+                        .run()}
                 </Box>
             ) : null}
             {/* <ExpandableMinimalBoxNode name={name} propName={propName} node={node} /> */}
@@ -411,23 +414,27 @@ const BoxNodeItem = ({ name, propName, node }: { name: string; propName: string;
                 fontSize="sm"
                 data-type={node.type}
             >
-                {node.type !== "literal" && (node.type === "object" ? !node.isEmpty : true) ? (
+                {node.type !== "literal" && (box.isObject(node) ? !node.isEmpty : true) ? (
                     <span>{node.type}</span>
                 ) : null}
                 {match(node.type)
                     .with("object", () => (
-                        <BoxNodeObjectType name={name} propName={propName} node={node as ObjectType} />
+                        <BoxNodeObjectRow name={name} propName={propName} node={node as BoxNodeObject} />
                     ))
                     .with("literal", () => (
-                        <BoxNodeLiteral name={name} propName={propName} node={node as LiteralType} />
+                        <BoxNodeLiteralRow name={name} propName={propName} node={node as BoxNodeLiteral} />
                     ))
-                    .with("list", () => <BoxNodeArray name={name} propName={propName} node={node as ListType} />)
-                    .with("map", () => <BoxNodeMapType name={name} propName={propName} node={node as MapType} />)
+                    .with("list", () => <BoxNodeListRow name={name} propName={propName} node={node as BoxNodeList} />)
+                    .with("map", () => <BoxNodeMapRow name={name} propName={propName} node={node as BoxNodeMap} />)
                     .with("conditional", () => (
-                        <BoxNodeCondtionalType name={name} propName={propName} node={node as ConditionalType} />
+                        <BoxNodeCondtionalRow name={name} propName={propName} node={node as BoxNodeConditional} />
                     ))
                     .with("empty-initializer", () => (
-                        <BoxNodeEmptyInitializer name={name} propName={propName} node={node as EmptyInitializerType} />
+                        <BoxNodeEmptyInitializerRow
+                            name={name}
+                            propName={propName}
+                            node={node as BoxNodeEmptyInitializer}
+                        />
                     ))
                     .with("unresolvable", () => <div>unresolvable</div>)
                     .exhaustive()}
@@ -436,7 +443,7 @@ const BoxNodeItem = ({ name, propName, node }: { name: string; propName: string;
     );
 };
 
-const BoxNodeObjectType = ({ name, propName, node }: { name: string; propName: string; node: ObjectType }) => {
+const BoxNodeObjectRow = ({ name, propName, node }: { name: string; propName: string; node: BoxNodeObject }) => {
     // const service = usePlaygroundContext();
     console.log({ name, propName, value: node });
 
@@ -462,7 +469,7 @@ const BoxNodeObjectType = ({ name, propName, node }: { name: string; propName: s
     );
 };
 
-const BoxNodeMapType = ({ name, propName, node }: { name: string; propName: string; node: MapType }) => {
+const BoxNodeMapRow = ({ name, propName, node }: { name: string; propName: string; node: BoxNodeMap }) => {
     // const service = usePlaygroundContext();
 
     return (
@@ -483,7 +490,7 @@ const BoxNodeMapType = ({ name, propName, node }: { name: string; propName: stri
     );
 };
 
-const BoxNodeArray = ({ name, propName, node }: { name: string; propName: string; node: ListType }) => {
+const BoxNodeListRow = ({ name, propName, node }: { name: string; propName: string; node: BoxNodeList }) => {
     // const service = usePlaygroundContext();
 
     return (
@@ -502,7 +509,7 @@ const BoxNodeArray = ({ name, propName, node }: { name: string; propName: string
     );
 };
 
-const BoxNodeLiteral = ({ name, propName, node }: { name: string; propName: string; node: LiteralType }) => {
+const BoxNodeLiteralRow = ({ name, propName, node }: { name: string; propName: string; node: BoxNodeLiteral }) => {
     // const service = usePlaygroundContext();
 
     return (
@@ -515,14 +522,14 @@ const BoxNodeLiteral = ({ name, propName, node }: { name: string; propName: stri
     );
 };
 
-const BoxNodeEmptyInitializer = ({
+const BoxNodeEmptyInitializerRow = ({
     name,
     propName,
     node,
 }: {
     name: string;
     propName: string;
-    node: EmptyInitializerType;
+    node: BoxNodeEmptyInitializer;
 }) => {
     // const service = usePlaygroundContext();
 
@@ -538,7 +545,15 @@ const BoxNodeEmptyInitializer = ({
     );
 };
 
-const BoxNodeCondtionalType = ({ name, propName, node }: { name: string; propName: string; node: ConditionalType }) => {
+const BoxNodeCondtionalRow = ({
+    name,
+    propName,
+    node,
+}: {
+    name: string;
+    propName: string;
+    node: BoxNodeConditional;
+}) => {
     // const service = usePlaygroundContext();
 
     return (

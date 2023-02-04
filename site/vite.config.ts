@@ -1,4 +1,6 @@
-import { createViteVanillaExtractSprinklesExtractor } from "@box-extractor/vanilla-extract/vite-plugin";
+import vw from "@box-extractor/vanilla-wind/vite";
+import { vanillaExtractPlugin } from "@vanilla-extract/vite-plugin";
+
 import { NodeGlobalsPolyfillPlugin } from "@esbuild-plugins/node-globals-polyfill";
 import presetIcons from "@unocss/preset-icons";
 import react from "@vitejs/plugin-react";
@@ -18,19 +20,13 @@ export default defineConfig((env) => {
     const config: UserConfig = {
         ssr: {
             external: ["ts-toolbelt", "picocolors", "humanize-duration"],
+            noExternal: ["@box-extractor/logger"],
         },
         plugins: [
             UnoCSS({ presets: [presetIcons({})] }),
             replace(replaceOptions),
-            createViteVanillaExtractSprinklesExtractor({
-                components: ["Box", "box.*"],
-                mappedProps: { direction: ["flexDirection"], spacing: ["paddingBottom", "paddingRight"] },
-                functions: ["themeSprinkles"],
-                vanillaExtractOptions: {
-                    identifiers: "short",
-                    forceEmitCssInSsrBuild: true,
-                },
-            }),
+            vw.vanillaWind({ themePath: "./src/theme/theme.ts" }),
+            vanillaExtractPlugin(),
             react(),
             ssr({ includeAssetsImportedByServer: true }),
             compileTime(),

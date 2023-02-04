@@ -1,9 +1,10 @@
 import { defineProperties, ConfigConditions } from "@box-extractor/vanilla-wind";
 import { tokens, flatColors } from "@box-extractor/vanilla-theme";
+import { colorModeVars, darkMode, flatPrimaryColors, lightMode } from "./css/color-mode.css";
 
 const space = tokens.space as Record<keyof typeof tokens.space | `${keyof typeof tokens.space}`, string>;
 const sizes = tokens.sizes as Record<keyof typeof tokens.sizes | `${keyof typeof tokens.sizes}`, string>;
-const colors = flatColors;
+const colors = { ...flatColors, ...colorModeVars.color, ...flatPrimaryColors };
 
 const screens = {
     mobile: { max: "599px" },
@@ -25,7 +26,7 @@ const twBreakpointsToAppBreakpoints = (breakpointsMap: TwResponsiveBreakpointsMa
         ])
     ) as Record<TwResponsiveBreakpoints, ConfigConditions[string]>;
 
-export const tw = defineProperties({
+export const css = defineProperties({
     conditions: {
         ...twBreakpointsToAppBreakpoints(screens),
         default: {},
@@ -126,7 +127,7 @@ export const tw = defineProperties({
         peerPlaceholderShown: {
             selector: "&[data-peer]::placeholder-shown ~ &,.peer::placeholder-shown ~ &",
         },
-        placeholder: { selector: "&::placeholder" },
+        _placeholder: { selector: "&::placeholder" },
         placeholderShown: { selector: "&::placeholder-shown" },
         fullScreen: { selector: "&:fullscreen" },
         selection: { selector: "&::selection" },
@@ -134,8 +135,11 @@ export const tw = defineProperties({
         ltr: { selector: "&[dir=ltr] &,&[dir=ltr]" },
         mediaDark: { "@media": "(prefers-color-scheme: dark)" },
         mediaReduceMotion: { "@media": "(prefers-reduced-motion: reduce)" },
-        dark: { selector: "&[data-theme=dark] &,&[data-theme=dark]" },
-        light: { selector: "&[data-theme=light] &,&[data-theme=light]" },
+        dark: { selector: `&[data-theme=dark] &,[data-theme=dark] &,.${darkMode} &` },
+        light: { selector: `&[data-theme=light] &,[data-theme=light] &,.${lightMode} &` },
+        resizeHandleActive: { selector: "[data-resize-handle-active] &" },
+        panelHorizontalActive: { selector: '[data-panel-group-direction="horizontal"] &' },
+        panelVerticalActive: { selector: '[data-panel-group-direction="vertical"] &' },
     },
     properties: {
         boxShadow: tokens.shadows,
