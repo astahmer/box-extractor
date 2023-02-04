@@ -1,10 +1,12 @@
+import type { WithStyledProps } from "@box-extractor/vanilla-wind";
 import { Children, PropsWithChildren, ReactNode } from "react";
-import type { BoxProps, PolymorphicComponentProps } from "./Box";
+import type { PolymorphicComponentProps } from "./Box";
 import { Box } from "./Box";
+import type { css } from "./theme";
 
-type StackProps = Omit<BoxProps, "align"> & {
+type StackProps = Omit<WithStyledProps<typeof css>, "align"> & {
     children: ReactNode;
-    spacing?: BoxProps["paddingBottom"];
+    spacing?: WithStyledProps<typeof css>["paddingBottom"];
 };
 const defaultElement = "div";
 
@@ -31,9 +33,6 @@ export const Stack = <TType extends React.ElementType = typeof defaultElement>(
     );
 };
 
-export const Flex = (props: PropsWithChildren<BoxProps>) => <Box flexDirection="row" {...props} />;
-export const Inline = (props: PropsWithChildren<StackProps>) => <Stack flexDirection="row" {...props} />;
-
-export const Center = (props: PropsWithChildren<BoxProps>) => (
+export const Center = (props: PropsWithChildren) => (
     <Box display="flex" justifyContent="center" alignItems="center" textAlign="center" {...props} />
 );

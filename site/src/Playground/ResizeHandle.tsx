@@ -1,14 +1,14 @@
 import { PanelResizeHandle } from "react-resizable-panels";
 import { Box } from "../theme/Box";
 import { Center } from "../theme/components";
-import { themeSprinkles } from "../theme/css";
+import { css } from "../theme/theme";
 
 // adapted from https://github.com/bvaughn/react-resizable-panels/blob/820f48f263407b6b78feecf975a6914c417107e6/packages/react-resizable-panels-website/src/components/ResizeHandle.tsx
 export function ResizeHandle({ className = "", id }: { className?: string; id?: string }) {
     return (
         <PanelResizeHandle
             className={[
-                themeSprinkles({
+                css({
                     position: "relative",
                     outline: "none",
                     display: "flex",

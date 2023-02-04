@@ -3,9 +3,8 @@ import { useActor } from "@xstate/react";
 import { Panel, PanelGroup } from "react-resizable-panels";
 import { match } from "ts-pattern";
 import { useColorMode } from "../ColorModeToggle/ColorModeToggle";
-import { Box } from "../theme/Box";
-import { Flex } from "../theme/components";
-import { themeSprinkles } from "../theme/css";
+import { box, Box } from "../theme/Box";
+import { css } from "../theme/theme";
 import { ExtractedTreeBasic, ExtractedTreeComfy, ExtractedTreeMinimal } from "./ExtractedTree";
 import { usePlaygroundContext } from "./Playground.machine";
 import { ResizeHandle } from "./ResizeHandle";
@@ -19,10 +18,10 @@ export const Playground = () => {
     const { colorMode } = useColorMode();
 
     return (
-        <Flex h="100%" pos="relative">
+        <Box display="flex" h="100%" pos="relative">
             <Box display="flex" boxSize="100%">
                 <PanelGroup direction="horizontal">
-                    <Panel className={themeSprinkles({ display: "flex", flexDirection: "column" })} minSize={20}>
+                    <Panel className={css({ display: "flex", flexDirection: "column" })} minSize={20}>
                         <Box
                             boxSize="100%"
                             display="flex"
@@ -63,7 +62,7 @@ export const Playground = () => {
                         </Box>
                     </Panel>
                     <ResizeHandle />
-                    <Panel className={themeSprinkles({ display: "flex", flexDirection: "column" })} minSize={20}>
+                    <Panel className={css({ display: "flex", flexDirection: "column" })} minSize={20}>
                         <Box boxSize="100%" display="flex" flexDirection="column" overflow="hidden" padding="4">
                             <Box mb="4" display="flex">
                                 <div>
@@ -81,8 +80,7 @@ export const Playground = () => {
                                         }}
                                     />
                                 </div>
-                                <Box
-                                    as="input"
+                                <box.input
                                     ml="6"
                                     alignSelf="flex-end"
                                     type="search"
@@ -119,6 +117,6 @@ export const Playground = () => {
                     </Panel>
                 </PanelGroup>
             </Box>
-        </Flex>
+        </Box>
     );
 };
