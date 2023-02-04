@@ -1,8 +1,10 @@
+import type { WithStyledProps } from "@box-extractor/vanilla-wind";
 import type { ComponentPropsWithoutRef, PropsWithChildren } from "react";
 import { ColorModeToggle } from "../ColorModeToggle/ColorModeToggle";
 import { Link } from "../renderer/Link";
-import { Box, BoxProps } from "../theme/Box";
+import { Box } from "../theme/Box";
 import { Stack } from "../theme/components";
+import type { css } from "../theme/theme";
 
 import "./layout.css";
 
@@ -66,6 +68,6 @@ export const MainLayout = ({ children }: PropsWithChildren) => {
     );
 };
 
-const NavLink = (props: PropsWithChildren<BoxProps & ComponentPropsWithoutRef<typeof Link>>) => (
-    <Box as={Link} borderRadius="md" p="2" _hover={{ backgroundColor: "bgSecondary" }} {...props} />
+const NavLink = (props: PropsWithChildren<WithStyledProps<typeof css> & ComponentPropsWithoutRef<typeof Link>>) => (
+    <Box as={Link} borderRadius="md" p="2" hover={{ backgroundColor: "bgSecondary" }} {...props} />
 );

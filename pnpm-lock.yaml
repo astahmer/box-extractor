@@ -334,13 +334,14 @@ importers:
       '@astahmer/eslint-config-react': ^0.1.5
       '@astahmer/eslint-config-ts': ^0.1.5
       '@box-extractor/core': workspace:^0.3.0
-      '@box-extractor/vanilla-extract': workspace:^0.2.6
+      '@box-extractor/logger': workspace:*
       '@box-extractor/vanilla-theme': workspace:^0.2.7
+      '@box-extractor/vanilla-wind': workspace:^0.1.1
       '@esbuild-plugins/node-globals-polyfill': ^0.1.1
       '@iconify/json': ^2.1.132
       '@monaco-editor/react': ^4.4.6
       '@phenomnomnominal/tsquery': ^5.0.0
-      '@polymorphic-factory/react': ^0.2.2
+      '@polymorphic-factory/react': ^0.3.0
       '@rollup/plugin-replace': ^5.0.2
       '@tanstack/react-query': ^4.14.1
       '@types/compression': ^1.7.2
@@ -353,7 +354,6 @@ importers:
       '@unocss/preset-icons': ^0.46.3
       '@vanilla-extract/css': ^1.9.2
       '@vanilla-extract/integration': ^6.0.2
-      '@vanilla-extract/sprinkles': ^1.5.1
       '@vanilla-extract/vite-plugin': ^3.7.0
       '@vitejs/plugin-react': ^2.2.0
       '@xstate/react': ^3.0.1
@@ -394,17 +394,16 @@ importers:
       zod: ^3.19.1
     dependencies:
       '@box-extractor/core': link:../packages/box-extractor
-      '@box-extractor/vanilla-extract': link:../packages/vanilla-extract
+      '@box-extractor/logger': link:../packages/logger
       '@box-extractor/vanilla-theme': link:../packages/vanilla-theme
+      '@box-extractor/vanilla-wind': link:../packages/vanilla-wind
       '@esbuild-plugins/node-globals-polyfill': 0.1.1
       '@monaco-editor/react': 4.4.6_6vrjaj6ridxbohi43n7zt4gn7q
       '@phenomnomnominal/tsquery': 5.0.0_typescript@4.9.4
-      '@polymorphic-factory/react': 0.2.2_react@18.2.0
+      '@polymorphic-factory/react': 0.3.0_react@18.2.0
       '@rollup/plugin-replace': 5.0.2_rollup@3.7.4
       '@tanstack/react-query': 4.22.0_biqbaboplfbrettd7655fr4n2y
       '@vanilla-extract/css': 1.9.2
-      '@vanilla-extract/sprinkles': 1.5.1_@vanilla-extract+css@1.9.2
-      '@vanilla-extract/vite-plugin': 3.7.0_vite@3.2.3
       '@xstate/react': 3.0.2_o5u6bh43w5rmf7t7erwjktck7q
       '@zag-js/react': 0.3.4_biqbaboplfbrettd7655fr4n2y
       '@zag-js/tags-input': 0.3.8
@@ -441,6 +440,7 @@ importers:
       '@typescript-eslint/parser': 5.46.1_fqmqyeinda7panflsqpj5zauc4
       '@unocss/preset-icons': 0.46.5
       '@vanilla-extract/integration': 6.0.2
+      '@vanilla-extract/vite-plugin': 3.7.0_vite@3.2.3
       '@vitejs/plugin-react': 2.2.0_vite@3.2.3
       colord: 2.9.3
       eslint: 8.27.0
@@ -2726,8 +2726,8 @@ packages:
   /@polka/url/1.0.0-next.21:
     resolution: {integrity: sha512-a5Sab1C4/icpTZVzZc5Ghpz88yQtGOyNqYXcZgOssB2uuAr+wF/MvN6bgtW32q7HHrvBki+BsZ0OuNv6EV3K9g==}
 
-  /@polymorphic-factory/react/0.2.2_react@18.2.0:
-    resolution: {integrity: sha512-0k40ML7j5KT7bAObMCXgAbu8tmSLCmnAoJhhbaLcMM4GGzFBYVmI+o2tVihgija0l1BcTaWuYs5ydPq51/SDVA==}
+  /@polymorphic-factory/react/0.3.0_react@18.2.0:
+    resolution: {integrity: sha512-MMJNVV1yVqVBuOcAZhEyZgcWcMhN8Dwp+mg9dtakjiPVma+BQgIV/3GpErA9TXB9W5q4D2CalT42LGe6ta6Suw==}
     peerDependencies:
       react: '>=16.8 || >=17 || >18'
     dependencies:
@@ -3647,7 +3647,7 @@ packages:
     transitivePeerDependencies:
       - supports-color
       - ts-node
-    dev: false
+    dev: true
 
   /@vanilla-extract/vite-plugin/3.7.1_vite@3.2.3:
     resolution: {integrity: sha512-KFeTSEJKtJDfQhUJh4jGmrJDLCU59DSA3YKZSdys4jTOLZ1ZFsKzDP2pnFwH/24Oc2ebK+EV5x3OPlWxvRYthg==}
@@ -5162,7 +5162,6 @@ packages:
     resolution: {integrity: sha512-iaiZZ9vUF5wJV8ob1tl+5aJTrwDczlvGP0JoMmnpC2B0ppiMCu8n8gmy5ZTGl5bcG081XBVn+U+jP+mPFm5T5Q==}
     hasBin: true
     requiresBuild: true
-    dev: false
 
   /esbuild/0.14.54:
     resolution: {integrity: sha512-Cy9llcy8DvET5uznocPyqL3BFRrFXSVqbgpMJ9Wz8oVjZlh/zUSNbPRbov0VX7VxN2JH1Oa0uNxZ7eLRb62pJA==}
@@ -6709,6 +6708,7 @@ packages:
   /lilconfig/2.0.6:
     resolution: {integrity: sha512-9JROoBW7pobfsx+Sq2JsASvCo6Pfo6WWoUW79HuB1BCoBXD4PLWJPqDF6fNj67pqBYTbAHkE57M1kS/+L1neOg==}
     engines: {node: '>=10'}
+    dev: true
 
   /lines-and-columns/1.2.4:
     resolution: {integrity: sha512-7ylylesZQ/PV29jhEDl3Ufjo6ZX7gCqJr5F7PKrqc93v7fzSymt1BpwEU8nAUXs8qzzvqhbjhK5QZg6Mt/HkBg==}
@@ -8065,7 +8065,7 @@ packages:
       lilconfig: 2.0.6
       postcss: 8.4.20
       yaml: 1.10.2
-    dev: false
+    dev: true
 
   /postcss-load-config/3.1.4_postcss@8.4.21:
     resolution: {integrity: sha512-6DiM4E7v4coTE4uzA8U//WhtPwyhiim3eyjEMFCnUpzbrkK9wJHgKDT2mR+HbtSrd/NubVaYTOpSpjUl8NQeRg==}
@@ -8099,6 +8099,7 @@ packages:
       nanoid: 3.3.4
       picocolors: 1.0.0
       source-map-js: 1.0.2
+    dev: true
 
   /postcss/8.4.21:
     resolution: {integrity: sha512-tP7u/Sn/dVxK2NnruI4H9BG+x+Wxz6oeZ1cJ8P6G/PZY0IKk4k/63TDsQf2kQq3+qoJeLm2kIBUNlZe3zgb4Zg==}
@@ -9580,7 +9581,7 @@ packages:
       fast-glob: 3.2.12
       picocolors: 1.0.0
       sirv: 2.0.2
-      vite: 3.2.3_@types+node@18.11.9
+      vite: 3.2.3
     dev: false
 
   /vite-tsconfig-paths/4.0.3_p2fwcaxbionflq6hjivvbcsv5a:
@@ -9894,6 +9895,7 @@ packages:
   /yaml/1.10.2:
     resolution: {integrity: sha512-r3vXyErRCYJ7wg28yvBY5VSoAF8ZvlcW9/BwUzEtUsjvX/DKs24dIkuwjtuprwJJHsbyUbLApepYTR1BN4uHrg==}
     engines: {node: '>= 6'}
+    dev: true
 
   /yargs-parser/18.1.3:
     resolution: {integrity: sha512-o50j0JeToy/4K6OZcaQmW6lyXXKhq7csREXcDwk2omFPJEwUNOVtJKvmDr9EI1fAJZUyZcRF7kxGBWmRXudrCQ==}
@@ -9967,4 +9969,3 @@ packages:
       outdent: 0.8.0
     transitivePeerDependencies:
       - supports-color
-    dev: false
