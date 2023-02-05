@@ -494,7 +494,7 @@ const maybePropIdentifierDefinitionValue = (
                     if (!isNotNullish(propValue)) return;
                     logger.scoped("id-def", { propName, propValue });
 
-                    return box.cast(propValue, elementAccessed, innerStack);
+                    return box.cast(propValue[0], elementAccessed, innerStack);
                 }
             }
 
