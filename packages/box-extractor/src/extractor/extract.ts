@@ -1,14 +1,7 @@
 import { createLogger } from "@box-extractor/logger";
 import { tsquery } from "@phenomnomnominal/tsquery";
 import { castAsArray } from "pastable";
-import {
-    CallExpression,
-    Identifier,
-    JsxOpeningElement,
-    JsxSelfClosingElement,
-    JsxSpreadAttribute,
-    Node,
-} from "ts-morph";
+import { Identifier, JsxOpeningElement, JsxSelfClosingElement, JsxSpreadAttribute, Node, ts } from "ts-morph";
 
 import { extractCallExpressionValues } from "./extractCallExpressionIdentifierValues";
 import { extractJsxAttributeIdentifierValue } from "./extractJsxAttributeIdentifierValue";
@@ -157,13 +150,16 @@ export const extract = ({
         }
 
         const fnMap = extractMap.get(functionName)! as FunctionNodesMap;
-        const fnSelector = `CallExpression:has(Identifier[name="${functionName}"])`;
+        const fnSelector = `CallExpression > Identifier[name="${functionName}"]`;
         // <div className={colorSprinkles({ color: "blue.100" })}></ColorBox>
         //                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
         logger({ fnSelector, functionName, propNameList });
-        const maybeObjectNodes = query<CallExpression>(ast, fnSelector) ?? [];
-        maybeObjectNodes.forEach((node) => {
+        const maybeObjectNodes = query<Identifier>(ast, fnSelector) ?? [];
+        maybeObjectNodes.forEach((identifier) => {
+            const node = identifier.getParentIfKind(ts.SyntaxKind.CallExpression);
+            if (!node) return;
+
             const maybeBox = extractCallExpressionValues(node);
             if (!maybeBox) return;
             // console.log({ objectOrMapType });
