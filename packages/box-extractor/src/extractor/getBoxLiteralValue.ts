@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import type { MaybeBoxNodeReturn } from "./maybeBoxNode";
-import { box, BoxNode, LiteralValue, SingleLiteralValue } from "./type-factory";
+import { box, BoxNode, castObjectLikeAsMapValue, LiteralValue, SingleLiteralValue } from "./type-factory";
 import { isNotNullish } from "./utils";
-// import { createLogger } from "@box-extractor/logger";
+import { createLogger } from "@box-extractor/logger";
 
 // const logger = createLogger("box-ex:extractor:get-literal");
 
@@ -10,6 +10,8 @@ const cacheMap = new WeakMap();
 const innerGetLiteralValue = (node: BoxNode | undefined): LiteralValue | undefined => {
     if (!node) return;
     if (box.isUnresolvable(node)) return;
+    if (box.isEmptyInitializer(node)) return;
+
     if (box.isLiteral(node)) return node.value;
     if (box.isObject(node)) return node.value;
     if (box.isMap(node)) {
@@ -71,6 +73,8 @@ export type BoxTraversalControl = {
     up(): void;
 };
 
+const logger = createLogger("box-ex:extractor:travesal");
+
 /**
  *
  * @param maybeBox
@@ -81,17 +85,19 @@ export type BoxTraversalControl = {
  */
 export const visitBoxNode = <T>(
     maybeBox: BoxNode,
-    cbNode: (node: BoxNode, traversal?: BoxTraversalControl) => T | undefined,
-    cbNodeArray?: (nodes: BoxNode[], traversal?: BoxTraversalControl) => T | undefined
+    cbNode: (node: BoxNode, traversal: BoxTraversalControl) => T | undefined,
+    cbNodeArray?: (nodes: BoxNode[], traversal: BoxTraversalControl) => T | undefined
 ): T | undefined => {
     const stopReturnValue: any = {};
     const upReturnValue: any = {};
 
+    let visitedCount = 0;
     let stop = false;
     let up = false;
     const traversal = { stop: () => (stop = true), up: () => (up = true) };
 
     const nodeCallback: (node: BoxNode) => T | undefined = (node: BoxNode) => {
+        logger({ type: node.type, kind: node.getNode().getKindName() });
         if (stop) return stopReturnValue;
 
         let skip = false;
@@ -108,6 +114,7 @@ export const visitBoxNode = <T>(
         cbNodeArray == null
             ? undefined
             : (nodes: BoxNode[]) => {
+                  logger({ list: true, stop });
                   if (stop) return stopReturnValue;
 
                   let skip = false;
@@ -130,9 +137,13 @@ export const visitBoxNode = <T>(
                   }
               };
 
-    return forEachChildForNode(maybeBox);
+    const finalResult = forEachChildForNode(maybeBox);
+    return finalResult === stopReturnValue ? undefined : finalResult;
 
     function forEachChildForNode(node: BoxNode): T | undefined {
+        visitedCount++;
+        logger({ visitedCount, type: node.type, kind: node.getNode().getKindName() });
+
         const getResult = (innerNode: BoxNode | BoxNode[]) => {
             let returnValue: T | undefined | Array<T | undefined>;
             if (Array.isArray(innerNode)) {
@@ -149,9 +160,10 @@ export const visitBoxNode = <T>(
             return returnValue;
         };
 
-        if (box.isMap(node)) {
+        if (box.isMap(node) || box.isObject(node)) {
+            const asMap = castObjectLikeAsMapValue(node, node.getNode());
             let result: T | undefined;
-            node.value.forEach((innerNode) => {
+            asMap.forEach((innerNode) => {
                 if (stop) return stopReturnValue;
                 if (up) return upReturnValue;
 
@@ -165,5 +177,19 @@ export const visitBoxNode = <T>(
             const result = getResult(node.whenTrue) || getResult(node.whenFalse);
             return result === upReturnValue ? undefined : result;
         }
+
+        if (box.isList(node)) {
+            let result: T | undefined;
+            node.value.forEach((innerNode) => {
+                if (stop) return stopReturnValue;
+                if (up) return upReturnValue;
+
+                const current = getResult(innerNode);
+                if (current) result = current;
+            });
+            return result === upReturnValue ? undefined : result;
+        }
+
+        return getResult(node);
     }
 };
