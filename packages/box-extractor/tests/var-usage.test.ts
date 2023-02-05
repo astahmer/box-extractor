@@ -83,8 +83,7 @@ it("can find usage references from a variable", () => {
     const extracted = extractFunctionFrom(sourceFile, "defineProperties", "@box-extractor/vanilla-wind");
     const sprinklesFn = extracted.get("sprinklesFn")!;
 
-    // sprinklesFn.queryBox.value.get("properties")!.find((prop) => prop.type === "map" && prop.value.get(""))
-    const properties = sprinklesFn.queryBox.value.get("properties")![0]! as BoxNodeMap;
+    const properties = (sprinklesFn.queryBox.value[0]! as BoxNodeMap).value.get("properties")![0]! as BoxNodeMap;
     const backgroundColor = properties.value.get("backgroundColor")![0]! as BoxNodeMap;
     const warning = backgroundColor.value.get("warning")![0]! as BoxNodeLiteral;
 
@@ -92,6 +91,7 @@ it("can find usage references from a variable", () => {
     expect(warning).toMatchInlineSnapshot(`
       {
           stack: [
+              "CallExpression",
               "ObjectLiteralExpression",
               "PropertyAssignment",
               "ObjectLiteralExpression",
