@@ -184,13 +184,14 @@ export const default_reporter: Reporter = (event) => {
 // ~ Public api
 
 const scopedCache = new Map<string, CreateLoggerReturn>();
-// eslint-disable-next-line @typescript-eslint/no-empty-function
-const noop = () => {};
 
 export function createLogger(name: string, _onEmit?: Reporter): CreateLoggerReturn {
     const onEmit = _onEmit ?? default_reporter;
     const color = selectColor(name);
-    const logFn = isEnabled(name) ? logger.bind(0, name, onEmit, "debug", color) : noop;
+    const logFn = isEnabled(name)
+        ? (...messages: unknown[]) => logger(name, onEmit, "debug", color, ...messages)
+        : // eslint-disable-next-line @typescript-eslint/no-empty-function
+          () => {};
 
     return Object.assign(logFn, {
         namespace: name,
