@@ -1069,7 +1069,7 @@ it("minimal example with <Box /> component", () => {
         const declaration = from.getParentIfKindOrThrow(ts.SyntaxKind.VariableDeclaration);
         const nameNode = declaration.getNameNode();
         const name = nameNode.getText();
-        configByName.set(name, { query, config: getBoxLiteralValue(query.box) as GenericConfig });
+        configByName.set(name, { query, config: getBoxLiteralValue(query.box.value[0]) as GenericConfig });
     });
 
     const ctx = createAdapterContext("debug");
@@ -1081,6 +1081,7 @@ it("minimal example with <Box /> component", () => {
     const extracted = extractResult.get(name)! as ComponentNodesMap;
 
     const conf = configByName.get("tw")!;
+    console.log(conf.config);
     const boxStyles = generateStyleFromExtraction(name, extracted, conf.config);
 
     expect(boxStyles.classMap.size).toMatchInlineSnapshot("4");

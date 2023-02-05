@@ -323,7 +323,7 @@ it("types are fine", () => {
               nodesByProp: {
                   p: [
                       {
-                          stack: ["ObjectLiteralExpression", "PropertyAssignment", "NumericLiteral"],
+                          stack: ["CallExpression", "ObjectLiteralExpression", "PropertyAssignment", "NumericLiteral"],
                           type: "literal",
                           node: "NumericLiteral",
                           value: "24",
@@ -332,7 +332,7 @@ it("types are fine", () => {
                   ],
                   rounded: [
                       {
-                          stack: ["ObjectLiteralExpression", "PropertyAssignment", "StringLiteral"],
+                          stack: ["CallExpression", "ObjectLiteralExpression", "PropertyAssignment", "StringLiteral"],
                           type: "literal",
                           node: "StringLiteral",
                           value: "lg",
@@ -341,7 +341,7 @@ it("types are fine", () => {
                   ],
                   bg: [
                       {
-                          stack: ["ObjectLiteralExpression", "PropertyAssignment", "StringLiteral"],
+                          stack: ["CallExpression", "ObjectLiteralExpression", "PropertyAssignment", "StringLiteral"],
                           type: "literal",
                           node: "StringLiteral",
                           value: "blue.500",
@@ -350,13 +350,19 @@ it("types are fine", () => {
                   ],
                   display: [
                       {
-                          stack: ["ObjectLiteralExpression", "PropertyAssignment", "ObjectLiteralExpression"],
+                          stack: [
+                              "CallExpression",
+                              "ObjectLiteralExpression",
+                              "PropertyAssignment",
+                              "ObjectLiteralExpression",
+                          ],
                           type: "map",
                           node: "ObjectLiteralExpression",
                           value: {
                               dark: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -369,6 +375,7 @@ it("types are fine", () => {
                                           hover: [
                                               {
                                                   stack: [
+                                                      "CallExpression",
                                                       "ObjectLiteralExpression",
                                                       "PropertyAssignment",
                                                       "ObjectLiteralExpression",
@@ -391,13 +398,19 @@ it("types are fine", () => {
                   ],
                   hover: [
                       {
-                          stack: ["ObjectLiteralExpression", "PropertyAssignment", "ObjectLiteralExpression"],
+                          stack: [
+                              "CallExpression",
+                              "ObjectLiteralExpression",
+                              "PropertyAssignment",
+                              "ObjectLiteralExpression",
+                          ],
                           type: "map",
                           node: "ObjectLiteralExpression",
                           value: {
                               bg: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -413,6 +426,7 @@ it("types are fine", () => {
                               borderColor: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -428,6 +442,7 @@ it("types are fine", () => {
                               borderRadius: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -443,6 +458,7 @@ it("types are fine", () => {
                               color: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -458,6 +474,7 @@ it("types are fine", () => {
                               d: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -470,6 +487,7 @@ it("types are fine", () => {
                                           dark: [
                                               {
                                                   stack: [
+                                                      "CallExpression",
                                                       "ObjectLiteralExpression",
                                                       "PropertyAssignment",
                                                       "ObjectLiteralExpression",
@@ -484,6 +502,7 @@ it("types are fine", () => {
                                                       large: [
                                                           {
                                                               stack: [
+                                                                  "CallExpression",
                                                                   "ObjectLiteralExpression",
                                                                   "PropertyAssignment",
                                                                   "ObjectLiteralExpression",
@@ -509,6 +528,7 @@ it("types are fine", () => {
                               display: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -521,6 +541,7 @@ it("types are fine", () => {
                                           light: [
                                               {
                                                   stack: [
+                                                      "CallExpression",
                                                       "ObjectLiteralExpression",
                                                       "PropertyAssignment",
                                                       "ObjectLiteralExpression",
@@ -541,6 +562,7 @@ it("types are fine", () => {
                               backgroundColor: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -553,6 +575,7 @@ it("types are fine", () => {
                                           dark: [
                                               {
                                                   stack: [
+                                                      "CallExpression",
                                                       "ObjectLiteralExpression",
                                                       "PropertyAssignment",
                                                       "ObjectLiteralExpression",
@@ -570,6 +593,7 @@ it("types are fine", () => {
                                           light: [
                                               {
                                                   stack: [
+                                                      "CallExpression",
                                                       "ObjectLiteralExpression",
                                                       "PropertyAssignment",
                                                       "ObjectLiteralExpression",
@@ -584,6 +608,7 @@ it("types are fine", () => {
                                                       large: [
                                                           {
                                                               stack: [
+                                                                  "CallExpression",
                                                                   "ObjectLiteralExpression",
                                                                   "PropertyAssignment",
                                                                   "ObjectLiteralExpression",
@@ -603,6 +628,7 @@ it("types are fine", () => {
                                                       dark: [
                                                           {
                                                               stack: [
+                                                                  "CallExpression",
                                                                   "ObjectLiteralExpression",
                                                                   "PropertyAssignment",
                                                                   "ObjectLiteralExpression",
@@ -630,13 +656,19 @@ it("types are fine", () => {
                   ],
                   dark: [
                       {
-                          stack: ["ObjectLiteralExpression", "PropertyAssignment", "ObjectLiteralExpression"],
+                          stack: [
+                              "CallExpression",
+                              "ObjectLiteralExpression",
+                              "PropertyAssignment",
+                              "ObjectLiteralExpression",
+                          ],
                           type: "map",
                           node: "ObjectLiteralExpression",
                           value: {
                               bg: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -652,6 +684,7 @@ it("types are fine", () => {
                               hover: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -664,6 +697,7 @@ it("types are fine", () => {
                                           color: [
                                               {
                                                   stack: [
+                                                      "CallExpression",
                                                       "ObjectLiteralExpression",
                                                       "PropertyAssignment",
                                                       "ObjectLiteralExpression",
@@ -681,6 +715,7 @@ it("types are fine", () => {
                                           d: [
                                               {
                                                   stack: [
+                                                      "CallExpression",
                                                       "ObjectLiteralExpression",
                                                       "PropertyAssignment",
                                                       "ObjectLiteralExpression",
@@ -695,6 +730,7 @@ it("types are fine", () => {
                                                       light: [
                                                           {
                                                               stack: [
+                                                                  "CallExpression",
                                                                   "ObjectLiteralExpression",
                                                                   "PropertyAssignment",
                                                                   "ObjectLiteralExpression",
@@ -714,6 +750,7 @@ it("types are fine", () => {
                                                       large: [
                                                           {
                                                               stack: [
+                                                                  "CallExpression",
                                                                   "ObjectLiteralExpression",
                                                                   "PropertyAssignment",
                                                                   "ObjectLiteralExpression",
@@ -730,6 +767,7 @@ it("types are fine", () => {
                                                                   small: [
                                                                       {
                                                                           stack: [
+                                                                              "CallExpression",
                                                                               "ObjectLiteralExpression",
                                                                               "PropertyAssignment",
                                                                               "ObjectLiteralExpression",
@@ -765,450 +803,510 @@ it("types are fine", () => {
                   {
                       name: "tw",
                       box: {
-                          stack: ["ObjectLiteralExpression"],
-                          type: "map",
+                          stack: ["CallExpression"],
+                          type: "list",
                           node: "CallExpression",
-                          value: {
-                              p: [
-                                  {
-                                      stack: ["ObjectLiteralExpression", "PropertyAssignment", "NumericLiteral"],
-                                      type: "literal",
-                                      node: "NumericLiteral",
-                                      value: "24",
-                                      kind: "string",
-                                  },
-                              ],
-                              rounded: [
-                                  {
-                                      stack: ["ObjectLiteralExpression", "PropertyAssignment", "StringLiteral"],
-                                      type: "literal",
-                                      node: "StringLiteral",
-                                      value: "lg",
-                                      kind: "string",
-                                  },
-                              ],
-                              bg: [
-                                  {
-                                      stack: ["ObjectLiteralExpression", "PropertyAssignment", "StringLiteral"],
-                                      type: "literal",
-                                      node: "StringLiteral",
-                                      value: "blue.500",
-                                      kind: "string",
-                                  },
-                              ],
-                              display: [
-                                  {
-                                      stack: ["ObjectLiteralExpression", "PropertyAssignment", "ObjectLiteralExpression"],
-                                      type: "map",
-                                      node: "ObjectLiteralExpression",
-                                      value: {
-                                          dark: [
-                                              {
-                                                  stack: [
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "ObjectLiteralExpression",
-                                                  ],
-                                                  type: "map",
-                                                  node: "ObjectLiteralExpression",
-                                                  value: {
-                                                      hover: [
-                                                          {
-                                                              stack: [
-                                                                  "ObjectLiteralExpression",
-                                                                  "PropertyAssignment",
-                                                                  "ObjectLiteralExpression",
-                                                                  "PropertyAssignment",
-                                                                  "ObjectLiteralExpression",
-                                                                  "PropertyAssignment",
-                                                                  "StringLiteral",
+                          value: [
+                              {
+                                  stack: ["CallExpression", "ObjectLiteralExpression"],
+                                  type: "map",
+                                  node: "CallExpression",
+                                  value: {
+                                      p: [
+                                          {
+                                              stack: [
+                                                  "CallExpression",
+                                                  "ObjectLiteralExpression",
+                                                  "PropertyAssignment",
+                                                  "NumericLiteral",
+                                              ],
+                                              type: "literal",
+                                              node: "NumericLiteral",
+                                              value: "24",
+                                              kind: "string",
+                                          },
+                                      ],
+                                      rounded: [
+                                          {
+                                              stack: [
+                                                  "CallExpression",
+                                                  "ObjectLiteralExpression",
+                                                  "PropertyAssignment",
+                                                  "StringLiteral",
+                                              ],
+                                              type: "literal",
+                                              node: "StringLiteral",
+                                              value: "lg",
+                                              kind: "string",
+                                          },
+                                      ],
+                                      bg: [
+                                          {
+                                              stack: [
+                                                  "CallExpression",
+                                                  "ObjectLiteralExpression",
+                                                  "PropertyAssignment",
+                                                  "StringLiteral",
+                                              ],
+                                              type: "literal",
+                                              node: "StringLiteral",
+                                              value: "blue.500",
+                                              kind: "string",
+                                          },
+                                      ],
+                                      display: [
+                                          {
+                                              stack: [
+                                                  "CallExpression",
+                                                  "ObjectLiteralExpression",
+                                                  "PropertyAssignment",
+                                                  "ObjectLiteralExpression",
+                                              ],
+                                              type: "map",
+                                              node: "ObjectLiteralExpression",
+                                              value: {
+                                                  dark: [
+                                                      {
+                                                          stack: [
+                                                              "CallExpression",
+                                                              "ObjectLiteralExpression",
+                                                              "PropertyAssignment",
+                                                              "ObjectLiteralExpression",
+                                                              "PropertyAssignment",
+                                                              "ObjectLiteralExpression",
+                                                          ],
+                                                          type: "map",
+                                                          node: "ObjectLiteralExpression",
+                                                          value: {
+                                                              hover: [
+                                                                  {
+                                                                      stack: [
+                                                                          "CallExpression",
+                                                                          "ObjectLiteralExpression",
+                                                                          "PropertyAssignment",
+                                                                          "ObjectLiteralExpression",
+                                                                          "PropertyAssignment",
+                                                                          "ObjectLiteralExpression",
+                                                                          "PropertyAssignment",
+                                                                          "StringLiteral",
+                                                                      ],
+                                                                      type: "literal",
+                                                                      node: "StringLiteral",
+                                                                      value: "table-footer-group",
+                                                                      kind: "string",
+                                                                  },
                                                               ],
-                                                              type: "literal",
-                                                              node: "StringLiteral",
-                                                              value: "table-footer-group",
-                                                              kind: "string",
                                                           },
-                                                      ],
-                                                  },
-                                              },
-                                          ],
-                                      },
-                                  },
-                              ],
-                              hover: [
-                                  {
-                                      stack: ["ObjectLiteralExpression", "PropertyAssignment", "ObjectLiteralExpression"],
-                                      type: "map",
-                                      node: "ObjectLiteralExpression",
-                                      value: {
-                                          bg: [
-                                              {
-                                                  stack: [
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "StringLiteral",
+                                                      },
                                                   ],
-                                                  type: "literal",
-                                                  node: "StringLiteral",
-                                                  value: "whitesmoke",
-                                                  kind: "string",
                                               },
-                                          ],
-                                          borderColor: [
-                                              {
-                                                  stack: [
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "Identifier",
+                                          },
+                                      ],
+                                      hover: [
+                                          {
+                                              stack: [
+                                                  "CallExpression",
+                                                  "ObjectLiteralExpression",
+                                                  "PropertyAssignment",
+                                                  "ObjectLiteralExpression",
+                                              ],
+                                              type: "map",
+                                              node: "ObjectLiteralExpression",
+                                              value: {
+                                                  bg: [
+                                                      {
+                                                          stack: [
+                                                              "CallExpression",
+                                                              "ObjectLiteralExpression",
+                                                              "PropertyAssignment",
+                                                              "ObjectLiteralExpression",
+                                                              "PropertyAssignment",
+                                                              "StringLiteral",
+                                                          ],
+                                                          type: "literal",
+                                                          node: "StringLiteral",
+                                                          value: "whitesmoke",
+                                                          kind: "string",
+                                                      },
                                                   ],
-                                                  type: "object",
-                                                  node: "Identifier",
-                                                  value: {},
-                                                  isEmpty: true,
-                                              },
-                                          ],
-                                          borderRadius: [
-                                              {
-                                                  stack: [
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "StringLiteral",
+                                                  borderColor: [
+                                                      {
+                                                          stack: [
+                                                              "CallExpression",
+                                                              "ObjectLiteralExpression",
+                                                              "PropertyAssignment",
+                                                              "ObjectLiteralExpression",
+                                                              "PropertyAssignment",
+                                                              "Identifier",
+                                                          ],
+                                                          type: "object",
+                                                          node: "Identifier",
+                                                          value: {},
+                                                          isEmpty: true,
+                                                      },
                                                   ],
-                                                  type: "literal",
-                                                  node: "StringLiteral",
-                                                  value: "2xl",
-                                                  kind: "string",
-                                              },
-                                          ],
-                                          color: [
-                                              {
-                                                  stack: [
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "ConditionalExpression",
+                                                  borderRadius: [
+                                                      {
+                                                          stack: [
+                                                              "CallExpression",
+                                                              "ObjectLiteralExpression",
+                                                              "PropertyAssignment",
+                                                              "ObjectLiteralExpression",
+                                                              "PropertyAssignment",
+                                                              "StringLiteral",
+                                                          ],
+                                                          type: "literal",
+                                                          node: "StringLiteral",
+                                                          value: "2xl",
+                                                          kind: "string",
+                                                      },
                                                   ],
-                                                  type: "literal",
-                                                  node: "ConditionalExpression",
-                                                  value: "darkseagreen",
-                                                  kind: "string",
-                                              },
-                                          ],
-                                          d: [
-                                              {
-                                                  stack: [
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "ObjectLiteralExpression",
+                                                  color: [
+                                                      {
+                                                          stack: [
+                                                              "CallExpression",
+                                                              "ObjectLiteralExpression",
+                                                              "PropertyAssignment",
+                                                              "ObjectLiteralExpression",
+                                                              "PropertyAssignment",
+                                                              "ConditionalExpression",
+                                                          ],
+                                                          type: "literal",
+                                                          node: "ConditionalExpression",
+                                                          value: "darkseagreen",
+                                                          kind: "string",
+                                                      },
                                                   ],
-                                                  type: "map",
-                                                  node: "ObjectLiteralExpression",
-                                                  value: {
-                                                      dark: [
-                                                          {
-                                                              stack: [
-                                                                  "ObjectLiteralExpression",
-                                                                  "PropertyAssignment",
-                                                                  "ObjectLiteralExpression",
-                                                                  "PropertyAssignment",
-                                                                  "ObjectLiteralExpression",
-                                                                  "PropertyAssignment",
-                                                                  "ObjectLiteralExpression",
-                                                              ],
-                                                              type: "map",
-                                                              node: "ObjectLiteralExpression",
-                                                              value: {
-                                                                  large: [
-                                                                      {
-                                                                          stack: [
-                                                                              "ObjectLiteralExpression",
-                                                                              "PropertyAssignment",
-                                                                              "ObjectLiteralExpression",
-                                                                              "PropertyAssignment",
-                                                                              "ObjectLiteralExpression",
-                                                                              "PropertyAssignment",
-                                                                              "ObjectLiteralExpression",
-                                                                              "PropertyAssignment",
-                                                                              "StringLiteral",
+                                                  d: [
+                                                      {
+                                                          stack: [
+                                                              "CallExpression",
+                                                              "ObjectLiteralExpression",
+                                                              "PropertyAssignment",
+                                                              "ObjectLiteralExpression",
+                                                              "PropertyAssignment",
+                                                              "ObjectLiteralExpression",
+                                                          ],
+                                                          type: "map",
+                                                          node: "ObjectLiteralExpression",
+                                                          value: {
+                                                              dark: [
+                                                                  {
+                                                                      stack: [
+                                                                          "CallExpression",
+                                                                          "ObjectLiteralExpression",
+                                                                          "PropertyAssignment",
+                                                                          "ObjectLiteralExpression",
+                                                                          "PropertyAssignment",
+                                                                          "ObjectLiteralExpression",
+                                                                          "PropertyAssignment",
+                                                                          "ObjectLiteralExpression",
+                                                                      ],
+                                                                      type: "map",
+                                                                      node: "ObjectLiteralExpression",
+                                                                      value: {
+                                                                          large: [
+                                                                              {
+                                                                                  stack: [
+                                                                                      "CallExpression",
+                                                                                      "ObjectLiteralExpression",
+                                                                                      "PropertyAssignment",
+                                                                                      "ObjectLiteralExpression",
+                                                                                      "PropertyAssignment",
+                                                                                      "ObjectLiteralExpression",
+                                                                                      "PropertyAssignment",
+                                                                                      "ObjectLiteralExpression",
+                                                                                      "PropertyAssignment",
+                                                                                      "StringLiteral",
+                                                                                  ],
+                                                                                  type: "literal",
+                                                                                  node: "StringLiteral",
+                                                                                  value: "flex",
+                                                                                  kind: "string",
+                                                                              },
                                                                           ],
-                                                                          type: "literal",
-                                                                          node: "StringLiteral",
-                                                                          value: "flex",
-                                                                          kind: "string",
                                                                       },
-                                                                  ],
-                                                              },
+                                                                  },
+                                                              ],
                                                           },
-                                                      ],
-                                                  },
-                                              },
-                                          ],
-                                          display: [
-                                              {
-                                                  stack: [
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "ObjectLiteralExpression",
+                                                      },
                                                   ],
-                                                  type: "map",
-                                                  node: "ObjectLiteralExpression",
-                                                  value: {
-                                                      light: [
-                                                          {
-                                                              stack: [
-                                                                  "ObjectLiteralExpression",
-                                                                  "PropertyAssignment",
-                                                                  "ObjectLiteralExpression",
-                                                                  "PropertyAssignment",
-                                                                  "ObjectLiteralExpression",
-                                                                  "PropertyAssignment",
-                                                                  "StringLiteral",
+                                                  display: [
+                                                      {
+                                                          stack: [
+                                                              "CallExpression",
+                                                              "ObjectLiteralExpression",
+                                                              "PropertyAssignment",
+                                                              "ObjectLiteralExpression",
+                                                              "PropertyAssignment",
+                                                              "ObjectLiteralExpression",
+                                                          ],
+                                                          type: "map",
+                                                          node: "ObjectLiteralExpression",
+                                                          value: {
+                                                              light: [
+                                                                  {
+                                                                      stack: [
+                                                                          "CallExpression",
+                                                                          "ObjectLiteralExpression",
+                                                                          "PropertyAssignment",
+                                                                          "ObjectLiteralExpression",
+                                                                          "PropertyAssignment",
+                                                                          "ObjectLiteralExpression",
+                                                                          "PropertyAssignment",
+                                                                          "StringLiteral",
+                                                                      ],
+                                                                      type: "literal",
+                                                                      node: "StringLiteral",
+                                                                      value: "inline-flex",
+                                                                      kind: "string",
+                                                                  },
                                                               ],
-                                                              type: "literal",
-                                                              node: "StringLiteral",
-                                                              value: "inline-flex",
-                                                              kind: "string",
                                                           },
-                                                      ],
-                                                  },
-                                              },
-                                          ],
-                                          backgroundColor: [
-                                              {
-                                                  stack: [
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "ObjectLiteralExpression",
+                                                      },
                                                   ],
-                                                  type: "map",
-                                                  node: "ObjectLiteralExpression",
-                                                  value: {
-                                                      dark: [
-                                                          {
-                                                              stack: [
-                                                                  "ObjectLiteralExpression",
-                                                                  "PropertyAssignment",
-                                                                  "ObjectLiteralExpression",
-                                                                  "PropertyAssignment",
-                                                                  "ObjectLiteralExpression",
-                                                                  "PropertyAssignment",
-                                                                  "StringLiteral",
+                                                  backgroundColor: [
+                                                      {
+                                                          stack: [
+                                                              "CallExpression",
+                                                              "ObjectLiteralExpression",
+                                                              "PropertyAssignment",
+                                                              "ObjectLiteralExpression",
+                                                              "PropertyAssignment",
+                                                              "ObjectLiteralExpression",
+                                                          ],
+                                                          type: "map",
+                                                          node: "ObjectLiteralExpression",
+                                                          value: {
+                                                              dark: [
+                                                                  {
+                                                                      stack: [
+                                                                          "CallExpression",
+                                                                          "ObjectLiteralExpression",
+                                                                          "PropertyAssignment",
+                                                                          "ObjectLiteralExpression",
+                                                                          "PropertyAssignment",
+                                                                          "ObjectLiteralExpression",
+                                                                          "PropertyAssignment",
+                                                                          "StringLiteral",
+                                                                      ],
+                                                                      type: "literal",
+                                                                      node: "StringLiteral",
+                                                                      value: "blue.700",
+                                                                      kind: "string",
+                                                                  },
                                                               ],
-                                                              type: "literal",
-                                                              node: "StringLiteral",
-                                                              value: "blue.700",
-                                                              kind: "string",
-                                                          },
-                                                      ],
-                                                      light: [
-                                                          {
-                                                              stack: [
-                                                                  "ObjectLiteralExpression",
-                                                                  "PropertyAssignment",
-                                                                  "ObjectLiteralExpression",
-                                                                  "PropertyAssignment",
-                                                                  "ObjectLiteralExpression",
-                                                                  "PropertyAssignment",
-                                                                  "ObjectLiteralExpression",
-                                                              ],
-                                                              type: "map",
-                                                              node: "ObjectLiteralExpression",
-                                                              value: {
-                                                                  large: [
-                                                                      {
-                                                                          stack: [
-                                                                              "ObjectLiteralExpression",
-                                                                              "PropertyAssignment",
-                                                                              "ObjectLiteralExpression",
-                                                                              "PropertyAssignment",
-                                                                              "ObjectLiteralExpression",
-                                                                              "PropertyAssignment",
-                                                                              "ObjectLiteralExpression",
-                                                                              "PropertyAssignment",
-                                                                              "StringLiteral",
+                                                              light: [
+                                                                  {
+                                                                      stack: [
+                                                                          "CallExpression",
+                                                                          "ObjectLiteralExpression",
+                                                                          "PropertyAssignment",
+                                                                          "ObjectLiteralExpression",
+                                                                          "PropertyAssignment",
+                                                                          "ObjectLiteralExpression",
+                                                                          "PropertyAssignment",
+                                                                          "ObjectLiteralExpression",
+                                                                      ],
+                                                                      type: "map",
+                                                                      node: "ObjectLiteralExpression",
+                                                                      value: {
+                                                                          large: [
+                                                                              {
+                                                                                  stack: [
+                                                                                      "CallExpression",
+                                                                                      "ObjectLiteralExpression",
+                                                                                      "PropertyAssignment",
+                                                                                      "ObjectLiteralExpression",
+                                                                                      "PropertyAssignment",
+                                                                                      "ObjectLiteralExpression",
+                                                                                      "PropertyAssignment",
+                                                                                      "ObjectLiteralExpression",
+                                                                                      "PropertyAssignment",
+                                                                                      "StringLiteral",
+                                                                                  ],
+                                                                                  type: "literal",
+                                                                                  node: "StringLiteral",
+                                                                                  value: "red.200",
+                                                                                  kind: "string",
+                                                                              },
                                                                           ],
-                                                                          type: "literal",
-                                                                          node: "StringLiteral",
-                                                                          value: "red.200",
-                                                                          kind: "string",
+                                                                          dark: [
+                                                                              {
+                                                                                  stack: [
+                                                                                      "CallExpression",
+                                                                                      "ObjectLiteralExpression",
+                                                                                      "PropertyAssignment",
+                                                                                      "ObjectLiteralExpression",
+                                                                                      "PropertyAssignment",
+                                                                                      "ObjectLiteralExpression",
+                                                                                      "PropertyAssignment",
+                                                                                      "ObjectLiteralExpression",
+                                                                                      "PropertyAssignment",
+                                                                                      "StringLiteral",
+                                                                                  ],
+                                                                                  type: "literal",
+                                                                                  node: "StringLiteral",
+                                                                                  value: "ThreeDHighlight",
+                                                                                  kind: "string",
+                                                                              },
+                                                                          ],
                                                                       },
-                                                                  ],
-                                                                  dark: [
-                                                                      {
-                                                                          stack: [
-                                                                              "ObjectLiteralExpression",
-                                                                              "PropertyAssignment",
-                                                                              "ObjectLiteralExpression",
-                                                                              "PropertyAssignment",
-                                                                              "ObjectLiteralExpression",
-                                                                              "PropertyAssignment",
-                                                                              "ObjectLiteralExpression",
-                                                                              "PropertyAssignment",
-                                                                              "StringLiteral",
-                                                                          ],
-                                                                          type: "literal",
-                                                                          node: "StringLiteral",
-                                                                          value: "ThreeDHighlight",
-                                                                          kind: "string",
-                                                                      },
-                                                                  ],
-                                                              },
-                                                          },
-                                                      ],
-                                                  },
-                                              },
-                                          ],
-                                      },
-                                  },
-                              ],
-                              dark: [
-                                  {
-                                      stack: ["ObjectLiteralExpression", "PropertyAssignment", "ObjectLiteralExpression"],
-                                      type: "map",
-                                      node: "ObjectLiteralExpression",
-                                      value: {
-                                          bg: [
-                                              {
-                                                  stack: [
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "StringLiteral",
-                                                  ],
-                                                  type: "literal",
-                                                  node: "StringLiteral",
-                                                  value: "red.800",
-                                                  kind: "string",
-                                              },
-                                          ],
-                                          hover: [
-                                              {
-                                                  stack: [
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "ObjectLiteralExpression",
-                                                  ],
-                                                  type: "map",
-                                                  node: "ObjectLiteralExpression",
-                                                  value: {
-                                                      color: [
-                                                          {
-                                                              stack: [
-                                                                  "ObjectLiteralExpression",
-                                                                  "PropertyAssignment",
-                                                                  "ObjectLiteralExpression",
-                                                                  "PropertyAssignment",
-                                                                  "ObjectLiteralExpression",
-                                                                  "PropertyAssignment",
-                                                                  "StringLiteral",
+                                                                  },
                                                               ],
-                                                              type: "literal",
-                                                              node: "StringLiteral",
-                                                              value: "blue.600",
-                                                              kind: "string",
                                                           },
-                                                      ],
-                                                      d: [
-                                                          {
-                                                              stack: [
-                                                                  "ObjectLiteralExpression",
-                                                                  "PropertyAssignment",
-                                                                  "ObjectLiteralExpression",
-                                                                  "PropertyAssignment",
-                                                                  "ObjectLiteralExpression",
-                                                                  "PropertyAssignment",
-                                                                  "ObjectLiteralExpression",
+                                                      },
+                                                  ],
+                                              },
+                                          },
+                                      ],
+                                      dark: [
+                                          {
+                                              stack: [
+                                                  "CallExpression",
+                                                  "ObjectLiteralExpression",
+                                                  "PropertyAssignment",
+                                                  "ObjectLiteralExpression",
+                                              ],
+                                              type: "map",
+                                              node: "ObjectLiteralExpression",
+                                              value: {
+                                                  bg: [
+                                                      {
+                                                          stack: [
+                                                              "CallExpression",
+                                                              "ObjectLiteralExpression",
+                                                              "PropertyAssignment",
+                                                              "ObjectLiteralExpression",
+                                                              "PropertyAssignment",
+                                                              "StringLiteral",
+                                                          ],
+                                                          type: "literal",
+                                                          node: "StringLiteral",
+                                                          value: "red.800",
+                                                          kind: "string",
+                                                      },
+                                                  ],
+                                                  hover: [
+                                                      {
+                                                          stack: [
+                                                              "CallExpression",
+                                                              "ObjectLiteralExpression",
+                                                              "PropertyAssignment",
+                                                              "ObjectLiteralExpression",
+                                                              "PropertyAssignment",
+                                                              "ObjectLiteralExpression",
+                                                          ],
+                                                          type: "map",
+                                                          node: "ObjectLiteralExpression",
+                                                          value: {
+                                                              color: [
+                                                                  {
+                                                                      stack: [
+                                                                          "CallExpression",
+                                                                          "ObjectLiteralExpression",
+                                                                          "PropertyAssignment",
+                                                                          "ObjectLiteralExpression",
+                                                                          "PropertyAssignment",
+                                                                          "ObjectLiteralExpression",
+                                                                          "PropertyAssignment",
+                                                                          "StringLiteral",
+                                                                      ],
+                                                                      type: "literal",
+                                                                      node: "StringLiteral",
+                                                                      value: "blue.600",
+                                                                      kind: "string",
+                                                                  },
                                                               ],
-                                                              type: "map",
-                                                              node: "ObjectLiteralExpression",
-                                                              value: {
-                                                                  light: [
-                                                                      {
-                                                                          stack: [
-                                                                              "ObjectLiteralExpression",
-                                                                              "PropertyAssignment",
-                                                                              "ObjectLiteralExpression",
-                                                                              "PropertyAssignment",
-                                                                              "ObjectLiteralExpression",
-                                                                              "PropertyAssignment",
-                                                                              "ObjectLiteralExpression",
-                                                                              "PropertyAssignment",
-                                                                              "StringLiteral",
+                                                              d: [
+                                                                  {
+                                                                      stack: [
+                                                                          "CallExpression",
+                                                                          "ObjectLiteralExpression",
+                                                                          "PropertyAssignment",
+                                                                          "ObjectLiteralExpression",
+                                                                          "PropertyAssignment",
+                                                                          "ObjectLiteralExpression",
+                                                                          "PropertyAssignment",
+                                                                          "ObjectLiteralExpression",
+                                                                      ],
+                                                                      type: "map",
+                                                                      node: "ObjectLiteralExpression",
+                                                                      value: {
+                                                                          light: [
+                                                                              {
+                                                                                  stack: [
+                                                                                      "CallExpression",
+                                                                                      "ObjectLiteralExpression",
+                                                                                      "PropertyAssignment",
+                                                                                      "ObjectLiteralExpression",
+                                                                                      "PropertyAssignment",
+                                                                                      "ObjectLiteralExpression",
+                                                                                      "PropertyAssignment",
+                                                                                      "ObjectLiteralExpression",
+                                                                                      "PropertyAssignment",
+                                                                                      "StringLiteral",
+                                                                                  ],
+                                                                                  type: "literal",
+                                                                                  node: "StringLiteral",
+                                                                                  value: "flex",
+                                                                                  kind: "string",
+                                                                              },
                                                                           ],
-                                                                          type: "literal",
-                                                                          node: "StringLiteral",
-                                                                          value: "flex",
-                                                                          kind: "string",
-                                                                      },
-                                                                  ],
-                                                                  large: [
-                                                                      {
-                                                                          stack: [
-                                                                              "ObjectLiteralExpression",
-                                                                              "PropertyAssignment",
-                                                                              "ObjectLiteralExpression",
-                                                                              "PropertyAssignment",
-                                                                              "ObjectLiteralExpression",
-                                                                              "PropertyAssignment",
-                                                                              "ObjectLiteralExpression",
-                                                                              "PropertyAssignment",
-                                                                              "ObjectLiteralExpression",
-                                                                          ],
-                                                                          type: "map",
-                                                                          node: "ObjectLiteralExpression",
-                                                                          value: {
-                                                                              small: [
-                                                                                  {
-                                                                                      stack: [
-                                                                                          "ObjectLiteralExpression",
-                                                                                          "PropertyAssignment",
-                                                                                          "ObjectLiteralExpression",
-                                                                                          "PropertyAssignment",
-                                                                                          "ObjectLiteralExpression",
-                                                                                          "PropertyAssignment",
-                                                                                          "ObjectLiteralExpression",
-                                                                                          "PropertyAssignment",
-                                                                                          "ObjectLiteralExpression",
-                                                                                          "PropertyAssignment",
-                                                                                          "StringLiteral",
+                                                                          large: [
+                                                                              {
+                                                                                  stack: [
+                                                                                      "CallExpression",
+                                                                                      "ObjectLiteralExpression",
+                                                                                      "PropertyAssignment",
+                                                                                      "ObjectLiteralExpression",
+                                                                                      "PropertyAssignment",
+                                                                                      "ObjectLiteralExpression",
+                                                                                      "PropertyAssignment",
+                                                                                      "ObjectLiteralExpression",
+                                                                                      "PropertyAssignment",
+                                                                                      "ObjectLiteralExpression",
+                                                                                  ],
+                                                                                  type: "map",
+                                                                                  node: "ObjectLiteralExpression",
+                                                                                  value: {
+                                                                                      small: [
+                                                                                          {
+                                                                                              stack: [
+                                                                                                  "CallExpression",
+                                                                                                  "ObjectLiteralExpression",
+                                                                                                  "PropertyAssignment",
+                                                                                                  "ObjectLiteralExpression",
+                                                                                                  "PropertyAssignment",
+                                                                                                  "ObjectLiteralExpression",
+                                                                                                  "PropertyAssignment",
+                                                                                                  "ObjectLiteralExpression",
+                                                                                                  "PropertyAssignment",
+                                                                                                  "ObjectLiteralExpression",
+                                                                                                  "PropertyAssignment",
+                                                                                                  "StringLiteral",
+                                                                                              ],
+                                                                                              type: "literal",
+                                                                                              node: "StringLiteral",
+                                                                                              value: "contents",
+                                                                                              kind: "string",
+                                                                                          },
                                                                                       ],
-                                                                                      type: "literal",
-                                                                                      node: "StringLiteral",
-                                                                                      value: "contents",
-                                                                                      kind: "string",
                                                                                   },
-                                                                              ],
-                                                                          },
+                                                                              },
+                                                                          ],
                                                                       },
-                                                                  ],
-                                                              },
+                                                                  },
+                                                              ],
                                                           },
-                                                      ],
-                                                  },
+                                                      },
+                                                  ],
                                               },
-                                          ],
-                                      },
+                                          },
+                                      ],
                                   },
-                              ],
-                          },
+                              },
+                          ],
                       },
                   },
               ],
