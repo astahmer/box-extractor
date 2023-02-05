@@ -26,7 +26,7 @@ export type ConditionalType = WithNode & {
 export type EmptyInitializerType = WithNode & { type: "empty-initializer" };
 
 // export type PrimitiveBoxNode = ObjectType | LiteralType | MapType
-export type BoxNodeType =
+type BoxNodeDefinition =
     | ObjectType
     | LiteralType
     | MapType
@@ -34,9 +34,18 @@ export type BoxNodeType =
     | UnresolvableType
     | ConditionalType
     | EmptyInitializerType;
+
+export type BoxNode =
+    | BoxNodeObject
+    | BoxNodeLiteral
+    | BoxNodeMap
+    | BoxNodeList
+    | BoxNodeUnresolvable
+    | BoxNodeConditional
+    | BoxNodeEmptyInitializer;
 export type MapTypeValue = Map<string, BoxNode[]>;
 
-export abstract class BoxNode<Definition extends BoxNodeType = BoxNodeType> {
+export abstract class BoxNodeType<Definition extends BoxNodeDefinition = BoxNodeDefinition> {
     public readonly type: Definition["type"];
     private readonly stack: Node[] = [];
     private readonly node: Definition["node"];
@@ -54,9 +63,31 @@ export abstract class BoxNode<Definition extends BoxNodeType = BoxNodeType> {
     getStack(): Node[] {
         return this.stack;
     }
+
+    isObject(): this is BoxNodeObject {
+        return this.type === "object";
+    }
+    isLiteral(): this is BoxNodeLiteral {
+        return this.type === "literal";
+    }
+    isMap(): this is BoxNodeMap {
+        return this.type === "map";
+    }
+    isList(): this is BoxNodeList {
+        return this.type === "list";
+    }
+    isUnresolvable(): this is BoxNodeUnresolvable {
+        return this.type === "unresolvable";
+    }
+    isConditional(): this is BoxNodeConditional {
+        return this.type === "conditional";
+    }
+    isEmptyInitializer(): this is BoxNodeEmptyInitializer {
+        return this.type === "empty-initializer";
+    }
 }
 
-export class BoxNodeObject extends BoxNode<ObjectType> {
+export class BoxNodeObject extends BoxNodeType<ObjectType> {
     public value: ObjectType["value"];
     public isEmpty: ObjectType["isEmpty"];
     constructor(definition: ObjectType) {
@@ -66,7 +97,7 @@ export class BoxNodeObject extends BoxNode<ObjectType> {
     }
 }
 
-export class BoxNodeLiteral extends BoxNode<LiteralType> {
+export class BoxNodeLiteral extends BoxNodeType<LiteralType> {
     public value: LiteralType["value"];
     public kind: LiteralType["kind"];
     constructor(definition: LiteralType) {
@@ -76,7 +107,7 @@ export class BoxNodeLiteral extends BoxNode<LiteralType> {
     }
 }
 
-export class BoxNodeMap extends BoxNode<MapType> {
+export class BoxNodeMap extends BoxNodeType<MapType> {
     public value: MapType["value"];
     constructor(definition: MapType) {
         super(definition);
@@ -84,7 +115,7 @@ export class BoxNodeMap extends BoxNode<MapType> {
     }
 }
 
-export class BoxNodeList extends BoxNode<ListType> {
+export class BoxNodeList extends BoxNodeType<ListType> {
     public value: ListType["value"];
     constructor(definition: ListType) {
         super(definition);
@@ -92,13 +123,13 @@ export class BoxNodeList extends BoxNode<ListType> {
     }
 }
 
-export class BoxNodeUnresolvable extends BoxNode<UnresolvableType> {
+export class BoxNodeUnresolvable extends BoxNodeType<UnresolvableType> {
     // constructor(definition: UnresolvableType) {
     //     super(definition);
     // }
 }
 
-export class BoxNodeConditional extends BoxNode<ConditionalType> {
+export class BoxNodeConditional extends BoxNodeType<ConditionalType> {
     public whenTrue: ConditionalType["whenTrue"];
     public whenFalse: ConditionalType["whenFalse"];
     public kind: ConditionalType["kind"];
@@ -110,13 +141,13 @@ export class BoxNodeConditional extends BoxNode<ConditionalType> {
     }
 }
 
-export class BoxNodeEmptyInitializer extends BoxNode<EmptyInitializerType> {
+export class BoxNodeEmptyInitializer extends BoxNodeType<EmptyInitializerType> {
     // constructor(definition: EmptyInitializerType) {
     //     super(definition);
     // }
 }
 
-export const isBoxNode = (value: unknown): value is BoxNode => value instanceof BoxNode;
+export const isBoxNode = (value: unknown): value is BoxNode => value instanceof BoxNodeType;
 
 const getTypeOfLiteral = (value: PrimitiveType | PrimitiveType[]): LiteralKind => {
     if (Array.isArray(value)) return "array";
@@ -144,14 +175,7 @@ const boxTypeFactory = {
     conditional(whenTrue: BoxNode, whenFalse: BoxNode, node: Node, stack: Node[], kind: ConditionalKind) {
         return new BoxNodeConditional({ type: "conditional", whenTrue, whenFalse, kind, node, stack });
     },
-    cast<T>(value: T, node: Node, stack: Node[]) {
-        if (isBoxNode(value)) {
-            return value as T extends BoxNode<infer Type> ? BoxNode<Type> : never;
-        }
-
-        // @ts-expect-error
-        return toBoxType(value, node, stack);
-    },
+    cast: toBoxType,
     //
     emptyObject: (node: Node, stack: Node[]) => {
         return new BoxNodeObject({ type: "object", value: {}, isEmpty: true, node, stack });
@@ -196,15 +220,17 @@ export type LiteralObject = Record<string, unknown>;
 export type SingleLiteralValue = PrimitiveType | LiteralObject;
 export type LiteralValue = SingleLiteralValue | SingleLiteralValue[];
 
-// function toBoxType<Value extends BoxNode>(value: Value, node: Node, stack: Node[]): Value;
 function toBoxType<Value extends PrimitiveType>(value: Value, node: Node, stack: Node[]): BoxNodeLiteral;
 function toBoxType<Value extends ExtractedPropMap>(value: Value, node: Node, stack: Node[]): BoxNodeObject;
 function toBoxType<Value extends PrimitiveType[]>(value: Value, node: Node, stack: Node[]): BoxNodeLiteral[];
-// function toBoxType<Value extends LiteralObject>(value: Value, node: Node, stack: Node[]):  BoxNodeObject;
-// function toBoxType<Value extends LiteralValue>(value: Value, node: Node, stack: Node[]):  BoxNodeLiteral | BoxNodeObject;
-// function toBoxType<Value extends undefined>(value: Value, node: Node, stack: Node[]): Value;
-// function toBoxType(value: undefined | BoxNode | ExtractedPropMap | PrimitiveType | PrimitiveType[], node: Node):  BoxNode | BoxNode[] | LiteralType[] | undefined;
-function toBoxType<Value>(value: Value, node: Node, stack: Node[]): BoxNode | BoxNode[] | LiteralType[] | undefined {
+function toBoxType<Value extends BoxNode | BoxNode[]>(value: Value, node: Node, stack: Node[]): Value;
+function toBoxType<Value extends LiteralValue>(
+    value: Value,
+    node: Node,
+    stack: Node[]
+): Value extends unknown[] ? BoxNodeLiteral : Value extends PrimitiveType ? BoxNodeLiteral : BoxNodeObject;
+function toBoxType<Value extends PrimitiveType | BoxNode>(value: Value, node: Node, stack: Node[]): BoxNodeLiteral;
+function toBoxType<Value>(value: Value, node: Node, stack: Node[]): BoxNode | BoxNode[] | undefined {
     if (!isNotNullish(value)) return;
     if (isBoxNode(value)) return value;
 
