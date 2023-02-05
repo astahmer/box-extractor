@@ -1,10 +1,60 @@
-import { defineProperties, ConfigConditions } from "@box-extractor/vanilla-wind";
-import { tokens, flatColors } from "@box-extractor/vanilla-theme";
-import { colorModeVars, darkMode, flatPrimaryColors, lightMode } from "./css/color-mode.css";
+import { flatColors, tokens } from "@box-extractor/vanilla-theme";
+import { ConfigConditions, createTheme, defineProperties } from "@box-extractor/vanilla-wind";
 
 const space = tokens.space as Record<keyof typeof tokens.space | `${keyof typeof tokens.space}`, string>;
 const sizes = tokens.sizes as Record<keyof typeof tokens.sizes | `${keyof typeof tokens.sizes}`, string>;
-const colors = { ...flatColors, ...colorModeVars.color, ...flatPrimaryColors };
+
+/** azraqblue */
+export const primary = {
+    "50": "#cdd5ed",
+    "100": "#a7b6df",
+    "200": "#95a7d8",
+    "300": "#8297d1",
+    "400": "#6f88cb",
+    "500": "#4a69bd",
+    "600": "#39539b",
+    "700": "#324989",
+    "800": "#2b3f76",
+    "900": "#1d2b51",
+} as const;
+
+export const lightThemeVars = createTheme("contract", {
+    color: {
+        mainBg: primary["200"],
+        secondaryBg: primary["300"],
+        text: tokens.colors.blue["400"],
+        bg: primary["600"],
+        bgSecondary: primary["400"],
+        bgHover: primary["100"],
+    },
+});
+
+export const [darkClassName, darkThemeVars] = createTheme({
+    color: {
+        mainBg: primary["600"],
+        secondaryBg: primary["700"],
+        text: tokens.colors.blue["300"],
+        bg: primary["300"],
+        bgSecondary: primary["800"],
+        bgHover: primary["700"],
+    },
+});
+console.log({ lightThemeVars, darkClassName, darkThemeVars });
+
+const flatPrimaryColors = {
+    "brand.50": primary["50"],
+    "brand.100": primary["100"],
+    "brand.200": primary["200"],
+    "brand.300": primary["300"],
+    "brand.400": primary["400"],
+    "brand.500": primary["500"],
+    "brand.600": primary["600"],
+    "brand.700": primary["700"],
+    "brand.800": primary["800"],
+    "brand.900": primary["900"],
+};
+
+const colors = { ...flatColors, ...lightThemeVars.color, ...flatPrimaryColors };
 
 const screens = {
     mobile: { max: "599px" },
@@ -135,8 +185,10 @@ export const css = defineProperties({
         ltr: { selector: "&[dir=ltr] &,&[dir=ltr]" },
         mediaDark: { "@media": "(prefers-color-scheme: dark)" },
         mediaReduceMotion: { "@media": "(prefers-reduced-motion: reduce)" },
-        dark: { selector: `&[data-theme=dark] &,[data-theme=dark] &,.${darkMode} &` },
-        light: { selector: `&[data-theme=light] &,[data-theme=light] &,.${lightMode} &` },
+        dark: { selector: "&[data-theme=dark] &,&[data-theme=dark]" },
+        light: { selector: "&[data-theme=light] &,&[data-theme=light]" },
+        // dark: { selector: `&[data-theme=dark] &,[data-theme=dark] &,.${darkMode} &` },
+        // light: { selector: `&[data-theme=light] &,[data-theme=light] &,.${lightMode} &` },
         resizeHandleActive: { selector: "[data-resize-handle-active] &" },
         panelHorizontalActive: { selector: '[data-panel-group-direction="horizontal"] &' },
         panelVerticalActive: { selector: '[data-panel-group-direction="vertical"] &' },

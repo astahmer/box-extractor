@@ -14,7 +14,7 @@ import {
     unquote,
 } from "@box-extractor/core";
 import { createLogger } from "@box-extractor/logger";
-import { createTheme } from "@vanilla-extract/css";
+import { createTheme, createGlobalTheme, createGlobalThemeContract, createThemeContract } from "@vanilla-extract/css";
 import { endFileScope, setFileScope } from "@vanilla-extract/css/fileScope";
 import esbuild from "esbuild";
 import evalCode from "eval";
@@ -26,7 +26,7 @@ import { createAdapterContext, generateStyleFromExtraction } from "./jit";
 
 const logger = createLogger("box-ex:vanilla-wind:vite");
 
-const extractThemeConfig = (sourceFile: SourceFile) => {
+const extractDefinePropertiesConfig = (sourceFile: SourceFile) => {
     const configByName = new Map<string, GenericConfig>();
     const extracted = extractFunctionFrom<GenericConfig>(
         sourceFile,
@@ -37,6 +37,88 @@ const extractThemeConfig = (sourceFile: SourceFile) => {
     extracted.forEach((extract, name) => configByName.set(name, extract.result));
 
     return configByName;
+};
+
+const extractCreateTheme = (project: Project, code: string, validId: string) => {
+    // console.log("extractCreateTheme", { validId });
+    // avoid full AST-parsing if possible
+    if (!code.includes("createTheme(")) {
+        return null;
+    }
+
+    const sourceFile = project.createSourceFile(normalizeTsx(validId), code, {
+        overwrite: true,
+        scriptKind: ts.ScriptKind.TSX,
+    });
+
+    logger.scoped("create-theme", "scanning", { validId });
+
+    const extracted = extractFunctionFrom<MapLeafNodes<Contract, string>>(sourceFile, "createTheme");
+    console.log(extracted);
+    if (extracted.size === 0) return null;
+
+    const absoluteId = validId + virtualExtCss;
+    const ctx = createAdapterContext("debug");
+    ctx.setAdapter();
+    setFileScope(validId);
+
+    const toReplace = new Map<Node, string>();
+    extracted.forEach((extract, name) => {
+        const fromNode = extract.queryBox.getNode();
+        console.log({ fromNode: fromNode.getText() });
+        // createThemeContract / createGlobalThemeContract
+        // if (_arg1 === "contract") {
+        //     // createGlobalThemeContract
+        //     if (typeof _arg2 === "string") {
+        //         return _arg3;
+        //     }
+
+        //     // createThemeContract
+        //     return _arg2;
+        // }
+
+        // // createGlobalTheme
+        // if (typeof _arg1 === "string") {
+        //     // createGlobalThemeContract from another theme contract
+        //     if (_arg3) {
+        //         return _arg2;
+        //     }
+
+        //     // createGlobalTheme
+
+        //     return;
+        // }
+
+        // // createTheme from another theme contract
+        // if (typeof _arg2 === "object") {
+        //     return _arg1;
+        // }
+
+        // // createTheme
+        // return ["", _arg1];
+        const theme = createTheme(extract.result);
+        console.log({ theme });
+
+        toReplace.set(fromNode, `${JSON.stringify(theme, null, 4)} as const`);
+        logger.scoped("create-theme", { name, theme });
+    });
+
+    toReplace.forEach((value, node) => {
+        if (node.wasForgotten()) return null;
+        node.replaceWithText(value);
+    });
+
+    const importStatement = `import "${absoluteId}";\n`;
+    const content = sourceFile.getFullText();
+    const updated = importStatement + content;
+
+    const styles = ctx.getCss();
+    const css = styles.cssMap.get(validId)!;
+
+    endFileScope();
+    ctx.removeAdapter();
+
+    return { updated, content, importStatement, css, absoluteId };
 };
 
 const tsConfigFilePath = "tsconfig.json";
@@ -99,7 +181,14 @@ export const vanillaWind = (
 
     const getAbsoluteFileId = (source: string) => normalizePath(path.join(config?.root ?? "", source));
     const evalTheme = async (themePath: string, content: string) => {
-        const transformed = await esbuild.transform(content, {
+        const extracted = extractCreateTheme(project, content, themePath);
+        const code = extracted?.content ?? content;
+
+        if (extracted) {
+            transformedMap.set(themePath, extracted.content);
+        }
+
+        const transformed = await esbuild.transform(code, {
             platform: "node",
             loader: "ts",
             format: "cjs",
@@ -227,50 +316,11 @@ export const vanillaWind = (
                 if (!isIncluded(id)) return null;
 
                 const validId = id.split("?")[0]!;
+                const extracted = extractCreateTheme(project, code, validId);
+                if (!extracted) return null;
 
-                // avoid full AST-parsing if possible
-                if (!code.includes("createTheme(")) {
-                    return null;
-                }
-
-                const sourceFile = project.createSourceFile(normalizeTsx(validId), code, {
-                    overwrite: true,
-                    scriptKind: ts.ScriptKind.TSX,
-                });
-
-                logger.scoped("create-theme", "scanning", { validId });
-
-                const extracted = extractFunctionFrom<MapLeafNodes<Contract, string>>(sourceFile, "createTheme");
-                if (extracted.size === 0) return null;
-
-                const absoluteId = validId + virtualExtCss;
-                const ctx = createAdapterContext("debug");
-                ctx.setAdapter();
-                setFileScope(validId);
-
-                const toReplace = new Map<Node, string>();
-                extracted.forEach((extract, name) => {
-                    const fromNode = extract.queryBox.getNode();
-                    const theme = createTheme(extract.result);
-
-                    toReplace.set(fromNode, `${JSON.stringify(theme, null, 4)} as const`);
-                    logger.scoped("create-theme", { name, theme });
-                    // logger.scoped("create-theme", "extracted createTheme", { name, fromNode: fromNode.getText() });
-                });
-
-                toReplace.forEach((value, node) => {
-                    if (node.wasForgotten()) return null;
-                    node.replaceWithText(value);
-                });
-
-                const updated = `import "${absoluteId}";\n` + sourceFile.getFullText();
+                const { updated, css, absoluteId } = extracted;
                 transformedMap.set(validId, updated);
-
-                const styles = ctx.getCss();
-                const css = styles.cssMap.get(validId)!;
-
-                endFileScope();
-                ctx.removeAdapter();
 
                 if (server) {
                     const hasCache = cssCacheMap.has(absoluteId);
@@ -352,7 +402,7 @@ export const vanillaWind = (
                 });
 
                 logger.scoped("theme-extract", "scanning", { validId });
-                const extracted = extractThemeConfig(sourceFile);
+                const extracted = extractDefinePropertiesConfig(sourceFile);
                 extracted.forEach((conf, name) => {
                     configByThemeName.set(name, conf);
                     logger.scoped("theme-extract", "extracted theme config", { name, conf });
@@ -367,6 +417,12 @@ export const vanillaWind = (
                         logger({ root: config.root });
 
                         await onStyledFound(Array.from(extracted.keys()), "any");
+
+                        // TODO check if useful ?
+                        if (_options?.ssr) {
+                            server.moduleGraph.invalidateAll();
+                            server.ws.send({ type: "full-reload", path: absoluteId });
+                        }
                     }
 
                     themePathList.add(absoluteId);
@@ -588,12 +644,22 @@ export const vanillaWind = (
                     const result = generateStyleFromExtraction(themeName, extracted, conf);
                     logger.scoped("usage", { result: result.classMap });
 
+                    const propNameList = new Set(
+                        Object.keys(conf.properties ?? {}).concat(
+                            Object.keys(conf.shorthands ?? {}).concat(Object.keys(conf.conditions ?? {}))
+                        )
+                    );
+
                     result.toReplace.forEach((className, node) => {
                         // console.log({ node: node.getText(), kind: node.getKindName(), className });
                         if (Node.isJsxSelfClosingElement(node) || Node.isJsxOpeningElement(node)) {
                             node.addAttribute({ name: "_styled", initializer: `"${className}"` });
                         } else if (Node.isJsxAttribute(node)) {
-                            node.remove();
+                            if (!conf.properties) return;
+
+                            if (propNameList.has(node.getName())) {
+                                node.remove();
+                            }
                         } else if (Node.isJsxSpreadAttribute(node)) {
                             // TODO only remove the props needed rather than the whole spread, this is a bit too aggressive
                             // also, remove the spread if it's empty

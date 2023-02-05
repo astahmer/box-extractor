@@ -15,7 +15,7 @@
 
 html,
 body,
-#page-view {
+#root {
     height: 100%;
     display: flex;
     flex-direction: column;
@@ -50,4 +50,11 @@ main {
 
 .light .editorRangeHighlight {
     background-color: #ceddff;
+}
+
+.navitem {
+    padding: 3px 10px;
+}
+.navitem.is-active {
+    background-color: #eee;
 }

@@ -38,7 +38,7 @@ export const ExtractedTreeMinimal = ({ extracted }: { extracted: BoxNodesMap }) 
                             pl="6"
                             pt="6"
                             backgroundColor={{ light: "brand.500", dark: "brand.700" }}
-                            _light={{ color: "blue.300" }}
+                            light={{ color: "blue.300" }}
                             p="4"
                             borderRadius="lg"
                         >
@@ -98,7 +98,7 @@ export const ExtractedTreeBasic = ({ extracted }: { extracted: BoxNodesMap }) =>
                             pl="4"
                             pt="4"
                             backgroundColor={{ light: "brand.500", dark: "brand.700" }}
-                            _light={{ color: "blue.300" }}
+                            light={{ color: "blue.300" }}
                             p="2"
                             borderRadius="lg"
                         >
@@ -163,7 +163,7 @@ const BasicBoxNode = ({ name, propName, node }: { name: string; propName: string
                     }}
                     borderRadius="md"
                     p="2"
-                    _hover={{ backgroundColor: "brand.400", color: "white" }}
+                    hover={{ backgroundColor: "brand.400", color: "white" }}
                     cursor="pointer"
                     fontWeight="bold"
                     fontSize="sm"
@@ -184,7 +184,7 @@ const BasicBoxNode = ({ name, propName, node }: { name: string; propName: string
                     }}
                     borderRadius="md"
                     p="2"
-                    _hover={{ backgroundColor: "brand.400", color: "white" }}
+                    hover={{ backgroundColor: "brand.400", color: "white" }}
                     cursor="pointer"
                     fontWeight="bold"
                     fontSize="sm"
@@ -205,7 +205,7 @@ const BasicBoxNode = ({ name, propName, node }: { name: string; propName: string
                     }}
                     borderRadius="md"
                     p="2"
-                    _hover={{ backgroundColor: "brand.400", color: "white" }}
+                    hover={{ backgroundColor: "brand.400", color: "white" }}
                     cursor="pointer"
                     fontWeight="bold"
                     fontSize="sm"
@@ -226,7 +226,7 @@ const BasicBoxNode = ({ name, propName, node }: { name: string; propName: string
                 }}
                 borderRadius="md"
                 p="2"
-                _hover={{ backgroundColor: "brand.400", color: "white" }}
+                hover={{ backgroundColor: "brand.400", color: "white" }}
                 cursor="pointer"
                 fontWeight="bold"
                 fontSize="sm"
@@ -282,7 +282,7 @@ export const ExtractedTreeComfy = ({ extracted }: { extracted: BoxNodesMap }) =>
                             pl="6"
                             pt="6"
                             backgroundColor={{ light: "brand.500", dark: "brand.700" }}
-                            _light={{ color: "blue.300" }}
+                            light={{ color: "blue.300" }}
                             p="4"
                             borderRadius="lg"
                         >
@@ -290,7 +290,7 @@ export const ExtractedTreeComfy = ({ extracted }: { extracted: BoxNodesMap }) =>
                                 <Box
                                     borderRadius="md"
                                     p="2"
-                                    _hover={{ backgroundColor: "brand.400", color: "white" }}
+                                    hover={{ backgroundColor: "brand.400", color: "white" }}
                                     as="label"
                                     cursor="pointer"
                                     htmlFor={`${name}_switch`}
@@ -343,7 +343,7 @@ const PropNode = ({ name, propName, nodeList }: { name: string; propName: string
         <Box
             pl="4"
             backgroundColor={{ light: "brand.500", dark: "brand.700" }}
-            _light={{ color: "blue.300" }}
+            light={{ color: "blue.300" }}
             borderRadius="lg"
         >
             <Box
@@ -356,7 +356,7 @@ const PropNode = ({ name, propName, nodeList }: { name: string; propName: string
                 <Box
                     borderRadius="md"
                     p="2"
-                    _hover={{ backgroundColor: "brand.400", color: "white" }}
+                    hover={{ backgroundColor: "brand.400", color: "white" }}
                     fontWeight="bold"
                     fontSize="md"
                     as="label"
@@ -408,7 +408,7 @@ const BoxNodeItem = ({ name, propName, node }: { name: string; propName: string;
                 }}
                 borderRadius="md"
                 p="2"
-                _hover={{ backgroundColor: "brand.400", color: "white" }}
+                hover={{ backgroundColor: "brand.400", color: "white" }}
                 cursor="pointer"
                 fontWeight="bold"
                 fontSize="sm"

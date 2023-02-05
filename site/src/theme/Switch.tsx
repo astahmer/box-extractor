@@ -22,8 +22,8 @@ export const Switch = (props: Partial<toggle.Context>) => {
             as="button"
             className="SwitchRoot"
             id={props?.ids?.button ?? buttonProps.id ?? id}
-            __width="42px"
-            __height="25px"
+            width="42px"
+            height="25px"
             backgroundColor="blackAlpha.500"
             borderRadius="full"
             position="relative"

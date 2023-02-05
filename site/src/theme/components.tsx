@@ -19,7 +19,7 @@ export const Stack = <TType extends React.ElementType = typeof defaultElement>(
     const direction = props.flexDirection ?? "column";
 
     return (
-        <Box display="flex" flexDirection={direction} {...rest}>
+        <Box data-stack display="flex" flexDirection={direction} {...rest}>
             {stackItems.map((item, index) => (
                 <Box
                     key={index}

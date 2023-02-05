@@ -37,7 +37,7 @@ export function TagsInput2(props: any) {
     const api = tagsInput.connect(state, send, normalizeProps);
 
     return (
-        <box.div __width="400px">
+        <box.div width="400px">
             <box.div {...(api.rootProps as any)}>
                 <label {...api.labelProps}>Enter frameworks:</label>
                 <box.div
@@ -46,7 +46,7 @@ export function TagsInput2(props: any) {
                     bg="white"
                     borderWidth="1px"
                     mt="2"
-                    __py="2px"
+                    py="2px"
                     paddingLeft="1"
                 >
                     {api.value.map((value, index) => {
@@ -58,7 +58,7 @@ export function TagsInput2(props: any) {
                                     bg="gray.100"
                                     px="2"
                                     display="inline-block"
-                                    __margin="4px"
+                                    margin="4px"
                                     _selected={{ bg: "green.200" }}
                                     _disabled={{ opacity: "0.6" }}
                                     {...(api.getTagProps(opt) as any)}
@@ -73,7 +73,7 @@ export function TagsInput2(props: any) {
                         );
                     })}
                     <box.input
-                        __margin="4px"
+                        margin="4px"
                         px="2"
                         placeholder="Add tag..."
                         _focus={{ outline: "none" }}

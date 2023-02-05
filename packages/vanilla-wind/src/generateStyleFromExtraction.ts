@@ -1,4 +1,4 @@
-import { box, BoxNode, isPrimitiveType, LiteralValue, PropNodesMap } from "@box-extractor/core";
+import { box, BoxNode, BoxNodeMap, isPrimitiveType, LiteralValue, PropNodesMap } from "@box-extractor/core";
 import { createLogger } from "@box-extractor/logger";
 import { style, StyleRule } from "@vanilla-extract/css";
 import { deepMerge } from "pastable";
@@ -28,13 +28,14 @@ export function generateStyleFromExtraction(
 
     extracted.queryList.forEach((query) => {
         const classNameList = new Set<string>();
+        const queryBox = query.box.isList() ? (query.box.value[0]! as BoxNodeMap) : query.box;
 
         const argMap = new Map<string, BoxNode[]>();
         shorthandNames.forEach((shorthand) => {
-            if (!query.box.value.has(shorthand)) return;
-            config.shorthands![shorthand]!.forEach((prop) => argMap.set(prop, query.box.value.get(shorthand)!));
+            if (!queryBox.value.has(shorthand)) return;
+            config.shorthands![shorthand]!.forEach((prop) => argMap.set(prop, queryBox.value.get(shorthand)!));
         });
-        for (const [arg, nodeList] of query.box.value.entries()) {
+        for (const [arg, nodeList] of queryBox.value.entries()) {
             if (shorthandNames.has(arg)) continue;
             argMap.set(arg, nodeList);
         }
@@ -254,14 +255,14 @@ export function generateStyleFromExtraction(
             const grouped = style(merged);
             logger.scoped("style", { name, grouped });
 
-            toReplace.set(query.box.getNode(), grouped);
+            toReplace.set(queryBox.getNode(), grouped);
             classMap.set(grouped, grouped);
             return;
         }
 
         if (mode === "atomic" && classNameList.size > 0) {
             logger.scoped("style", { name, classNameList: classNameList.size });
-            toReplace.set(query.box.getNode(), Array.from(classNameList).join(" "));
+            toReplace.set(queryBox.getNode(), Array.from(classNameList).join(" "));
         }
     });
 

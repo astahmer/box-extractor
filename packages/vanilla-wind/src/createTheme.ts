@@ -27,15 +27,65 @@ type ThemeVars<ThemeContract extends NullableTokens> = MapLeafNodes<ThemeContrac
 
 // end vanilla-extract/packages/css/src/types.ts
 
+/** Create theme contract -> createThemeContract */
+export function createTheme<ThemeContract extends Contract>(
+    mode: "contract",
+    themeContract: ThemeContract
+): MapLeafNodes<ThemeContract, string>;
+/** Create global theme contract -> createGlobalThemeContract */
+export function createTheme<ThemeContract extends Contract>(
+    mode: "contract",
+    selector: string,
+    themeContract: ThemeContract
+): MapLeafNodes<ThemeContract, string>;
+/** Create global theme bound to a selector -> createGlobalTheme */
+export function createTheme<ThemeTokens extends Tokens>(selector: string, tokens: ThemeTokens): ThemeVars<ThemeTokens>;
+/** Create global theme bound to a selector from another theme contract -> createGlobalTheme */
+export function createTheme<ThemeContract extends Contract>(
+    selector: string,
+    themeContract: ThemeContract,
+    tokens: MapLeafNodes<ThemeContract, string>
+): void;
+/** Create theme and return a className that you have to bind where you want to use it -> createTheme */
 export function createTheme<ThemeTokens extends Tokens>(
     tokens: ThemeTokens,
     debugId?: string
 ): [className: string, vars: ThemeVars<ThemeTokens>];
+/** Create theme from another theme contract and return a className that you have to bind where you want to use it -> createTheme */
 export function createTheme<ThemeContract extends Contract>(
     themeContract: ThemeContract,
     tokens: MapLeafNodes<ThemeContract, string>,
     debugId?: string
 ): string;
-export function createTheme(_arg1: any, _arg2?: any, _arg3?: string): any {
-    return "";
+export function createTheme(_arg1: any, _arg2?: any, _arg3?: any): any {
+    // createThemeContract / createGlobalThemeContract
+    if (_arg1 === "contract") {
+        // createGlobalThemeContract
+        if (typeof _arg2 === "string") {
+            return _arg3;
+        }
+
+        // createThemeContract
+        return _arg2;
+    }
+
+    // createGlobalTheme
+    if (typeof _arg1 === "string") {
+        // createGlobalThemeContract from another theme contract
+        if (_arg3) {
+            return _arg2;
+        }
+
+        // createGlobalTheme
+
+        return;
+    }
+
+    // createTheme from another theme contract
+    if (typeof _arg2 === "object") {
+        return _arg1;
+    }
+
+    // createTheme
+    return ["", _arg1];
 }
