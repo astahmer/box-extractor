@@ -1,11 +1,13 @@
 import type { WithStyledProps } from "@box-extractor/vanilla-wind";
+import { Link } from "rakkasjs";
 import type { ComponentPropsWithoutRef, PropsWithChildren } from "react";
 import { ColorModeToggle } from "../ColorModeToggle/ColorModeToggle";
-import { Link } from "../renderer/Link";
 import { Box } from "../theme/Box";
 import { Stack } from "../theme/components";
-import type { css } from "../theme/theme";
+import { css } from "../theme/theme";
 
+import "uno.css";
+import "./reset.css";
 import "./layout.css";
 
 const version: string = import.meta.compileTime("../macros/get-package-version.ts");
@@ -68,6 +70,16 @@ export const MainLayout = ({ children }: PropsWithChildren) => {
     );
 };
 
-const NavLink = (props: PropsWithChildren<WithStyledProps<typeof css> & ComponentPropsWithoutRef<typeof Link>>) => (
-    <Box as={Link} borderRadius="md" p="2" hover={{ backgroundColor: "bgSecondary" }} {...props} />
+export default MainLayout;
+
+const NavLink = ({
+    _styled,
+    ...props
+}: PropsWithChildren<WithStyledProps<typeof css> & ComponentPropsWithoutRef<typeof Link>>) => (
+    <Link
+        {...props}
+        className={[_styled, css({ borderRadius: "md", p: "2", hover: { backgroundColor: "bgSecondary" } })].join(" ")}
+    >
+        {props.children}
+    </Link>
 );
