@@ -52,13 +52,14 @@ it("can extract theme with tokens from another package with declaration files", 
       {
           conditions: [
               {
-                  stack: ["ObjectLiteralExpression", "PropertyAssignment", "ObjectLiteralExpression"],
+                  stack: ["CallExpression", "ObjectLiteralExpression", "PropertyAssignment", "ObjectLiteralExpression"],
                   type: "map",
                   node: "ObjectLiteralExpression",
                   value: {
                       mobile: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -75,6 +76,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       tablet: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -91,6 +93,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       desktop: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -107,6 +110,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       default: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -121,6 +125,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       hover: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -133,6 +138,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   selector: [
                                       {
                                           stack: [
+                                              "CallExpression",
                                               "ObjectLiteralExpression",
                                               "PropertyAssignment",
                                               "ObjectLiteralExpression",
@@ -153,6 +159,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       active: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -165,6 +172,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   selector: [
                                       {
                                           stack: [
+                                              "CallExpression",
                                               "ObjectLiteralExpression",
                                               "PropertyAssignment",
                                               "ObjectLiteralExpression",
@@ -185,6 +193,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       focus: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -197,6 +206,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   selector: [
                                       {
                                           stack: [
+                                              "CallExpression",
                                               "ObjectLiteralExpression",
                                               "PropertyAssignment",
                                               "ObjectLiteralExpression",
@@ -217,6 +227,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       highlighted: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -229,6 +240,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   selector: [
                                       {
                                           stack: [
+                                              "CallExpression",
                                               "ObjectLiteralExpression",
                                               "PropertyAssignment",
                                               "ObjectLiteralExpression",
@@ -249,6 +261,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       focusWithin: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -261,6 +274,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   selector: [
                                       {
                                           stack: [
+                                              "CallExpression",
                                               "ObjectLiteralExpression",
                                               "PropertyAssignment",
                                               "ObjectLiteralExpression",
@@ -281,6 +295,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       focusVisible: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -293,6 +308,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   selector: [
                                       {
                                           stack: [
+                                              "CallExpression",
                                               "ObjectLiteralExpression",
                                               "PropertyAssignment",
                                               "ObjectLiteralExpression",
@@ -313,6 +329,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       disabled: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -325,6 +342,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   selector: [
                                       {
                                           stack: [
+                                              "CallExpression",
                                               "ObjectLiteralExpression",
                                               "PropertyAssignment",
                                               "ObjectLiteralExpression",
@@ -345,6 +363,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       readOnly: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -357,6 +376,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   selector: [
                                       {
                                           stack: [
+                                              "CallExpression",
                                               "ObjectLiteralExpression",
                                               "PropertyAssignment",
                                               "ObjectLiteralExpression",
@@ -377,6 +397,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       before: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -389,6 +410,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   selector: [
                                       {
                                           stack: [
+                                              "CallExpression",
                                               "ObjectLiteralExpression",
                                               "PropertyAssignment",
                                               "ObjectLiteralExpression",
@@ -409,6 +431,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       after: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -421,6 +444,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   selector: [
                                       {
                                           stack: [
+                                              "CallExpression",
                                               "ObjectLiteralExpression",
                                               "PropertyAssignment",
                                               "ObjectLiteralExpression",
@@ -441,6 +465,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       empty: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -453,6 +478,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   selector: [
                                       {
                                           stack: [
+                                              "CallExpression",
                                               "ObjectLiteralExpression",
                                               "PropertyAssignment",
                                               "ObjectLiteralExpression",
@@ -473,6 +499,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       expanded: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -485,6 +512,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   selector: [
                                       {
                                           stack: [
+                                              "CallExpression",
                                               "ObjectLiteralExpression",
                                               "PropertyAssignment",
                                               "ObjectLiteralExpression",
@@ -505,6 +533,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       checked: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -517,6 +546,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   selector: [
                                       {
                                           stack: [
+                                              "CallExpression",
                                               "ObjectLiteralExpression",
                                               "PropertyAssignment",
                                               "ObjectLiteralExpression",
@@ -537,6 +567,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       grabbed: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -549,6 +580,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   selector: [
                                       {
                                           stack: [
+                                              "CallExpression",
                                               "ObjectLiteralExpression",
                                               "PropertyAssignment",
                                               "ObjectLiteralExpression",
@@ -569,6 +601,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       pressed: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -581,6 +614,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   selector: [
                                       {
                                           stack: [
+                                              "CallExpression",
                                               "ObjectLiteralExpression",
                                               "PropertyAssignment",
                                               "ObjectLiteralExpression",
@@ -601,6 +635,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       invalid: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -613,6 +648,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   selector: [
                                       {
                                           stack: [
+                                              "CallExpression",
                                               "ObjectLiteralExpression",
                                               "PropertyAssignment",
                                               "ObjectLiteralExpression",
@@ -633,6 +669,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       valid: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -645,6 +682,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   selector: [
                                       {
                                           stack: [
+                                              "CallExpression",
                                               "ObjectLiteralExpression",
                                               "PropertyAssignment",
                                               "ObjectLiteralExpression",
@@ -665,6 +703,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       loading: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -677,6 +716,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   selector: [
                                       {
                                           stack: [
+                                              "CallExpression",
                                               "ObjectLiteralExpression",
                                               "PropertyAssignment",
                                               "ObjectLiteralExpression",
@@ -697,6 +737,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       selected: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -709,6 +750,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   selector: [
                                       {
                                           stack: [
+                                              "CallExpression",
                                               "ObjectLiteralExpression",
                                               "PropertyAssignment",
                                               "ObjectLiteralExpression",
@@ -729,6 +771,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       hidden: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -741,6 +784,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   selector: [
                                       {
                                           stack: [
+                                              "CallExpression",
                                               "ObjectLiteralExpression",
                                               "PropertyAssignment",
                                               "ObjectLiteralExpression",
@@ -761,6 +805,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       autofill: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -773,6 +818,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   selector: [
                                       {
                                           stack: [
+                                              "CallExpression",
                                               "ObjectLiteralExpression",
                                               "PropertyAssignment",
                                               "ObjectLiteralExpression",
@@ -793,6 +839,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       even: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -805,6 +852,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   selector: [
                                       {
                                           stack: [
+                                              "CallExpression",
                                               "ObjectLiteralExpression",
                                               "PropertyAssignment",
                                               "ObjectLiteralExpression",
@@ -825,6 +873,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       odd: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -837,6 +886,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   selector: [
                                       {
                                           stack: [
+                                              "CallExpression",
                                               "ObjectLiteralExpression",
                                               "PropertyAssignment",
                                               "ObjectLiteralExpression",
@@ -857,6 +907,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       first: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -869,6 +920,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   selector: [
                                       {
                                           stack: [
+                                              "CallExpression",
                                               "ObjectLiteralExpression",
                                               "PropertyAssignment",
                                               "ObjectLiteralExpression",
@@ -889,6 +941,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       last: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -901,6 +954,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   selector: [
                                       {
                                           stack: [
+                                              "CallExpression",
                                               "ObjectLiteralExpression",
                                               "PropertyAssignment",
                                               "ObjectLiteralExpression",
@@ -921,6 +975,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       notFirst: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -933,6 +988,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   selector: [
                                       {
                                           stack: [
+                                              "CallExpression",
                                               "ObjectLiteralExpression",
                                               "PropertyAssignment",
                                               "ObjectLiteralExpression",
@@ -953,6 +1009,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       notLast: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -965,6 +1022,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   selector: [
                                       {
                                           stack: [
+                                              "CallExpression",
                                               "ObjectLiteralExpression",
                                               "PropertyAssignment",
                                               "ObjectLiteralExpression",
@@ -985,6 +1043,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       visited: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -997,6 +1056,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   selector: [
                                       {
                                           stack: [
+                                              "CallExpression",
                                               "ObjectLiteralExpression",
                                               "PropertyAssignment",
                                               "ObjectLiteralExpression",
@@ -1017,6 +1077,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       activeLink: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -1029,6 +1090,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   selector: [
                                       {
                                           stack: [
+                                              "CallExpression",
                                               "ObjectLiteralExpression",
                                               "PropertyAssignment",
                                               "ObjectLiteralExpression",
@@ -1049,6 +1111,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       activeStep: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -1061,6 +1124,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   selector: [
                                       {
                                           stack: [
+                                              "CallExpression",
                                               "ObjectLiteralExpression",
                                               "PropertyAssignment",
                                               "ObjectLiteralExpression",
@@ -1081,6 +1145,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       indeterminate: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -1093,6 +1158,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   selector: [
                                       {
                                           stack: [
+                                              "CallExpression",
                                               "ObjectLiteralExpression",
                                               "PropertyAssignment",
                                               "ObjectLiteralExpression",
@@ -1113,6 +1179,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       groupHover: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -1125,6 +1192,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   selector: [
                                       {
                                           stack: [
+                                              "CallExpression",
                                               "ObjectLiteralExpression",
                                               "PropertyAssignment",
                                               "ObjectLiteralExpression",
@@ -1145,6 +1213,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       peerHover: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -1157,6 +1226,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   selector: [
                                       {
                                           stack: [
+                                              "CallExpression",
                                               "ObjectLiteralExpression",
                                               "PropertyAssignment",
                                               "ObjectLiteralExpression",
@@ -1177,6 +1247,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       groupFocus: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -1189,6 +1260,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   selector: [
                                       {
                                           stack: [
+                                              "CallExpression",
                                               "ObjectLiteralExpression",
                                               "PropertyAssignment",
                                               "ObjectLiteralExpression",
@@ -1209,6 +1281,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       peerFocus: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -1221,6 +1294,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   selector: [
                                       {
                                           stack: [
+                                              "CallExpression",
                                               "ObjectLiteralExpression",
                                               "PropertyAssignment",
                                               "ObjectLiteralExpression",
@@ -1241,6 +1315,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       groupFocusVisible: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -1253,6 +1328,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   selector: [
                                       {
                                           stack: [
+                                              "CallExpression",
                                               "ObjectLiteralExpression",
                                               "PropertyAssignment",
                                               "ObjectLiteralExpression",
@@ -1273,6 +1349,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       peerFocusVisible: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -1285,6 +1362,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   selector: [
                                       {
                                           stack: [
+                                              "CallExpression",
                                               "ObjectLiteralExpression",
                                               "PropertyAssignment",
                                               "ObjectLiteralExpression",
@@ -1305,6 +1383,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       groupActive: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -1317,6 +1396,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   selector: [
                                       {
                                           stack: [
+                                              "CallExpression",
                                               "ObjectLiteralExpression",
                                               "PropertyAssignment",
                                               "ObjectLiteralExpression",
@@ -1337,6 +1417,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       peerActive: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -1349,6 +1430,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   selector: [
                                       {
                                           stack: [
+                                              "CallExpression",
                                               "ObjectLiteralExpression",
                                               "PropertyAssignment",
                                               "ObjectLiteralExpression",
@@ -1369,6 +1451,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       groupDisabled: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -1381,6 +1464,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   selector: [
                                       {
                                           stack: [
+                                              "CallExpression",
                                               "ObjectLiteralExpression",
                                               "PropertyAssignment",
                                               "ObjectLiteralExpression",
@@ -1401,6 +1485,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       peerDisabled: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -1413,6 +1498,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   selector: [
                                       {
                                           stack: [
+                                              "CallExpression",
                                               "ObjectLiteralExpression",
                                               "PropertyAssignment",
                                               "ObjectLiteralExpression",
@@ -1433,6 +1519,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       groupInvalid: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -1445,6 +1532,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   selector: [
                                       {
                                           stack: [
+                                              "CallExpression",
                                               "ObjectLiteralExpression",
                                               "PropertyAssignment",
                                               "ObjectLiteralExpression",
@@ -1465,6 +1553,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       peerInvalid: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -1477,6 +1566,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   selector: [
                                       {
                                           stack: [
+                                              "CallExpression",
                                               "ObjectLiteralExpression",
                                               "PropertyAssignment",
                                               "ObjectLiteralExpression",
@@ -1497,6 +1587,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       groupChecked: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -1509,6 +1600,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   selector: [
                                       {
                                           stack: [
+                                              "CallExpression",
                                               "ObjectLiteralExpression",
                                               "PropertyAssignment",
                                               "ObjectLiteralExpression",
@@ -1529,6 +1621,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       peerChecked: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -1541,6 +1634,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   selector: [
                                       {
                                           stack: [
+                                              "CallExpression",
                                               "ObjectLiteralExpression",
                                               "PropertyAssignment",
                                               "ObjectLiteralExpression",
@@ -1561,6 +1655,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       groupFocusWithin: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -1573,6 +1668,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   selector: [
                                       {
                                           stack: [
+                                              "CallExpression",
                                               "ObjectLiteralExpression",
                                               "PropertyAssignment",
                                               "ObjectLiteralExpression",
@@ -1593,6 +1689,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       peerFocusWithin: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -1605,6 +1702,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   selector: [
                                       {
                                           stack: [
+                                              "CallExpression",
                                               "ObjectLiteralExpression",
                                               "PropertyAssignment",
                                               "ObjectLiteralExpression",
@@ -1625,6 +1723,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       peerPlaceholderShown: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -1637,6 +1736,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   selector: [
                                       {
                                           stack: [
+                                              "CallExpression",
                                               "ObjectLiteralExpression",
                                               "PropertyAssignment",
                                               "ObjectLiteralExpression",
@@ -1657,6 +1757,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       placeholder: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -1669,6 +1770,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   selector: [
                                       {
                                           stack: [
+                                              "CallExpression",
                                               "ObjectLiteralExpression",
                                               "PropertyAssignment",
                                               "ObjectLiteralExpression",
@@ -1689,6 +1791,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       placeholderShown: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -1701,6 +1804,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   selector: [
                                       {
                                           stack: [
+                                              "CallExpression",
                                               "ObjectLiteralExpression",
                                               "PropertyAssignment",
                                               "ObjectLiteralExpression",
@@ -1721,6 +1825,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       fullScreen: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -1733,6 +1838,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   selector: [
                                       {
                                           stack: [
+                                              "CallExpression",
                                               "ObjectLiteralExpression",
                                               "PropertyAssignment",
                                               "ObjectLiteralExpression",
@@ -1753,6 +1859,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       selection: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -1765,6 +1872,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   selector: [
                                       {
                                           stack: [
+                                              "CallExpression",
                                               "ObjectLiteralExpression",
                                               "PropertyAssignment",
                                               "ObjectLiteralExpression",
@@ -1785,6 +1893,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       rtl: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -1797,6 +1906,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   selector: [
                                       {
                                           stack: [
+                                              "CallExpression",
                                               "ObjectLiteralExpression",
                                               "PropertyAssignment",
                                               "ObjectLiteralExpression",
@@ -1817,6 +1927,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       ltr: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -1829,6 +1940,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   selector: [
                                       {
                                           stack: [
+                                              "CallExpression",
                                               "ObjectLiteralExpression",
                                               "PropertyAssignment",
                                               "ObjectLiteralExpression",
@@ -1849,6 +1961,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       mediaDark: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -1861,6 +1974,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   "@media": [
                                       {
                                           stack: [
+                                              "CallExpression",
                                               "ObjectLiteralExpression",
                                               "PropertyAssignment",
                                               "ObjectLiteralExpression",
@@ -1881,6 +1995,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       mediaReduceMotion: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -1893,6 +2008,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   "@media": [
                                       {
                                           stack: [
+                                              "CallExpression",
                                               "ObjectLiteralExpression",
                                               "PropertyAssignment",
                                               "ObjectLiteralExpression",
@@ -1913,6 +2029,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       dark: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -1925,6 +2042,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   selector: [
                                       {
                                           stack: [
+                                              "CallExpression",
                                               "ObjectLiteralExpression",
                                               "PropertyAssignment",
                                               "ObjectLiteralExpression",
@@ -1945,6 +2063,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       light: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -1957,6 +2076,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   selector: [
                                       {
                                           stack: [
+                                              "CallExpression",
                                               "ObjectLiteralExpression",
                                               "PropertyAssignment",
                                               "ObjectLiteralExpression",
@@ -1979,13 +2099,14 @@ it("can extract theme with tokens from another package with declaration files", 
           ],
           properties: [
               {
-                  stack: ["ObjectLiteralExpression", "PropertyAssignment", "ObjectLiteralExpression"],
+                  stack: ["CallExpression", "ObjectLiteralExpression", "PropertyAssignment", "ObjectLiteralExpression"],
                   type: "map",
                   node: "ObjectLiteralExpression",
                   value: {
                       boxShadow: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -2016,6 +2137,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       textShadow: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -2046,6 +2168,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       opacity: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -2058,6 +2181,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   "0": [
                                       {
                                           stack: [
+                                              "CallExpression",
                                               "ObjectLiteralExpression",
                                               "PropertyAssignment",
                                               "ObjectLiteralExpression",
@@ -2075,6 +2199,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   "1": [
                                       {
                                           stack: [
+                                              "CallExpression",
                                               "ObjectLiteralExpression",
                                               "PropertyAssignment",
                                               "ObjectLiteralExpression",
@@ -2092,6 +2217,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   "0.4": [
                                       {
                                           stack: [
+                                              "CallExpression",
                                               "ObjectLiteralExpression",
                                               "PropertyAssignment",
                                               "ObjectLiteralExpression",
@@ -2109,6 +2235,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   "0.6": [
                                       {
                                           stack: [
+                                              "CallExpression",
                                               "ObjectLiteralExpression",
                                               "PropertyAssignment",
                                               "ObjectLiteralExpression",
@@ -2129,6 +2256,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       cursor: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -2144,6 +2272,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       pointerEvents: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -2159,6 +2288,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       userSelect: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -2174,6 +2304,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       fontFamily: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -2195,6 +2326,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       fontSize: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -2227,6 +2359,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       fontWeight: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -2253,6 +2386,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       lineHeight: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -2285,6 +2419,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       letterSpacing: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -2308,6 +2443,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       textAlign: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -2323,6 +2459,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       fontStyle: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -2338,6 +2475,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       textTransform: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -2353,6 +2491,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       textDecoration: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -2368,6 +2507,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       position: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -2383,6 +2523,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       display: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -2398,6 +2539,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       flexDirection: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -2413,6 +2555,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       flexShrink: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -2428,6 +2571,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       flexGrow: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -2443,6 +2587,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       flex: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -2458,6 +2603,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       flexWrap: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -2473,6 +2619,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       justifyContent: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -2488,6 +2635,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       justifySelf: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -2503,6 +2651,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       alignItems: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -2518,6 +2667,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       alignSelf: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -2533,6 +2683,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       top: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -2548,6 +2699,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       bottom: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -2563,6 +2715,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       left: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -2578,6 +2731,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       right: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -2593,6 +2747,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       inset: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -2608,6 +2763,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       width: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -2623,6 +2779,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       minWidth: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -2638,6 +2795,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       maxWidth: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -2653,6 +2811,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       height: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -2668,6 +2827,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       minHeight: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -2683,6 +2843,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       maxHeight: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -2698,6 +2859,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       whiteSpace: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -2713,6 +2875,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       textOverflow: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -2728,6 +2891,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       overflow: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -2743,6 +2907,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       overflowX: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -2758,6 +2923,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       overflowY: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -2773,6 +2939,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       visibility: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -2788,6 +2955,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       verticalAlign: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -2803,6 +2971,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       gap: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -2859,6 +3028,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       rowGap: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -2915,6 +3085,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       columnGap: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -2971,6 +3142,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       padding: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -3027,6 +3199,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       paddingTop: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -3083,6 +3256,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       paddingBottom: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -3139,6 +3313,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       paddingLeft: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -3195,6 +3370,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       paddingRight: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -3251,6 +3427,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       paddingInlineStart: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -3307,6 +3484,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       paddingInlineEnd: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -3363,6 +3541,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       margin: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -3419,6 +3598,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       marginTop: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -3475,6 +3655,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       marginBottom: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -3531,6 +3712,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       marginLeft: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -3587,6 +3769,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       marginRight: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -3643,6 +3826,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       marginInlineStart: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -3699,6 +3883,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       marginInlineEnd: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -3755,6 +3940,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       border: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -3778,6 +3964,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       borderStyle: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -3793,6 +3980,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       borderWidth: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -3816,6 +4004,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       borderTopWidth: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -3839,6 +4028,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       borderRightWidth: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -3862,6 +4052,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       borderBottomWidth: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -3885,6 +4076,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       borderLeftWidth: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -3908,6 +4100,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       borderTop: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -3931,6 +4124,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       borderBottom: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -3954,6 +4148,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       borderLeft: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -3977,6 +4172,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       borderRight: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -4000,6 +4196,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       borderRadius: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -4027,6 +4224,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       borderTopLeftRadius: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -4054,6 +4252,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       borderTopRightRadius: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -4081,6 +4280,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       borderBottomLeftRadius: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -4108,6 +4308,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       borderBottomRightRadius: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -4135,6 +4336,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       outline: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -4158,6 +4360,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       color: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -4398,6 +4601,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       background: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -4638,6 +4842,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       backgroundColor: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -4878,6 +5083,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       borderColor: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -5118,6 +5324,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       borderTopColor: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -5358,6 +5565,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       borderBottomColor: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -5598,6 +5806,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       borderLeftColor: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -5838,6 +6047,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       borderRightColor: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -6078,6 +6288,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       outlineColor: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -6318,6 +6529,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       fill: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -6558,6 +6770,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       stroke: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -6798,6 +7011,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       transform: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -6813,6 +7027,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       transformOrigin: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -6830,13 +7045,14 @@ it("can extract theme with tokens from another package with declaration files", 
           ],
           shorthands: [
               {
-                  stack: ["ObjectLiteralExpression", "PropertyAssignment", "ObjectLiteralExpression"],
+                  stack: ["CallExpression", "ObjectLiteralExpression", "PropertyAssignment", "ObjectLiteralExpression"],
                   type: "map",
                   node: "ObjectLiteralExpression",
                   value: {
                       d: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -6848,6 +7064,7 @@ it("can extract theme with tokens from another package with declaration files", 
                               value: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -6865,6 +7082,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       pos: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -6876,6 +7094,7 @@ it("can extract theme with tokens from another package with declaration files", 
                               value: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -6893,6 +7112,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       t: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -6904,6 +7124,7 @@ it("can extract theme with tokens from another package with declaration files", 
                               value: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -6921,6 +7142,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       b: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -6932,6 +7154,7 @@ it("can extract theme with tokens from another package with declaration files", 
                               value: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -6949,6 +7172,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       l: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -6960,6 +7184,7 @@ it("can extract theme with tokens from another package with declaration files", 
                               value: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -6977,6 +7202,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       r: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -6988,6 +7214,7 @@ it("can extract theme with tokens from another package with declaration files", 
                               value: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -7005,6 +7232,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       boxSize: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -7016,6 +7244,7 @@ it("can extract theme with tokens from another package with declaration files", 
                               value: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -7029,6 +7258,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   },
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -7046,6 +7276,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       w: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -7057,6 +7288,7 @@ it("can extract theme with tokens from another package with declaration files", 
                               value: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -7074,6 +7306,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       h: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -7085,6 +7318,7 @@ it("can extract theme with tokens from another package with declaration files", 
                               value: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -7102,6 +7336,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       minW: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -7113,6 +7348,7 @@ it("can extract theme with tokens from another package with declaration files", 
                               value: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -7130,6 +7366,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       maxW: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -7141,6 +7378,7 @@ it("can extract theme with tokens from another package with declaration files", 
                               value: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -7158,6 +7396,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       minH: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -7169,6 +7408,7 @@ it("can extract theme with tokens from another package with declaration files", 
                               value: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -7186,6 +7426,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       maxH: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -7197,6 +7438,7 @@ it("can extract theme with tokens from another package with declaration files", 
                               value: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -7214,6 +7456,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       placeItems: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -7225,6 +7468,7 @@ it("can extract theme with tokens from another package with declaration files", 
                               value: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -7238,6 +7482,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   },
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -7255,6 +7500,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       ta: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -7266,6 +7512,7 @@ it("can extract theme with tokens from another package with declaration files", 
                               value: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -7283,6 +7530,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       tt: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -7294,6 +7542,7 @@ it("can extract theme with tokens from another package with declaration files", 
                               value: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -7311,6 +7560,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       fs: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -7322,6 +7572,7 @@ it("can extract theme with tokens from another package with declaration files", 
                               value: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -7339,6 +7590,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       fw: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -7350,6 +7602,7 @@ it("can extract theme with tokens from another package with declaration files", 
                               value: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -7367,6 +7620,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       m: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -7378,6 +7632,7 @@ it("can extract theme with tokens from another package with declaration files", 
                               value: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -7395,6 +7650,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       mt: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -7406,6 +7662,7 @@ it("can extract theme with tokens from another package with declaration files", 
                               value: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -7423,6 +7680,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       mr: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -7434,6 +7692,7 @@ it("can extract theme with tokens from another package with declaration files", 
                               value: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -7451,6 +7710,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       mb: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -7462,6 +7722,7 @@ it("can extract theme with tokens from another package with declaration files", 
                               value: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -7479,6 +7740,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       ml: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -7490,6 +7752,7 @@ it("can extract theme with tokens from another package with declaration files", 
                               value: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -7507,6 +7770,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       mx: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -7518,6 +7782,7 @@ it("can extract theme with tokens from another package with declaration files", 
                               value: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -7531,6 +7796,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   },
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -7548,6 +7814,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       my: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -7559,6 +7826,7 @@ it("can extract theme with tokens from another package with declaration files", 
                               value: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -7572,6 +7840,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   },
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -7589,6 +7858,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       ms: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -7600,6 +7870,7 @@ it("can extract theme with tokens from another package with declaration files", 
                               value: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -7617,6 +7888,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       me: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -7628,6 +7900,7 @@ it("can extract theme with tokens from another package with declaration files", 
                               value: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -7645,6 +7918,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       p: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -7656,6 +7930,7 @@ it("can extract theme with tokens from another package with declaration files", 
                               value: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -7673,6 +7948,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       marginX: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -7684,6 +7960,7 @@ it("can extract theme with tokens from another package with declaration files", 
                               value: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -7697,6 +7974,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   },
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -7714,6 +7992,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       marginY: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -7725,6 +8004,7 @@ it("can extract theme with tokens from another package with declaration files", 
                               value: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -7738,6 +8018,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   },
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -7755,6 +8036,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       pt: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -7766,6 +8048,7 @@ it("can extract theme with tokens from another package with declaration files", 
                               value: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -7783,6 +8066,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       pr: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -7794,6 +8078,7 @@ it("can extract theme with tokens from another package with declaration files", 
                               value: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -7811,6 +8096,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       pb: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -7822,6 +8108,7 @@ it("can extract theme with tokens from another package with declaration files", 
                               value: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -7839,6 +8126,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       pl: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -7850,6 +8138,7 @@ it("can extract theme with tokens from another package with declaration files", 
                               value: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -7867,6 +8156,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       px: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -7878,6 +8168,7 @@ it("can extract theme with tokens from another package with declaration files", 
                               value: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -7891,6 +8182,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   },
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -7908,6 +8200,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       paddingX: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -7919,6 +8212,7 @@ it("can extract theme with tokens from another package with declaration files", 
                               value: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -7932,6 +8226,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   },
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -7949,6 +8244,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       paddingY: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -7960,6 +8256,7 @@ it("can extract theme with tokens from another package with declaration files", 
                               value: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -7973,6 +8270,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   },
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -7990,6 +8288,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       ps: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -8001,6 +8300,7 @@ it("can extract theme with tokens from another package with declaration files", 
                               value: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -8018,6 +8318,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       pe: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -8029,6 +8330,7 @@ it("can extract theme with tokens from another package with declaration files", 
                               value: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -8046,6 +8348,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       py: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -8057,6 +8360,7 @@ it("can extract theme with tokens from another package with declaration files", 
                               value: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -8070,6 +8374,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   },
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -8087,6 +8392,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       bw: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -8098,6 +8404,7 @@ it("can extract theme with tokens from another package with declaration files", 
                               value: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -8115,6 +8422,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       bx: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -8126,6 +8434,7 @@ it("can extract theme with tokens from another package with declaration files", 
                               value: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -8139,6 +8448,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   },
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -8156,6 +8466,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       borderX: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -8167,6 +8478,7 @@ it("can extract theme with tokens from another package with declaration files", 
                               value: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -8180,6 +8492,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   },
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -8197,6 +8510,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       by: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -8208,6 +8522,7 @@ it("can extract theme with tokens from another package with declaration files", 
                               value: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -8221,6 +8536,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   },
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -8238,6 +8554,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       borderY: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -8249,6 +8566,7 @@ it("can extract theme with tokens from another package with declaration files", 
                               value: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -8262,6 +8580,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   },
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -8279,6 +8598,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       bg: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -8290,6 +8610,7 @@ it("can extract theme with tokens from another package with declaration files", 
                               value: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -8307,6 +8628,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       bgColor: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -8318,6 +8640,7 @@ it("can extract theme with tokens from another package with declaration files", 
                               value: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -8335,6 +8658,7 @@ it("can extract theme with tokens from another package with declaration files", 
                       borderXColor: [
                           {
                               stack: [
+                                  "CallExpression",
                                   "ObjectLiteralExpression",
                                   "PropertyAssignment",
                                   "ObjectLiteralExpression",
@@ -8346,6 +8670,7 @@ it("can extract theme with tokens from another package with declaration files", 
                               value: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -8359,6 +8684,7 @@ it("can extract theme with tokens from another package with declaration files", 
                                   },
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
