@@ -60,8 +60,8 @@ const evaluateExpression = (node: Expression, morphTypeChecker: TypeChecker) => 
             },
         }));
 
-        logger.scoped("trace");
         if (logger.isEnabled(logger.namespace + ":trace")) {
+            logger.scoped("trace");
             console.trace();
         }
     }
