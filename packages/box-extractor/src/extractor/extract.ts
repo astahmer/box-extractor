@@ -1,5 +1,6 @@
 import { createLogger } from "@box-extractor/logger";
 import { tsquery } from "@phenomnomnominal/tsquery";
+import { castAsArray } from "pastable";
 import {
     CallExpression,
     Identifier,
@@ -143,13 +144,6 @@ export const extract = ({
             componentMap.queryList.push(query);
             localList.push(query);
         });
-
-        // console.log(extractedComponentPropValues);
-
-        // console.log(
-        //     identifierNodesFromJsxAttribute.map((n) => [n.getParent().getText(), extractJsxAttributeIdentifierValue(n)])
-        //     // .filter((v) => !v[v.length - 1])
-        // );
     });
 
     Object.entries(functions ?? {}).forEach(([functionName, component]) => {
@@ -170,34 +164,43 @@ export const extract = ({
         logger({ fnSelector, functionName, propNameList });
         const maybeObjectNodes = query<CallExpression>(ast, fnSelector) ?? [];
         maybeObjectNodes.forEach((node) => {
-            const objectOrMapType = extractCallExpressionValues(node);
-            if (!objectOrMapType) return;
+            const maybeBox = extractCallExpressionValues(node);
+            if (!maybeBox) return;
             // console.log({ objectOrMapType });
 
-            const map = castObjectLikeAsMapValue(objectOrMapType, node);
-            const entries = mergeSpreadEntries({ map, propNameList });
+            const fromNode = () => node;
+            const boxList = castAsArray(maybeBox)
+                .map((boxNode) => {
+                    if (boxNode.isUnresolvable() || boxNode.isEmptyInitializer()) return;
 
-            const mapAfterSpread = new Map() as MapTypeValue;
-            entries.forEach(([propName, propValue]) => {
-                mapAfterSpread.set(propName, propValue);
-            });
+                    if (boxNode.isObject() || boxNode.isMap()) {
+                        const map = castObjectLikeAsMapValue(boxNode, node);
+                        const entries = mergeSpreadEntries({ map, propNameList });
 
-            const query = {
-                name: functionName,
-                fromNode: () => node,
-                box: box.map(mapAfterSpread, node, objectOrMapType.getStack()),
-            } as QueryFnBox;
+                        const mapAfterSpread = new Map() as MapTypeValue;
+                        entries.forEach(([propName, propValue]) => {
+                            mapAfterSpread.set(propName, propValue);
+                        });
+
+                        entries.forEach(([propName, propValue]) => {
+                            logger.scoped("merge-spread", { fn: true, propName, propValue });
+
+                            propValue.forEach((value) => {
+                                localNodes.set(propName, (localNodes.get(propName) ?? []).concat(value));
+                                fnMap.nodesByProp.set(propName, (fnMap.nodesByProp.get(propName) ?? []).concat(value));
+                            });
+                        });
+
+                        return box.map(mapAfterSpread, node, boxNode.getStack());
+                    }
+
+                    return boxNode;
+                })
+                .filter(isNotNullish);
+
+            const query = { name: functionName, fromNode, box: box.list(boxList, node, [node]) } as QueryFnBox;
             fnMap.queryList.push(query);
             localList.push(query);
-
-            entries.forEach(([propName, propValue]) => {
-                logger.scoped("merge-spread", { fn: true, propName, propValue });
-
-                propValue.forEach((value) => {
-                    localNodes.set(propName, (localNodes.get(propName) ?? []).concat(value));
-                    fnMap.nodesByProp.set(propName, (fnMap.nodesByProp.get(propName) ?? []).concat(value));
-                });
-            });
         });
     });
 

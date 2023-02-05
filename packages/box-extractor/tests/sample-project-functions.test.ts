@@ -111,13 +111,19 @@ it("extract example.css.ts defineProperties arg result", () => {
               {
                   conditions: [
                       {
-                          stack: ["ObjectLiteralExpression", "PropertyAssignment", "ObjectLiteralExpression"],
+                          stack: [
+                              "CallExpression",
+                              "ObjectLiteralExpression",
+                              "PropertyAssignment",
+                              "ObjectLiteralExpression",
+                          ],
                           type: "map",
                           node: "ObjectLiteralExpression",
                           value: {
                               mobile: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -134,6 +140,7 @@ it("extract example.css.ts defineProperties arg result", () => {
                               tablet: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -150,6 +157,7 @@ it("extract example.css.ts defineProperties arg result", () => {
                               desktop: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -166,6 +174,7 @@ it("extract example.css.ts defineProperties arg result", () => {
                               idle: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -180,6 +189,7 @@ it("extract example.css.ts defineProperties arg result", () => {
                               focus: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -192,6 +202,7 @@ it("extract example.css.ts defineProperties arg result", () => {
                                           selector: [
                                               {
                                                   stack: [
+                                                      "CallExpression",
                                                       "ObjectLiteralExpression",
                                                       "PropertyAssignment",
                                                       "ObjectLiteralExpression",
@@ -212,6 +223,7 @@ it("extract example.css.ts defineProperties arg result", () => {
                               hover: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -224,6 +236,7 @@ it("extract example.css.ts defineProperties arg result", () => {
                                           selector: [
                                               {
                                                   stack: [
+                                                      "CallExpression",
                                                       "ObjectLiteralExpression",
                                                       "PropertyAssignment",
                                                       "ObjectLiteralExpression",
@@ -246,7 +259,7 @@ it("extract example.css.ts defineProperties arg result", () => {
                   ],
                   defaultCondition: [
                       {
-                          stack: ["ObjectLiteralExpression", "PropertyAssignment", "StringLiteral"],
+                          stack: ["CallExpression", "ObjectLiteralExpression", "PropertyAssignment", "StringLiteral"],
                           type: "literal",
                           node: "StringLiteral",
                           value: "idle",
@@ -255,13 +268,19 @@ it("extract example.css.ts defineProperties arg result", () => {
                   ],
                   properties: [
                       {
-                          stack: ["ObjectLiteralExpression", "PropertyAssignment", "ObjectLiteralExpression"],
+                          stack: [
+                              "CallExpression",
+                              "ObjectLiteralExpression",
+                              "PropertyAssignment",
+                              "ObjectLiteralExpression",
+                          ],
                           type: "map",
                           node: "ObjectLiteralExpression",
                           value: {
                               position: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -273,6 +292,7 @@ it("extract example.css.ts defineProperties arg result", () => {
                                       value: [
                                           {
                                               stack: [
+                                                  "CallExpression",
                                                   "ObjectLiteralExpression",
                                                   "PropertyAssignment",
                                                   "ObjectLiteralExpression",
@@ -286,6 +306,7 @@ it("extract example.css.ts defineProperties arg result", () => {
                                           },
                                           {
                                               stack: [
+                                                  "CallExpression",
                                                   "ObjectLiteralExpression",
                                                   "PropertyAssignment",
                                                   "ObjectLiteralExpression",
@@ -303,6 +324,7 @@ it("extract example.css.ts defineProperties arg result", () => {
                               display: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -314,6 +336,7 @@ it("extract example.css.ts defineProperties arg result", () => {
                                       value: [
                                           {
                                               stack: [
+                                                  "CallExpression",
                                                   "ObjectLiteralExpression",
                                                   "PropertyAssignment",
                                                   "ObjectLiteralExpression",
@@ -327,6 +350,7 @@ it("extract example.css.ts defineProperties arg result", () => {
                                           },
                                           {
                                               stack: [
+                                                  "CallExpression",
                                                   "ObjectLiteralExpression",
                                                   "PropertyAssignment",
                                                   "ObjectLiteralExpression",
@@ -340,6 +364,7 @@ it("extract example.css.ts defineProperties arg result", () => {
                                           },
                                           {
                                               stack: [
+                                                  "CallExpression",
                                                   "ObjectLiteralExpression",
                                                   "PropertyAssignment",
                                                   "ObjectLiteralExpression",
@@ -353,6 +378,7 @@ it("extract example.css.ts defineProperties arg result", () => {
                                           },
                                           {
                                               stack: [
+                                                  "CallExpression",
                                                   "ObjectLiteralExpression",
                                                   "PropertyAssignment",
                                                   "ObjectLiteralExpression",
@@ -370,6 +396,7 @@ it("extract example.css.ts defineProperties arg result", () => {
                               color: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -382,6 +409,7 @@ it("extract example.css.ts defineProperties arg result", () => {
                                           main: [
                                               {
                                                   stack: [
+                                                      "CallExpression",
                                                       "ObjectLiteralExpression",
                                                       "PropertyAssignment",
                                                       "ObjectLiteralExpression",
@@ -403,6 +431,7 @@ it("extract example.css.ts defineProperties arg result", () => {
                                           secondary: [
                                               {
                                                   stack: [
+                                                      "CallExpression",
                                                       "ObjectLiteralExpression",
                                                       "PropertyAssignment",
                                                       "ObjectLiteralExpression",
@@ -424,6 +453,7 @@ it("extract example.css.ts defineProperties arg result", () => {
                                           brand: [
                                               {
                                                   stack: [
+                                                      "CallExpression",
                                                       "ObjectLiteralExpression",
                                                       "PropertyAssignment",
                                                       "ObjectLiteralExpression",
@@ -441,6 +471,7 @@ it("extract example.css.ts defineProperties arg result", () => {
                                           other: [
                                               {
                                                   stack: [
+                                                      "CallExpression",
                                                       "ObjectLiteralExpression",
                                                       "PropertyAssignment",
                                                       "ObjectLiteralExpression",
@@ -463,13 +494,19 @@ it("extract example.css.ts defineProperties arg result", () => {
                   ],
                   shorthands: [
                       {
-                          stack: ["ObjectLiteralExpression", "PropertyAssignment", "ObjectLiteralExpression"],
+                          stack: [
+                              "CallExpression",
+                              "ObjectLiteralExpression",
+                              "PropertyAssignment",
+                              "ObjectLiteralExpression",
+                          ],
                           type: "map",
                           node: "ObjectLiteralExpression",
                           value: {
                               p: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -481,6 +518,7 @@ it("extract example.css.ts defineProperties arg result", () => {
                                       value: [
                                           {
                                               stack: [
+                                                  "CallExpression",
                                                   "ObjectLiteralExpression",
                                                   "PropertyAssignment",
                                                   "ObjectLiteralExpression",
@@ -498,6 +536,7 @@ it("extract example.css.ts defineProperties arg result", () => {
                               d: [
                                   {
                                       stack: [
+                                          "CallExpression",
                                           "ObjectLiteralExpression",
                                           "PropertyAssignment",
                                           "ObjectLiteralExpression",
@@ -509,6 +548,7 @@ it("extract example.css.ts defineProperties arg result", () => {
                                       value: [
                                           {
                                               stack: [
+                                                  "CallExpression",
                                                   "ObjectLiteralExpression",
                                                   "PropertyAssignment",
                                                   "ObjectLiteralExpression",
