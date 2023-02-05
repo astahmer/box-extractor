@@ -29,6 +29,7 @@ export {
     BoxNodeMap,
     BoxNodeObject,
     BoxNodeUnresolvable,
+    isBoxNode,
     isPrimitiveType,
 } from "./extractor/type-factory";
 export type {
