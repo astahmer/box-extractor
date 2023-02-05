@@ -56,7 +56,7 @@ export const extractFunctionFrom = <Result>(
         const nameNode = declaration.getNameNode();
         const name = nameNode.getText();
         // TODO replace getBoxLiteralValue with specific treatment
-        const result = getBoxLiteralValue(query.box) as Result;
+        const result = getBoxLiteralValue(query.box.value[0]) as Result;
         resultByName.set(name, { result, queryBox: query.box, nameNode: () => nameNode });
 
         logger({ name });
