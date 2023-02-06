@@ -1,7 +1,8 @@
 import { Project, SourceFile, ts } from "ts-morph";
 import { afterEach, expect, it, test } from "vitest";
 import { extract } from "../src/extractor/extract";
-import { unbox, visitBoxNode } from "../src/extractor/getBoxLiteralValue";
+import { visitBoxNode } from "../src/extractor/visitBoxNode";
+import { unbox } from "../src/extractor/unbox";
 import { BoxNode, BoxNodeMap } from "../src/extractor/type-factory";
 import { ExtractOptions, FunctionNodesMap } from "../src/extractor/types";
 
