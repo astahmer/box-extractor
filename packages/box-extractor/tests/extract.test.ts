@@ -9159,3 +9159,160 @@ it("extract function with multiple args even if not starting by ObjectLiteralExp
 });
 
 // TODO nested valueOrNullable ?? fallback ?? fallback
+
+it("extract NullKeyword", () => {
+    const extracted = getExtract(
+        `
+        export const colorModeVars = createTheme("contract", {
+            color: {
+                mainBg: null,
+                secondaryBg: null,
+                text: null,
+                bg: null,
+                bgSecondary: null,
+                bgHover: null,
+            },
+        });
+        `,
+        { components: [], functions: ["createTheme"] }
+    );
+
+    expect(extracted.get("createTheme")!.queryList).toMatchInlineSnapshot(`
+      [
+          {
+              name: "createTheme",
+              box: {
+                  stack: ["CallExpression"],
+                  type: "list",
+                  node: "CallExpression",
+                  value: [
+                      {
+                          stack: ["CallExpression", "StringLiteral"],
+                          type: "literal",
+                          node: "StringLiteral",
+                          value: "contract",
+                          kind: "string",
+                      },
+                      {
+                          stack: ["CallExpression", "ObjectLiteralExpression"],
+                          type: "map",
+                          node: "CallExpression",
+                          value: {
+                              color: [
+                                  {
+                                      stack: [
+                                          "CallExpression",
+                                          "ObjectLiteralExpression",
+                                          "PropertyAssignment",
+                                          "ObjectLiteralExpression",
+                                      ],
+                                      type: "map",
+                                      node: "ObjectLiteralExpression",
+                                      value: {
+                                          mainBg: [
+                                              {
+                                                  stack: [
+                                                      "CallExpression",
+                                                      "ObjectLiteralExpression",
+                                                      "PropertyAssignment",
+                                                      "ObjectLiteralExpression",
+                                                      "PropertyAssignment",
+                                                      "NullKeyword",
+                                                  ],
+                                                  type: "literal",
+                                                  node: "NullKeyword",
+                                                  value: null,
+                                                  kind: "null",
+                                              },
+                                          ],
+                                          secondaryBg: [
+                                              {
+                                                  stack: [
+                                                      "CallExpression",
+                                                      "ObjectLiteralExpression",
+                                                      "PropertyAssignment",
+                                                      "ObjectLiteralExpression",
+                                                      "PropertyAssignment",
+                                                      "NullKeyword",
+                                                  ],
+                                                  type: "literal",
+                                                  node: "NullKeyword",
+                                                  value: null,
+                                                  kind: "null",
+                                              },
+                                          ],
+                                          text: [
+                                              {
+                                                  stack: [
+                                                      "CallExpression",
+                                                      "ObjectLiteralExpression",
+                                                      "PropertyAssignment",
+                                                      "ObjectLiteralExpression",
+                                                      "PropertyAssignment",
+                                                      "NullKeyword",
+                                                  ],
+                                                  type: "literal",
+                                                  node: "NullKeyword",
+                                                  value: null,
+                                                  kind: "null",
+                                              },
+                                          ],
+                                          bg: [
+                                              {
+                                                  stack: [
+                                                      "CallExpression",
+                                                      "ObjectLiteralExpression",
+                                                      "PropertyAssignment",
+                                                      "ObjectLiteralExpression",
+                                                      "PropertyAssignment",
+                                                      "NullKeyword",
+                                                  ],
+                                                  type: "literal",
+                                                  node: "NullKeyword",
+                                                  value: null,
+                                                  kind: "null",
+                                              },
+                                          ],
+                                          bgSecondary: [
+                                              {
+                                                  stack: [
+                                                      "CallExpression",
+                                                      "ObjectLiteralExpression",
+                                                      "PropertyAssignment",
+                                                      "ObjectLiteralExpression",
+                                                      "PropertyAssignment",
+                                                      "NullKeyword",
+                                                  ],
+                                                  type: "literal",
+                                                  node: "NullKeyword",
+                                                  value: null,
+                                                  kind: "null",
+                                              },
+                                          ],
+                                          bgHover: [
+                                              {
+                                                  stack: [
+                                                      "CallExpression",
+                                                      "ObjectLiteralExpression",
+                                                      "PropertyAssignment",
+                                                      "ObjectLiteralExpression",
+                                                      "PropertyAssignment",
+                                                      "NullKeyword",
+                                                  ],
+                                                  type: "literal",
+                                                  node: "NullKeyword",
+                                                  value: null,
+                                                  kind: "null",
+                                              },
+                                          ],
+                                      },
+                                  },
+                              ],
+                          },
+                      },
+                  ],
+              },
+          },
+      ]
+    `);
+});
