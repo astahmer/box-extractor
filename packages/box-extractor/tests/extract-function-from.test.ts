@@ -1,6 +1,7 @@
 import { Project, SourceFile, ts } from "ts-morph";
 import { afterEach, expect, it } from "vitest";
 import { extractFunctionFrom } from "../src/extractor/extractFunctionFrom";
+import { getBoxLiteralValue } from "../src/extractor/getBoxLiteralValue";
 
 const createProject = () => {
     return new Project({
@@ -127,7 +128,12 @@ it("can extract function args when imported from a specific module", () => {
     `;
 
     const sourceFile = project.createSourceFile("var-usage.ts", code, { scriptKind: ts.ScriptKind.TSX });
-    const extracted = extractFunctionFrom(sourceFile, "defineProperties", "@box-extractor/vanilla-wind");
+    const extracted = extractFunctionFrom(
+        sourceFile,
+        "defineProperties",
+        (boxNode) => getBoxLiteralValue(boxNode.value[0]),
+        { importName: "@box-extractor/vanilla-wind" }
+    );
 
     expect(extracted).toMatchInlineSnapshot(`
       {
@@ -5347,6 +5353,11 @@ it("can extract function args when imported from a specific module", () => {
       }
     `);
 
-    const missingModule = extractFunctionFrom(sourceFile, "defineProperties", "@another/module");
+    const missingModule = extractFunctionFrom(
+        sourceFile,
+        "defineProperties",
+        (boxNode) => getBoxLiteralValue(boxNode.value[0]),
+        { importName: "@another/module" }
+    );
     expect(missingModule).toMatchInlineSnapshot("{}");
 });
