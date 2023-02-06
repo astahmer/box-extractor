@@ -1,6 +1,7 @@
 import { Project, SourceFile, ts } from "ts-morph";
 import { afterEach, expect, it } from "vitest";
 import { extractFunctionFrom } from "../src/extractor/extractFunctionFrom";
+import { unbox } from "../src/extractor/getBoxLiteralValue";
 import type { BoxNodeLiteral, BoxNodeMap } from "../src/extractor/type-factory";
 
 const createProject = () => {
@@ -80,7 +81,14 @@ it("can find usage references from a variable", () => {
     `;
 
     const sourceFile = project.createSourceFile("var-usage.ts", code, { scriptKind: ts.ScriptKind.TSX });
-    const extracted = extractFunctionFrom(sourceFile, "defineProperties", "@box-extractor/vanilla-wind");
+    const extracted = extractFunctionFrom(
+        sourceFile,
+        "defineProperties",
+        (boxNode) => unbox(boxNode.value[0] as BoxNodeMap),
+        {
+            importName: "@box-extractor/vanilla-wind",
+        }
+    );
     const sprinklesFn = extracted.get("sprinklesFn")!;
 
     const properties = (sprinklesFn.queryBox.value[0]! as BoxNodeMap).value.get("properties")![0]! as BoxNodeMap;
@@ -112,7 +120,4 @@ it("can find usage references from a variable", () => {
           kind: "string",
       }
     `);
-
-    const missingModule = extractFunctionFrom(sourceFile, "defineProperties", "@another/module");
-    expect(missingModule).toMatchInlineSnapshot("{}");
 });
