@@ -2,7 +2,6 @@ import { BindingName, Identifier, Node, SourceFile, ts } from "ts-morph";
 
 import { createLogger } from "@box-extractor/logger";
 import { extract } from "./extract";
-import { getBoxLiteralValue } from "./getBoxLiteralValue";
 import type { BoxNodeList } from "./type-factory";
 import type { FunctionNodesMap } from "./types";
 import { unwrapExpression } from "./utils";
@@ -32,8 +31,11 @@ export const isImportedFrom = (
 export const extractFunctionFrom = <Result>(
     sourceFile: SourceFile,
     functionName: string,
-    importName?: string,
-    canImportSourcePath?: (sourcePath: string) => boolean
+    getResult: (boxNode: BoxNodeList, name: string) => Result,
+    options: {
+        importName?: string;
+        canImportSourcePath?: (sourcePath: string) => boolean;
+    } = {}
 ) => {
     const resultByName = new Map<string, { result: Result; queryBox: BoxNodeList; nameNode: () => BindingName }>();
     const extractedTheme = extract({ ast: sourceFile, functions: [functionName] });
@@ -49,14 +51,15 @@ export const extractFunctionFrom = <Result>(
         const identifier = unwrapExpression(fromNode.getExpression());
         if (!Node.isIdentifier(identifier)) return;
 
-        const isImportedFromValid = importName ? isImportedFrom(identifier, importName, canImportSourcePath) : true;
+        const isImportedFromValid = options.importName
+            ? isImportedFrom(identifier, options.importName, options.canImportSourcePath)
+            : true;
         logger({ isImportedFromValid });
         if (!isImportedFromValid) return;
 
         const nameNode = declaration.getNameNode();
         const name = nameNode.getText();
-        // TODO replace getBoxLiteralValue with specific treatment
-        const result = getBoxLiteralValue(query.box.value[0]) as Result;
+        const result = getResult(query.box, name);
         resultByName.set(name, { result, queryBox: query.box, nameNode: () => nameNode });
 
         logger({ name });
