@@ -4499,15 +4499,13 @@ it("extract JsxAttribute > JsxExpression > CallExpression with non-deterministic
       [
           [
               "ColorBox",
-              [["color", {}]],
+              [["color", null]],
               {
                   color: [
                       {
                           stack: ["JsxAttribute", "JsxExpression", "CallExpression"],
-                          type: "object",
+                          type: "unresolvable",
                           node: "CallExpression",
-                          value: {},
-                          isEmpty: true,
                       },
                   ],
               },
@@ -7280,17 +7278,15 @@ it("extract JsxAttribute + CallExpression > booleans", () => {
           [
               "Container",
               [
-                  ["className", {}],
+                  ["className", null],
                   ["withBorder", true],
               ],
               {
                   className: [
                       {
                           stack: ["JsxAttribute", "JsxExpression", "CallExpression"],
-                          type: "object",
+                          type: "unresolvable",
                           node: "CallExpression",
-                          value: {},
-                          isEmpty: true,
                       },
                   ],
                   withBorder: [
@@ -7751,9 +7747,9 @@ it("extract real-world Stack example ", () => {
               [
                   ["display", "flex"],
                   ["flexDirection", "column"],
-                  ["key", {}],
-                  ["pr", {}],
-                  ["pb", {}],
+                  ["key", null],
+                  ["pr", null],
+                  ["pb", null],
               ],
               {
                   display: [
@@ -7784,26 +7780,24 @@ it("extract real-world Stack example ", () => {
                   key: [
                       {
                           stack: ["JsxAttribute", "JsxExpression", "Identifier"],
-                          type: "object",
+                          type: "unresolvable",
                           node: "Identifier",
-                          value: {},
-                          isEmpty: true,
                       },
                   ],
                   pr: [
                       {
                           stack: ["JsxAttribute", "JsxExpression", "ConditionalExpression"],
-                          type: "map",
-                          node: "ConditionalExpression",
-                          value: {},
+                          type: "literal",
+                          node: "Identifier",
+                          kind: "undefined",
                       },
                   ],
                   pb: [
                       {
                           stack: ["JsxAttribute", "JsxExpression", "ConditionalExpression"],
-                          type: "map",
-                          node: "ConditionalExpression",
-                          value: {},
+                          type: "literal",
+                          node: "Identifier",
+                          kind: "undefined",
                       },
                   ],
               },
@@ -7819,7 +7813,7 @@ it("extract real-world Stack example ", () => {
                   ["paddingBottom", "2"],
                   ["borderBottomWidth", "1px"],
                   ["borderBottomColor", "gray.400"],
-                  ["className", {}],
+                  ["className", null],
                   [
                       "_tablet",
                       {
@@ -7903,10 +7897,8 @@ it("extract real-world Stack example ", () => {
                   className: [
                       {
                           stack: ["JsxAttribute", "JsxExpression", "PropertyAccessExpression", "Identifier"],
-                          type: "object",
+                          type: "unresolvable",
                           node: "PropertyAccessExpression",
-                          value: {},
-                          isEmpty: true,
                       },
                   ],
                   _tablet: [
@@ -8035,7 +8027,6 @@ it("extract JsxAttribute > Identifier > StringLiteral tailwind-like", () => {
                           ["bg-sky-400", "text-lg", "bg-sky-800"],
                           "bg-sky-400 text-lg bg-sky-800",
                           "bg-red-400 bg-white rounded w-48 text-sm",
-                          {},
                       ],
                   ],
               ],
@@ -8098,10 +8089,8 @@ it("extract JsxAttribute > Identifier > StringLiteral tailwind-like", () => {
                       },
                       {
                           stack: ["JsxAttribute", "JsxExpression", "CallExpression"],
-                          type: "object",
+                          type: "unresolvable",
                           node: "CallExpression",
-                          value: {},
-                          isEmpty: true,
                       },
                   ],
               },
@@ -8474,10 +8463,8 @@ it("extract defineProperties config", () => {
                                                       "PropertyAccessExpression",
                                                       "Identifier",
                                                   ],
-                                                  type: "object",
+                                                  type: "unresolvable",
                                                   node: "PropertyAccessExpression",
-                                                  value: {},
-                                                  isEmpty: true,
                                               },
                                           ],
                                           backgroundColor: [
@@ -8491,10 +8478,8 @@ it("extract defineProperties config", () => {
                                                       "PropertyAccessExpression",
                                                       "Identifier",
                                                   ],
-                                                  type: "object",
+                                                  type: "unresolvable",
                                                   node: "PropertyAccessExpression",
-                                                  value: {},
-                                                  isEmpty: true,
                                               },
                                           ],
                                           borderColor: [
@@ -8508,10 +8493,8 @@ it("extract defineProperties config", () => {
                                                       "PropertyAccessExpression",
                                                       "Identifier",
                                                   ],
-                                                  type: "object",
+                                                  type: "unresolvable",
                                                   node: "PropertyAccessExpression",
-                                                  value: {},
-                                                  isEmpty: true,
                                               },
                                           ],
                                           borderRadius: [
@@ -8525,10 +8508,8 @@ it("extract defineProperties config", () => {
                                                       "PropertyAccessExpression",
                                                       "Identifier",
                                                   ],
-                                                  type: "object",
+                                                  type: "unresolvable",
                                                   node: "PropertyAccessExpression",
-                                                  value: {},
-                                                  isEmpty: true,
                                               },
                                           ],
                                           padding: [
@@ -9313,6 +9294,27 @@ it("extract NullKeyword", () => {
                   ],
               },
           },
+      ]
+    `);
+});
+
+it("extract UndefinedKeyword", () => {
+    expect(extractFromCode(`<ColorBox color={undefined} />`)).toMatchInlineSnapshot(`
+      [
+          [
+              "ColorBox",
+              [["color", null]],
+              {
+                  color: [
+                      {
+                          stack: ["JsxAttribute", "JsxExpression", "Identifier"],
+                          type: "literal",
+                          node: "Identifier",
+                          kind: "undefined",
+                      },
+                  ],
+              },
+          ],
       ]
     `);
 });

@@ -248,8 +248,8 @@ function toBoxType<Value>(value: Value, node: Node, stack: Node[]): BoxNode | Bo
 
 export const castObjectLikeAsMapValue = (maybeObject: MaybeObjectLikeBoxReturn, node: Node): MapTypeValue => {
     if (!maybeObject) return new Map<string, BoxNode[]>();
-    if (maybeObject instanceof Map) return maybeObject;
     if (!isBoxNode(maybeObject)) return new Map<string, BoxNode[]>(Object.entries(maybeObject));
+    if (maybeObject.isUnresolvable()) return new Map<string, BoxNode[]>();
     if (box.isMap(maybeObject)) return maybeObject.value;
 
     // console.dir({ entries }, { depth: null });

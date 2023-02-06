@@ -167,7 +167,7 @@ export const extract = ({
             const fromNode = () => node;
             const boxList = castAsArray(maybeBox)
                 .map((boxNode) => {
-                    if (boxNode.isUnresolvable() || boxNode.isEmptyInitializer()) return;
+                    if (boxNode.isEmptyInitializer()) return;
 
                     if (boxNode.isObject() || boxNode.isMap()) {
                         const map = castObjectLikeAsMapValue(boxNode, node);

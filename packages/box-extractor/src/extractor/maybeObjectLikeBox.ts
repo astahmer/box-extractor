@@ -12,6 +12,7 @@ import {
     BoxNodeLiteral,
     BoxNodeMap,
     BoxNodeObject,
+    BoxNodeUnresolvable,
     castObjectLikeAsMapValue,
     isBoxNode,
     MapTypeValue,
@@ -20,7 +21,7 @@ import { isNotNullish, unwrapExpression } from "./utils";
 
 const logger = createLogger("box-ex:extractor:maybe-object");
 
-export type MaybeObjectLikeBoxReturn = BoxNodeObject | BoxNodeMap | undefined;
+export type MaybeObjectLikeBoxReturn = BoxNodeObject | BoxNodeMap | BoxNodeUnresolvable | undefined;
 
 export const maybeObjectLikeBox = (node: Node, stack: Node[]): MaybeObjectLikeBoxReturn => {
     logger({ kind: node.getKindName() });
@@ -32,15 +33,15 @@ export const maybeObjectLikeBox = (node: Node, stack: Node[]): MaybeObjectLikeBo
     // <ColorBox {...xxx} />
     if (Node.isIdentifier(node)) {
         const maybeObject = getIdentifierReferenceValue(node, stack);
-        if (!maybeObject) return box.emptyObject(node, stack);
+        if (!maybeObject) return box.unresolvable(node, stack);
         if (isBoxNode(maybeObject) && (maybeObject.type === "object" || maybeObject.type === "map")) {
             const first = Array.isArray(maybeObject) ? maybeObject[0] : maybeObject;
-            if (!first) return box.emptyObject(node, stack);
+            if (!first) return box.unresolvable(node, stack);
 
             return first;
         }
 
-        if (!maybeObject || !Node.isNode(maybeObject)) return box.emptyObject(node, stack);
+        if (!maybeObject || !Node.isNode(maybeObject)) return box.unresolvable(node, stack);
 
         // <ColorBox {...objectLiteral} />
         if (Node.isObjectLiteralExpression(maybeObject)) {
@@ -71,7 +72,7 @@ export const maybeObjectLikeBox = (node: Node, stack: Node[]): MaybeObjectLikeBo
     if (Node.isBinaryExpression(node) && node.getOperatorToken().getKind() === ts.SyntaxKind.AmpersandAmpersandToken) {
         // TODO eval as fallback instead
         const maybeObject = safeEvaluateNode(node);
-        if (!maybeObject) return box.emptyObject(node, stack);
+        if (!maybeObject) return box.unresolvable(node, stack);
 
         if (isObjectLiteral(maybeObject)) {
             return box.object(maybeObject, node, stack);
@@ -80,7 +81,7 @@ export const maybeObjectLikeBox = (node: Node, stack: Node[]): MaybeObjectLikeBo
 
     if (Node.isCallExpression(node)) {
         const maybeObject = safeEvaluateNode(node);
-        if (!maybeObject) return box.emptyObject(node, stack);
+        if (!maybeObject) return box.unresolvable(node, stack);
 
         if (isObjectLiteral(maybeObject)) {
             return box.object(maybeObject, node, stack);
@@ -90,7 +91,7 @@ export const maybeObjectLikeBox = (node: Node, stack: Node[]): MaybeObjectLikeBo
     if (Node.isPropertyAccessExpression(node)) {
         // TODO eval as fallback instead
         const maybeObject = safeEvaluateNode(node);
-        if (!maybeObject) return box.emptyObject(node, stack);
+        if (!maybeObject) return box.unresolvable(node, stack);
 
         if (isObjectLiteral(maybeObject)) {
             return box.object(maybeObject, node, stack);
@@ -100,7 +101,7 @@ export const maybeObjectLikeBox = (node: Node, stack: Node[]): MaybeObjectLikeBo
     if (Node.isElementAccessExpression(node)) {
         // TODO eval as fallback instead
         const maybeObject = safeEvaluateNode(node);
-        if (!maybeObject) return box.emptyObject(node, stack);
+        if (!maybeObject) return box.unresolvable(node, stack);
 
         if (isObjectLiteral(maybeObject)) {
             return box.object(maybeObject, node, stack);
