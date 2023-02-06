@@ -6,7 +6,7 @@ export { extractJsxAttributeIdentifierValue } from "./extractor/extractJsxAttrib
 export { extractJsxSpreadAttributeValues } from "./extractor/extractJsxSpreadAttributeValues";
 export type { FindAllTransitiveComponentsOptions } from "./extractor/findAllTransitiveComponents";
 export { findAllTransitiveComponents, getAncestorComponent } from "./extractor/findAllTransitiveComponents";
-export { getBoxLiteralValue } from "./extractor/getBoxLiteralValue";
+export { getBoxLiteralValue, unbox } from "./extractor/getBoxLiteralValue";
 export { getNameLiteral, unquote } from "./extractor/getNameLiteral";
 export type {
     BoxNode,
