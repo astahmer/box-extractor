@@ -20,7 +20,16 @@ import { safeEvaluateNode } from "./evaluate";
 import { getNameLiteral } from "./getNameLiteral";
 // eslint-disable-next-line import/no-cycle
 import { maybeObjectLikeBox, MaybeObjectLikeBoxReturn } from "./maybeObjectLikeBox";
-import { box, BoxNode, BoxNodeLiteral, BoxNodeObject, ConditionalKind, isBoxNode, LiteralValue } from "./type-factory";
+import {
+    box,
+    BoxNode,
+    BoxNodeLiteral,
+    BoxNodeObject,
+    BoxNodeUnresolvable,
+    ConditionalKind,
+    isBoxNode,
+    LiteralValue,
+} from "./type-factory";
 import type { ExtractedPropMap, PrimitiveType } from "./types";
 import { isNotNullish, unwrapExpression } from "./utils";
 
@@ -70,13 +79,16 @@ export function maybeBoxNode(node: Node, stack: Node[]): MaybeBoxNodeReturn {
         return cache(box.literal(node.getLiteralValue(), node, stack));
     }
 
-    // <ColorBox color={123} />
+    // <ColorBox color={null} />
     if (Node.isNullLiteral(node)) {
         return cache(box.literal(null, node, stack));
     }
 
     // <ColorBox color={staticColor} />
     if (Node.isIdentifier(node)) {
+        const name = node.getText();
+        if (name === "undefined") return cache(box.literal(undefined, node, stack));
+
         const value = getIdentifierReferenceValue(node, stack);
         if (isNotNullish(value) && !Node.isNode(value)) {
             return cache(box.cast(value, node, stack));
@@ -233,7 +245,7 @@ const maybeExpandConditionalExpression = ({
     // <ColorBox color={isDark ? { mobile: "blue.100", desktop: "blue.300" } : "whiteAlpha.100"} />
     if (!isNotNullish(whenTrueValue)) {
         const maybeObject = maybeObjectLikeBox(whenTrueExpr, stack);
-        if (isNotNullish(maybeObject) && !(box.isObject(maybeObject) && maybeObject.isEmpty)) {
+        if (isNotNullish(maybeObject) && !maybeObject.isUnresolvable()) {
             whenTrueValue = maybeObject;
         }
     }
@@ -245,7 +257,7 @@ const maybeExpandConditionalExpression = ({
     // <ColorBox color={isDark ? { mobile: "blue.100", desktop: "blue.300" } : "whiteAlpha.100"} />
     if (!isNotNullish(whenFalseValue)) {
         const maybeObject = maybeObjectLikeBox(whenFalseExpr, stack);
-        if (isNotNullish(maybeObject) && !(box.isObject(maybeObject) && maybeObject.isEmpty)) {
+        if (isNotNullish(maybeObject) && !maybeObject.isUnresolvable()) {
             whenFalseValue = maybeObject;
         }
     }
@@ -277,6 +289,10 @@ const maybeExpandConditionalExpression = ({
         if (merged.length === 1) return merged[0];
 
         return merged;
+    }
+
+    if (whenTrue.isLiteral() && whenFalse.isLiteral() && whenTrue.value === whenFalse.value) {
+        return whenTrue;
     }
 
     return box.conditional(whenTrue, whenFalse, node, stack, kind);
@@ -389,7 +405,7 @@ const maybePropIdentifierDefinitionValue = (
     elementAccessed: Identifier,
     propName: string,
     _stack: Node[]
-): BoxNodeLiteral | BoxNodeObject | undefined => {
+): BoxNodeLiteral | BoxNodeObject | BoxNodeUnresolvable | undefined => {
     const stack = [..._stack];
 
     const defs = elementAccessed.getDefinitionNodes();
@@ -493,6 +509,10 @@ const maybePropIdentifierDefinitionValue = (
                         logger.scoped("id-def", { propName, propValue });
 
                         return box.cast(propValue, elementAccessed, innerStack);
+                    }
+
+                    if (maybeObject.isUnresolvable()) {
+                        return maybeObject;
                     }
 
                     const propValue = maybeObject.value.get(propName);
