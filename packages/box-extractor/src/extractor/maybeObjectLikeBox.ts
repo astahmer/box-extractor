@@ -140,7 +140,7 @@ const getObjectLiteralExpressionPropPairs = (expression: ObjectLiteralExpression
                 const value = box.cast(maybeValue, initializer, stack);
                 if (!value) return;
 
-                extractedPropValues.push([propName.toString(), [value]]);
+                extractedPropValues.push([propName.toString(), Array.isArray(value) ? value : [value]]);
                 return;
             }
 
