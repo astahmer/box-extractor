@@ -70,6 +70,11 @@ export function maybeBoxNode(node: Node, stack: Node[]): MaybeBoxNodeReturn {
         return cache(box.literal(node.getLiteralValue(), node, stack));
     }
 
+    // <ColorBox color={123} />
+    if (Node.isNullLiteral(node)) {
+        return cache(box.literal(null, node, stack));
+    }
+
     // <ColorBox color={staticColor} />
     if (Node.isIdentifier(node)) {
         const value = getIdentifierReferenceValue(node, stack);
