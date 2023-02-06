@@ -1,8 +1,9 @@
 import { Project, SourceFile, ts } from "ts-morph";
 import { afterEach, bench, describe } from "vitest";
 import { extract } from "../src/extractor/extract";
-import { getBoxLiteralValue, unbox } from "../src/extractor/getBoxLiteralValue";
-import { ExtractOptions, FunctionNodesMap } from "../src/extractor/types";
+import { getBoxLiteralValue } from "../src/extractor/getBoxLiteralValue";
+import { unbox } from "../src/extractor/unbox";
+import type { ExtractOptions, FunctionNodesMap } from "../src/extractor/types";
 // @ts-expect-error
 import { default as BigThemeSampleInlined } from "./samples/BigThemeSampleInlined?raw";
 

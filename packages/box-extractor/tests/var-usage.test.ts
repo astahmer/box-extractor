@@ -1,7 +1,7 @@
 import { Project, SourceFile, ts } from "ts-morph";
 import { afterEach, expect, it } from "vitest";
 import { extractFunctionFrom } from "../src/extractor/extractFunctionFrom";
-import { unbox } from "../src/extractor/getBoxLiteralValue";
+import { unbox } from "../src/extractor/unbox";
 import type { BoxNodeLiteral, BoxNodeMap } from "../src/extractor/type-factory";
 
 const createProject = () => {
