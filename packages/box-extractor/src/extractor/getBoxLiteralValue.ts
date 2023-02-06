@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import type { MaybeBoxNodeReturn } from "./maybeBoxNode";
-import { box, BoxNode, castObjectLikeAsMapValue, LiteralValue, SingleLiteralValue } from "./type-factory";
+import { box, BoxNode, LiteralValue, SingleLiteralValue } from "./type-factory";
 import { isNotNullish } from "./utils";
-import { createLogger } from "@box-extractor/logger";
 
 // const logger = createLogger("box-ex:extractor:get-literal");
 
@@ -73,56 +72,70 @@ export type BoxTraversalControl = {
     up(): void;
 };
 
-const logger = createLogger("box-ex:extractor:travesal");
+// const logger = createLogger("box-ex:extractor:travesal");
 
 /**
- *
- * @param maybeBox
- * @param cbNode
- * @returns
  *
  * @see adapted from https://github.com/dsherret/ts-morph/blob/latest/packages/ts-morph/src/compiler/ast/common/Node.ts#L692
  */
 export const visitBoxNode = <T>(
     maybeBox: BoxNode,
-    cbNode: (node: BoxNode, traversal: BoxTraversalControl) => T | undefined,
-    cbNodeArray?: (nodes: BoxNode[], traversal: BoxTraversalControl) => T | undefined
+    cbNode: (
+        node: BoxNode,
+        key: string | number | null,
+        parent: BoxNode | null,
+        traversal: BoxTraversalControl
+    ) => T | undefined,
+    cbNodeArray?: (
+        nodes: BoxNode[],
+        key: string | number | null,
+        parent: BoxNode | null,
+        traversal: BoxTraversalControl
+    ) => T | undefined
 ): T | undefined => {
     const stopReturnValue: any = {};
     const upReturnValue: any = {};
 
-    let visitedCount = 0;
+    // let visitedCount = 0;
     let stop = false;
     let up = false;
     const traversal = { stop: () => (stop = true), up: () => (up = true) };
 
-    const nodeCallback: (node: BoxNode) => T | undefined = (node: BoxNode) => {
-        logger({ type: node.type, kind: node.getNode().getKindName() });
+    const nodeCallback: (node: BoxNode, key: string | number | null, parent: BoxNode | null) => T | undefined = (
+        node: BoxNode,
+        key: string | number | null,
+        parent: BoxNode | null
+    ) => {
+        // logger({ type: node.type, kind: node.getNode().getKindName() });
         if (stop) return stopReturnValue;
 
         let skip = false;
-        const returnValue = cbNode(node, { ...traversal, skip: () => (skip = true) });
+        const returnValue = cbNode(node, key, parent, Object.assign({}, traversal, { skip: () => (skip = true) }));
 
         if (returnValue) return returnValue;
         if (stop) return stopReturnValue;
         if (skip || up) return;
 
-        return forEachChildForNode(node);
+        return forEachChildForNode(node, key, parent);
     };
 
-    const arrayCallback: ((nodes: BoxNode[]) => T | undefined) | undefined =
+    const arrayCallback:
+        | ((nodes: BoxNode[], key: string | number | null, parent: BoxNode | null) => T | undefined)
+        | undefined =
         cbNodeArray == null
             ? undefined
-            : (nodes: BoxNode[]) => {
-                  logger({ list: true, stop });
+            : (nodes: BoxNode[], key: string | number | null, parent: BoxNode | null) => {
+                  //   logger({ list: true, stop });
                   if (stop) return stopReturnValue;
 
                   let skip = false;
 
-                  const returnValue = cbNodeArray(nodes, {
-                      ...traversal,
-                      skip: () => (skip = true),
-                  });
+                  const returnValue = cbNodeArray(
+                      nodes,
+                      key,
+                      parent,
+                      Object.assign({}, traversal, { skip: () => (skip = true) })
+                  );
 
                   if (returnValue) return returnValue;
 
@@ -132,64 +145,132 @@ export const visitBoxNode = <T>(
                       if (stop) return stopReturnValue;
                       if (up) return;
 
-                      const innerReturnValue = forEachChildForNode(node);
+                      const innerReturnValue = forEachChildForNode(node, key, parent);
                       if (innerReturnValue) return innerReturnValue;
                   }
               };
 
-    const finalResult = forEachChildForNode(maybeBox);
+    const finalResult = forEachChildForNode(maybeBox, null, null);
     return finalResult === stopReturnValue ? undefined : finalResult;
 
-    function forEachChildForNode(node: BoxNode): T | undefined {
-        visitedCount++;
-        logger({ visitedCount, type: node.type, kind: node.getNode().getKindName() });
+    function getResult(innerNode: BoxNode | BoxNode[], key: string | number | null, parent: BoxNode | null) {
+        let returnValue: T | undefined | Array<T | undefined>;
+        if (Array.isArray(innerNode)) {
+            returnValue = arrayCallback
+                ? arrayCallback(innerNode, key, parent)
+                : innerNode.map((n) => nodeCallback(n, key, parent));
+        } else {
+            returnValue = nodeCallback(innerNode, key, parent);
+        }
 
-        const getResult = (innerNode: BoxNode | BoxNode[]) => {
-            let returnValue: T | undefined | Array<T | undefined>;
-            if (Array.isArray(innerNode)) {
-                returnValue = arrayCallback ? arrayCallback(innerNode) : innerNode.map(nodeCallback);
-            } else {
-                returnValue = nodeCallback(innerNode);
-            }
+        if (up) {
+            up = false;
+            return returnValue ?? upReturnValue;
+        }
 
-            if (up) {
-                up = false;
-                return returnValue ?? upReturnValue;
-            }
+        return returnValue;
+    }
 
-            return returnValue;
-        };
+    function forEachChildForNode(node: BoxNode, key: string | number | null, parent: BoxNode | null): T | undefined {
+        // visitedCount++;
+        // logger({ visitedCount, type: node.type, kind: node.getNode().getKindName() });
 
-        if (box.isMap(node) || box.isObject(node)) {
-            const asMap = castObjectLikeAsMapValue(node, node.getNode());
+        if (box.isMap(node)) {
             let result: T | undefined;
-            asMap.forEach((innerNode) => {
+
+            for (const [key, innerNode] of node.value) {
                 if (stop) return stopReturnValue;
                 if (up) return upReturnValue;
 
-                const current = getResult(innerNode);
+                const current = getResult(innerNode, key, node);
                 if (current) result = current;
-            });
-            return result === upReturnValue ? undefined : result;
-        }
+            }
 
-        if (box.isConditional(node)) {
-            const result = getResult(node.whenTrue) || getResult(node.whenFalse);
             return result === upReturnValue ? undefined : result;
         }
 
         if (box.isList(node)) {
             let result: T | undefined;
-            node.value.forEach((innerNode) => {
+
+            for (let index = 0; index < node.value.length; index++) {
                 if (stop) return stopReturnValue;
                 if (up) return upReturnValue;
 
-                const current = getResult(innerNode);
+                const current = getResult(node.value[index]!, index, node);
                 if (current) result = current;
-            });
+            }
+
             return result === upReturnValue ? undefined : result;
         }
 
-        return getResult(node);
+        if (box.isConditional(node)) {
+            const result = getResult(node.whenTrue, "whenTrue", node) || getResult(node.whenFalse, "whenFalse", node);
+            return result === upReturnValue ? undefined : result;
+        }
+
+        return getResult(node, key, parent);
     }
+};
+
+export const unbox = (rootNode: BoxNode, localCacheMap: WeakMap<BoxNode, unknown> = cacheMap) => {
+    if (rootNode.isUnresolvable()) return;
+    if (rootNode.isConditional()) return;
+    if (rootNode.isEmptyInitializer()) return;
+    if (rootNode.isObject()) return rootNode.value;
+    if (rootNode.isLiteral()) return rootNode.value;
+
+    const reconstructed = rootNode.isMap() ? {} : [];
+    const pathByNode = new WeakMap<BoxNode, string[]>();
+    let parent = reconstructed as any;
+    let prevParent = null as any;
+
+    // TODO return infos like: has circular ? has unresolvable ? has conditional ? has empty initializer ?
+    visitBoxNode(rootNode, (node, key, parentNode, traversal) => {
+        if (node.isUnresolvable() || node.isConditional() || node.isEmptyInitializer()) {
+            traversal.skip();
+            return;
+        }
+
+        if (localCacheMap.has(node)) {
+            if (parentNode) {
+                const parentPath = pathByNode.get(parentNode) ?? [];
+                prevParent = parentNode;
+                parent = parentPath.reduce((o, i) => (o as any)[i], reconstructed);
+
+                parent[key!] = localCacheMap.get(node);
+            }
+
+            traversal.skip();
+            return;
+        }
+
+        let current: LiteralValue;
+        if (node.isObject()) {
+            current = node.value;
+            traversal.skip();
+        } else if (node.isMap()) {
+            current = {};
+        } else if (node.isList()) {
+            current = [];
+        } else if (node.isLiteral()) {
+            current = node.value;
+        }
+
+        if (parentNode && parentNode !== prevParent) {
+            const parentPath = pathByNode.get(parentNode) ?? [];
+            prevParent = parentNode;
+            parent = parentPath.reduce((o, i) => (o as any)[i], reconstructed);
+        }
+
+        parent[key!] = current;
+        if (parentNode && !pathByNode.has(node)) {
+            const parentPath = pathByNode.get(parentNode) ?? [];
+            pathByNode.set(node, [...parentPath, key as string]);
+            // console.log({ parentPath });
+        }
+
+        localCacheMap.set(node, current);
+    });
+
+    return reconstructed;
 };
