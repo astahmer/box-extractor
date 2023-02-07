@@ -1,12 +1,11 @@
 import path from "node:path";
 import { createFilter, FilterPattern, normalizePath, Plugin, ResolvedConfig, ViteDevServer } from "vite";
 
-import { Identifier, Node, Project, SourceFile, ts } from "ts-morph";
+import { Identifier, Node, Project, ts } from "ts-morph";
 
 import {
     ensureAbsolute,
     extract,
-    extractFunctionFrom,
     FunctionNodesMap,
     getAncestorComponent,
     getNameLiteral,
@@ -14,125 +13,29 @@ import {
     unquote,
 } from "@box-extractor/core";
 import { createLogger } from "@box-extractor/logger";
-import { createTheme, createGlobalTheme, createGlobalThemeContract, createThemeContract } from "@vanilla-extract/css";
 import { endFileScope, setFileScope } from "@vanilla-extract/css/fileScope";
 import esbuild from "esbuild";
 import evalCode from "eval";
 import fs from "node:fs";
 import { match } from "ts-pattern";
-import type { Contract, MapLeafNodes } from "./createTheme";
 import type { GenericConfig } from "./defineProperties";
 import { createAdapterContext, generateStyleFromExtraction } from "./jit";
+import { extractDefinePropertiesConfig } from "./extractDefinePropertiesConfig";
+import { extractCreateTheme } from "./extractCreateTheme";
+import {
+    hasStyledFn,
+    hasStyledComponent,
+    hasStyledType,
+    hasAnyStyled,
+    tsConfigFilePath,
+    normalizeTsx,
+    virtualExtCss,
+} from "./utils";
 
 const logger = createLogger("box-ex:vanilla-wind:vite");
 
-const extractDefinePropertiesConfig = (sourceFile: SourceFile) => {
-    const configByName = new Map<string, GenericConfig>();
-    const extracted = extractFunctionFrom<GenericConfig>(
-        sourceFile,
-        "defineProperties",
-        "@box-extractor/vanilla-wind",
-        (sourcePath) => sourcePath.includes("vanilla-wind/dist")
-    );
-    extracted.forEach((extract, name) => configByName.set(name, extract.result));
-
-    return configByName;
-};
-
-const extractCreateTheme = (project: Project, code: string, validId: string) => {
-    // console.log("extractCreateTheme", { validId });
-    // avoid full AST-parsing if possible
-    if (!code.includes("createTheme(")) {
-        return null;
-    }
-
-    const sourceFile = project.createSourceFile(normalizeTsx(validId), code, {
-        overwrite: true,
-        scriptKind: ts.ScriptKind.TSX,
-    });
-
-    logger.scoped("create-theme", "scanning", { validId });
-
-    const extracted = extractFunctionFrom<MapLeafNodes<Contract, string>>(sourceFile, "createTheme");
-    console.log(extracted);
-    if (extracted.size === 0) return null;
-
-    const absoluteId = validId + virtualExtCss;
-    const ctx = createAdapterContext("debug");
-    ctx.setAdapter();
-    setFileScope(validId);
-
-    const toReplace = new Map<Node, string>();
-    extracted.forEach((extract, name) => {
-        const fromNode = extract.queryBox.getNode();
-        console.log({ fromNode: fromNode.getText() });
-        // createThemeContract / createGlobalThemeContract
-        // if (_arg1 === "contract") {
-        //     // createGlobalThemeContract
-        //     if (typeof _arg2 === "string") {
-        //         return _arg3;
-        //     }
-
-        //     // createThemeContract
-        //     return _arg2;
-        // }
-
-        // // createGlobalTheme
-        // if (typeof _arg1 === "string") {
-        //     // createGlobalThemeContract from another theme contract
-        //     if (_arg3) {
-        //         return _arg2;
-        //     }
-
-        //     // createGlobalTheme
-
-        //     return;
-        // }
-
-        // // createTheme from another theme contract
-        // if (typeof _arg2 === "object") {
-        //     return _arg1;
-        // }
-
-        // // createTheme
-        // return ["", _arg1];
-        const theme = createTheme(extract.result);
-        console.log({ theme });
-
-        toReplace.set(fromNode, `${JSON.stringify(theme, null, 4)} as const`);
-        logger.scoped("create-theme", { name, theme });
-    });
-
-    toReplace.forEach((value, node) => {
-        if (node.wasForgotten()) return null;
-        node.replaceWithText(value);
-    });
-
-    const importStatement = `import "${absoluteId}";\n`;
-    const content = sourceFile.getFullText();
-    const updated = importStatement + content;
-
-    const styles = ctx.getCss();
-    const css = styles.cssMap.get(validId)!;
-
-    endFileScope();
-    ctx.removeAdapter();
-
-    return { updated, content, importStatement, css, absoluteId };
-};
-
-const tsConfigFilePath = "tsconfig.json";
-const virtualExtCss = ".jit.css";
-
 // TODO add component ref finder
-
-const normalizeTsx = (id: string) => normalizePath(id.endsWith(".tsx") ? id : id + ".tsx");
-
-const hasStyledFn = (code: string, styledFn: string) => code.includes(`${styledFn}(`);
-const hasStyledComponent = (code: string, styledComponent: string) => code.includes(`<${styledComponent}`);
-const hasStyledType = (code: string, styledFn: string) => code.includes(`WithStyledProps<typeof ${styledFn}>`);
-const hasAnyStyled = (code: string, name: string) =>
-    hasStyledFn(code, name) || hasStyledComponent(code, name) || hasStyledType(code, name);
+// TODO extract re-usable pieces from this file so it can be re-used with other plugins
 
 export const vanillaWind = (
     options: {
@@ -194,6 +97,7 @@ export const vanillaWind = (
             format: "cjs",
             target: "es2019",
         });
+        // TODO use jiti instead of esbuild+eval ? benchmark it first
         const mod = evalCode(transformed.code, themePath, { process }, true) as Record<string, unknown>;
         logger("evaluated theme config", { themePath });
 
