@@ -54,6 +54,7 @@
         "@rollup/plugin-replace": "^5.0.2",
         "@tanstack/react-query": "^4.14.1",
         "@vanilla-extract/css": "^1.9.2",
+        "@vanilla-extract/esbuild-plugin": "^2.2.1",
         "@xstate/react": "^3.0.1",
         "@zag-js/react": "^0.3.4",
         "@zag-js/tags-input": "^0.3.8",

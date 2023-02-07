@@ -14,12 +14,17 @@ const defaultElement = "div";
 export const Stack = <TType extends React.ElementType = typeof defaultElement>(
     props: PolymorphicComponentProps<StackProps, TType>
 ) => {
-    const { children, as, spacing, ...rest } = props;
+    const { children, as, _styled, spacing, ...rest } = props;
     const stackItems = Children.toArray(children);
     const direction = props.flexDirection ?? "column";
 
     return (
-        <Box data-stack display="flex" flexDirection={direction} {...rest}>
+        <Box
+            display="flex"
+            flexDirection={direction}
+            {...rest}
+            // className={_styled}
+        >
             {stackItems.map((item, index) => (
                 <Box
                     key={index}

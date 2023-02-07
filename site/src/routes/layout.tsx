@@ -37,7 +37,8 @@ export const MainLayout = ({ children }: PropsWithChildren) => {
                         @box-extractor/core v{version}
                     </Box>
                 </Box>
-                <Stack flexDirection="row" alignItems="center" spacing="4" mr="8">
+                {/* TODO stack + spacing="4" */}
+                <Box display="flex" flexDirection="row" alignItems="center" mr="8">
                     <NavLink href="/">Home</NavLink>
                     <NavLink href="/playground">Playground</NavLink>
                     <NavLink href="/docs">Documentation</NavLink>
@@ -60,7 +61,7 @@ export const MainLayout = ({ children }: PropsWithChildren) => {
                         <Box whiteSpace="nowrap">vanilla-extract</Box>
                     </NavLink>
                     <ColorModeToggle />
-                </Stack>
+                </Box>
             </Box>
 
             <Box as="section" pt="4" pl="4" h="100%" maxHeight="100%" overflow="auto">

@@ -1,45 +1,12 @@
 import { flatColors, tokens } from "@box-extractor/vanilla-theme";
-import { ConfigConditions, createTheme, defineProperties } from "@box-extractor/vanilla-wind";
+import { ConfigConditions, defineProperties } from "@box-extractor/vanilla-wind";
+import { colorModeVars } from "./css/color-mode.css";
+import { primary } from "./primary";
+
+console.log({ theme: true, colorModeVars, primary });
 
 const space = tokens.space as Record<keyof typeof tokens.space | `${keyof typeof tokens.space}`, string>;
 const sizes = tokens.sizes as Record<keyof typeof tokens.sizes | `${keyof typeof tokens.sizes}`, string>;
-
-/** azraqblue */
-export const primary = {
-    "50": "#cdd5ed",
-    "100": "#a7b6df",
-    "200": "#95a7d8",
-    "300": "#8297d1",
-    "400": "#6f88cb",
-    "500": "#4a69bd",
-    "600": "#39539b",
-    "700": "#324989",
-    "800": "#2b3f76",
-    "900": "#1d2b51",
-} as const;
-
-export const lightThemeVars = createTheme("contract", {
-    color: {
-        mainBg: primary["200"],
-        secondaryBg: primary["300"],
-        text: tokens.colors.blue["400"],
-        bg: primary["600"],
-        bgSecondary: primary["400"],
-        bgHover: primary["100"],
-    },
-});
-
-export const [darkClassName, darkThemeVars] = createTheme({
-    color: {
-        mainBg: primary["600"],
-        secondaryBg: primary["700"],
-        text: tokens.colors.blue["300"],
-        bg: primary["300"],
-        bgSecondary: primary["800"],
-        bgHover: primary["700"],
-    },
-});
-console.log({ lightThemeVars, darkClassName, darkThemeVars });
 
 const flatPrimaryColors = {
     "brand.50": primary["50"],
@@ -54,7 +21,7 @@ const flatPrimaryColors = {
     "brand.900": primary["900"],
 };
 
-const colors = { ...flatColors, ...lightThemeVars.color, ...flatPrimaryColors };
+const colors = { ...flatColors, ...colorModeVars.color, ...flatPrimaryColors };
 
 const screens = {
     mobile: { max: "599px" },
