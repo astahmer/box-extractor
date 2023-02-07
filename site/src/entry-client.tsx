@@ -1,6 +1,6 @@
 import { startClient } from "rakkasjs";
-import { themeKey } from "./ColorModeToggle/ColorModeToggle";
-import { darkMode, lightMode } from "./theme/css/color-mode.css";
+// import { themeKey } from "./ColorModeToggle/ColorModeToggle";
+// import { darkMode, lightMode } from "./theme/css/color-mode.css";
 
 void startClient({
     hooks: {

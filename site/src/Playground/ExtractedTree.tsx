@@ -106,39 +106,63 @@ export const ExtractedTreeBasic = ({ extracted }: { extracted: BoxNodesMap }) =>
                                 {name} ({map.kind})
                             </Box>
                             <Stack spacing="4" pt="2">
-                                {Array.from(map.nodesByProp.entries())
-                                    .filter(([propName]) => !hidden.propNames.includes(`${name}.${propName}`))
-                                    .map(([propName, nodeList]) => {
-                                        return (
-                                            <Box
-                                                key={propName}
-                                                pl="6"
-                                                pt="4"
-                                                backgroundColor={{ light: "brand.600", dark: "brand.800" }}
-                                                p="2"
-                                                borderRadius="lg"
-                                            >
-                                                <Box fontWeight="bold" fontSize="md">
-                                                    {propName} ({nodeList.length}):{" "}
-                                                </Box>
-                                                {/* style={{ display: "grid", gridTemplateColumns: "1fr 1fr" }} */}
-                                                <Box pt="2" pl="6">
-                                                    {nodeList
-                                                        .filter((v) => (search ? v.type === search.slice(1) : true))
-                                                        .map((node, nodeIndex) => {
-                                                            return (
-                                                                <BasicBoxNode
-                                                                    key={nodeIndex}
-                                                                    name={name}
-                                                                    propName={propName}
-                                                                    node={node}
-                                                                />
-                                                            );
-                                                        })}
-                                                </Box>
-                                            </Box>
-                                        );
-                                    })}
+                                {match(map)
+                                    .with({ kind: "component" }, (map) =>
+                                        map.queryList.map((qb) =>
+                                            Array.from(qb.box.value.entries())
+                                                .filter(
+                                                    ([propName]) => !hidden.propNames.includes(`${name}.${propName}`)
+                                                )
+                                                .map(([propName, nodeList]) => {
+                                                    return (
+                                                        <Box
+                                                            key={propName}
+                                                            pl="6"
+                                                            pt="4"
+                                                            backgroundColor={{ light: "brand.600", dark: "brand.800" }}
+                                                            p="2"
+                                                            borderRadius="lg"
+                                                        >
+                                                            <Box fontWeight="bold" fontSize="md">
+                                                                {propName} ({nodeList.length}):{" "}
+                                                            </Box>
+                                                            {/* style={{ display: "grid", gridTemplateColumns: "1fr 1fr" }} */}
+                                                            <Box pt="2" pl="6">
+                                                                {nodeList
+                                                                    .filter((v) =>
+                                                                        search ? v.type === search.slice(1) : true
+                                                                    )
+                                                                    .map((node, nodeIndex) => {
+                                                                        return (
+                                                                            <BasicBoxNode
+                                                                                key={nodeIndex}
+                                                                                name={name}
+                                                                                propName={propName}
+                                                                                node={node}
+                                                                            />
+                                                                        );
+                                                                    })}
+                                                            </Box>
+                                                        </Box>
+                                                    );
+                                                })
+                                        )
+                                    )
+                                    .with({ kind: "function" }, (map) =>
+                                        map.queryList.map((qb) =>
+                                            qb.box.value.map((node, nodeIndex) => {
+                                                return (
+                                                    <BasicBoxNode
+                                                        key={nodeIndex}
+                                                        name={name}
+                                                        propName={name}
+                                                        node={node}
+                                                    />
+                                                );
+                                            })
+                                        )
+                                    )
+                                    .exhaustive()}
                             </Stack>
                         </Box>
                     );

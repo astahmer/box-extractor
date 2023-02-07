@@ -14,9 +14,6 @@ import {
 } from "@box-extractor/core";
 import { createLogger } from "@box-extractor/logger";
 import { endFileScope, setFileScope } from "@vanilla-extract/css/fileScope";
-import esbuild from "esbuild";
-import evalCode from "eval";
-import fs from "node:fs";
 import { match } from "ts-pattern";
 import type { GenericConfig } from "./defineProperties";
 import { createAdapterContext, generateStyleFromExtraction } from "./jit";
@@ -83,36 +80,6 @@ export const vanillaWind = (
     const transformedMap = new Map<string, string>();
 
     const getAbsoluteFileId = (source: string) => normalizePath(path.join(config?.root ?? "", source));
-    const evalTheme = async (themePath: string, content: string) => {
-        const extracted = extractCreateTheme(project, content, themePath);
-        const code = extracted?.content ?? content;
-
-        if (extracted) {
-            transformedMap.set(themePath, extracted.content);
-        }
-
-        const transformed = await esbuild.transform(code, {
-            platform: "node",
-            loader: "ts",
-            format: "cjs",
-            target: "es2019",
-        });
-        // TODO use jiti instead of esbuild+eval ? benchmark it first
-        const mod = evalCode(transformed.code, themePath, { process }, true) as Record<string, unknown>;
-        logger("evaluated theme config", { themePath });
-
-        const themeNameList = [] as string[];
-        Object.keys(mod).forEach((key) => {
-            const conf = typeof mod[key] === "function" && ((mod[key] as any)?.config as GenericConfig);
-            if (conf) {
-                configByThemeName.set(key, conf);
-                themeNameList.push(key);
-                logger("found theme config", { key });
-            }
-        });
-
-        return themeNameList;
-    };
 
     /** HMR after new styled element was found: new theme fn (defineProperties) / component usage / component definition annotated with WithStyled */
     const onStyledFound = async (nameList: string[], kind: "function" | "component" | "type" | "any") => {
@@ -144,12 +111,14 @@ export const vanillaWind = (
                 // Vite uses this timestamp to add `?t=` query string automatically for HMR.
                 mod.lastHMRTimestamp = (mod as any).lastInvalidationTimestamp || timestamp;
                 promises.push(server.reloadModule(mod));
+                logger("onStyledFound - reloadModule", { id: mod.id });
 
                 mod.importers.forEach((importer) => {
                     moduleGraph.invalidateModule(importer);
                     // Vite uses this timestamp to add `?t=` query string automatically for HMR.
                     importer.lastHMRTimestamp = (importer as any).lastInvalidationTimestamp || timestamp;
                     promises.push(server.reloadModule(importer));
+                    logger("onStyledFound - reloadModule", { id: mod.id });
                 });
             });
         });
@@ -202,12 +171,6 @@ export const vanillaWind = (
                 isIncluded = createFilter(options.include ?? /\.[jt]sx?$/, options.exclude ?? [/node_modules/], {
                     resolve: root,
                 });
-
-                if (options.themePath) {
-                    const themePath = ensureAbsolute(options.themePath, config.root);
-                    const content = await fs.promises.readFile(themePath, "utf8");
-                    await evalTheme(themePath, content);
-                }
             },
             configureServer(_server) {
                 server = _server;
@@ -220,10 +183,12 @@ export const vanillaWind = (
                 if (!isIncluded(id)) return null;
 
                 const validId = id.split("?")[0]!;
+                logger.scoped("create-theme", { id: validId });
                 const extracted = extractCreateTheme(project, code, validId);
+                logger.scoped("create-theme", { extracted: !!extracted, importStatement: extracted?.importStatement });
                 if (!extracted) return null;
 
-                const { updated, css, absoluteId } = extracted;
+                const { updated, content, css, absoluteId } = extracted;
                 transformedMap.set(validId, updated);
 
                 if (server) {
@@ -245,13 +210,14 @@ export const vanillaWind = (
                     }
                 }
 
+                logger.scoped("create-theme", { absoluteId, css });
                 // TODO handle cssCacheMap on same absoluteId (createTheme + usage-extract)
                 if (css) {
                     cssCacheMap.set(absoluteId, css);
                 }
 
                 return {
-                    code: updated,
+                    code: css ? updated : content,
                 };
             },
         },
@@ -275,6 +241,7 @@ export const vanillaWind = (
 
                     invalidate();
                     // load new CSS
+                    logger("HMR - ssrLoadModule", { id: file });
                     await server.ssrLoadModule(file);
                     return [...modules, ...virtuals];
                 } catch (error) {
@@ -442,17 +409,18 @@ export const vanillaWind = (
                 const [validId] = id.split("?");
                 if (!validId) return;
 
-                if (!cssCacheMap.has(validId)) {
+                if (!validId.endsWith(virtualExtCss)) {
                     return;
+                }
+
+                logger("load", { id: validId });
+                if (!cssCacheMap.has(validId)) {
+                    return "";
                 }
 
                 const css = cssCacheMap.get(validId);
 
                 if (typeof css !== "string") {
-                    return;
-                }
-
-                if (!validId.endsWith(virtualExtCss)) {
                     return;
                 }
 

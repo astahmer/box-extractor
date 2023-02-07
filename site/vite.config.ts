@@ -1,5 +1,6 @@
 import vw from "@box-extractor/vanilla-wind/vite";
 import { vanillaExtractPlugin } from "@vanilla-extract/vite-plugin";
+import { vanillaExtractPlugin as vanillaExtractPluginEsbuild } from "@vanilla-extract/esbuild-plugin";
 
 import { NodeGlobalsPolyfillPlugin } from "@esbuild-plugins/node-globals-polyfill";
 import presetIcons from "@unocss/preset-icons";
@@ -24,7 +25,13 @@ export default defineConfig((env) => {
         plugins: [
             UnoCSS({ presets: [presetIcons({})] }),
             replace(replaceOptions) as any,
-            vw.vanillaWind({ themePath: "./src/theme/theme.ts", include: [/\.[t]sx?$/] }),
+            // vw.vanillaWind({ themePath: "./src/theme/theme.ts", include: [/\.[t]sx?$/] }),
+            vw.vanillaWind({
+                // themePath: "./src/theme/theme.ts",
+                include: [/\.[t]sx?$/],
+                // esbuild: { plugins: [vanillaExtractPluginEsbuild() as any] },
+            }),
+            // vw.vanillaWind({ include: [/\.[t]sx?$/], esbuild: { plugins: [vanillaExtractPluginEsbuild() as any] } }),
             // vw.vanillaWind({ include: [/\.[t]sx?$/] }),
             vanillaExtractPlugin(),
             rakkas(),
