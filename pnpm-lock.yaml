@@ -353,6 +353,7 @@ importers:
       '@typescript-eslint/parser': ^5.40.1
       '@unocss/preset-icons': ^0.46.3
       '@vanilla-extract/css': ^1.9.2
+      '@vanilla-extract/esbuild-plugin': ^2.2.1
       '@vanilla-extract/integration': ^6.0.2
       '@vanilla-extract/vite-plugin': ^3.7.0
       '@vitejs/plugin-react': ^3.1.0
@@ -405,6 +406,7 @@ importers:
       '@rollup/plugin-replace': 5.0.2_rollup@3.7.4
       '@tanstack/react-query': 4.22.0_biqbaboplfbrettd7655fr4n2y
       '@vanilla-extract/css': 1.9.2
+      '@vanilla-extract/esbuild-plugin': 2.2.1
       '@xstate/react': 3.0.2_o5u6bh43w5rmf7t7erwjktck7q
       '@zag-js/react': 0.3.4_biqbaboplfbrettd7655fr4n2y
       '@zag-js/tags-input': 0.3.8
@@ -3586,6 +3588,14 @@ packages:
     resolution: {integrity: sha512-WlnSbqD2/7OryWj1JEef9a5nLpWbv828J4cOBGqi5G1kAo0e8aKTT3+pLhFmDU0bdnpPYVw1lBz+xJrxT/FQQA==}
     dependencies:
       '@vanilla-extract/integration': '@github.com/astahmer/box-extractor/raw/main/packages/vanilla-extract/ve-fork-tgz/vanilla-extract-integration.tgz'
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
+
+  /@vanilla-extract/esbuild-plugin/2.2.1:
+    resolution: {integrity: sha512-wPVeT7dPZXQujkWFfelwcEwF2B5xMDPYAFLkLVf3vrfTO5WSfFM3CGOdPoxP9Ai9I/e50LJN4Lb9MpHVU/Z+6Q==}
+    dependencies:
+      '@vanilla-extract/integration': 6.0.2
     transitivePeerDependencies:
       - supports-color
     dev: false
