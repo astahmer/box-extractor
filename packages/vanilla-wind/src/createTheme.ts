@@ -32,26 +32,26 @@ export function createTheme<ThemeContract extends Contract>(
     mode: "contract",
     themeContract: ThemeContract
 ): MapLeafNodes<ThemeContract, string>;
+// TODO ?
 /** Create global theme contract -> createGlobalThemeContract */
-export function createTheme<ThemeContract extends Contract>(
-    mode: "contract",
-    selector: string,
-    themeContract: ThemeContract
-): MapLeafNodes<ThemeContract, string>;
-/** Create global theme bound to a selector -> createGlobalTheme */
+// export function createTheme<ThemeContract extends Contract>(
+//     mode: "contract",
+//     themeContract: ThemeContract
+// ): MapLeafNodes<ThemeContract, string>;
+/** Create global theme bound to a selector -> createGlobalTheme basic */
 export function createTheme<ThemeTokens extends Tokens>(selector: string, tokens: ThemeTokens): ThemeVars<ThemeTokens>;
-/** Create global theme bound to a selector from another theme contract -> createGlobalTheme */
+/** Create global theme bound to a selector from another theme contract -> createGlobalTheme from another theme contract */
 export function createTheme<ThemeContract extends Contract>(
     selector: string,
     themeContract: ThemeContract,
     tokens: MapLeafNodes<ThemeContract, string>
 ): void;
-/** Create theme and return a className that you have to bind where you want to use it -> createTheme */
+/** Create theme and return a className that you have to bind where you want to use it -> createTheme basic */
 export function createTheme<ThemeTokens extends Tokens>(
     tokens: ThemeTokens,
     debugId?: string
 ): [className: string, vars: ThemeVars<ThemeTokens>];
-/** Create theme from another theme contract and return a className that you have to bind where you want to use it -> createTheme */
+/** Create theme from another theme contract and return a className that you have to bind where you want to use it -> createTheme from another theme contract */
 export function createTheme<ThemeContract extends Contract>(
     themeContract: ThemeContract,
     tokens: MapLeafNodes<ThemeContract, string>,
@@ -71,12 +71,12 @@ export function createTheme(_arg1: any, _arg2?: any, _arg3?: any): any {
 
     // createGlobalTheme
     if (typeof _arg1 === "string") {
-        // createGlobalThemeContract from another theme contract
+        // createGlobalTheme from another theme contract
         if (_arg3) {
             return _arg2;
         }
 
-        // createGlobalTheme
+        // createGlobalTheme basic
 
         return;
     }
@@ -86,6 +86,6 @@ export function createTheme(_arg1: any, _arg2?: any, _arg3?: any): any {
         return _arg1;
     }
 
-    // createTheme
+    // createTheme basic
     return ["", _arg1];
 }

@@ -29,6 +29,7 @@ export function generateStyleFromExtraction(
     extracted.queryList.forEach((query) => {
         const classNameList = new Set<string>();
         const queryBox = query.box.isList() ? (query.box.value[0]! as BoxNodeMap) : query.box;
+        if (!queryBox.isMap()) return;
 
         const argMap = new Map<string, BoxNode[]>();
         shorthandNames.forEach((shorthand) => {
