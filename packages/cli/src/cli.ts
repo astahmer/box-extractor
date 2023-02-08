@@ -18,6 +18,7 @@ const main = async () => {
 
     const root = process.cwd();
     console.log("init project", { root });
+    console.time("init project");
     const project = new Project({
         compilerOptions: {
             jsx: ts.JsxEmit.React,
@@ -33,15 +34,22 @@ const main = async () => {
             useVirtualFileSystem: true,
         },
         tsConfigFilePath: args.tsconfig,
+        skipAddingFilesFromTsConfig: true,
+        skipLoadingLibFiles: true,
+        skipFileDependencyResolution: true,
     });
     const sourceFile = project.addSourceFileAtPath(path.resolve(root, args.input));
+    project.resolveSourceFileDependencies();
+    console.timeEnd("init project");
 
     console.log("extracting", args.input);
+    console.time("extracting");
     const extracted = extract({
         ast: sourceFile,
         components: args.components.split(",").filter(Boolean),
         functions: args.functions.split(",").filter(Boolean),
     });
+    console.timeEnd("extracting");
     console.log("found:", extracted.size);
 
     const extraction =
