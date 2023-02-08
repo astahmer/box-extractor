@@ -1,10 +1,6 @@
-// import { createAdapterContext } from "@box-extractor/vanilla-wind/jit";
-// import { endFileScope, setFileScope } from "@vanilla-extract/css/fileScope";
-// import { colorModeVars } from "./css/color-mode.css";
-// import { assignVars } from "@vanilla-extract/css";
-// 0c2461
 /* #60a3bc */
 /* #4AC1A2 */
+
 /** azraqblue */
 export const primary = {
     "50": "#cdd5ed",
