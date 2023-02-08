@@ -6,10 +6,12 @@ import { Identifier, Node, Project, ts } from "ts-morph";
 import {
     ensureAbsolute,
     extract,
+    extractFunctionFrom,
     FunctionNodesMap,
     getAncestorComponent,
     getNameLiteral,
     query,
+    unbox,
     unquote,
 } from "@box-extractor/core";
 import { createLogger } from "@box-extractor/logger";
@@ -28,11 +30,13 @@ import {
     normalizeTsx,
     virtualExtCss,
 } from "./utils";
+import { assignVars } from "@vanilla-extract/css";
 
 const logger = createLogger("box-ex:vanilla-wind:vite");
 
 // TODO add component ref finder
 // TODO extract re-usable pieces from this file so it can be re-used with other plugins
+// TODO createSourceFile -> addSourceFile from transformedMap cache if possible
 
 export const vanillaWind = (
     options: {
@@ -185,10 +189,11 @@ export const vanillaWind = (
                 const validId = id.split("?")[0]!;
                 logger.scoped("create-theme", { id: validId });
                 const extracted = extractCreateTheme(project, code, validId);
-                logger.scoped("create-theme", { extracted: !!extracted, importStatement: extracted?.importStatement });
+                logger.scoped("create-theme", { extracted: !!extracted });
                 if (!extracted) return null;
 
                 const { updated, content, css, absoluteId } = extracted;
+                const updatedCode = css ? updated : content;
                 transformedMap.set(validId, updated);
 
                 if (server) {
@@ -217,13 +222,75 @@ export const vanillaWind = (
                 }
 
                 return {
-                    code: css ? updated : content,
+                    code: updatedCode,
                 };
             },
         },
         {
             enforce: "pre",
-            name: "vanilla-wind:theme-extract",
+            name: "vanilla-wind:inlined-functions",
+            transform(code, id, _options) {
+                if (!isIncluded(id)) return null;
+                if (!code.includes("assignVars(")) return;
+
+                const validId = id.split("?")[0]!;
+                logger.scoped("inlined-functions", { id: validId });
+
+                const sourceFile = project.createSourceFile(normalizeTsx(validId), code, {
+                    overwrite: true,
+                    scriptKind: ts.ScriptKind.TSX,
+                });
+
+                // TODO only allow from VE/css or box-ex/vw ?
+                const extracted = extractFunctionFrom(sourceFile, "assignVars", (boxNode) => unbox(boxNode));
+                logger.scoped("inlined-functions", { extracted: extracted.size });
+                if (extracted.size === 0) return null;
+
+                const toReplace = new Map<Node, any>();
+                extracted.forEach((extraction, name) => {
+                    logger.scoped("inlined-functions", { name, extraction: extraction.result });
+                    if (
+                        extraction.queryBox.isList() &&
+                        extraction.queryBox.value.length === 2 &&
+                        Array.isArray(extraction.result) &&
+                        extraction.result.length === 2
+                    ) {
+                        const [contractNode, tokensNode] = extraction.queryBox.value;
+
+                        if (
+                            contractNode &&
+                            !contractNode.isUnresolvable() &&
+                            tokensNode &&
+                            !tokensNode.isUnresolvable()
+                        ) {
+                            toReplace.set(contractNode.getNode(), extraction.result);
+                        }
+                    }
+                });
+
+                logger.scoped("inlined-functions", { hasUpdatedFile: toReplace.size > 0 });
+                if (toReplace.size === 0) return null;
+
+                toReplace.forEach((value, node) => {
+                    const [contract, tokens] = value;
+                    logger.scoped("inlined-functions", {
+                        contract,
+                        tokens,
+                        updating: node.getText(),
+                        type: node.getKindName(),
+                    });
+                    const result = assignVars(contract, tokens);
+                    node.replaceWithText(JSON.stringify(result, null, 4));
+                });
+                const updated = sourceFile.getFullText();
+                transformedMap.set(validId, updated);
+
+                return { code: updated };
+            },
+        },
+        {
+            enforce: "pre",
+            name: "vanilla-wind:define-properties-extract",
             // Re-parse theme files when they change
             async handleHotUpdate({ file, modules }) {
                 if (!themePathList.has(file)) return;
@@ -255,7 +322,7 @@ export const vanillaWind = (
                 const validId = id.split("?")[0]!;
 
                 if (themeCacheMap.has(validId) && themeCacheMap.get(validId) === code) {
-                    logger.scoped("theme-extract", "[CACHED] no diff", validId);
+                    logger.scoped("define-properties-extract", "[CACHED] no diff", validId);
                     return null;
                 }
 
@@ -272,19 +339,19 @@ export const vanillaWind = (
                     scriptKind: ts.ScriptKind.TSX,
                 });
 
-                logger.scoped("theme-extract", "scanning", { validId });
+                logger.scoped("define-properties-extract", "scanning", { validId });
                 const extracted = extractDefinePropertiesConfig(sourceFile);
                 extracted.forEach((conf, name) => {
                     configByThemeName.set(name, conf);
-                    logger.scoped("theme-extract", "extracted theme config", { name, conf });
+                    logger.scoped("define-properties-extract", "extracted theme config", { name, conf });
                 });
 
                 if (extracted.size > 0) {
-                    logger.scoped("theme-extract", "new themes found: ", Array.from(extracted.keys()));
+                    logger.scoped("define-properties-extract", "new themes found: ", Array.from(extracted.keys()));
                     const absoluteId = ensureAbsolute(validId, config.root);
 
                     if (!themePathList.has(absoluteId)) {
-                        logger.scoped("theme-extract", "reloading importers modules of", absoluteId);
+                        logger.scoped("define-properties-extract", "reloading importers modules of", absoluteId);
                         logger({ root: config.root });
 
                         await onStyledFound(Array.from(extracted.keys()), "any");
