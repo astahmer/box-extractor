@@ -1,6 +1,7 @@
 import vw from "@box-extractor/vanilla-wind/vite";
 import { vanillaExtractPlugin } from "@vanilla-extract/vite-plugin";
 import { vanillaExtractPlugin as vanillaExtractPluginEsbuild } from "@vanilla-extract/esbuild-plugin";
+import Inspect from "vite-plugin-inspect";
 
 import { NodeGlobalsPolyfillPlugin } from "@esbuild-plugins/node-globals-polyfill";
 import presetIcons from "@unocss/preset-icons";
@@ -37,6 +38,7 @@ export default defineConfig((env) => {
             rakkas(),
             // rakkas({ filterRoutes: (_route) => "server" }),
             compileTime(),
+            Inspect(),
         ],
         optimizeDeps: {
             include: ["path-browserify", "util"],

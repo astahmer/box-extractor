@@ -3,7 +3,7 @@ import { Link } from "rakkasjs";
 import type { ComponentPropsWithoutRef, PropsWithChildren } from "react";
 import { ColorModeToggle } from "../ColorModeToggle/ColorModeToggle";
 import { Box } from "../theme/Box";
-import { Stack } from "../theme/components";
+// import { Stack } from "../theme/components";
 import { css } from "../theme/theme";
 
 import "uno.css";
