@@ -88,12 +88,12 @@ test("extractCreateTheme - createTheme - basic -> VE:createTheme", () => {
 
     expect(extracted.css).toMatchInlineSnapshot(`
       "._1tja2sa0 {
-        --color-mainBg__1tja2sa1: #cdd5ed;
-        --color-secondaryBg__1tja2sa2: #cdd5ed;
-        --color-text__1tja2sa3: #cdd5ed;
-        --color-bg__1tja2sa4: #cdd5ed;
-        --color-bgSecondary__1tja2sa5: #cdd5ed;
-        --color-bgHover__1tja2sa6: #cdd5ed;
+        --color-mainBg__1tja2sa1: #95a7d8;
+        --color-secondaryBg__1tja2sa2: #8297d1;
+        --color-text__1tja2sa3: #6f88cb;
+        --color-bg__1tja2sa4: #39539b;
+        --color-bgSecondary__1tja2sa5: #6f88cb;
+        --color-bgHover__1tja2sa6: #a7b6df;
       }"
     `);
     expect(extracted.content.replace(withImportAndTokens, "").trimStart()).toMatchInlineSnapshot(`
@@ -181,12 +181,12 @@ test("extractCreateTheme - createTheme - using contract -> VE:createTheme with c
 
     expect(extracted.css).toMatchInlineSnapshot(`
       "._1tja2sa6 {
-        --color-mainBg__1tja2sa0: #cdd5ed;
-        --color-secondaryBg__1tja2sa1: #cdd5ed;
-        --color-text__1tja2sa2: #cdd5ed;
-        --color-bg__1tja2sa3: #cdd5ed;
-        --color-bgSecondary__1tja2sa4: #cdd5ed;
-        --color-bgHover__1tja2sa5: #cdd5ed;
+        --color-mainBg__1tja2sa0: #95a7d8;
+        --color-secondaryBg__1tja2sa1: #8297d1;
+        --color-text__1tja2sa2: #6f88cb;
+        --color-bg__1tja2sa3: #39539b;
+        --color-bgSecondary__1tja2sa4: #6f88cb;
+        --color-bgHover__1tja2sa5: #a7b6df;
       }"
     `);
     expect(extracted.content.replace(withImportAndTokens, "").trimStart()).toMatchInlineSnapshot(`
