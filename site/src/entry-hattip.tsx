@@ -1,6 +1,6 @@
 import { createRequestHandler } from "rakkasjs";
 import { themeKey } from "./ColorModeToggle/ColorModeToggle";
-import { lightMode, darkMode } from "./theme/css/color-mode.css";
+import { lightMode, darkMode } from "./theme/color-mode";
 
 export default createRequestHandler({
     createPageHooks(_requestContext) {

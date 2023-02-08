@@ -1,7 +1,7 @@
 import { createContextWithHook } from "pastable/react";
 import { ReactNode, useEffect, useMemo, useState } from "react";
 import { Box } from "../theme/Box";
-import { darkMode, lightMode } from "../theme/css/color-mode.css";
+import { darkMode, lightMode } from "../theme/color-mode";
 import * as styles from "./ColorModeToggle.css";
 
 type ColorMode = typeof darkMode | typeof lightMode;

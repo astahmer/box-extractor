@@ -1,6 +1,6 @@
 import { tokens } from "@box-extractor/vanilla-theme";
 import { createVar, style } from "@vanilla-extract/css";
-import { darkMode } from "../theme/css/color-mode.css";
+import { darkMode } from "../theme/color-mode";
 
 // adapted from https://github.com/astahmer/vanilla-extract/blob/dab0f257c10cdf3aec9a220dbf6191281ada0831/site/src/ColorModeToggle/ColorModeToggle.tsx#L9
 
