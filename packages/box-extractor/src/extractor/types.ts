@@ -25,6 +25,7 @@ export type ComponentNodesMap = {
     queryList: QueryComponentBox[];
 };
 
+// TODO rename
 export type PropNodesMap = ComponentNodesMap | FunctionNodesMap;
 export type BoxNodesMap = Map<string, PropNodesMap>;
 
