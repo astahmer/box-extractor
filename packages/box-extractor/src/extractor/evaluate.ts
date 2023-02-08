@@ -66,6 +66,7 @@ const evaluateExpression = (node: Expression, morphTypeChecker: TypeChecker) => 
         }
     }
 
+    // TODO BoxNodeUnresolvable kind: "eval-error"
     const expr = result.success ? result.value : TsEvalError;
     cacheMap.set(node, expr);
 

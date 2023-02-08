@@ -11,6 +11,7 @@ const logger = createLogger("box-ex:extractor:call-expr");
 export const extractCallExpressionValues = (node: CallExpression) => {
     const argList = node.getArguments();
     // TODO also return a BoxNode (with a isEmpty: true ? flag or kind: "empty" ) when no arguments provided ?
+    // needed for `const css = defineProperties()`
     if (argList.length === 0) return;
 
     const boxes = argList

@@ -304,14 +304,14 @@ const findProperty = (node: ObjectLiteralElementLike, propName: string, _stack: 
 
     if (Node.isPropertyAssignment(node)) {
         const name = node.getNameNode();
-        // console.log({ name: name.getText(), kind: name.getKindName() });
+        // logger.scoped("find-prop", { name: name.getText(), kind: name.getKindName() });
 
         if (Node.isIdentifier(name) && name.getText() === propName) {
             stack.push(name);
             return node;
         }
 
-        if (Node.isStringLiteral(name)) {
+        if (Node.isStringLiteral(name) && name.getLiteralText() === propName) {
             stack.push(name);
             return name.getLiteralText();
         }
@@ -346,6 +346,8 @@ const getPropValue = (initializer: ObjectLiteralExpression, propName: string, _s
 
     logger.scoped("get-prop", {
         propName,
+        // shortcut: initializer.getProperty(propName),
+        // finder: initializer.getProperties().find((p) => findProperty(p, propName, stack)),
         // property: property?.getText().slice(0, 100),
         propertyKind: property?.getKindName(),
         // properties: initializer.getProperties().map((p) => p.getText().slice(0, 100)),
@@ -388,15 +390,16 @@ const maybeTemplateStringValue = (template: TemplateExpression, stack: Node[]) =
     const tailValues = tail.map((t) => {
         const expression = t.getExpression();
         const propBox = maybePropName(expression, stack);
+        // logger({ expression: expression.getText(), propBox });
         if (!propBox) return;
 
-        return propBox.value;
+        const literal = t.getLiteral();
+        return propBox.value + literal.getLiteralText();
     });
 
-    // logger({ head: head.getText(), headValue, tailValues });
+    // logger({ head: head.getText(), headValue, tailValues, tail: tail.map((t) => t.getText()) });
 
     if (tailValues.every(isNotNullish)) {
-        // console.log({ propName, headValue, tailValues });
         return headValue.value + tailValues.join("");
     }
 };

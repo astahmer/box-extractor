@@ -9123,7 +9123,7 @@ it("extract function with multiple args even if not starting by ObjectLiteralExp
                                                   ],
                                                   type: "literal",
                                                   node: "StringLiteral",
-                                                  value: "#cdd5ed",
+                                                  value: "#95a7d8",
                                                   kind: "string",
                                               },
                                           ],
@@ -9315,6 +9315,275 @@ it("extract UndefinedKeyword", () => {
                   ],
               },
           ],
+      ]
+    `);
+});
+
+it("extract css from createTheme result", () => {
+    const extracted = getExtract(
+        `
+    const colorModeVars = {
+        "color": {
+            "mainBg": "var(--color-mainBg__1du39r70)",
+            "secondaryBg": "var(--color-secondaryBg__1du39r71)",
+            "text": "var(--color-text__1du39r72)",
+            "bg": "var(--color-bg__1du39r73)",
+            "bgSecondary": "var(--color-bgSecondary__1du39r74)",
+            "bgHover": "var(--color-bgHover__1du39r75)"
+        }
+    } as const;
+
+    css(
+        {
+            background: \`linear-gradient(to bottom, \${colorModeVars.color.mainBg} 20%, \${colorModeVars.color.secondaryBg})\`,
+            backgroundAttachment: "fixed",
+            color: colorModeVars.color.text,
+        }
+    );
+
+`,
+        { functions: ["css"] }
+    );
+
+    expect(extracted.get("css")!.queryList).toMatchInlineSnapshot(`
+      [
+          {
+              name: "css",
+              box: {
+                  stack: ["CallExpression"],
+                  type: "list",
+                  node: "CallExpression",
+                  value: [
+                      {
+                          stack: ["CallExpression", "ObjectLiteralExpression"],
+                          type: "map",
+                          node: "CallExpression",
+                          value: {
+                              background: [
+                                  {
+                                      stack: [
+                                          "CallExpression",
+                                          "ObjectLiteralExpression",
+                                          "PropertyAssignment",
+                                          "TemplateExpression",
+                                          "PropertyAccessExpression",
+                                          "Identifier",
+                                          "PropertyAccessExpression",
+                                          "Identifier",
+                                      ],
+                                      type: "literal",
+                                      node: "TemplateExpression",
+                                      value: "linear-gradient(to bottom, var(--color-mainBg__1du39r70) 20%, var(--color-secondaryBg__1du39r71))",
+                                      kind: "string",
+                                  },
+                              ],
+                              backgroundAttachment: [
+                                  {
+                                      stack: [
+                                          "CallExpression",
+                                          "ObjectLiteralExpression",
+                                          "PropertyAssignment",
+                                          "StringLiteral",
+                                      ],
+                                      type: "literal",
+                                      node: "StringLiteral",
+                                      value: "fixed",
+                                      kind: "string",
+                                  },
+                              ],
+                              color: [
+                                  {
+                                      stack: [
+                                          "CallExpression",
+                                          "ObjectLiteralExpression",
+                                          "PropertyAssignment",
+                                          "PropertyAccessExpression",
+                                          "PropertyAccessExpression",
+                                          "Identifier",
+                                      ],
+                                      type: "literal",
+                                      node: "PropertyAccessExpression",
+                                      value: "var(--color-text__1du39r72)",
+                                      kind: "string",
+                                  },
+                              ],
+                          },
+                      },
+                  ],
+              },
+          },
+      ]
+    `);
+});
+
+it("extract assignVars args", () => {
+    const extracted = getExtract(
+        `
+        export const primary = {
+            "50": "#cdd5ed",
+            "100": "#a7b6df",
+            "200": "#95a7d8",
+            "300": "#8297d1",
+            "400": "#6f88cb",
+            "500": "#4a69bd",
+            "600": "#39539b",
+            "700": "#324989",
+            "800": "#2b3f76",
+            "900": "#1d2b51",
+        } as const;
+
+
+        const darkVars = assignVars(colorModeVars, {
+            color: {
+                mainBg: primary["600"],
+                secondaryBg: primary["700"],
+                bg: primary["300"],
+                bgSecondary: primary["800"],
+                bgHover: primary["700"],
+            },
+        });
+`,
+        { functions: ["assignVars"] }
+    );
+
+    expect(extracted.get("assignVars")!.queryList).toMatchInlineSnapshot(`
+      [
+          {
+              name: "assignVars",
+              box: {
+                  stack: ["CallExpression"],
+                  type: "list",
+                  node: "CallExpression",
+                  value: [
+                      {
+                          stack: ["CallExpression", "Identifier"],
+                          type: "unresolvable",
+                          node: "Identifier",
+                      },
+                      {
+                          stack: ["CallExpression", "ObjectLiteralExpression"],
+                          type: "map",
+                          node: "CallExpression",
+                          value: {
+                              color: [
+                                  {
+                                      stack: [
+                                          "CallExpression",
+                                          "ObjectLiteralExpression",
+                                          "PropertyAssignment",
+                                          "ObjectLiteralExpression",
+                                      ],
+                                      type: "map",
+                                      node: "ObjectLiteralExpression",
+                                      value: {
+                                          mainBg: [
+                                              {
+                                                  stack: [
+                                                      "CallExpression",
+                                                      "ObjectLiteralExpression",
+                                                      "PropertyAssignment",
+                                                      "ObjectLiteralExpression",
+                                                      "PropertyAssignment",
+                                                      "ElementAccessExpression",
+                                                      "Identifier",
+                                                      "StringLiteral",
+                                                      "VariableDeclaration",
+                                                      "PropertyAssignment",
+                                                  ],
+                                                  type: "literal",
+                                                  node: "StringLiteral",
+                                                  value: "#39539b",
+                                                  kind: "string",
+                                              },
+                                          ],
+                                          secondaryBg: [
+                                              {
+                                                  stack: [
+                                                      "CallExpression",
+                                                      "ObjectLiteralExpression",
+                                                      "PropertyAssignment",
+                                                      "ObjectLiteralExpression",
+                                                      "PropertyAssignment",
+                                                      "ElementAccessExpression",
+                                                      "Identifier",
+                                                      "StringLiteral",
+                                                      "VariableDeclaration",
+                                                      "PropertyAssignment",
+                                                  ],
+                                                  type: "literal",
+                                                  node: "StringLiteral",
+                                                  value: "#324989",
+                                                  kind: "string",
+                                              },
+                                          ],
+                                          bg: [
+                                              {
+                                                  stack: [
+                                                      "CallExpression",
+                                                      "ObjectLiteralExpression",
+                                                      "PropertyAssignment",
+                                                      "ObjectLiteralExpression",
+                                                      "PropertyAssignment",
+                                                      "ElementAccessExpression",
+                                                      "Identifier",
+                                                      "StringLiteral",
+                                                      "VariableDeclaration",
+                                                      "PropertyAssignment",
+                                                  ],
+                                                  type: "literal",
+                                                  node: "StringLiteral",
+                                                  value: "#8297d1",
+                                                  kind: "string",
+                                              },
+                                          ],
+                                          bgSecondary: [
+                                              {
+                                                  stack: [
+                                                      "CallExpression",
+                                                      "ObjectLiteralExpression",
+                                                      "PropertyAssignment",
+                                                      "ObjectLiteralExpression",
+                                                      "PropertyAssignment",
+                                                      "ElementAccessExpression",
+                                                      "Identifier",
+                                                      "StringLiteral",
+                                                      "VariableDeclaration",
+                                                      "PropertyAssignment",
+                                                  ],
+                                                  type: "literal",
+                                                  node: "StringLiteral",
+                                                  value: "#2b3f76",
+                                                  kind: "string",
+                                              },
+                                          ],
+                                          bgHover: [
+                                              {
+                                                  stack: [
+                                                      "CallExpression",
+                                                      "ObjectLiteralExpression",
+                                                      "PropertyAssignment",
+                                                      "ObjectLiteralExpression",
+                                                      "PropertyAssignment",
+                                                      "ElementAccessExpression",
+                                                      "Identifier",
+                                                      "StringLiteral",
+                                                      "VariableDeclaration",
+                                                      "PropertyAssignment",
+                                                  ],
+                                                  type: "literal",
+                                                  node: "StringLiteral",
+                                                  value: "#324989",
+                                                  kind: "string",
+                                              },
+                                          ],
+                                      },
+                                  },
+                              ],
+                          },
+                      },
+                  ],
+              },
+          },
       ]
     `);
 });
