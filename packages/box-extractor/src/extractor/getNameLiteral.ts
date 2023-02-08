@@ -5,7 +5,7 @@ import { getIdentifierReferenceValue } from "./maybeBoxNode";
 import { box } from "./type-factory";
 import { isNotNullish } from "./utils";
 
-const logger = createLogger("box-ex:extractor:name");
+const logger = createLogger("box-ex:extractor:name-literal");
 
 export function getNameLiteral(wrapper: Node, stack: Node[]) {
     logger({ name: wrapper.getText(), kind: wrapper.getKindName() });

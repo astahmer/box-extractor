@@ -410,6 +410,10 @@ const maybePropIdentifierDefinitionValue = (
     _stack: Node[]
 ): BoxNodeLiteral | BoxNodeObject | BoxNodeUnresolvable | undefined => {
     const stack = [..._stack];
+    // logger.scoped("id-def", {
+    //     elementAccessed: elementAccessed.getText()?.slice(0, 100),
+    //     propName,
+    // });
 
     const defs = elementAccessed.getDefinitionNodes();
     while (defs.length > 0) {
@@ -780,6 +784,23 @@ const getElementAccessedExpressionValue = (expression: ElementAccessExpression, 
         return box.cast(propValue, arg, stack);
     }
 
+    // tokens.colors.blue["400"]
+    if (
+        Node.isPropertyAccessExpression(elementAccessed) &&
+        isNotNullish(argLiteral) &&
+        isNotNullish(argLiteral.value)
+    ) {
+        const propRefValue = getPropertyAccessedExpressionValue(elementAccessed, stack);
+        const propName = argLiteral.value.toString();
+
+        elAccessedLogger("PropertyAccessExpression", { propRefValue, propName });
+
+        if (isNotNullish(propRefValue) && propRefValue.isObject() && propName) {
+            const propValue = propRefValue.value[propName];
+            return box.cast(propValue, arg, stack);
+        }
+    }
+
     // <ColorBox color={xxx[yyy[zzz]]} />
     if (Node.isIdentifier(elementAccessed) && Node.isElementAccessExpression(arg)) {
         const propName = getElementAccessedExpressionValue(arg, stack);
@@ -793,7 +814,7 @@ const getElementAccessedExpressionValue = (expression: ElementAccessExpression, 
         }
     }
 
-    // <ColorBox color={xxx[yyy[zzz]]} />
+    // <ColorBox color={xxx[yyy["zzz"]]} />
     if (Node.isElementAccessExpression(elementAccessed) && isNotNullish(argLiteral) && isNotNullish(argLiteral.value)) {
         const identifier = getElementAccessedExpressionValue(elementAccessed, stack);
         elAccessedLogger({ isElementAccessExpression: true, identifier, argValue: argLiteral });
