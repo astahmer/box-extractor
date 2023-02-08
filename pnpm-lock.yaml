@@ -213,6 +213,31 @@ importers:
       vite: 3.2.3
       vitest: 0.25.8
 
+  packages/cli:
+    specifiers:
+      '@box-extractor/core': workspace:^0.3.0
+      '@box-extractor/vanilla-theme': workspace:^0.2.7
+      '@molt/command': ^0.6.1
+      '@types/node': ^18.11.9
+      prettier: ^2.7.1
+      ts-morph: ^17.0.1
+      ts-toolbelt: ^9.6.0
+      typescript: 4.9.4
+      vitest: ^0.25.8
+      zod: ^3.19.1
+    dependencies:
+      '@box-extractor/core': link:../box-extractor
+      '@molt/command': 0.6.1
+      ts-morph: 17.0.1
+      zod: 3.20.2
+    devDependencies:
+      '@box-extractor/vanilla-theme': link:../vanilla-theme
+      '@types/node': 18.11.18
+      prettier: 2.8.1
+      ts-toolbelt: 9.6.0
+      typescript: 4.9.4
+      vitest: 0.25.8
+
   packages/logger:
     specifiers:
       '@types/humanize-duration': ^3.27.1
@@ -392,6 +417,7 @@ importers:
       util: ^0.12.5
       vite: ^3.2.5
       vite-plugin-compile-time: ^0.1.2
+      vite-plugin-inspect: ^0.7.15
       xstate: ^4.34.0
       zod: ^3.19.1
     dependencies:
@@ -459,6 +485,7 @@ importers:
       unocss: 0.46.5_rollup@3.7.4+vite@3.2.5
       vite: 3.2.5
       vite-plugin-compile-time: 0.1.2_vite@3.2.5
+      vite-plugin-inspect: 0.7.15_rollup@3.7.4+vite@3.2.5
 
 packages:
 
@@ -2653,6 +2680,26 @@ packages:
       - supports-color
     dev: true
 
+  /@molt/command/0.6.1:
+    resolution: {integrity: sha512-wnDTqQ1yLjVw4d/T36aLdgSHCz5/72OBMa1WnGBwmOUybpFk11OANDuXrvVUMjZ8eB0Q9GWQz6Ps1966wxxdBw==}
+    dependencies:
+      '@molt/types': 0.2.0
+      alge: 0.7.0-next.1
+      chalk: 4.1.2
+      lodash.camelcase: 4.3.0
+      lodash.snakecase: 4.1.1
+      string-length: 4.0.2
+      strip-ansi: 6.0.1
+      ts-toolbelt: 9.6.0
+      zod: 3.20.2
+    dev: false
+
+  /@molt/types/0.2.0:
+    resolution: {integrity: sha512-p6ChnEZDGjg9PYPec9BK6Yp5/DdSrYQvXTBAtgrnqX6N36cZy37ql1c8Tc5LclfIYBNG7EZp8NBcRTYJwyi84g==}
+    dependencies:
+      ts-toolbelt: 9.6.0
+    dev: false
+
   /@monaco-editor/loader/1.3.2_monaco-editor@0.34.1:
     resolution: {integrity: sha512-BTDbpHl3e47r3AAtpfVFTlAi7WXv4UQ/xZmz8atKl4q7epQV5e7+JbigFDViWF71VBi4IIBdcWP57Hj+OWuc9g==}
     peerDependencies:
@@ -3894,6 +3941,15 @@ packages:
       uri-js: 4.4.1
     dev: true
 
+  /alge/0.7.0-next.1:
+    resolution: {integrity: sha512-QGB+1x1LJtVi9VKvzEU4oXXHcOXNmMRvX15Vks12AVltlBmxY0yrthn/+hh1tsU7mlPbXXPNw4aIklVoh628+w==}
+    dependencies:
+      lodash.ismatch: 4.4.0
+      remeda: 1.6.1
+      ts-toolbelt: 9.6.0
+      zod: 3.20.2
+    dev: false
+
   /ansi-colors/4.1.3:
     resolution: {integrity: sha512-/6w/C21Pm1A7aZitlI5Ni/2J6FFQN8i1Cvz3kHABAAbw93v/NlvKdVOqz7CCWz/3iv/JplRSEEZ83XION15ovw==}
     engines: {node: '>=6'}
@@ -3908,7 +3964,6 @@ packages:
   /ansi-regex/5.0.1:
     resolution: {integrity: sha512-quJQXlTSUGL2LH9SUXo8VwsY4soanhgo6LNSm84E1LBcE8s3O0wpdiRzyR9z/ZZJMlMWv37qOOb9pdJlMUEKFQ==}
     engines: {node: '>=8'}
-    dev: true
 
   /ansi-styles/3.2.1:
     resolution: {integrity: sha512-VT0ZI6kZRdTh8YyJw3SMbYm/u+NqfsAxEpWO0Pf9sq8/e94WxxOpPKx9FR1FlyCtOVDNOQ+8ntlqFxiRc+r5qA==}
@@ -4260,6 +4315,11 @@ packages:
     dependencies:
       ansi-styles: 4.3.0
       supports-color: 7.2.0
+
+  /char-regex/1.0.2:
+    resolution: {integrity: sha512-kWWXztvZ5SBQV+eRgKFeh8q5sLuZY2+8WUIzlxWVTg+oGwY14qylx1KbKzHd8P6ZYkAg0xyIDU9JMHhyJMZ1jw==}
+    engines: {node: '>=10'}
+    dev: false
 
   /character-entities-html4/2.1.0:
     resolution: {integrity: sha512-1v7fgQRj6hnSwFpq1Eu0ynr/CDEw0rXo2B61qXrLNdHZmPKgb7fqS1a2JwF0rISo9q77jDI8VMEHoApn8qDoZA==}
@@ -6811,13 +6871,25 @@ packages:
     dependencies:
       p-locate: 5.0.0
 
+  /lodash.camelcase/4.3.0:
+    resolution: {integrity: sha512-TwuEnCnxbc3rAvhf/LbG7tJUDzhqXyFnv3dtzLOPgCG/hODL7WFnsbwktkD7yUV0RrreP/l1PALq/YSg6VvjlA==}
+    dev: false
+
   /lodash.debounce/4.0.8:
     resolution: {integrity: sha512-FT1yDzDYEoYWhnSGnpE/4Kj1fLZkDFyqRb7fNt6FdYOSxlUWAtp42Eh6Wb0rGIv/m9Bgo7x4GhQbm5Ys4SG5ow==}
     dev: true
 
+  /lodash.ismatch/4.4.0:
+    resolution: {integrity: sha512-fPMfXjGQEV9Xsq/8MTSgUf255gawYRbjwMyDbcvDhXgV7enSZA0hynz6vMPnpAb5iONEzBHBPsT+0zes5Z301g==}
+    dev: false
+
   /lodash.merge/4.6.2:
     resolution: {integrity: sha512-0KpjqXRVvrYyCsX1swR/XTK0va6VQkQM6MNo7PqW77ByjAhoARA8EfrP1N4+KlKj8YS0ZUCtRT/YUuhyYDujIQ==}
     dev: true
+
+  /lodash.snakecase/4.1.1:
+    resolution: {integrity: sha512-QZ1d4xoBHYUeuouhEq3lk3Uq7ldgyFXGBhg04+oRLnIz8o9T65Eh+8YdroUwn846zchkA9yDsDl5CVVaV2nqYw==}
+    dev: false
 
   /lodash.sortby/4.7.0:
     resolution: {integrity: sha512-HDWXG8isMntAyRF5vZ7xKuEvOhT4AhlRt/3czTSjvGUxjYCBVRQY48ViDHyfYz9VIoBkW4TMGQNapx+l3RUwdA==}
@@ -8558,6 +8630,10 @@ packages:
       unified: 10.1.2
     dev: true
 
+  /remeda/1.6.1:
+    resolution: {integrity: sha512-ywn4Tv2cPBj6hk0TEYMHusWVXu72yJNCaWUdMK7kc7x/PjQPBSvtMbmBWP4PQH791kpl3rPBe3ZVkJyPj3c+0g==}
+    dev: false
+
   /require-directory/2.1.1:
     resolution: {integrity: sha512-fGxEI7+wsG9xrvdjsrlmL22OMTTiHRwAMroiEeMgq8gzoLC/PQr7RsRDSTLUg/bZAZtF+TVIkHc6/4RIKrui+Q==}
     engines: {node: '>=0.10.0'}
@@ -8918,6 +8994,14 @@ packages:
     engines: {node: '>=10.0.0'}
     dev: true
 
+  /string-length/4.0.2:
+    resolution: {integrity: sha512-+l6rNN5fYHNhZZy41RXsYptCjA2Igmq4EG7kZAYFQI1E1VTXarr6ZPXBg6eq7Y6eK4FEhY6AJlyuFIb/v/S0VQ==}
+    engines: {node: '>=10'}
+    dependencies:
+      char-regex: 1.0.2
+      strip-ansi: 6.0.1
+    dev: false
+
   /string-width/4.2.3:
     resolution: {integrity: sha512-wKyQRQpjJ0sIp62ErSZdGsjMJWsap5oRNihHhu6G7JVO/9jIB6UyevL+tXuOqrng8j/cxKTWyWUwvSTriiZz/g==}
     engines: {node: '>=8'}
@@ -8974,7 +9058,6 @@ packages:
     engines: {node: '>=8'}
     dependencies:
       ansi-regex: 5.0.1
-    dev: true
 
   /strip-bom/3.0.0:
     resolution: {integrity: sha512-vavAMRXOgBVNF6nyEEmL3DBK19iRpDcoIwW+swQ+CbGiu7lju6t+JklA1MHweoWtadgt4ISVUsXLyDq34ddcwA==}
@@ -9644,6 +9727,25 @@ packages:
       esbuild: 0.14.54
       magic-string: 0.25.9
       vite: 3.2.5
+    dev: true
+
+  /vite-plugin-inspect/0.7.15_rollup@3.7.4+vite@3.2.5:
+    resolution: {integrity: sha512-oxeZCljacA/slhGFbDNlBqdhDU9fgdHL84i7Nz7DnaAIE7DhTiW2djanw3d/BKuZtduKUY82vRUQ4iaG917t2A==}
+    engines: {node: '>=14'}
+    peerDependencies:
+      vite: ^3.1.0 || ^4.0.0
+    dependencies:
+      '@antfu/utils': 0.7.2
+      '@rollup/pluginutils': 5.0.2_rollup@3.7.4
+      debug: 4.3.4
+      fs-extra: 11.1.0
+      kolorist: 1.6.0
+      sirv: 2.0.2
+      ufo: 1.0.1
+      vite: 3.2.5
+    transitivePeerDependencies:
+      - rollup
+      - supports-color
     dev: true
 
   /vite-plugin-inspect/0.7.15_vite@3.2.3:

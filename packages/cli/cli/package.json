@@ -1,0 +1,4 @@
+{
+    "main": "dist/box-extractor-cli-cli.cjs.js",
+    "module": "dist/box-extractor-cli-cli.esm.js"
+}
