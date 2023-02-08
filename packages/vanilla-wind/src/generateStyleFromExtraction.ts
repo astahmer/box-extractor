@@ -1,34 +1,84 @@
-import { box, BoxNode, BoxNodeMap, isPrimitiveType, LiteralValue, PropNodesMap } from "@box-extractor/core";
+import { box, BoxNode, BoxNodeMap, isPrimitiveType, LiteralValue, PropNodesMap, unbox } from "@box-extractor/core";
 import { createLogger } from "@box-extractor/logger";
-import { style, StyleRule } from "@vanilla-extract/css";
-import { deepMerge } from "pastable";
+import { globalStyle, GlobalStyleRule, style, StyleRule } from "@vanilla-extract/css";
+import { deepMerge, isObject } from "pastable";
 import { Node } from "ts-morph";
-import type { GenericConfig } from "./defineProperties";
+import type { GenericConfig, StyleOptions } from "./defineProperties";
 
 const logger = createLogger("box-ex:vanilla-wind:generateStyleFromExtraction");
+
+const cssCombinatorCharacters = new Set([">", "+", "~"]);
+const cssAllowedFirstCharacterSelector = new Set([".", "#", "[", ":", "*"]);
+
+const formatInnerSelector = (innerSelector: string) => {
+    if (innerSelector.endsWith(" &")) {
+        innerSelector = innerSelector.slice(0, -2);
+
+        if (cssCombinatorCharacters.has(innerSelector.slice(-1))) {
+            innerSelector = innerSelector + " *";
+        }
+    }
+
+    if (innerSelector[0] === "&") {
+        innerSelector = innerSelector.slice(1);
+    }
+
+    if (!cssAllowedFirstCharacterSelector.has(innerSelector[0]!)) {
+        innerSelector = " " + innerSelector;
+    }
+
+    return innerSelector;
+};
 
 export function generateStyleFromExtraction(
     name: string,
     extracted: PropNodesMap,
     config: GenericConfig,
-    mode: "atomic" | "grouped" = "atomic"
+    _mode?: "atomic" | "grouped"
 ): {
     toReplace: Map<Node, string>;
     classMap: Map<string, string>;
+    rulesByDebugId: Map<string, StyleRule>;
 } {
     const toReplace = new Map<Node, string>();
     const classMap = new Map<string, string>();
-    const rules = new Map<string, StyleRule>();
+    const rulesByDebugId = new Map<string, StyleRule>();
+    const rulesByBoxNode = new Map<BoxNode, Set<StyleRule>>();
 
     const shorthandNames = new Set(Object.keys(config.shorthands ?? {}));
     const conditionNames = new Set(Object.keys(config.conditions ?? {}));
     const propertyNames = new Set(Object.keys(config.properties ?? {}));
 
-    logger({ name, mode });
+    logger({ name, mode: _mode });
 
     extracted.queryList.forEach((query) => {
         const classNameList = new Set<string>();
         const queryBox = query.box.isList() ? (query.box.value[0]! as BoxNodeMap) : query.box;
+
+        let options: StyleOptions | undefined;
+
+        if (query.box.isList() && query.box.value[1] && query.box.value[1].isMap()) {
+            const optionBoxMap = query.box.value[1];
+            const maybeOptions = unbox(optionBoxMap);
+            if (maybeOptions && isObject(maybeOptions)) {
+                options = maybeOptions as StyleOptions;
+            }
+        }
+
+        const selector = options?.selector;
+        const mode = options?.mode ?? _mode ?? (selector ? "grouped" : "atomic");
+
+        const styleFn = selector
+            ? (rule: GlobalStyleRule & Pick<StyleRule, "selectors">, innerSelector?: string | undefined) => {
+                  if (innerSelector) {
+                      innerSelector = innerSelector.split(",").map(formatInnerSelector).join(", ");
+                  }
+
+                  logger.scoped("style", { global: true, selector, innerSelector, rule });
+                  globalStyle(`${selector}${innerSelector ?? ""}`, rule);
+              }
+            : style;
+
         if (!queryBox.isMap()) return;
 
         const argMap = new Map<string, BoxNode[]>();
@@ -43,7 +93,13 @@ export function generateStyleFromExtraction(
 
         argMap.forEach((nodeList, argName) => {
             const processValue = (boxNode: BoxNode, path: string[] = []) => {
-                // console.log({ name, argName, path });
+                if (argName === "vars" && path.length === 0 && boxNode.isMap()) {
+                    const vars = unbox(boxNode);
+                    if (vars && isObject(vars)) {
+                        rulesByBoxNode.get(queryBox)!.add({ vars: vars as Record<string, string> });
+                        return;
+                    }
+                }
 
                 if (
                     box.isEmptyInitializer(boxNode) ||
@@ -58,6 +114,10 @@ export function generateStyleFromExtraction(
                     if (!isNotNullish(primitive) || typeof primitive === "boolean") return;
 
                     if (path.length === 0) {
+                        if (propertyNames.size > 0 && !propertyNames.has(argName)) {
+                            return;
+                        }
+
                         // use token value if defined / allow any CSS value if not
                         const propValues = config.properties?.[argName as keyof typeof config.properties];
                         const value =
@@ -69,34 +129,54 @@ export function generateStyleFromExtraction(
                         const rule = { [argName]: value } as StyleRule;
 
                         if (mode === "atomic") {
-                            const className = classMap.get(debugId) ?? style(rule, debugId);
-                            classMap.set(debugId, className);
-                            classNameList.add(className);
+                            const className = classMap.get(debugId) ?? styleFn(rule, debugId);
+                            if (className) {
+                                classMap.set(debugId, className);
+                                classNameList.add(className);
+                            }
                         }
 
-                        rules.set(debugId, rule);
+                        rulesByDebugId.set(debugId, rule);
+                        if (!rulesByBoxNode.has(queryBox)) {
+                            rulesByBoxNode.set(queryBox, new Set());
+                        }
+
+                        rulesByBoxNode.get(queryBox)!.add(rule);
 
                         logger.scoped("style", { literal: true, debugId });
                         return;
                     }
 
-                    const propNames = [];
-                    if (propertyNames.has(argName)) {
+                    const propNames = [] as string[];
+                    // defineProperties({ properties: { ... } })
+                    // only allow defined properties (makes sense right ?)
+                    if (propertyNames.size > 0) {
+                        if (propertyNames.has(argName)) {
+                            propNames.push(argName);
+                        } else {
+                            path.forEach((prop) => {
+                                if (propertyNames.has(prop)) {
+                                    propNames.push(prop);
+                                    return;
+                                }
+
+                                if (shorthandNames.has(prop)) {
+                                    config.shorthands![prop]!.forEach((prop) => propNames.push(prop));
+                                }
+                            });
+                        }
+
+                        if (propNames.length === 0) return;
+                        // defineProperties() or // defineProperties({ conditions: { ... } })
+                        // allow any property
+                    } else if (!conditionNames.has(argName)) {
                         propNames.push(argName);
                     } else {
-                        path.forEach((prop) => {
-                            if (propertyNames.has(prop)) {
-                                propNames.push(prop);
-                                return;
-                            }
-
-                            if (shorthandNames.has(prop)) {
-                                config.shorthands![prop]!.forEach((prop) => propNames.push(prop));
-                            }
-                        });
+                        const propName = path.find((prop) => !conditionNames.has(prop));
+                        if (propName) {
+                            propNames.push(propName);
+                        }
                     }
-
-                    if (propNames.length === 0) return;
 
                     propNames.forEach((propName) => {
                         const propValues = config.properties?.[propName as keyof typeof config.properties];
@@ -174,12 +254,19 @@ export function generateStyleFromExtraction(
                         const debugId = `${name}_${propName}_${conditionPath.join("_")}_${String(primitive)}`;
 
                         if (mode === "atomic") {
-                            const className = classMap.get(debugId) ?? style(rule, debugId);
-                            classMap.set(debugId, className);
-                            classNameList.add(className);
+                            const className = classMap.get(debugId) ?? styleFn(rule, debugId);
+                            if (className) {
+                                classMap.set(debugId, className);
+                                classNameList.add(className);
+                            }
                         }
 
-                        rules.set(debugId, rule);
+                        rulesByDebugId.set(debugId, rule);
+                        if (!rulesByBoxNode.has(queryBox)) {
+                            rulesByBoxNode.set(queryBox, new Set());
+                        }
+
+                        rulesByBoxNode.get(queryBox)!.add(rule);
 
                         logger.scoped("style", { conditional: true, debugId });
                     });
@@ -200,10 +287,10 @@ export function generateStyleFromExtraction(
                         if (isPrimitiveType(literal)) {
                             // TODO
                             // const debugId = `${name}_${argName}_${path.join("_")}_${propName}_${String(literal)}`;
-                            // const className = style({ [argName]: { [path.join("-")]: { [propName]: literal } } }, debugId);
+                            // const className = styleFn({ [argName]: { [path.join("-")]: { [propName]: literal } } }, debugId);
                             // classMap.set(debugId, className);
                             // classNameList.add(className);
-                            // console.log({ name, argName, literal, nestedPath });
+                            console.log({ TODO: true, name, argName, literal, nestedPath });
                             return;
                         }
 
@@ -251,13 +338,53 @@ export function generateStyleFromExtraction(
             });
         });
 
-        if (mode === "grouped") {
-            const merged = deepMerge(Array.from(rules.values()));
-            const grouped = style(merged);
-            logger.scoped("style", { name, grouped });
+        const rules = rulesByBoxNode.get(queryBox)!;
+        logger(rules);
 
-            toReplace.set(queryBox.getNode(), grouped);
-            classMap.set(grouped, grouped);
+        if (mode === "grouped") {
+            // style fn
+            if (!selector) {
+                const merged = deepMerge(Array.from(rules));
+                const grouped = styleFn(merged);
+                logger.scoped("style", { name, grouped });
+
+                if (grouped) {
+                    toReplace.set(queryBox.getNode(), grouped);
+                    classMap.set(grouped, grouped);
+                }
+
+                return;
+            }
+
+            // globalStyle fn
+            const selectors = Array.from(rules);
+            const groupedRuleBySelector: Record<string, StyleRule> = {};
+            const groupedRule: StyleRule = {};
+            selectors.forEach((rule) => {
+                if (rule.selectors) {
+                    const key = Object.keys(rule.selectors)[0];
+                    if (key) {
+                        if (!groupedRuleBySelector[key]) {
+                            groupedRuleBySelector[key] = {};
+                        }
+
+                        Object.assign(groupedRuleBySelector[key]!, rule.selectors[key]);
+                    }
+                } else {
+                    Object.assign(groupedRule, rule);
+                }
+            });
+
+            if (Object.keys(groupedRule).length > 0) {
+                styleFn(groupedRule);
+            }
+
+            Object.entries(groupedRuleBySelector).forEach(([key, rule]) => {
+                styleFn(rule, key);
+            });
+
+            toReplace.set(queryBox.getNode(), "");
+
             return;
         }
 
@@ -267,7 +394,7 @@ export function generateStyleFromExtraction(
         }
     });
 
-    return { toReplace, classMap };
+    return { toReplace, classMap, rulesByDebugId };
 }
 
 type Nullable<T> = T | null | undefined;

@@ -1,5 +1,10 @@
 import type { ConfigConditions, ConfigDynamicProperties, CSSProperties } from "./types";
 
+export type StyleOptions = {
+    mode?: "atomic" | "grouped";
+    selector?: string;
+};
+
 type TProps<DynamicProperties extends ConfigDynamicProperties, Strict extends boolean | undefined> = {
     properties: DynamicProperties;
     strict?: Strict | undefined;
@@ -151,7 +156,13 @@ type AnyPropsAndConditions = AnyProps & AnyConditions;
 type AnyPropsAndConditionsAndShorthands<PropNames> = AnyConditions & AnyPropsAndShorthands<PropNames>;
 type AnyConditionsAndShorthands<PropNames> = AnyConditions & TShorthandsByPropNames<PropNames>;
 
-export type TReturnFn<Props> = (props: Props) => string;
+type WithVars = {
+    vars?: {
+        [key: string]: string;
+    };
+};
+
+export type TReturnFn<Props> = (props: Props & WithVars, options?: StyleOptions) => string;
 export type ThemeProps<ThemeFn extends TReturnFn<any>> = Parameters<ThemeFn>[0];
 export type WithStyledProps<ThemeFn extends TReturnFn<any>> = ThemeProps<ThemeFn> & { _styled?: never };
 
