@@ -1,0 +1,68 @@
+{
+    "name": "@box-extractor/cli",
+    "version": "0.1.0",
+    "bin": {
+        "box-extractor": "./bin.js"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/astahmer/box-extractor.git",
+        "directory": "packages/cli"
+    },
+    "author": "Alexandre Stahmer <alexandre.stahmer@gmail.com>",
+    "scripts": {
+        "test": "vitest",
+        "test:ci": "vitest run",
+        "lint:ts": "tsc --noEmit",
+        "lint": "../../node_modules/.bin/eslint './src/**/*.ts' --cache --format=pretty",
+        "lint:fix": "../../node_modules/.bin/eslint './src/**/*.ts' --cache --format=pretty --fix",
+        "ci": "npm run lint && npm run lint:ts && npm run test:ci",
+        "gen:sample": "./bin.js -i ./tests/sample.ts --functions assignVars -o tests/sample.ts.json"
+    },
+    "license": "ISC",
+    "dependencies": {
+        "@box-extractor/core": "workspace:*",
+        "@molt/command": "^0.6.1",
+        "ts-morph": "^17.0.1",
+        "zod": "^3.19.1"
+    },
+    "devDependencies": {
+        "@box-extractor/vanilla-theme": "workspace:*",
+        "@types/node": "^18.11.9",
+        "prettier": "^2.7.1",
+        "ts-toolbelt": "^9.6.0",
+        "typescript": "4.9.4",
+        "vitest": "^0.25.8"
+    },
+    "preconstruct": {
+        "entrypoints": [
+            "cli.ts"
+        ],
+        "exports": false
+    },
+    "files": [
+        "src",
+        "cli",
+        "dist",
+        "vite-plugin",
+        "esbuild-plugin"
+    ],
+    "keywords": [
+        "box",
+        "extractor",
+        "ast",
+        "static",
+        "prop",
+        "jsx",
+        "tsx",
+        "typescript",
+        "vite",
+        "vanilla-extract",
+        "esbuild",
+        "sprinkles"
+    ],
+    "sideEffects": false,
+    "publishConfig": {
+        "access": "public"
+    }
+}
