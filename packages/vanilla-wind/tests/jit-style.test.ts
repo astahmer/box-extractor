@@ -1,10 +1,10 @@
 import {
     BoxNodesMap,
     ExtractOptions,
-    getBoxLiteralValue,
     FunctionNodesMap,
     QueryFnBox,
     ComponentNodesMap,
+    unbox,
 } from "@box-extractor/core";
 import { extract } from "@box-extractor/core";
 import { Node, Project, SourceFile, ts } from "ts-morph";
@@ -14,6 +14,9 @@ import { endFileScope, setFileScope } from "@vanilla-extract/css/fileScope";
 import { generateStyleFromExtraction } from "../src/generateStyleFromExtraction";
 import { createAdapterContext } from "../src/jit-style";
 import type { GenericConfig } from "../src/defineProperties";
+
+// TODO test with @media
+// https://vanilla-extract.style/documentation/api/style/
 
 const createProject = () => {
     return new Project({
@@ -335,7 +338,7 @@ it("simple CallExpression extract + JIT style + replace call by generated classN
           },
       ]
     `);
-    expect(queryList.map((q) => getBoxLiteralValue(q.box.value[0]))).toMatchInlineSnapshot(`
+    expect(queryList.map((q) => unbox(q.box.value[0]))).toMatchInlineSnapshot(`
       [
           {
               properties: {
@@ -380,7 +383,7 @@ it("simple CallExpression extract + JIT style + replace call by generated classN
         const declaration = from.getParentIfKindOrThrow(ts.SyntaxKind.VariableDeclaration);
         const nameNode = declaration.getNameNode();
         const name = nameNode.getText();
-        const value = getBoxLiteralValue(query.box.value[0]!);
+        const value = unbox(query.box.value[0]!);
         configByName.set(name, { query, config: value as GenericConfig });
     });
 
@@ -481,7 +484,6 @@ it("simple CallExpression extract + JIT style + replace call by generated classN
       {
           minimalSprinkles_color_brand: "minimalSprinkles_color_brand__1rxundp0",
           "minimalSprinkles_color_red.100": "minimalSprinkles_color_red.100__1rxundp1",
-          minimalSprinkles_display_flex: "minimalSprinkles_display_flex__1rxundp2",
       }
     `);
 
@@ -541,8 +543,8 @@ it("simple CallExpression extract + JIT style + replace call by generated classN
     const twStyles = generateStyleFromExtraction("tw", tw, configByName.get("tw")!.config);
     expect(twStyles.classMap).toMatchInlineSnapshot(`
       {
-          tw_padding_24: "tw_padding_24__1rxundp3",
-          tw_borderRadius_lg: "tw_borderRadius_lg__1rxundp4",
+          tw_padding_24: "tw_padding_24__1rxundp2",
+          tw_borderRadius_lg: "tw_borderRadius_lg__1rxundp3",
       }
     `);
     twStyles.toReplace.forEach((className, node) => node.replaceWithText(`"${className}"`));
@@ -555,13 +557,10 @@ it("simple CallExpression extract + JIT style + replace call by generated classN
       .minimalSprinkles_color_red\\.100__1rxundp1 {
         color: red.100;
       }
-      .minimalSprinkles_display_flex__1rxundp2 {
-        display: flex;
-      }
-      .tw_padding_24__1rxundp3 {
+      .tw_padding_24__1rxundp2 {
         padding: 24px;
       }
-      .tw_borderRadius_lg__1rxundp4 {
+      .tw_borderRadius_lg__1rxundp3 {
         border-radius: 0.5rem;
       }"
     `);
@@ -611,7 +610,7 @@ it("simple CallExpression extract + JIT style + replace call by generated classN
 
           export const MinimalSprinklesDemo = () => {
               return <div className={"minimalSprinkles_color_brand__1rxundp0"}>
-                  <div className={["minimalSprinkles_color_red.100__1rxundp1 minimalSprinkles_display_flex__1rxundp2", "tw_padding_24__1rxundp3 tw_borderRadius_lg__1rxundp4"].join(' ')}></div>
+                  <div className={["minimalSprinkles_color_red.100__1rxundp1", "tw_padding_24__1rxundp2 tw_borderRadius_lg__1rxundp3"].join(' ')}></div>
               </div>;
           };"
     `);
@@ -752,7 +751,7 @@ it("will generate multiple styles with nested conditions", () => {
         const declaration = from.getParentIfKindOrThrow(ts.SyntaxKind.VariableDeclaration);
         const nameNode = declaration.getNameNode();
         const name = nameNode.getText();
-        configByName.set(name, { query, config: getBoxLiteralValue(query.box.value[0]) as GenericConfig });
+        configByName.set(name, { query, config: unbox(query.box.value[0]) as GenericConfig });
     });
 
     const ctx = createAdapterContext("debug");
@@ -967,7 +966,7 @@ it("will generate multiple styles with nested conditions - grouped", () => {
         const declaration = from.getParentIfKindOrThrow(ts.SyntaxKind.VariableDeclaration);
         const nameNode = declaration.getNameNode();
         const name = nameNode.getText();
-        configByName.set(name, { query, config: getBoxLiteralValue(query.box.value[0]) as GenericConfig });
+        configByName.set(name, { query, config: unbox(query.box.value[0]) as GenericConfig });
     });
 
     const ctx = createAdapterContext("debug");
@@ -1153,7 +1152,7 @@ it("minimal example with <Box /> component", () => {
         const declaration = from.getParentIfKindOrThrow(ts.SyntaxKind.VariableDeclaration);
         const nameNode = declaration.getNameNode();
         const name = nameNode.getText();
-        configByName.set(name, { query, config: getBoxLiteralValue(query.box.value[0]) as GenericConfig });
+        configByName.set(name, { query, config: unbox(query.box.value[0]) as GenericConfig });
     });
 
     const ctx = createAdapterContext("debug");
@@ -1301,6 +1300,236 @@ it("minimal example with <Box /> component", () => {
       }
       .Box_borderRadius_lg__1rxundp3 {
         border-radius: 0.5rem;
+      }"
+    `);
+
+    endFileScope();
+    ctx.removeAdapter();
+});
+
+it("minimal example with global style", () => {
+    // css({ fontSize: "24px", backgroundColor: "green" });
+
+    const sourceFile = project.createSourceFile(
+        "global-style.tsx",
+        `
+        const css = defineProperties({
+            conditions: {
+                small: { selector: ".small &" },
+                large: { selector: ".large &" },
+                hover: { selector: "&:hover" },
+                navItem: { selector: 'nav li > &' },
+                hoverNotActive: { selector: '&:hover:not(:active)' }
+            }
+          });
+
+        const localClassName = css({
+            fontSize: { small: "8px", large: "20px" },
+            navItem: { backgroundColor: "red", fontSize: "16px" },
+            backgroundColor: "green",
+            display: "flex",
+            color: "blue",
+        });
+        const localClassNameGrouped = css({
+            fontSize: { small: "8px", large: "20px" },
+            navItem: { backgroundColor: "red", fontSize: "16px" },
+            backgroundColor: "green",
+            display: "flex",
+            color: "blue",
+        }, { mode: "grouped" });
+
+
+        // globalStyle
+        css({
+            fontSize: { small: "8px", large: "20px" },
+            navItem: { backgroundColor: "red", fontSize: "16px" },
+            backgroundColor: "green",
+            display: "flex",
+            color: "blue",
+        }, { selector: ":root" });
+
+        css({ display: "grid", fontWeight: "bold" }, { selector: "body" } );
+
+        const darkVars = {
+            "var(--color-mainBg__1du39r70)": "#39539b",
+            "var(--color-secondaryBg__1du39r71)": "#324989",
+            "var(--color-text__1du39r72)": "#63b3ed",
+            "var(--color-bg__1du39r73)": "#8297d1",
+            "var(--color-bgSecondary__1du39r74)": "#2b3f76",
+            "var(--color-bgHover__1du39r75)": "#324989"
+        } as const;
+
+        css({ colorScheme: "dark", vars: darkVars }, { selector: ".dark" } );
+        const darkClassName = css({ colorScheme: "dark", vars: darkVars });
+    `
+    );
+
+    const extractDefs = extractFromCode(sourceFile, { functions: ["defineProperties"] });
+    const queryList = (extractDefs.get("defineProperties") as FunctionNodesMap).queryList;
+
+    const configByName = new Map<string, { query: QueryFnBox; config: GenericConfig }>();
+    queryList.forEach((query) => {
+        const from = query.fromNode();
+        const declaration = from.getParentIfKindOrThrow(ts.SyntaxKind.VariableDeclaration);
+        const nameNode = declaration.getNameNode();
+        const name = nameNode.getText();
+        configByName.set(name, { query, config: unbox(query.box.value[0]) as GenericConfig });
+    });
+
+    const ctx = createAdapterContext("debug");
+    ctx.setAdapter();
+    setFileScope("test/jit-style.test.ts");
+
+    const name = "css";
+    const extractResult = extractFromCode(sourceFile, { functions: [name] });
+    const extracted = extractResult.get(name)! as ComponentNodesMap;
+
+    console.log({ extractDefs, extractResult, configByName });
+    const conf = configByName.get("css")!;
+    const globalStyles = generateStyleFromExtraction(name, extracted, conf.config);
+
+    expect(globalStyles.classMap.size).toMatchInlineSnapshot("9");
+    expect(globalStyles.classMap).toMatchInlineSnapshot(`
+      {
+          css_fontSize_small_8px: "css_fontSize_small_8px__1rxundp0",
+          css_fontSize_large_20px: "css_fontSize_large_20px__1rxundp1",
+          css_backgroundColor_navItem_red: "css_backgroundColor_navItem_red__1rxundp2",
+          css_fontSize_navItem_16px: "css_fontSize_navItem_16px__1rxundp3",
+          css_backgroundColor_green: "css_backgroundColor_green__1rxundp4",
+          css_display_flex: "css_display_flex__1rxundp5",
+          css_color_blue: "css_color_blue__1rxundp6",
+          _1rxundp7: "_1rxundp7",
+          css_colorScheme_dark: "css_colorScheme_dark__1rxundp8",
+      }
+    `);
+
+    const css = ctx.getCss();
+    globalStyles.toReplace.forEach((className, node) => {
+        // console.log({ node: node.getText(), kind: node.getKindName(), className });
+        if (Node.isJsxSelfClosingElement(node) || Node.isJsxOpeningElement(node)) {
+            node.addAttribute({ name: "_styled", initializer: `"${className}"` });
+        } else if (Node.isJsxAttribute(node)) {
+            node.remove();
+        } else if (Node.isJsxSpreadAttribute(node)) {
+            // TODO only remove the props needed rather than the whole spread, this is a bit too aggressive
+            // also, remove the spread if it's empty
+            node.remove();
+        } else if (Node.isCallExpression(node) && !className) {
+            const parent = node.getParent();
+            if (Node.isExpressionStatement(parent)) {
+                parent.remove();
+            }
+        }
+    });
+
+    expect(sourceFile.getFullText()).toMatchInlineSnapshot(`
+      "
+              const css = defineProperties({
+                  conditions: {
+                      small: { selector: ".small &" },
+                      large: { selector: ".large &" },
+                      hover: { selector: "&:hover" },
+                      navItem: { selector: 'nav li > &' },
+                      hoverNotActive: { selector: '&:hover:not(:active)' }
+                  }
+                });
+
+              const localClassName = css({
+                  fontSize: { small: "8px", large: "20px" },
+                  navItem: { backgroundColor: "red", fontSize: "16px" },
+                  backgroundColor: "green",
+                  display: "flex",
+                  color: "blue",
+              });
+              const localClassNameGrouped = css({
+                  fontSize: { small: "8px", large: "20px" },
+                  navItem: { backgroundColor: "red", fontSize: "16px" },
+                  backgroundColor: "green",
+                  display: "flex",
+                  color: "blue",
+              }, { mode: "grouped" });
+
+
+              // globalStyle
+              const darkVars = {
+                  "var(--color-mainBg__1du39r70)": "#39539b",
+                  "var(--color-secondaryBg__1du39r71)": "#324989",
+                  "var(--color-text__1du39r72)": "#63b3ed",
+                  "var(--color-bg__1du39r73)": "#8297d1",
+                  "var(--color-bgSecondary__1du39r74)": "#2b3f76",
+                  "var(--color-bgHover__1du39r75)": "#324989"
+              } as const;
+              const darkClassName = css({ colorScheme: "dark", vars: darkVars });
+          "
+    `);
+
+    expect(css.cssMap.get("test/jit-style.test.ts")).toMatchInlineSnapshot(`
+      ".small .css_fontSize_small_8px__1rxundp0 {
+        font-size: 8px;
+      }
+      .large .css_fontSize_large_20px__1rxundp1 {
+        font-size: 20px;
+      }
+      nav li > .css_backgroundColor_navItem_red__1rxundp2 {
+        background-color: red;
+      }
+      nav li > .css_fontSize_navItem_16px__1rxundp3 {
+        font-size: 16px;
+      }
+      .css_backgroundColor_green__1rxundp4 {
+        background-color: green;
+      }
+      .css_display_flex__1rxundp5 {
+        display: flex;
+      }
+      .css_color_blue__1rxundp6 {
+        color: blue;
+      }
+      ._1rxundp7 {
+        background-color: green;
+        display: flex;
+        color: blue;
+      }
+      .small ._1rxundp7 {
+        font-size: 8px;
+      }
+      .large ._1rxundp7 {
+        font-size: 20px;
+      }
+      nav li > ._1rxundp7 {
+        background-color: red;
+        font-size: 16px;
+      }
+      :root {
+        background-color: green;
+        display: flex;
+        color: blue;
+      }
+      :root.small {
+        font-size: 8px;
+      }
+      :root.large {
+        font-size: 20px;
+      }
+      :root nav li > * {
+        background-color: red;
+        font-size: 16px;
+      }
+      body {
+        display: grid;
+        font-weight: bold;
+      }
+      .dark {
+        --color-mainBg__1du39r70: #39539b;
+        --color-secondaryBg__1du39r71: #324989;
+        --color-text__1du39r72: #63b3ed;
+        --color-bg__1du39r73: #8297d1;
+        --color-bgSecondary__1du39r74: #2b3f76;
+        --color-bgHover__1du39r75: #324989;
+        color-scheme: dark;
+      }
+      .css_colorScheme_dark__1rxundp8 {
+        color-scheme: dark;
       }"
     `);
 

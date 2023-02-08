@@ -40,7 +40,7 @@ export const extractCreateTheme = (project: Project, code: string, validId: stri
 
     logger("create-theme", "scanning", { validId });
 
-    const extracted = extractFunctionFrom<CreateThemeArguments | null>(sourceFile, "createTheme", (boxNode, name) => {
+    const extracted = extractFunctionFrom<CreateThemeArguments | null>(sourceFile, "createTheme", (boxNode) => {
         logger.scoped("get-result", boxNode);
 
         const getTheme = (boxNode: BoxNodeList) => {
@@ -138,7 +138,7 @@ export const extractCreateTheme = (project: Project, code: string, validId: stri
         // console.log({ name, theme });
 
         toReplace.set(fromNode, `${JSON.stringify(theme, null, 4)} as const`);
-        logger.scoped("create-theme", { name, theme });
+        logger({ name, theme });
     });
 
     toReplace.forEach((value, node) => {
@@ -156,7 +156,7 @@ export const extractCreateTheme = (project: Project, code: string, validId: stri
     endFileScope();
     ctx.removeAdapter();
 
-    return { updated, content, importStatement, css, absoluteId };
+    return { updated, content, importStatement, css, absoluteId, themeByName };
 };
 
 const createThemeByKind = (args: CreateThemeArguments) => {
