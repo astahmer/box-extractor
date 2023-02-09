@@ -1,19 +1,21 @@
 import {
     BoxNodesMap,
+    ComponentNodesMap,
+    extract,
     ExtractOptions,
     FunctionNodesMap,
     QueryFnBox,
-    ComponentNodesMap,
     unbox,
 } from "@box-extractor/core";
-import { extract } from "@box-extractor/core";
-import { Node, Project, SourceFile, ts } from "ts-morph";
+import { Project, SourceFile, ts } from "ts-morph";
 import { afterEach, expect, it } from "vitest";
 
 import { endFileScope, setFileScope } from "@vanilla-extract/css/fileScope";
+import MagicString from "magic-string";
+import type { GenericConfig } from "../src/defineProperties";
 import { generateStyleFromExtraction } from "../src/generateStyleFromExtraction";
 import { createAdapterContext } from "../src/jit-style";
-import type { GenericConfig } from "../src/defineProperties";
+import { transformStyleNodes } from "../src/transformStyleNodes";
 
 // TODO test with @media
 // https://vanilla-extract.style/documentation/api/style/
@@ -487,7 +489,9 @@ it("simple CallExpression extract + JIT style + replace call by generated classN
       }
     `);
 
-    minimalStyles.toReplace.forEach((className, node) => node.replaceWithText(`"${className}"`));
+    const magicStr = new MagicString(sourceFile.getFullText());
+    const generateStyleResults = new Set<ReturnType<typeof generateStyleFromExtraction>>();
+    generateStyleResults.add(minimalStyles);
 
     const tw = extracted.get("tw")! as FunctionNodesMap;
     expect(tw.queryList).toMatchInlineSnapshot(`
@@ -547,7 +551,7 @@ it("simple CallExpression extract + JIT style + replace call by generated classN
           tw_borderRadius_lg: "tw_borderRadius_lg__1rxundp3",
       }
     `);
-    twStyles.toReplace.forEach((className, node) => node.replaceWithText(`"${className}"`));
+    generateStyleResults.add(twStyles);
 
     const { cssMap } = ctx.getCss();
     expect(cssMap.get("test/jit-style.test.ts")).toMatchInlineSnapshot(`
@@ -565,7 +569,9 @@ it("simple CallExpression extract + JIT style + replace call by generated classN
       }"
     `);
 
-    expect(sourceFile.getFullText()).toMatchInlineSnapshot(`
+    transformStyleNodes(generateStyleResults, magicStr);
+
+    expect(magicStr.toString()).toMatchInlineSnapshot(`
       "
           const minimalSprinkles = defineProperties({
               properties: {
@@ -762,6 +768,9 @@ it("will generate multiple styles with nested conditions", () => {
     const tw = extracted.get("tw")! as FunctionNodesMap;
     const twStyles = generateStyleFromExtraction("tw", tw, configByName.get("tw")!.config);
 
+    const magicStr = new MagicString(sourceFile.getFullText());
+    const generateStyleResults = new Set<ReturnType<typeof generateStyleFromExtraction>>();
+
     expect(twStyles.classMap.size).toMatchInlineSnapshot("22");
     expect(twStyles.classMap).toMatchInlineSnapshot(`
       {
@@ -791,9 +800,10 @@ it("will generate multiple styles with nested conditions", () => {
       }
     `);
 
-    twStyles.toReplace.forEach((className, node) => node.replaceWithText(`"${className}"`));
+    generateStyleResults.add(twStyles);
+    transformStyleNodes(generateStyleResults, magicStr);
 
-    expect(sourceFile.getFullText()).toMatchInlineSnapshot(`
+    expect(magicStr.toString()).toMatchInlineSnapshot(`
       "
       const tokens = {
           colors: {
@@ -977,6 +987,9 @@ it("will generate multiple styles with nested conditions - grouped", () => {
     const tw = extracted.get("tw")! as FunctionNodesMap;
     const twStyles = generateStyleFromExtraction("tw", tw, configByName.get("tw")!.config, "grouped");
 
+    const magicStr = new MagicString(sourceFile.getFullText());
+    const generateStyleResults = new Set<ReturnType<typeof generateStyleFromExtraction>>();
+
     expect(twStyles.classMap.size).toMatchInlineSnapshot("1");
     expect(twStyles.classMap).toMatchInlineSnapshot(`
       {
@@ -984,9 +997,10 @@ it("will generate multiple styles with nested conditions - grouped", () => {
       }
     `);
 
-    twStyles.toReplace.forEach((className, node) => node.replaceWithText(`"${className}"`));
+    generateStyleResults.add(twStyles);
+    transformStyleNodes(generateStyleResults, magicStr);
 
-    expect(sourceFile.getFullText()).toMatchInlineSnapshot(`
+    expect(magicStr.toString()).toMatchInlineSnapshot(`
       "
       const tokens = {
           colors: {
@@ -1166,6 +1180,9 @@ it("minimal example with <Box /> component", () => {
     const conf = configByName.get("tw")!;
     const boxStyles = generateStyleFromExtraction(name, extracted, conf.config);
 
+    const magicStr = new MagicString(sourceFile.getFullText());
+    const generateStyleResults = new Set<ReturnType<typeof generateStyleFromExtraction>>();
+
     expect(boxStyles.classMap.size).toMatchInlineSnapshot("4");
     expect(boxStyles.classMap).toMatchInlineSnapshot(`
       {
@@ -1176,20 +1193,10 @@ it("minimal example with <Box /> component", () => {
       }
     `);
 
-    boxStyles.toReplace.forEach((className, node) => {
-        // console.log({ node: node.getText(), kind: node.getKindName(), className });
-        if (Node.isJsxSelfClosingElement(node) || Node.isJsxOpeningElement(node)) {
-            node.addAttribute({ name: "_styled", initializer: `"${className}"` });
-        } else if (Node.isJsxAttribute(node)) {
-            node.remove();
-        } else if (Node.isJsxSpreadAttribute(node)) {
-            // TODO only remove the props needed rather than the whole spread, this is a bit too aggressive
-            // also, remove the spread if it's empty
-            node.remove();
-        }
-    });
+    generateStyleResults.add(boxStyles);
+    transformStyleNodes(generateStyleResults, magicStr);
 
-    expect(sourceFile.getFullText()).toMatchInlineSnapshot(`
+    expect(magicStr.toString()).toMatchInlineSnapshot(`
       "
           const tokens = {
           colors: {
@@ -1404,25 +1411,13 @@ it("minimal example with global style", () => {
     `);
 
     const css = ctx.getCss();
-    globalStyles.toReplace.forEach((className, node) => {
-        // console.log({ node: node.getText(), kind: node.getKindName(), className });
-        if (Node.isJsxSelfClosingElement(node) || Node.isJsxOpeningElement(node)) {
-            node.addAttribute({ name: "_styled", initializer: `"${className}"` });
-        } else if (Node.isJsxAttribute(node)) {
-            node.remove();
-        } else if (Node.isJsxSpreadAttribute(node)) {
-            // TODO only remove the props needed rather than the whole spread, this is a bit too aggressive
-            // also, remove the spread if it's empty
-            node.remove();
-        } else if (Node.isCallExpression(node) && !className) {
-            const parent = node.getParent();
-            if (Node.isExpressionStatement(parent)) {
-                parent.remove();
-            }
-        }
-    });
 
-    expect(sourceFile.getFullText()).toMatchInlineSnapshot(`
+    const magicStr = new MagicString(sourceFile.getFullText());
+    const generateStyleResults = new Set<ReturnType<typeof generateStyleFromExtraction>>();
+    generateStyleResults.add(globalStyles);
+    transformStyleNodes(generateStyleResults, magicStr);
+
+    expect(magicStr.toString()).toMatchInlineSnapshot(`
       "
               const css = defineProperties({
                   conditions: {
@@ -1434,23 +1429,9 @@ it("minimal example with global style", () => {
                   }
                 });
 
-              const localClassName = css({
-                  fontSize: { small: "8px", large: "20px" },
-                  navItem: { backgroundColor: "red", fontSize: "16px" },
-                  backgroundColor: "green",
-                  display: "flex",
-                  color: "blue",
-              });
-              const localClassNameGrouped = css({
-                  fontSize: { small: "8px", large: "20px" },
-                  navItem: { backgroundColor: "red", fontSize: "16px" },
-                  backgroundColor: "green",
-                  display: "flex",
-                  color: "blue",
-              }, { mode: "grouped" });
+              const localClassName = "css_fontSize_small_8px__1rxundp0 css_fontSize_large_20px__1rxundp1 css_backgroundColor_navItem_red__1rxundp2 css_fontSize_navItem_16px__1rxundp3 css_backgroundColor_green__1rxundp4 css_display_flex__1rxundp5 css_color_blue__1rxundp6";
+              const localClassNameGrouped = "_1rxundp7";;;
 
-
-              // globalStyle
               const darkVars = {
                   "var(--color-mainBg__1du39r70)": "#39539b",
                   "var(--color-secondaryBg__1du39r71)": "#324989",
@@ -1458,8 +1439,8 @@ it("minimal example with global style", () => {
                   "var(--color-bg__1du39r73)": "#8297d1",
                   "var(--color-bgSecondary__1du39r74)": "#2b3f76",
                   "var(--color-bgHover__1du39r75)": "#324989"
-              } as const;
-              const darkClassName = css({ colorScheme: "dark", vars: darkVars });
+              } as const;;
+              const darkClassName = "css_colorScheme_dark__1rxundp8";
           "
     `);
 
