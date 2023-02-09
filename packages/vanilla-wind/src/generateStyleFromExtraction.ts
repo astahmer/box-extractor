@@ -1,6 +1,6 @@
 import { box, BoxNode, BoxNodeMap, isPrimitiveType, LiteralValue, PropNodesMap, unbox } from "@box-extractor/core";
 import { createLogger } from "@box-extractor/logger";
-import { globalStyle, GlobalStyleRule, style, StyleRule } from "@vanilla-extract/css";
+import { ComplexStyleRule, globalStyle, GlobalStyleRule, style, StyleRule } from "@vanilla-extract/css";
 import { deepMerge, isObject } from "pastable";
 import { Node } from "ts-morph";
 import type { GenericConfig, StyleOptions } from "./defineProperties";
@@ -40,6 +40,7 @@ export function generateStyleFromExtraction(
     toRemove: Set<Node>;
     classMap: Map<string, string>;
     rulesByDebugId: Map<string, StyleRule>;
+    allRules: Set<ComplexStyleRule | GlobalStyleRule>;
 } {
     const toReplace = new Map<Node, string>();
     const toRemove = new Set<Node>();
@@ -47,6 +48,7 @@ export function generateStyleFromExtraction(
     const classMap = new Map<string, string>();
     const rulesByDebugId = new Map<string, StyleRule>();
     const rulesByBoxNode = new Map<BoxNode, Set<StyleRule>>();
+    const allRules = new Set<ComplexStyleRule | GlobalStyleRule>();
 
     const shorthandNames = new Set(Object.keys(config.shorthands ?? {}));
     const conditionNames = new Set(Object.keys(config.conditions ?? {}));
@@ -55,8 +57,8 @@ export function generateStyleFromExtraction(
     logger({ name, mode: _mode });
 
     extracted.queryList.forEach((query) => {
-        const classNameList = new Set<string>();
         const queryBox = query.box.isList() ? (query.box.value[0]! as BoxNodeMap) : query.box;
+        if (!queryBox.isMap()) return;
 
         let options: StyleOptions | undefined;
 
@@ -70,6 +72,7 @@ export function generateStyleFromExtraction(
 
         const selector = options?.selector;
         const mode = options?.mode ?? _mode ?? (selector ? "grouped" : "atomic");
+        const classNameList = new Set<string>();
 
         const styleFn = selector
             ? (rule: GlobalStyleRule & Pick<StyleRule, "selectors">, innerSelector?: string | undefined) => {
@@ -79,10 +82,22 @@ export function generateStyleFromExtraction(
 
                   logger.scoped("style", { global: true, selector, innerSelector, rule });
                   globalStyle(`${selector}${innerSelector ?? ""}`, rule);
+                  allRules.add(rule);
               }
-            : style;
+            : (rule: ComplexStyleRule, debugId?: string) => {
+                  if (debugId && classMap.has(debugId)) return;
 
-        if (!queryBox.isMap()) return;
+                  const className = style(rule, debugId);
+                  logger.scoped("style", { className, rule, debugId });
+                  allRules.add(rule);
+                  classNameList.add(className);
+
+                  if (debugId) {
+                      classMap.set(debugId, className);
+                  }
+
+                  return className;
+              };
 
         const argMap = new Map<string, BoxNode[]>();
         shorthandNames.forEach((shorthand) => {
@@ -132,11 +147,7 @@ export function generateStyleFromExtraction(
                         const rule = { [argName]: value } as StyleRule;
 
                         if (mode === "atomic") {
-                            const className = classMap.get(debugId) ?? styleFn(rule, debugId);
-                            if (className) {
-                                classMap.set(debugId, className);
-                                classNameList.add(className);
-                            }
+                            styleFn(rule, debugId);
                         }
 
                         rulesByDebugId.set(debugId, rule);
@@ -257,11 +268,7 @@ export function generateStyleFromExtraction(
                         const debugId = `${name}_${propName}_${conditionPath.join("_")}_${String(primitive)}`;
 
                         if (mode === "atomic") {
-                            const className = classMap.get(debugId) ?? styleFn(rule, debugId);
-                            if (className) {
-                                classMap.set(debugId, className);
-                                classNameList.add(className);
-                            }
+                            styleFn(rule, debugId);
                         }
 
                         rulesByDebugId.set(debugId, rule);
@@ -403,7 +410,7 @@ export function generateStyleFromExtraction(
         }
     });
 
-    return { toReplace, toRemove, classMap, rulesByDebugId };
+    return { toReplace, toRemove, classMap, rulesByDebugId, allRules };
 }
 
 type Nullable<T> = T | null | undefined;
