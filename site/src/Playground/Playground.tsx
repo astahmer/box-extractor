@@ -30,6 +30,12 @@ export const Playground = () => {
                             justifyContent="center"
                             overflow="hidden"
                         >
+                            {/* <Box
+                                boxSize="100%"
+                                as="textarea"
+                                onChange={(e) => send({ type: "Update input", value: e.target.value })}
+                                onClick={() => send({ type: "Editor Loaded" })}
+                            /> */}
                             <Editor
                                 language="typescript"
                                 onChange={(content) => send({ type: "Update input", value: content ?? "" })}
