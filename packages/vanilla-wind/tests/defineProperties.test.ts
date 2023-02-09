@@ -4,10 +4,6 @@ import { Project, SourceFile, ts } from "ts-morph";
 import { afterEach, expect, it } from "vitest";
 import { defineProperties } from "../src/defineProperties";
 
-type Nullable<T> = T | null | undefined;
-
-export const isNotNullish = <T>(element: Nullable<T>): element is T => element != null;
-
 const createProject = () => {
     return new Project({
         compilerOptions: {
