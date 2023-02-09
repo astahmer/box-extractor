@@ -20,7 +20,7 @@ import { match } from "ts-pattern";
 import type { GenericConfig } from "./defineProperties";
 import { createAdapterContext, generateStyleFromExtraction } from "./jit";
 import { extractDefinePropertiesConfig } from "./extractDefinePropertiesConfig";
-import { extractCreateTheme } from "./extractCreateTheme";
+import { findTypeReferenceUsage } from "./findTypeReferenceUsage";
 import {
     hasStyledFn,
     hasStyledComponent,
@@ -406,39 +406,16 @@ export const vanillaWind = (
                     scriptKind: ts.ScriptKind.TSX,
                 });
 
-                const identifierList = query<Identifier>(
-                    sourceFile,
-                    'TypeReference:has(Identifier[name="WithStyledProps"]) > TypeQuery > Identifier'
-                );
-                const foundComponentNameList = new Set<string>();
-                identifierList.forEach((identifier) => {
-                    const component = getAncestorComponent(identifier);
-                    if (!component) return null;
+                const foundComponentsWithTheirThemeName = findTypeReferenceUsage(sourceFile, "WithStyledProps");
 
-                    const [themeNameStr, componentNameStr] = [
-                        getNameLiteral(identifier, []),
-                        getNameLiteral(component, []),
-                    ];
-                    if (!themeNameStr || !componentNameStr) return null;
-
-                    const themeName = unquote(themeNameStr);
-                    const componentName = unquote(componentNameStr);
-
-                    if (themeNameByComponentName.get(componentName) !== themeName) {
-                        foundComponentNameList.add(componentName);
-                    }
-
+                if (foundComponentsWithTheirThemeName.size > 0) {
+                    foundComponentsWithTheirThemeName.forEach((themeName, componentName) => {
                     themeNameByComponentName.set(componentName, themeName);
-                    logger.scoped("root-component-finder", { themeName, componentName });
                 });
 
-                if (foundComponentNameList.size > 0) {
-                    logger.scoped(
-                        "root-component-finder",
-                        "new components found: ",
-                        Array.from(foundComponentNameList)
-                    );
-                    await onStyledFound(Array.from(foundComponentNameList), "component");
+                    const names = Array.from(foundComponentsWithTheirThemeName.keys());
+                    logger.scoped("root-component-finder", "new components found: ", names);
+                    await onStyledFound(names, "component");
                 }
             },
             // watchChange(id) {
