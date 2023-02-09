@@ -102,6 +102,8 @@ export const vanillaWind = (
 
         const timestamp = Date.now();
         const promises = [] as Array<Promise<void>>;
+        const toInvalidate = new Set<ModuleNode>();
+
         transformedMap.forEach((code, id) => {
             const [mod] = Array.from(moduleGraph.getModulesByFile(id) ?? []);
             if (!mod) return;
@@ -111,20 +113,19 @@ export const vanillaWind = (
                 logger.scoped("on-found", { name, hasStyledKind, id });
                 if (!hasStyledKind) return;
 
+                toInvalidate.add(mod);
+                mod.importers.forEach((importer) => {
+                    toInvalidate.add(importer);
+                });
+            });
+        });
+
+        toInvalidate.forEach((mod) => {
+            logger("onStyledFound - invalidateModule", { id: mod.id });
                 moduleGraph.invalidateModule(mod);
                 // Vite uses this timestamp to add `?t=` query string automatically for HMR.
                 mod.lastHMRTimestamp = (mod as any).lastInvalidationTimestamp || timestamp;
                 promises.push(server.reloadModule(mod));
-                logger("onStyledFound - reloadModule", { id: mod.id });
-
-                mod.importers.forEach((importer) => {
-                    moduleGraph.invalidateModule(importer);
-                    // Vite uses this timestamp to add `?t=` query string automatically for HMR.
-                    importer.lastHMRTimestamp = (importer as any).lastInvalidationTimestamp || timestamp;
-                    promises.push(server.reloadModule(importer));
-                    logger("onStyledFound - reloadModule", { id: mod.id });
-                });
-            });
         });
 
         return Promise.all(promises);
