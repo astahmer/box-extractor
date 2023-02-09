@@ -37,10 +37,13 @@ export function generateStyleFromExtraction(
     _mode?: "atomic" | "grouped"
 ): {
     toReplace: Map<Node, string>;
+    toRemove: Set<Node>;
     classMap: Map<string, string>;
     rulesByDebugId: Map<string, StyleRule>;
 } {
     const toReplace = new Map<Node, string>();
+    const toRemove = new Set<Node>();
+
     const classMap = new Map<string, string>();
     const rulesByDebugId = new Map<string, StyleRule>();
     const rulesByBoxNode = new Map<BoxNode, Set<StyleRule>>();
@@ -326,13 +329,19 @@ export function generateStyleFromExtraction(
                 if (extracted.kind === "component") {
                     const node = box.getNode();
                     if (Node.isJsxSpreadAttribute(node)) {
-                        toReplace.set(node, "");
+                        // TODO only remove the props needed rather than the whole spread, this is a bit too aggressive
+                        toRemove.add(node);
                         return;
                     }
 
                     const jsxAttribute = box.getStack()[0];
                     if (Node.isJsxAttribute(jsxAttribute)) {
-                        toReplace.set(jsxAttribute, "");
+                        // don't remove anything if no known possible prop name were specified
+                        if (propertyNames.size === 0 && shorthandNames.size === 0 && conditionNames.size === 0) return;
+
+                        if (propertyNames.has(argName) || shorthandNames.has(argName) || conditionNames.has(argName)) {
+                            toRemove.add(jsxAttribute);
+                        }
                     }
                 }
             });
@@ -383,7 +392,7 @@ export function generateStyleFromExtraction(
                 styleFn(rule, key);
             });
 
-            toReplace.set(queryBox.getNode(), "");
+            toRemove.add(queryBox.getNode());
 
             return;
         }
@@ -394,7 +403,7 @@ export function generateStyleFromExtraction(
         }
     });
 
-    return { toReplace, classMap, rulesByDebugId };
+    return { toReplace, toRemove, classMap, rulesByDebugId };
 }
 
 type Nullable<T> = T | null | undefined;
