@@ -16,6 +16,12 @@ const main = async () => {
     }).parse();
     console.log(args);
 
+    if (!args.components && !args.functions) {
+        console.error("please specify at least one component or function");
+        // eslint-disable-next-line unicorn/no-process-exit
+        process.exit(1);
+    }
+
     const root = process.cwd();
     console.log("init project", { root });
     console.time("init project");
