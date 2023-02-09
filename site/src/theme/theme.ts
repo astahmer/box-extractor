@@ -6,19 +6,18 @@ const colorModeVars = createTheme("contract", {
     color: {
         mainBg: "",
         secondaryBg: "",
-        // text: "",
+        text: "",
         bg: "",
         bgSecondary: "",
         bgHover: "",
     },
 });
 
-// TODO tokens = unresolvable
 const lightVars = assignVars(colorModeVars, {
     color: {
         mainBg: primary["200"],
         secondaryBg: primary["300"],
-        // text: tokens.colors.blue["400"],
+        text: tokens.colors.blue["400"],
         bg: primary["600"],
         bgSecondary: primary["400"],
         bgHover: primary["100"],
@@ -29,14 +28,12 @@ const darkVars = assignVars(colorModeVars, {
     color: {
         mainBg: primary["600"],
         secondaryBg: primary["700"],
-        // text: tokens.colors.blue["300"],
+        text: tokens.colors.blue["300"],
         bg: primary["300"],
         bgSecondary: primary["800"],
         bgHover: primary["700"],
     },
 });
-
-console.log({ theme: true, colorModeVars, lightVars, darkVars, primary });
 
 const space = tokens.space as Record<keyof typeof tokens.space | `${keyof typeof tokens.space}`, string>;
 const sizes = tokens.sizes as Record<keyof typeof tokens.sizes | `${keyof typeof tokens.sizes}`, string>;
@@ -373,21 +370,16 @@ export const css = defineProperties({
 const lightMode = "light";
 const darkMode = "dark";
 
+// global css
 css(
     {
         background: `linear-gradient(to bottom, ${colorModeVars.color.mainBg} 20%, ${colorModeVars.color.secondaryBg})`,
         backgroundAttachment: "fixed",
         color: colorModeVars.color.text,
-        // color: colorModeVars.color.text,
     },
     { selector: "body" }
 );
 
-// console.log({ colorModeVars, darkThemeVars });
-
 css({ colorScheme: "light", vars: lightVars }, { selector: `.${lightMode}` });
 css({ colorScheme: "dark", vars: darkVars }, { selector: `.${darkMode}` });
-
 css({ backgroundColor: primary[800], color: tokens.colors.whiteAlpha[700] }, { selector: "a.active" });
-
-css({ fontSize: "3xl" }, { selector: ":root" });
