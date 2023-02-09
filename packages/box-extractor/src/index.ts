@@ -4,7 +4,11 @@ export { extractCallExpressionValues } from "./extractor/extractCallExpressionId
 export { extractFunctionFrom, isImportedFrom } from "./extractor/extractFunctionFrom";
 export { extractJsxAttributeIdentifierValue } from "./extractor/extractJsxAttributeIdentifierValue";
 export { extractJsxSpreadAttributeValues } from "./extractor/extractJsxSpreadAttributeValues";
-export type { FindAllTransitiveComponentsOptions } from "./extractor/findAllTransitiveComponents";
+export type {
+    FindAllTransitiveComponentsOptions,
+    TransitiveInfo,
+    TransitiveMap,
+} from "./extractor/findAllTransitiveComponents";
 export { findAllTransitiveComponents, getAncestorComponent } from "./extractor/findAllTransitiveComponents";
 export { getBoxLiteralValue } from "./extractor/getBoxLiteralValue";
 export { getNameLiteral, unquote } from "./extractor/getNameLiteral";
