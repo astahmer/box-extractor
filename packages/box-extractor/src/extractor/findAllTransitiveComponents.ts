@@ -34,12 +34,17 @@ const getJsxComponentWithSpreadByName = (ast: SourceFile, name: string) =>
         `:matches(JsxOpeningElement, JsxSelfClosingElement):has(Identifier[name="${name}"]):has(JsxAttributes:has(JsxSpreadAttribute))`
     );
 
+export type TransitiveInfo = { from: string | null; referencedBy: Set<string>; refUsedWithSpread: Set<string> };
+export type TransitiveMap = Map<string, TransitiveInfo>;
 export type FindAllTransitiveComponentsOptions = Pick<ExtractOptions, "ast"> & {
     components: string[];
-    transitiveMap: Map<string, { from: string | null; referencedBy: Set<string>; refUsedWithSpread: Set<string> }>;
+    transitiveMap?: TransitiveMap;
 };
 
-export const findAllTransitiveComponents = ({ transitiveMap, ...options }: FindAllTransitiveComponentsOptions) => {
+export const findAllTransitiveComponents = ({
+    transitiveMap = new Map(),
+    ...options
+}: FindAllTransitiveComponentsOptions) => {
     logger({ components: options.components });
     const namesWithSpread = new Set<string>();
 
