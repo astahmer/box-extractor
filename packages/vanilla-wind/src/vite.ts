@@ -1,40 +1,32 @@
 import path from "node:path";
-import { createFilter, FilterPattern, normalizePath, Plugin, ResolvedConfig, ViteDevServer } from "vite";
+import { createFilter, FilterPattern, ModuleNode, normalizePath, Plugin, ResolvedConfig, ViteDevServer } from "vite";
 
-import { Identifier, Node, Project, ts } from "ts-morph";
+import { Node, Project, ts } from "ts-morph";
 
-import {
-    ensureAbsolute,
-    extract,
-    extractFunctionFrom,
-    FunctionNodesMap,
-    getAncestorComponent,
-    getNameLiteral,
-    query,
-    unbox,
-    unquote,
-} from "@box-extractor/core";
+import { ensureAbsolute, extract, extractFunctionFrom, FunctionNodesMap, unbox } from "@box-extractor/core";
 import { createLogger } from "@box-extractor/logger";
+import { assignVars } from "@vanilla-extract/css";
 import { endFileScope, setFileScope } from "@vanilla-extract/css/fileScope";
+import MagicString from "magic-string";
 import { match } from "ts-pattern";
 import type { GenericConfig } from "./defineProperties";
-import { createAdapterContext, generateStyleFromExtraction } from "./jit";
+import { extractCreateTheme } from "./extractCreateTheme";
 import { extractDefinePropertiesConfig } from "./extractDefinePropertiesConfig";
 import { findTypeReferenceUsage } from "./findTypeReferenceUsage";
+import { createAdapterContext, generateStyleFromExtraction } from "./jit";
 import {
-    hasStyledFn,
-    hasStyledComponent,
-    hasStyledType,
     hasAnyStyled,
-    tsConfigFilePath,
+    hasStyledComponent,
+    hasStyledFn,
+    hasStyledType,
     normalizeTsx,
+    tsConfigFilePath,
     virtualExtCss,
 } from "./utils";
-import { assignVars } from "@vanilla-extract/css";
+import { transformStyleNodes } from "./transformStyleNodes";
 
 const logger = createLogger("box-ex:vanilla-wind:vite");
 
-// TODO add component ref finder
 // TODO extract re-usable pieces from this file so it can be re-used with other plugins
 // TODO createSourceFile -> addSourceFile from transformedMap cache if possible
 
@@ -46,7 +38,6 @@ export const vanillaWind = (
         themeConfig?: Map<string, GenericConfig>;
         /** if you know your component names + theme config associated beforehand, use this so there will be less AST parsing needed */
         components?: Array<{ name: string; themeName: string }>;
-        // TypeReference:has(Identifier[name="WithStyledProps"]):has(TypeQuery)
 
         tsConfigFilePath?: string;
         /**
@@ -81,7 +72,7 @@ export const vanillaWind = (
     const cssCacheMap = new Map<string, string>();
     const themeCacheMap = new Map<string, string>();
     const componentsCacheMap = new Map<string, string>();
-    const transformedMap = new Map<string, string>();
+    const transformMap = new Map<string, string>();
 
     const getAbsoluteFileId = (source: string) => normalizePath(path.join(config?.root ?? "", source));
 
@@ -90,7 +81,7 @@ export const vanillaWind = (
         if (nameList.length === 0) return;
         if (!server) return;
 
-        logger.scoped("on-found", { transformedMap: Array.from(transformedMap.keys()) });
+        logger.scoped("on-found", { transformedMap: Array.from(transformMap.keys()) });
 
         const moduleGraph = server.moduleGraph;
         const hasStyled = match(kind)
@@ -104,7 +95,7 @@ export const vanillaWind = (
         const promises = [] as Array<Promise<void>>;
         const toInvalidate = new Set<ModuleNode>();
 
-        transformedMap.forEach((code, id) => {
+        transformMap.forEach((code, id) => {
             const [mod] = Array.from(moduleGraph.getModulesByFile(id) ?? []);
             if (!mod) return;
 
@@ -122,19 +113,14 @@ export const vanillaWind = (
 
         toInvalidate.forEach((mod) => {
             logger("onStyledFound - invalidateModule", { id: mod.id });
-                moduleGraph.invalidateModule(mod);
-                // Vite uses this timestamp to add `?t=` query string automatically for HMR.
-                mod.lastHMRTimestamp = (mod as any).lastInvalidationTimestamp || timestamp;
-                promises.push(server.reloadModule(mod));
+            moduleGraph.invalidateModule(mod);
+            // Vite uses this timestamp to add `?t=` query string automatically for HMR.
+            mod.lastHMRTimestamp = (mod as any).lastInvalidationTimestamp || timestamp;
+            promises.push(server.reloadModule(mod));
         });
 
         return Promise.all(promises);
     };
-
-    // TODO try with 1 global adapter ? + official vanilla-extract plugin since it might clash
-    // const ctx = createAdapterContext("debug");
-    // ctx.setAdapter();
-    // setFileScope("vanilla-wind.css.ts", "vanilla-wind");
 
     return [
         {
@@ -195,7 +181,7 @@ export const vanillaWind = (
 
                 const { updated, content, css, absoluteId } = extracted;
                 const updatedCode = css ? updated : content;
-                transformedMap.set(validId, updated);
+                transformMap.set(validId, updated);
 
                 if (server) {
                     const hasCache = cssCacheMap.has(absoluteId);
@@ -272,19 +258,19 @@ export const vanillaWind = (
                 logger.scoped("inlined-functions", { hasUpdatedFile: toReplace.size > 0 });
                 if (toReplace.size === 0) return null;
 
+                const magicStr = new MagicString(code);
                 toReplace.forEach((value, node) => {
                     const [contract, tokens] = value;
                     logger.scoped("inlined-functions", {
                         contract,
                         tokens,
-                        updating: node.getText(),
                         type: node.getKindName(),
                     });
                     const result = assignVars(contract, tokens);
-                    node.replaceWithText(JSON.stringify(result, null, 4));
+                    magicStr.update(node.getStart(), node.getEnd(), JSON.stringify(result, null, 4));
                 });
-                const updated = sourceFile.getFullText();
-                transformedMap.set(validId, updated);
+                const updated = magicStr.toString();
+                transformMap.set(validId, updated);
 
                 return { code: updated };
             },
@@ -369,16 +355,6 @@ export const vanillaWind = (
 
                 return null;
             },
-            // TODO check if useful ?
-            // watchChange(id) {
-            //     if (project && isIncluded(id)) {
-            //         const sourceFile = project.getSourceFile(normalizeTsx(id));
-
-            //         if (sourceFile) {
-            //             project.removeSourceFile(sourceFile);
-            //         }
-            //     }
-            // },
         },
         {
             enforce: "pre",
@@ -411,23 +387,14 @@ export const vanillaWind = (
 
                 if (foundComponentsWithTheirThemeName.size > 0) {
                     foundComponentsWithTheirThemeName.forEach((themeName, componentName) => {
-                    themeNameByComponentName.set(componentName, themeName);
-                });
+                        themeNameByComponentName.set(componentName, themeName);
+                    });
 
                     const names = Array.from(foundComponentsWithTheirThemeName.keys());
                     logger.scoped("root-component-finder", "new components found: ", names);
                     await onStyledFound(names, "component");
                 }
             },
-            // watchChange(id) {
-            //     if (project && isIncluded(id)) {
-            //         const sourceFile = project.getSourceFile(normalizeTsx(id));
-
-            //         if (sourceFile) {
-            //             project.removeSourceFile(sourceFile);
-            //         }
-            //     }
-            // },
         },
         {
             enforce: "pre",
@@ -474,14 +441,16 @@ export const vanillaWind = (
             async transform(code, id, _options) {
                 if (!isIncluded(id)) return null;
 
+                console.time("transform");
                 const validId = id.split("?")[0]!;
                 logger.scoped("usage", "scanning", { validId });
 
                 if (validId.endsWith(virtualExtCss)) {
+                    console.timeEnd("transform");
                     return null;
                 }
 
-                transformedMap.set(validId, code);
+                transformMap.set(validId, code);
 
                 const functionNames = Array.from(configByThemeName.keys());
                 const componentNames = (options?.components ?? []).concat(
@@ -506,27 +475,44 @@ export const vanillaWind = (
                 });
 
                 if (functionsNameFound.length === 0 && componentNamesFound.length === 0) {
+                    console.timeEnd("transform");
                     return null;
                 }
 
+                console.time("createSourceFile");
                 const sourceFile = project.createSourceFile(normalizeTsx(validId), code, {
                     overwrite: true,
                     scriptKind: ts.ScriptKind.TSX,
                 });
+                console.timeEnd("createSourceFile");
 
+                // console.time("createAdapterContext");
                 const absoluteId = validId + virtualExtCss;
                 const ctx = createAdapterContext("debug");
                 ctx.setAdapter();
                 setFileScope(validId);
+                // console.timeEnd("createAdapterContext");
 
+                console.log({
+                    id: validId,
+                    functionNames: functionsNameFound,
+                    componentNames: componentNamesFound,
+                });
+                // console.time("usage");
                 logger.scoped("usage", {
                     id: validId,
                     functionNames: functionsNameFound,
                     componentNames: componentNamesFound,
                 });
+                // console.time("usage:fn");
+                const magicStr = new MagicString(code);
+                const generateStyleResults = new Set<ReturnType<typeof generateStyleFromExtraction>>();
+
                 functionsNameFound.forEach((name) => {
                     logger.scoped("usage", `extracting ${name}() usage...`);
+                    console.time("usage:fn:extract");
                     const extractResult = extract({ ast: sourceFile, functions: [name] });
+                    console.timeEnd("usage:fn:extract");
                     const extracted = extractResult.get(name)! as FunctionNodesMap;
 
                     const conf = configByThemeName.get(name);
@@ -535,21 +521,22 @@ export const vanillaWind = (
                         return;
                     }
 
+                    // console.time("usage:fn:generateStyleFromExtraction");
                     const result = generateStyleFromExtraction(name, extracted, conf);
+                    // console.timeEnd("usage:fn:generateStyleFromExtraction");
                     logger.scoped("usage", { result: result.classMap });
-                    result.toReplace.forEach((className, node) => {
-                        if (node.wasForgotten()) return;
-
-                        // console.log({ className, node: node.getText(), kind: node.getKindName() });
-                        node.replaceWithText(`"${className}"`);
-                    });
+                    generateStyleResults.add(result);
                 });
+                // console.timeEnd("usage:fn");
 
+                console.time("usage:component");
                 componentNamesFound.forEach((component) => {
                     const name = component.name;
                     const themeName = component.themeName;
                     logger.scoped("usage", `extracting <${name} /> usage...`);
+                    // console.time("usage:component:extract");
                     const extractResult = extract({ ast: sourceFile, components: [name] });
+                    // console.timeEnd("usage:component:extract");
                     const extracted = extractResult.get(name)! as FunctionNodesMap;
 
                     const conf = configByThemeName.get(themeName);
@@ -558,45 +545,34 @@ export const vanillaWind = (
                         return;
                     }
 
+                    // console.time("usage:component:generateStyleFromExtraction");
                     const result = generateStyleFromExtraction(themeName, extracted, conf);
+                    // console.timeEnd("usage:component:generateStyleFromExtraction");
                     logger.scoped("usage", { result: result.classMap });
-
-                    const propNameList = new Set(
-                        Object.keys(conf.properties ?? {}).concat(
-                            Object.keys(conf.shorthands ?? {}).concat(Object.keys(conf.conditions ?? {}))
-                        )
-                    );
-
-                    result.toReplace.forEach((className, node) => {
-                        // console.log({ node: node.getText(), kind: node.getKindName(), className });
-                        if (Node.isJsxSelfClosingElement(node) || Node.isJsxOpeningElement(node)) {
-                            node.addAttribute({ name: "_styled", initializer: `"${className}"` });
-                        } else if (Node.isJsxAttribute(node)) {
-                            if (!conf.properties) return;
-
-                            if (propNameList.has(node.getName())) {
-                                node.remove();
-                            }
-                        } else if (Node.isJsxSpreadAttribute(node)) {
-                            // TODO only remove the props needed rather than the whole spread, this is a bit too aggressive
-                            // also, remove the spread if it's empty
-                            node.remove();
-                        }
-                    });
+                    generateStyleResults.add(result);
                 });
+                console.timeEnd("usage:component");
+                // console.timeEnd("usage");
 
+                // console.time("css");
                 const styles = ctx.getCss();
                 const css = styles.cssMap.get(validId)!;
 
                 endFileScope();
                 ctx.removeAdapter();
+                // console.timeEnd("css");
+
+                console.time("usage:transform-replace");
+                transformStyleNodes(generateStyleResults, magicStr);
+                console.timeEnd("usage:transform-replace");
 
                 if (server) {
                     const hasCache = cssCacheMap.has(absoluteId);
                     const hasDiff = hasCache && cssCacheMap.get(absoluteId) !== css;
-                    logger.scoped("usage", { hasCache, hasDiff });
 
                     if (hasDiff) {
+                        logger.scoped("usage", { hasCache, hasDiff });
+
                         const { moduleGraph } = server;
                         const [module] = Array.from(moduleGraph.getModulesByFile(absoluteId) ?? []);
 
@@ -614,19 +590,11 @@ export const vanillaWind = (
                     cssCacheMap.set(absoluteId, css);
                 }
 
+                console.timeEnd("transform");
                 return {
-                    code: `import "${absoluteId}";\n` + sourceFile.getFullText(),
+                    code: `import "${absoluteId}";\n` + magicStr.toString(),
                 };
             },
-            // watchChange(id) {
-            //     if (project && isIncluded(id)) {
-            //         const sourceFile = project.getSourceFile(normalizeTsx(id));
-
-            //         if (sourceFile) {
-            //             project.removeSourceFile(sourceFile);
-            //         }
-            //     }
-            // },
         },
     ] as Plugin[];
 };
