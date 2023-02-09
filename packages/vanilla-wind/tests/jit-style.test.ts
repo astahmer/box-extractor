@@ -488,6 +488,16 @@ it("simple CallExpression extract + JIT style + replace call by generated classN
           "minimalSprinkles_color_red.100": "minimalSprinkles_color_red.100__1rxundp1",
       }
     `);
+    expect(minimalStyles.allRules).toMatchInlineSnapshot(`
+      [
+          {
+              color: "var(--brand)",
+          },
+          {
+              color: "red.100",
+          },
+      ]
+    `);
 
     const magicStr = new MagicString(sourceFile.getFullText());
     const generateStyleResults = new Set<ReturnType<typeof generateStyleFromExtraction>>();
@@ -550,6 +560,16 @@ it("simple CallExpression extract + JIT style + replace call by generated classN
           tw_padding_24: "tw_padding_24__1rxundp2",
           tw_borderRadius_lg: "tw_borderRadius_lg__1rxundp3",
       }
+    `);
+    expect(twStyles.allRules).toMatchInlineSnapshot(`
+      [
+          {
+              padding: "24px",
+          },
+          {
+              borderRadius: "0.5rem",
+          },
+      ]
     `);
     generateStyleResults.add(twStyles);
 
@@ -799,6 +819,152 @@ it("will generate multiple styles with nested conditions", () => {
           tw_display_dark_hover_large_small_contents: "tw_display_dark_hover_large_small_contents__1rxundpl",
       }
     `);
+    expect(twStyles.allRules).toMatchInlineSnapshot(`
+      [
+          {
+              backgroundColor: "#3182ce",
+          },
+          {
+              padding: "24px",
+          },
+          {
+              borderRadius: "0.5rem",
+          },
+          {
+              selectors: {
+                  ".dark &:hover": {
+                      display: "table-footer-group",
+                  },
+              },
+          },
+          {
+              selectors: {
+                  "nav li > &:hover:not(:active)": {
+                      color: "#EFF6F8",
+                  },
+              },
+          },
+          {
+              selectors: {
+                  " &:hover": {
+                      backgroundColor: "whitesmoke",
+                  },
+              },
+          },
+          {
+              selectors: {
+                  " &:hover": {
+                      borderRadius: "1rem",
+                  },
+              },
+          },
+          {
+              selectors: {
+                  " &:hover": {
+                      color: "darkseagreen",
+                  },
+              },
+          },
+          {
+              selectors: {
+                  " &:hover": {
+                      width: "12px",
+                  },
+              },
+          },
+          {
+              selectors: {
+                  " &:hover": {
+                      padding: "100px",
+                  },
+              },
+          },
+          {
+              selectors: {
+                  " &:hover": {
+                      padding: "4px",
+                  },
+              },
+          },
+          {
+              selectors: {
+                  ".dark.large &:hover": {
+                      display: "flex",
+                  },
+              },
+          },
+          {
+              selectors: {
+                  ".light &:hover": {
+                      display: "inline-flex",
+                  },
+              },
+          },
+          {
+              selectors: {
+                  ".dark &:hover": {
+                      backgroundColor: "#2c5282",
+                  },
+              },
+          },
+          {
+              selectors: {
+                  ".light.large &:hover": {
+                      backgroundColor: "#FEB2B2",
+                  },
+              },
+          },
+          {
+              selectors: {
+                  ".light.dark &:hover": {
+                      backgroundColor: "ThreeDHighlight",
+                  },
+              },
+          },
+          {
+              selectors: {
+                  ".dark &": {
+                      padding: "24px",
+                  },
+              },
+          },
+          {
+              selectors: {
+                  ".dark &": {
+                      backgroundColor: "#822727",
+                  },
+              },
+          },
+          {
+              selectors: {
+                  ".dark &": {
+                      backgroundColor: "whitesmoke",
+                  },
+              },
+          },
+          {
+              selectors: {
+                  ".dark &:hover": {
+                      color: "#2b6cb0",
+                  },
+              },
+          },
+          {
+              selectors: {
+                  ".dark.light &:hover": {
+                      display: "flex",
+                  },
+              },
+          },
+          {
+              selectors: {
+                  ".dark.large.small &:hover": {
+                      display: "contents",
+                  },
+              },
+          },
+      ]
+    `);
 
     generateStyleResults.add(twStyles);
     transformStyleNodes(generateStyleResults, magicStr);
@@ -996,6 +1162,54 @@ it("will generate multiple styles with nested conditions - grouped", () => {
           _1rxundp0: "_1rxundp0",
       }
     `);
+    expect(twStyles.allRules).toMatchInlineSnapshot(`
+      [
+          {
+              backgroundColor: "#3182ce",
+              padding: "24px",
+              borderRadius: "0.5rem",
+              selectors: {
+                  ".dark &:hover": {
+                      display: "table-footer-group",
+                      backgroundColor: "#2c5282",
+                      color: "#2b6cb0",
+                  },
+                  "nav li > &:hover:not(:active)": {
+                      color: "#EFF6F8",
+                  },
+                  " &:hover": {
+                      backgroundColor: "whitesmoke",
+                      borderRadius: "1rem",
+                      color: "darkseagreen",
+                      width: "12px",
+                      padding: "4px",
+                  },
+                  ".dark.large &:hover": {
+                      display: "flex",
+                  },
+                  ".light &:hover": {
+                      display: "inline-flex",
+                  },
+                  ".light.large &:hover": {
+                      backgroundColor: "#FEB2B2",
+                  },
+                  ".light.dark &:hover": {
+                      backgroundColor: "ThreeDHighlight",
+                  },
+                  ".dark &": {
+                      padding: "24px",
+                      backgroundColor: "whitesmoke",
+                  },
+                  ".dark.light &:hover": {
+                      display: "flex",
+                  },
+                  ".dark.large.small &:hover": {
+                      display: "contents",
+                  },
+              },
+          },
+      ]
+    `);
 
     generateStyleResults.add(twStyles);
     transformStyleNodes(generateStyleResults, magicStr);
@@ -1191,6 +1405,22 @@ it("minimal example with <Box /> component", () => {
           "Box_backgroundColor_blue.500": "Box_backgroundColor_blue.500__1rxundp2",
           Box_borderRadius_lg: "Box_borderRadius_lg__1rxundp3",
       }
+    `);
+    expect(boxStyles.allRules).toMatchInlineSnapshot(`
+      [
+          {
+              display: "flex",
+          },
+          {
+              padding: "4px",
+          },
+          {
+              backgroundColor: "#3182ce",
+          },
+          {
+              borderRadius: "0.5rem",
+          },
+      ]
     `);
 
     generateStyleResults.add(boxStyles);
@@ -1408,6 +1638,97 @@ it("minimal example with global style", () => {
           _1rxundp7: "_1rxundp7",
           css_colorScheme_dark: "css_colorScheme_dark__1rxundp8",
       }
+    `);
+    expect(globalStyles.allRules).toMatchInlineSnapshot(`
+      [
+          {
+              selectors: {
+                  ".small &": {
+                      fontSize: "8px",
+                  },
+              },
+          },
+          {
+              selectors: {
+                  ".large &": {
+                      fontSize: "20px",
+                  },
+              },
+          },
+          {
+              selectors: {
+                  "nav li > &": {
+                      backgroundColor: "red",
+                  },
+              },
+          },
+          {
+              selectors: {
+                  "nav li > &": {
+                      fontSize: "16px",
+                  },
+              },
+          },
+          {
+              backgroundColor: "green",
+          },
+          {
+              display: "flex",
+          },
+          {
+              color: "blue",
+          },
+          {
+              selectors: {
+                  ".small &": {
+                      fontSize: "8px",
+                  },
+                  ".large &": {
+                      fontSize: "20px",
+                  },
+                  "nav li > &": {
+                      backgroundColor: "red",
+                      fontSize: "16px",
+                  },
+              },
+              backgroundColor: "green",
+              display: "flex",
+              color: "blue",
+          },
+          {
+              backgroundColor: "green",
+              display: "flex",
+              color: "blue",
+          },
+          {
+              fontSize: "8px",
+          },
+          {
+              fontSize: "20px",
+          },
+          {
+              backgroundColor: "red",
+              fontSize: "16px",
+          },
+          {
+              display: "grid",
+              fontWeight: "bold",
+          },
+          {
+              colorScheme: "dark",
+              vars: {
+                  "var(--color-mainBg__1du39r70)": "#39539b",
+                  "var(--color-secondaryBg__1du39r71)": "#324989",
+                  "var(--color-text__1du39r72)": "#63b3ed",
+                  "var(--color-bg__1du39r73)": "#8297d1",
+                  "var(--color-bgSecondary__1du39r74)": "#2b3f76",
+                  "var(--color-bgHover__1du39r75)": "#324989",
+              },
+          },
+          {
+              colorScheme: "dark",
+          },
+      ]
     `);
 
     const css = ctx.getCss();
