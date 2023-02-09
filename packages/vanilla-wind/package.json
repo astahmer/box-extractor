@@ -41,6 +41,7 @@
         "csstype": "^3.1.1",
         "esbuild": "^0.16.7",
         "eval": "^0.1.8",
+        "magic-string": "^0.27.0",
         "pastable": "^2.1.0",
         "ts-morph": "^17.0.1",
         "ts-pattern": "^4.0.5"

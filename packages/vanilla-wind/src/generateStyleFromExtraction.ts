@@ -398,5 +398,5 @@ export function generateStyleFromExtraction(
 }
 
 type Nullable<T> = T | null | undefined;
-
+// TODO pastable
 export const isNotNullish = <T>(element: Nullable<T>): element is T => element != null;
