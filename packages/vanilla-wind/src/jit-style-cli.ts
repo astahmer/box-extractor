@@ -51,13 +51,16 @@ export const main = () => {
     });
 
     const extractedUsage = extract({ ast: usage, functions: ["tw"] });
-    const tw = extractedUsage.get("tw")! as FunctionNodesMap;
 
     const ctx = createAdapterContext("debug");
     ctx.setAdapter();
     setFileScope(fileScope);
 
-    const twStyles = generateStyleFromExtraction("tw", tw, configByName.get("tw")!.config);
+    const twStyles = generateStyleFromExtraction({
+        name: "tw",
+        extracted: extractedUsage.get("tw")! as FunctionNodesMap,
+        config: configByName.get("tw")!.config,
+    });
     twStyles.toReplace.forEach((className, node) => node.replaceWithText(`"${className}"`));
 
     const { cssMap } = ctx.getCss();
