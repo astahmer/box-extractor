@@ -477,12 +477,12 @@ it("simple CallExpression extract + JIT style + replace call by generated classN
       ]
     `);
 
-    const minimalStyles = generateStyleFromExtraction(
-        "minimalSprinkles",
-        minimalSprinkles,
-        configByName.get("minimalSprinkles")!.config
-    );
-    expect(minimalStyles.classMap).toMatchInlineSnapshot(`
+    const minimalStyles = generateStyleFromExtraction({
+        name: "minimalSprinkles",
+        extracted: minimalSprinkles,
+        config: configByName.get("minimalSprinkles")!.config,
+    });
+    expect(minimalStyles.classByDebugId).toMatchInlineSnapshot(`
       {
           minimalSprinkles_color_brand: "minimalSprinkles_color_brand__1rxundp0",
           "minimalSprinkles_color_red.100": "minimalSprinkles_color_red.100__1rxundp1",
@@ -491,10 +491,20 @@ it("simple CallExpression extract + JIT style + replace call by generated classN
     expect(minimalStyles.allRules).toMatchInlineSnapshot(`
       [
           {
-              color: "var(--brand)",
+              name: "minimalSprinkles",
+              type: "local",
+              rule: {
+                  color: "var(--brand)",
+              },
+              debugId: "minimalSprinkles_color_brand",
           },
           {
-              color: "red.100",
+              name: "minimalSprinkles",
+              type: "local",
+              rule: {
+                  color: "red.100",
+              },
+              debugId: "minimalSprinkles_color_red.100",
           },
       ]
     `);
@@ -554,8 +564,12 @@ it("simple CallExpression extract + JIT style + replace call by generated classN
       ]
     `);
 
-    const twStyles = generateStyleFromExtraction("tw", tw, configByName.get("tw")!.config);
-    expect(twStyles.classMap).toMatchInlineSnapshot(`
+    const twStyles = generateStyleFromExtraction({
+        name: "tw",
+        extracted: tw,
+        config: configByName.get("tw")!.config,
+    });
+    expect(twStyles.classByDebugId).toMatchInlineSnapshot(`
       {
           tw_padding_24: "tw_padding_24__1rxundp2",
           tw_borderRadius_lg: "tw_borderRadius_lg__1rxundp3",
@@ -564,10 +578,20 @@ it("simple CallExpression extract + JIT style + replace call by generated classN
     expect(twStyles.allRules).toMatchInlineSnapshot(`
       [
           {
-              padding: "24px",
+              name: "tw",
+              type: "local",
+              rule: {
+                  padding: "24px",
+              },
+              debugId: "tw_padding_24",
           },
           {
-              borderRadius: "0.5rem",
+              name: "tw",
+              type: "local",
+              rule: {
+                  borderRadius: "0.5rem",
+              },
+              debugId: "tw_borderRadius_lg",
           },
       ]
     `);
@@ -786,13 +810,17 @@ it("will generate multiple styles with nested conditions", () => {
 
     const extracted = extractFromCode(sourceFile, { functions: ["tw"] });
     const tw = extracted.get("tw")! as FunctionNodesMap;
-    const twStyles = generateStyleFromExtraction("tw", tw, configByName.get("tw")!.config);
+    const twStyles = generateStyleFromExtraction({
+        name: "tw",
+        extracted: tw,
+        config: configByName.get("tw")!.config,
+    });
 
     const magicStr = new MagicString(sourceFile.getFullText());
     const generateStyleResults = new Set<ReturnType<typeof generateStyleFromExtraction>>();
 
-    expect(twStyles.classMap.size).toMatchInlineSnapshot("22");
-    expect(twStyles.classMap).toMatchInlineSnapshot(`
+    expect(twStyles.classByDebugId.size).toMatchInlineSnapshot('22');
+    expect(twStyles.classByDebugId).toMatchInlineSnapshot(`
       {
           "tw_backgroundColor_blue.500": "tw_backgroundColor_blue.500__1rxundp0",
           tw_padding_24: "tw_padding_24__1rxundp1",
@@ -822,146 +850,256 @@ it("will generate multiple styles with nested conditions", () => {
     expect(twStyles.allRules).toMatchInlineSnapshot(`
       [
           {
-              backgroundColor: "#3182ce",
+              name: "tw",
+              type: "local",
+              rule: {
+                  backgroundColor: "#3182ce",
+              },
+              debugId: "tw_backgroundColor_blue.500",
           },
           {
-              padding: "24px",
+              name: "tw",
+              type: "local",
+              rule: {
+                  padding: "24px",
+              },
+              debugId: "tw_padding_24",
           },
           {
-              borderRadius: "0.5rem",
+              name: "tw",
+              type: "local",
+              rule: {
+                  borderRadius: "0.5rem",
+              },
+              debugId: "tw_borderRadius_lg",
           },
           {
-              selectors: {
-                  ".dark &:hover": {
-                      display: "table-footer-group",
+              name: "tw",
+              type: "local",
+              rule: {
+                  selectors: {
+                      ".dark &:hover": {
+                          display: "table-footer-group",
+                      },
                   },
               },
+              debugId: "tw_display_dark_hover_table-footer-group",
           },
           {
-              selectors: {
-                  "nav li > &:hover:not(:active)": {
-                      color: "#EFF6F8",
+              name: "tw",
+              type: "local",
+              rule: {
+                  selectors: {
+                      "nav li > &:hover:not(:active)": {
+                          color: "#EFF6F8",
+                      },
                   },
               },
+              debugId: "tw_color_navItem_hoverNotActive_brand.100",
           },
           {
-              selectors: {
-                  " &:hover": {
-                      backgroundColor: "whitesmoke",
+              name: "tw",
+              type: "local",
+              rule: {
+                  selectors: {
+                      " &:hover": {
+                          backgroundColor: "whitesmoke",
+                      },
                   },
               },
+              debugId: "tw_backgroundColor_hover_whitesmoke",
           },
           {
-              selectors: {
-                  " &:hover": {
-                      borderRadius: "1rem",
+              name: "tw",
+              type: "local",
+              rule: {
+                  selectors: {
+                      " &:hover": {
+                          borderRadius: "1rem",
+                      },
                   },
               },
+              debugId: "tw_borderRadius_hover_2xl",
           },
           {
-              selectors: {
-                  " &:hover": {
-                      color: "darkseagreen",
+              name: "tw",
+              type: "local",
+              rule: {
+                  selectors: {
+                      " &:hover": {
+                          color: "darkseagreen",
+                      },
                   },
               },
+              debugId: "tw_color_hover_darkseagreen",
           },
           {
-              selectors: {
-                  " &:hover": {
-                      width: "12px",
+              name: "tw",
+              type: "local",
+              rule: {
+                  selectors: {
+                      " &:hover": {
+                          width: "12px",
+                      },
                   },
               },
+              debugId: "tw_width_hover_12px",
           },
           {
-              selectors: {
-                  " &:hover": {
-                      padding: "100px",
+              name: "tw",
+              type: "local",
+              rule: {
+                  selectors: {
+                      " &:hover": {
+                          padding: "100px",
+                      },
                   },
               },
+              debugId: "tw_padding_hover_100px",
           },
           {
-              selectors: {
-                  " &:hover": {
-                      padding: "4px",
+              name: "tw",
+              type: "local",
+              rule: {
+                  selectors: {
+                      " &:hover": {
+                          padding: "4px",
+                      },
                   },
               },
+              debugId: "tw_padding_hover_4",
           },
           {
-              selectors: {
-                  ".dark.large &:hover": {
-                      display: "flex",
+              name: "tw",
+              type: "local",
+              rule: {
+                  selectors: {
+                      ".dark.large &:hover": {
+                          display: "flex",
+                      },
                   },
               },
+              debugId: "tw_display_hover_dark_large_flex",
           },
           {
-              selectors: {
-                  ".light &:hover": {
-                      display: "inline-flex",
+              name: "tw",
+              type: "local",
+              rule: {
+                  selectors: {
+                      ".light &:hover": {
+                          display: "inline-flex",
+                      },
                   },
               },
+              debugId: "tw_display_hover_light_inline-flex",
           },
           {
-              selectors: {
-                  ".dark &:hover": {
-                      backgroundColor: "#2c5282",
+              name: "tw",
+              type: "local",
+              rule: {
+                  selectors: {
+                      ".dark &:hover": {
+                          backgroundColor: "#2c5282",
+                      },
                   },
               },
+              debugId: "tw_backgroundColor_hover_dark_blue.700",
           },
           {
-              selectors: {
-                  ".light.large &:hover": {
-                      backgroundColor: "#FEB2B2",
+              name: "tw",
+              type: "local",
+              rule: {
+                  selectors: {
+                      ".light.large &:hover": {
+                          backgroundColor: "#FEB2B2",
+                      },
                   },
               },
+              debugId: "tw_backgroundColor_hover_light_large_red.200",
           },
           {
-              selectors: {
-                  ".light.dark &:hover": {
-                      backgroundColor: "ThreeDHighlight",
+              name: "tw",
+              type: "local",
+              rule: {
+                  selectors: {
+                      ".light.dark &:hover": {
+                          backgroundColor: "ThreeDHighlight",
+                      },
                   },
               },
+              debugId: "tw_backgroundColor_hover_light_dark_ThreeDHighlight",
           },
           {
-              selectors: {
-                  ".dark &": {
-                      padding: "24px",
+              name: "tw",
+              type: "local",
+              rule: {
+                  selectors: {
+                      ".dark &": {
+                          padding: "24px",
+                      },
                   },
               },
+              debugId: "tw_padding_dark_24",
           },
           {
-              selectors: {
-                  ".dark &": {
-                      backgroundColor: "#822727",
+              name: "tw",
+              type: "local",
+              rule: {
+                  selectors: {
+                      ".dark &": {
+                          backgroundColor: "#822727",
+                      },
                   },
               },
+              debugId: "tw_backgroundColor_dark_red.800",
           },
           {
-              selectors: {
-                  ".dark &": {
-                      backgroundColor: "whitesmoke",
+              name: "tw",
+              type: "local",
+              rule: {
+                  selectors: {
+                      ".dark &": {
+                          backgroundColor: "whitesmoke",
+                      },
                   },
               },
+              debugId: "tw_backgroundColor_dark_whitesmoke",
           },
           {
-              selectors: {
-                  ".dark &:hover": {
-                      color: "#2b6cb0",
+              name: "tw",
+              type: "local",
+              rule: {
+                  selectors: {
+                      ".dark &:hover": {
+                          color: "#2b6cb0",
+                      },
                   },
               },
+              debugId: "tw_color_dark_hover_blue.600",
           },
           {
-              selectors: {
-                  ".dark.light &:hover": {
-                      display: "flex",
+              name: "tw",
+              type: "local",
+              rule: {
+                  selectors: {
+                      ".dark.light &:hover": {
+                          display: "flex",
+                      },
                   },
               },
+              debugId: "tw_display_dark_hover_light_flex",
           },
           {
-              selectors: {
-                  ".dark.large.small &:hover": {
-                      display: "contents",
+              name: "tw",
+              type: "local",
+              rule: {
+                  selectors: {
+                      ".dark.large.small &:hover": {
+                          display: "contents",
+                      },
                   },
               },
+              debugId: "tw_display_dark_hover_large_small_contents",
           },
       ]
     `);
@@ -1151,13 +1289,18 @@ it("will generate multiple styles with nested conditions - grouped", () => {
 
     const extracted = extractFromCode(sourceFile, { functions: ["tw"] });
     const tw = extracted.get("tw")! as FunctionNodesMap;
-    const twStyles = generateStyleFromExtraction("tw", tw, configByName.get("tw")!.config, "grouped");
+    const twStyles = generateStyleFromExtraction({
+        name: "tw",
+        extracted: tw,
+        config: configByName.get("tw")!.config,
+        mode: "grouped",
+    });
 
     const magicStr = new MagicString(sourceFile.getFullText());
     const generateStyleResults = new Set<ReturnType<typeof generateStyleFromExtraction>>();
 
-    expect(twStyles.classMap.size).toMatchInlineSnapshot("1");
-    expect(twStyles.classMap).toMatchInlineSnapshot(`
+    expect(twStyles.classByDebugId.size).toMatchInlineSnapshot('1');
+    expect(twStyles.classByDebugId).toMatchInlineSnapshot(`
       {
           _1rxundp0: "_1rxundp0",
       }
@@ -1165,46 +1308,50 @@ it("will generate multiple styles with nested conditions - grouped", () => {
     expect(twStyles.allRules).toMatchInlineSnapshot(`
       [
           {
-              backgroundColor: "#3182ce",
-              padding: "24px",
-              borderRadius: "0.5rem",
-              selectors: {
-                  ".dark &:hover": {
-                      display: "table-footer-group",
-                      backgroundColor: "#2c5282",
-                      color: "#2b6cb0",
-                  },
-                  "nav li > &:hover:not(:active)": {
-                      color: "#EFF6F8",
-                  },
-                  " &:hover": {
-                      backgroundColor: "whitesmoke",
-                      borderRadius: "1rem",
-                      color: "darkseagreen",
-                      width: "12px",
-                      padding: "4px",
-                  },
-                  ".dark.large &:hover": {
-                      display: "flex",
-                  },
-                  ".light &:hover": {
-                      display: "inline-flex",
-                  },
-                  ".light.large &:hover": {
-                      backgroundColor: "#FEB2B2",
-                  },
-                  ".light.dark &:hover": {
-                      backgroundColor: "ThreeDHighlight",
-                  },
-                  ".dark &": {
-                      padding: "24px",
-                      backgroundColor: "whitesmoke",
-                  },
-                  ".dark.light &:hover": {
-                      display: "flex",
-                  },
-                  ".dark.large.small &:hover": {
-                      display: "contents",
+              name: "tw",
+              type: "local",
+              rule: {
+                  backgroundColor: "#3182ce",
+                  padding: "24px",
+                  borderRadius: "0.5rem",
+                  selectors: {
+                      ".dark &:hover": {
+                          display: "table-footer-group",
+                          backgroundColor: "#2c5282",
+                          color: "#2b6cb0",
+                      },
+                      "nav li > &:hover:not(:active)": {
+                          color: "#EFF6F8",
+                      },
+                      " &:hover": {
+                          backgroundColor: "whitesmoke",
+                          borderRadius: "1rem",
+                          color: "darkseagreen",
+                          width: "12px",
+                          padding: "4px",
+                      },
+                      ".dark.large &:hover": {
+                          display: "flex",
+                      },
+                      ".light &:hover": {
+                          display: "inline-flex",
+                      },
+                      ".light.large &:hover": {
+                          backgroundColor: "#FEB2B2",
+                      },
+                      ".light.dark &:hover": {
+                          backgroundColor: "ThreeDHighlight",
+                      },
+                      ".dark &": {
+                          padding: "24px",
+                          backgroundColor: "whitesmoke",
+                      },
+                      ".dark.light &:hover": {
+                          display: "flex",
+                      },
+                      ".dark.large.small &:hover": {
+                          display: "contents",
+                      },
                   },
               },
           },
@@ -1392,13 +1539,17 @@ it("minimal example with <Box /> component", () => {
     const extracted = extractResult.get(name)! as ComponentNodesMap;
 
     const conf = configByName.get("tw")!;
-    const boxStyles = generateStyleFromExtraction(name, extracted, conf.config);
+    const boxStyles = generateStyleFromExtraction({
+        name,
+        extracted,
+        config: conf.config,
+    });
 
     const magicStr = new MagicString(sourceFile.getFullText());
     const generateStyleResults = new Set<ReturnType<typeof generateStyleFromExtraction>>();
 
-    expect(boxStyles.classMap.size).toMatchInlineSnapshot("4");
-    expect(boxStyles.classMap).toMatchInlineSnapshot(`
+    expect(boxStyles.classByDebugId.size).toMatchInlineSnapshot('4');
+    expect(boxStyles.classByDebugId).toMatchInlineSnapshot(`
       {
           Box_display_flex: "Box_display_flex__1rxundp0",
           Box_padding_4: "Box_padding_4__1rxundp1",
@@ -1409,16 +1560,36 @@ it("minimal example with <Box /> component", () => {
     expect(boxStyles.allRules).toMatchInlineSnapshot(`
       [
           {
-              display: "flex",
+              name: "Box",
+              type: "local",
+              rule: {
+                  display: "flex",
+              },
+              debugId: "Box_display_flex",
           },
           {
-              padding: "4px",
+              name: "Box",
+              type: "local",
+              rule: {
+                  padding: "4px",
+              },
+              debugId: "Box_padding_4",
           },
           {
-              backgroundColor: "#3182ce",
+              name: "Box",
+              type: "local",
+              rule: {
+                  backgroundColor: "#3182ce",
+              },
+              debugId: "Box_backgroundColor_blue.500",
           },
           {
-              borderRadius: "0.5rem",
+              name: "Box",
+              type: "local",
+              rule: {
+                  borderRadius: "0.5rem",
+              },
+              debugId: "Box_borderRadius_lg",
           },
       ]
     `);
@@ -1623,10 +1794,10 @@ it("minimal example with global style", () => {
 
     console.log({ extractDefs, extractResult, configByName });
     const conf = configByName.get("css")!;
-    const globalStyles = generateStyleFromExtraction(name, extracted, conf.config);
+    const globalStyles = generateStyleFromExtraction({ name, extracted, config: conf.config });
 
-    expect(globalStyles.classMap.size).toMatchInlineSnapshot("9");
-    expect(globalStyles.classMap).toMatchInlineSnapshot(`
+    expect(globalStyles.classByDebugId.size).toMatchInlineSnapshot('9');
+    expect(globalStyles.classByDebugId).toMatchInlineSnapshot(`
       {
           css_fontSize_small_8px: "css_fontSize_small_8px__1rxundp0",
           css_fontSize_large_20px: "css_fontSize_large_20px__1rxundp1",
@@ -1642,91 +1813,165 @@ it("minimal example with global style", () => {
     expect(globalStyles.allRules).toMatchInlineSnapshot(`
       [
           {
-              selectors: {
-                  ".small &": {
-                      fontSize: "8px",
+              name: "css",
+              type: "local",
+              rule: {
+                  selectors: {
+                      ".small &": {
+                          fontSize: "8px",
+                      },
                   },
+              },
+              debugId: "css_fontSize_small_8px",
+          },
+          {
+              name: "css",
+              type: "local",
+              rule: {
+                  selectors: {
+                      ".large &": {
+                          fontSize: "20px",
+                      },
+                  },
+              },
+              debugId: "css_fontSize_large_20px",
+          },
+          {
+              name: "css",
+              type: "local",
+              rule: {
+                  selectors: {
+                      "nav li > &": {
+                          backgroundColor: "red",
+                      },
+                  },
+              },
+              debugId: "css_backgroundColor_navItem_red",
+          },
+          {
+              name: "css",
+              type: "local",
+              rule: {
+                  selectors: {
+                      "nav li > &": {
+                          fontSize: "16px",
+                      },
+                  },
+              },
+              debugId: "css_fontSize_navItem_16px",
+          },
+          {
+              name: "css",
+              type: "local",
+              rule: {
+                  backgroundColor: "green",
+              },
+              debugId: "css_backgroundColor_green",
+          },
+          {
+              name: "css",
+              type: "local",
+              rule: {
+                  display: "flex",
+              },
+              debugId: "css_display_flex",
+          },
+          {
+              name: "css",
+              type: "local",
+              rule: {
+                  color: "blue",
+              },
+              debugId: "css_color_blue",
+          },
+          {
+              name: "css",
+              type: "local",
+              rule: {
+                  selectors: {
+                      ".small &": {
+                          fontSize: "8px",
+                      },
+                      ".large &": {
+                          fontSize: "20px",
+                      },
+                      "nav li > &": {
+                          backgroundColor: "red",
+                          fontSize: "16px",
+                      },
+                  },
+                  backgroundColor: "green",
+                  display: "flex",
+                  color: "blue",
               },
           },
           {
-              selectors: {
-                  ".large &": {
-                      fontSize: "20px",
+              name: "css",
+              type: "global",
+              rule: {
+                  backgroundColor: "green",
+                  display: "flex",
+                  color: "blue",
+              },
+              selector: ":root",
+          },
+          {
+              name: "css",
+              type: "global",
+              rule: {
+                  fontSize: "8px",
+              },
+              selector: ":root.small",
+          },
+          {
+              name: "css",
+              type: "global",
+              rule: {
+                  fontSize: "20px",
+              },
+              selector: ":root.large",
+          },
+          {
+              name: "css",
+              type: "global",
+              rule: {
+                  backgroundColor: "red",
+                  fontSize: "16px",
+              },
+              selector: ":root nav li > *",
+          },
+          {
+              name: "css",
+              type: "global",
+              rule: {
+                  display: "grid",
+                  fontWeight: "bold",
+              },
+              selector: "body",
+          },
+          {
+              name: "css",
+              type: "global",
+              rule: {
+                  colorScheme: "dark",
+                  vars: {
+                      "var(--color-mainBg__1du39r70)": "#39539b",
+                      "var(--color-secondaryBg__1du39r71)": "#324989",
+                      "var(--color-text__1du39r72)": "#63b3ed",
+                      "var(--color-bg__1du39r73)": "#8297d1",
+                      "var(--color-bgSecondary__1du39r74)": "#2b3f76",
+                      "var(--color-bgHover__1du39r75)": "#324989",
                   },
               },
+              selector: ".dark",
           },
           {
-              selectors: {
-                  "nav li > &": {
-                      backgroundColor: "red",
-                  },
+              name: "css",
+              type: "local",
+              rule: {
+                  colorScheme: "dark",
               },
-          },
-          {
-              selectors: {
-                  "nav li > &": {
-                      fontSize: "16px",
-                  },
-              },
-          },
-          {
-              backgroundColor: "green",
-          },
-          {
-              display: "flex",
-          },
-          {
-              color: "blue",
-          },
-          {
-              selectors: {
-                  ".small &": {
-                      fontSize: "8px",
-                  },
-                  ".large &": {
-                      fontSize: "20px",
-                  },
-                  "nav li > &": {
-                      backgroundColor: "red",
-                      fontSize: "16px",
-                  },
-              },
-              backgroundColor: "green",
-              display: "flex",
-              color: "blue",
-          },
-          {
-              backgroundColor: "green",
-              display: "flex",
-              color: "blue",
-          },
-          {
-              fontSize: "8px",
-          },
-          {
-              fontSize: "20px",
-          },
-          {
-              backgroundColor: "red",
-              fontSize: "16px",
-          },
-          {
-              display: "grid",
-              fontWeight: "bold",
-          },
-          {
-              colorScheme: "dark",
-              vars: {
-                  "var(--color-mainBg__1du39r70)": "#39539b",
-                  "var(--color-secondaryBg__1du39r71)": "#324989",
-                  "var(--color-text__1du39r72)": "#63b3ed",
-                  "var(--color-bg__1du39r73)": "#8297d1",
-                  "var(--color-bgSecondary__1du39r74)": "#2b3f76",
-                  "var(--color-bgHover__1du39r75)": "#324989",
-              },
-          },
-          {
-              colorScheme: "dark",
+              debugId: "css_colorScheme_dark",
           },
       ]
     `);

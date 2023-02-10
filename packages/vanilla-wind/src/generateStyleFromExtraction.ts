@@ -30,18 +30,41 @@ const formatInnerSelector = (innerSelector: string) => {
     return innerSelector;
 };
 
-export function generateStyleFromExtraction(
-    name: string,
-    extracted: PropNodesMap,
-    config: GenericConfig,
-    _mode?: "atomic" | "grouped"
-): {
+type LocalCssRule = {
+    name: string;
+    type: "local";
+    rule: ComplexStyleRule;
+    debugId: string | undefined;
+};
+type GlobalCssRule = {
+    name: string;
+    type: "global";
+    rule: GlobalStyleRule;
+    selector: string;
+};
+
+type CssRule = LocalCssRule | GlobalCssRule;
+
+type GenerateRulesArgs = {
+    name: string;
+    extracted: PropNodesMap;
+    config: GenericConfig;
+    generateClassName: (cssRule: CssRule) => string | undefined;
+    mode?: "atomic" | "grouped";
+};
+
+export function generateRulesFromExtraction({
+    name,
+    extracted,
+    config,
+    generateClassName,
+    mode: _mode,
+}: GenerateRulesArgs): {
     toReplace: Map<Node, string>;
     toRemove: Set<Node>;
     classByDebugId: Map<string, string>;
     rulesByDebugId: Map<string, StyleRule>;
     rulesByBoxNode: Map<BoxNode, Set<StyleRule>>;
-    allRules: Set<ComplexStyleRule | GlobalStyleRule>;
 } {
     const toReplace = new Map<Node, string>();
     const toRemove = new Set<Node>();
@@ -49,7 +72,6 @@ export function generateStyleFromExtraction(
     const classByDebugId = new Map<string, string>();
     const rulesByDebugId = new Map<string, StyleRule>();
     const rulesByBoxNode = new Map<BoxNode, Set<StyleRule>>();
-    const allRules = new Set<ComplexStyleRule | GlobalStyleRule>();
 
     const shorthandNames = new Set(Object.keys(config.shorthands ?? {}));
     const conditionNames = new Set(Object.keys(config.conditions ?? {}));
@@ -82,14 +104,12 @@ export function generateStyleFromExtraction(
                   }
 
                   logger.scoped("style", { global: true, selector, innerSelector, rule });
-                  globalStyle(`${selector}${innerSelector ?? ""}`, rule);
-                  allRules.add(rule);
+                  generateClassName({ name, type: "global", rule, selector: `${selector}${innerSelector ?? ""}` });
               }
             : (rule: ComplexStyleRule, debugId?: string) => {
                   if (debugId && classByDebugId.has(debugId)) return;
 
-                  allRules.add(rule);
-                  const className = style(rule, debugId);
+                  const className = generateClassName({ name, type: "local", rule, debugId })!;
                   logger.scoped("style", { className, rule, debugId });
                   classNameList.add(className);
 
@@ -411,8 +431,25 @@ export function generateStyleFromExtraction(
         }
     });
 
-    return { toReplace, toRemove, classByDebugId, rulesByDebugId, rulesByBoxNode, allRules };
+    return { toReplace, toRemove, classByDebugId, rulesByDebugId, rulesByBoxNode };
 }
+
+export const generateStyleFromExtraction = (
+    args: Omit<GenerateRulesArgs, "generateClassName">
+): ReturnType<typeof generateRulesFromExtraction> & {
+    allRules: Set<CssRule>;
+} => {
+    const allRules = new Set<CssRule>();
+    const generateClassName = (cssRule: CssRule) => {
+        allRules.add(cssRule);
+        if (cssRule.type === "local") return style(cssRule.rule, cssRule.debugId);
+
+        globalStyle(cssRule.selector, cssRule.rule);
+    };
+
+    const result = generateRulesFromExtraction({ ...args, generateClassName });
+    return { ...result, allRules };
+};
 
 type Nullable<T> = T | null | undefined;
 // TODO pastable
