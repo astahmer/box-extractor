@@ -524,7 +524,7 @@ export const vanillaWind = (
                     // console.time("usage:fn:generateStyleFromExtraction");
                     const result = generateStyleFromExtraction(name, extracted, conf);
                     // console.timeEnd("usage:fn:generateStyleFromExtraction");
-                    logger.scoped("usage", { result: result.classMap });
+                    logger.scoped("usage", { result: result.classByDebugId });
                     generateStyleResults.add(result);
                 });
                 // console.timeEnd("usage:fn");
@@ -548,7 +548,7 @@ export const vanillaWind = (
                     // console.time("usage:component:generateStyleFromExtraction");
                     const result = generateStyleFromExtraction(themeName, extracted, conf);
                     // console.timeEnd("usage:component:generateStyleFromExtraction");
-                    logger.scoped("usage", { result: result.classMap });
+                    logger.scoped("usage", { result: result.classByDebugId });
                     generateStyleResults.add(result);
                 });
                 console.timeEnd("usage:component");
