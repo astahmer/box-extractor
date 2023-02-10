@@ -38,14 +38,15 @@ export function generateStyleFromExtraction(
 ): {
     toReplace: Map<Node, string>;
     toRemove: Set<Node>;
-    classMap: Map<string, string>;
+    classByDebugId: Map<string, string>;
     rulesByDebugId: Map<string, StyleRule>;
+    rulesByBoxNode: Map<BoxNode, Set<StyleRule>>;
     allRules: Set<ComplexStyleRule | GlobalStyleRule>;
 } {
     const toReplace = new Map<Node, string>();
     const toRemove = new Set<Node>();
 
-    const classMap = new Map<string, string>();
+    const classByDebugId = new Map<string, string>();
     const rulesByDebugId = new Map<string, StyleRule>();
     const rulesByBoxNode = new Map<BoxNode, Set<StyleRule>>();
     const allRules = new Set<ComplexStyleRule | GlobalStyleRule>();
@@ -85,15 +86,15 @@ export function generateStyleFromExtraction(
                   allRules.add(rule);
               }
             : (rule: ComplexStyleRule, debugId?: string) => {
-                  if (debugId && classMap.has(debugId)) return;
+                  if (debugId && classByDebugId.has(debugId)) return;
 
+                  allRules.add(rule);
                   const className = style(rule, debugId);
                   logger.scoped("style", { className, rule, debugId });
-                  allRules.add(rule);
                   classNameList.add(className);
 
                   if (debugId) {
-                      classMap.set(debugId, className);
+                      classByDebugId.set(debugId, className);
                   }
 
                   return className;
@@ -366,7 +367,7 @@ export function generateStyleFromExtraction(
 
                 if (grouped) {
                     toReplace.set(queryBox.getNode(), grouped);
-                    classMap.set(grouped, grouped);
+                    classByDebugId.set(grouped, grouped);
                 }
 
                 return;
@@ -410,7 +411,7 @@ export function generateStyleFromExtraction(
         }
     });
 
-    return { toReplace, toRemove, classMap, rulesByDebugId, allRules };
+    return { toReplace, toRemove, classByDebugId, rulesByDebugId, rulesByBoxNode, allRules };
 }
 
 type Nullable<T> = T | null | undefined;
