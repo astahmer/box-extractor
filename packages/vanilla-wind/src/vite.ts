@@ -515,14 +515,14 @@ export const vanillaWind = (
                     console.timeEnd("usage:fn:extract");
                     const extracted = extractResult.get(name)! as FunctionNodesMap;
 
-                    const conf = configByThemeName.get(name);
-                    if (!conf) {
+                    const config = configByThemeName.get(name);
+                    if (!config) {
                         logger.scoped("usage", `no config found for ${name}() usage. (skipped)`);
                         return;
                     }
 
                     // console.time("usage:fn:generateStyleFromExtraction");
-                    const result = generateStyleFromExtraction(name, extracted, conf);
+                    const result = generateStyleFromExtraction({ name, extracted, config });
                     // console.timeEnd("usage:fn:generateStyleFromExtraction");
                     logger.scoped("usage", { result: result.classByDebugId });
                     generateStyleResults.add(result);
@@ -539,14 +539,14 @@ export const vanillaWind = (
                     // console.timeEnd("usage:component:extract");
                     const extracted = extractResult.get(name)! as FunctionNodesMap;
 
-                    const conf = configByThemeName.get(themeName);
-                    if (!conf) {
+                    const config = configByThemeName.get(themeName);
+                    if (!config) {
                         logger.scoped("usage", `no config found for <${name} /> usage. (skipped)`);
                         return;
                     }
 
                     // console.time("usage:component:generateStyleFromExtraction");
-                    const result = generateStyleFromExtraction(themeName, extracted, conf);
+                    const result = generateStyleFromExtraction({ name: themeName, extracted, config });
                     // console.timeEnd("usage:component:generateStyleFromExtraction");
                     logger.scoped("usage", { result: result.classByDebugId });
                     generateStyleResults.add(result);
