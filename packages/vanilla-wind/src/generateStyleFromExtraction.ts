@@ -1,6 +1,6 @@
 import { box, BoxNode, BoxNodeMap, isPrimitiveType, LiteralValue, PropNodesMap, unbox } from "@box-extractor/core";
 import { createLogger } from "@box-extractor/logger";
-import { ComplexStyleRule, globalStyle, GlobalStyleRule, style, StyleRule } from "@vanilla-extract/css";
+import { StyleRule, globalStyle, GlobalStyleRule, style } from "@vanilla-extract/css";
 import { deepMerge, isObject } from "pastable";
 import { Node } from "ts-morph";
 import type { GenericConfig, StyleOptions } from "./defineProperties";
@@ -30,26 +30,44 @@ const formatInnerSelector = (innerSelector: string) => {
     return innerSelector;
 };
 
-type LocalCssRule = {
+type BaseCssBox = {
     name: string;
-    type: "local";
-    rule: ComplexStyleRule;
-    debugId: string | undefined;
+    debugId: string;
 };
-type GlobalCssRule = {
-    name: string;
+
+type AtomicLocalCssBox = BaseCssBox & {
+    type: "local";
+    mode: "atomic";
+    rule: StyleRule;
+    propName: string;
+    value: string | number;
+    token: string | number | undefined;
+    conditionPath?: string[];
+};
+
+type GroupedLocalCssBox = BaseCssBox & {
+    type: "local";
+    mode: "grouped";
+    rule: StyleRule;
+    fromRules: CssBox[];
+};
+
+type GroupedGlobalCssBox = Omit<GroupedLocalCssBox, "rule" | "type"> & {
     type: "global";
     rule: GlobalStyleRule;
     selector: string;
 };
 
-type CssRule = LocalCssRule | GlobalCssRule;
+export type CssBox = AtomicLocalCssBox | GroupedLocalCssBox | GroupedGlobalCssBox;
 
 type GenerateRulesArgs = {
     name: string;
     extracted: PropNodesMap;
     config: GenericConfig;
-    generateClassName: (cssRule: CssRule) => string | undefined;
+    generateClassName: (config: CssBox) => string | undefined;
+    getDebugId?: (args: GetDebugIdArgs) => string;
+    getDebugIdGrouped?: (main: GetDebugIdGroupedArgs, list: GetDebugIdArgs[]) => string;
+    classByDebugId?: Map<string, string>;
     mode?: "atomic" | "grouped";
 };
 
@@ -58,20 +76,24 @@ export function generateRulesFromExtraction({
     extracted,
     config,
     generateClassName,
+    getDebugId = defaultGetDebugId,
+    getDebugIdGrouped = defaultGetDebugIdGrouped,
+    classByDebugId = new Map<string, string>(),
     mode: _mode,
 }: GenerateRulesArgs): {
     toReplace: Map<Node, string>;
     toRemove: Set<Node>;
     classByDebugId: Map<string, string>;
-    rulesByDebugId: Map<string, StyleRule>;
-    rulesByBoxNode: Map<BoxNode, Set<StyleRule>>;
+    rulesByDebugId: Map<string, CssBox>;
+    rulesByBoxNode: Map<BoxNode, Set<CssBox>>;
+    allRules: Set<CssBox>;
 } {
     const toReplace = new Map<Node, string>();
     const toRemove = new Set<Node>();
 
-    const classByDebugId = new Map<string, string>();
-    const rulesByDebugId = new Map<string, StyleRule>();
-    const rulesByBoxNode = new Map<BoxNode, Set<StyleRule>>();
+    const rulesByDebugId = new Map<string, CssBox>();
+    const rulesByBoxNode = new Map<BoxNode, Set<CssBox>>();
+    const allRules = new Set<CssBox>();
 
     const shorthandNames = new Set(Object.keys(config.shorthands ?? {}));
     const conditionNames = new Set(Object.keys(config.conditions ?? {}));
@@ -82,6 +104,10 @@ export function generateRulesFromExtraction({
     extracted.queryList.forEach((query) => {
         const queryBox = query.box.isList() ? (query.box.value[0]! as BoxNodeMap) : query.box;
         if (!queryBox.isMap()) return;
+
+        if (!rulesByBoxNode.has(queryBox)) {
+            rulesByBoxNode.set(queryBox, new Set());
+        }
 
         let options: StyleOptions | undefined;
 
@@ -94,31 +120,55 @@ export function generateRulesFromExtraction({
         }
 
         const selector = options?.selector;
-        const mode = options?.mode ?? _mode ?? (selector ? "grouped" : "atomic");
-        const classNameList = new Set<string>();
+        const type = selector ? "global" : "local";
+        // atomic global doesn't make sense, force it to grouped
+        const mode = selector ? "grouped" : options?.mode ?? _mode ?? "atomic";
 
-        const styleFn = selector
-            ? (rule: GlobalStyleRule & Pick<StyleRule, "selectors">, innerSelector?: string | undefined) => {
-                  if (innerSelector) {
-                      innerSelector = innerSelector.split(",").map(formatInnerSelector).join(", ");
-                  }
+        const boxNodeClassList = new Set<string>();
 
-                  logger.scoped("style", { global: true, selector, innerSelector, rule });
-                  generateClassName({ name, type: "global", rule, selector: `${selector}${innerSelector ?? ""}` });
-              }
-            : (rule: ComplexStyleRule, debugId?: string) => {
-                  if (debugId && classByDebugId.has(debugId)) return;
+        const styleFn = <TCssBox extends CssBox>(cssBox: TCssBox) => {
+            const debugId = cssBox.debugId;
 
-                  const className = generateClassName({ name, type: "local", rule, debugId })!;
-                  logger.scoped("style", { className, rule, debugId });
-                  classNameList.add(className);
+            if (cssBox.type === "local") {
+                allRules.add(cssBox);
+                rulesByDebugId.set(debugId, cssBox);
 
-                  if (debugId) {
-                      classByDebugId.set(debugId, className);
-                  }
+                const rule = cssBox.rule;
 
-                  return className;
-              };
+                if (cssBox.mode === "atomic") {
+                    const className = classByDebugId.get(debugId) ?? generateClassName(cssBox)!;
+                    logger.scoped("local-atomic", { className, rule, debugId });
+                    boxNodeClassList.add(className);
+                    classByDebugId.set(debugId, className);
+
+                    return className;
+                }
+
+                // grouped
+                const fromRules = cssBox.fromRules;
+                const className = classByDebugId.get(debugId) ?? generateClassName(cssBox)!;
+                logger.scoped("local-grouped", { className, rule, fromRules });
+                classByDebugId.set(debugId, className);
+                boxNodeClassList.add(className);
+
+                return className;
+            }
+
+            // global
+            const rule = cssBox.rule;
+            let innerSelector = cssBox.selector;
+
+            if (innerSelector) {
+                innerSelector = innerSelector.split(",").map(formatInnerSelector).join(", ");
+            }
+
+            const globalCssBox = { ...cssBox, selector: `${selector}${innerSelector ?? ""}` };
+            rulesByDebugId.set(debugId, globalCssBox);
+            allRules.add(globalCssBox);
+
+            generateClassName(globalCssBox);
+            logger.scoped("global", { global: true, selector, innerSelector, rule });
+        };
 
         const argMap = new Map<string, BoxNode[]>();
         shorthandNames.forEach((shorthand) => {
@@ -135,7 +185,23 @@ export function generateRulesFromExtraction({
                 if (argName === "vars" && path.length === 0 && boxNode.isMap()) {
                     const vars = unbox(boxNode);
                     if (vars && isObject(vars)) {
-                        rulesByBoxNode.get(queryBox)!.add({ vars: vars as Record<string, string> });
+                        const debugValue = Object.keys(vars).length;
+                        rulesByBoxNode.get(queryBox)!.add({
+                            name,
+                            type: selector ? "global" : "local",
+                            mode: "atomic",
+                            rule: { vars: vars as Record<string, string> },
+                            propName: "vars",
+                            value: debugValue,
+                            token: debugValue,
+                            debugId: getDebugId({
+                                name,
+                                type: "local",
+                                count: allRules.size,
+                                propName: "vars",
+                                token: debugValue,
+                            }),
+                        } as AtomicLocalCssBox);
                         return;
                     }
                 }
@@ -164,19 +230,29 @@ export function generateRulesFromExtraction({
                                 ? primitive
                                 : propValues?.[primitive as keyof typeof propValues] ?? primitive;
 
-                        const debugId = `${name}_${argName}_${String(primitive)}`;
-                        const rule = { [argName]: value } as StyleRule;
+                        const debugId = getDebugId({
+                            name,
+                            type,
+                            count: allRules.size,
+                            propName: argName,
+                            token: primitive,
+                        });
+                        const cssBox = {
+                            name,
+                            type,
+                            mode: "atomic",
+                            rule: { [argName]: value } as StyleRule,
+                            debugId,
+                            propName: argName,
+                            value,
+                            token: primitive,
+                        } as AtomicLocalCssBox;
 
                         if (mode === "atomic") {
-                            styleFn(rule, debugId);
+                            styleFn(cssBox);
+                        } else if (mode === "grouped") {
+                            rulesByBoxNode.get(queryBox)!.add(cssBox);
                         }
-
-                        rulesByDebugId.set(debugId, rule);
-                        if (!rulesByBoxNode.has(queryBox)) {
-                            rulesByBoxNode.set(queryBox, new Set());
-                        }
-
-                        rulesByBoxNode.get(queryBox)!.add(rule);
 
                         logger.scoped("style", { literal: true, debugId });
                         return;
@@ -286,18 +362,31 @@ export function generateRulesFromExtraction({
                             [selector]: styleValue,
                         };
 
-                        const debugId = `${name}_${propName}_${conditionPath.join("_")}_${String(primitive)}`;
+                        const debugId = getDebugId({
+                            name,
+                            type,
+                            count: allRules.size,
+                            propName,
+                            conditionPath,
+                            token: primitive,
+                        });
+                        const cssBox = {
+                            name,
+                            type,
+                            mode: "atomic",
+                            rule,
+                            debugId,
+                            propName,
+                            value,
+                            token: primitive,
+                            conditionPath,
+                        } as AtomicLocalCssBox;
 
                         if (mode === "atomic") {
-                            styleFn(rule, debugId);
+                            styleFn(cssBox);
+                        } else if (mode === "grouped") {
+                            rulesByBoxNode.get(queryBox)!.add(cssBox);
                         }
-
-                        rulesByDebugId.set(debugId, rule);
-                        if (!rulesByBoxNode.has(queryBox)) {
-                            rulesByBoxNode.set(queryBox, new Set());
-                        }
-
-                        rulesByBoxNode.get(queryBox)!.add(rule);
 
                         logger.scoped("style", { conditional: true, debugId });
                     });
@@ -376,48 +465,98 @@ export function generateRulesFromExtraction({
         });
 
         const rules = rulesByBoxNode.get(queryBox)!;
+        const rulesList = Array.from(rules ?? []);
         logger(rules);
 
         if (mode === "grouped") {
+            if (rules.size === 0) {
+                return;
+            }
+
             // style fn
             if (!selector) {
-                const merged = deepMerge(Array.from(rules));
-                const grouped = styleFn(merged);
+                const merged = deepMerge(rulesList.map((conf) => conf.rule));
+                const debugId = getDebugIdGrouped({ name, type, count: allRules.size }, rulesList as any);
+                const grouped = styleFn<GroupedLocalCssBox>({
+                    name,
+                    mode: "grouped",
+                    type: "local",
+                    rule: merged,
+                    debugId,
+                    fromRules: rulesList,
+                });
                 logger.scoped("style", { name, grouped });
 
                 if (grouped) {
                     toReplace.set(queryBox.getNode(), grouped);
-                    classByDebugId.set(grouped, grouped);
                 }
 
                 return;
             }
 
             // globalStyle fn
-            const selectors = Array.from(rules);
+            const cssBoxListBySelector = new Map<string, CssBox[]>();
+            const noSelectorKey = "__no_selector__";
             const groupedRuleBySelector: Record<string, StyleRule> = {};
             const groupedRule: StyleRule = {};
-            selectors.forEach((rule) => {
-                if (rule.selectors) {
-                    const key = Object.keys(rule.selectors)[0];
+
+            rulesList.forEach((conf) => {
+                const rule = conf.rule;
+                const selectors = (rule as StyleRule).selectors;
+
+                if (selectors) {
+                    const key = Object.keys(selectors)[0];
                     if (key) {
                         if (!groupedRuleBySelector[key]) {
                             groupedRuleBySelector[key] = {};
                         }
 
-                        Object.assign(groupedRuleBySelector[key]!, rule.selectors[key]);
+                        Object.assign(groupedRuleBySelector[key]!, selectors[key]);
+
+                        if (!cssBoxListBySelector.has(key)) {
+                            cssBoxListBySelector.set(key, []);
+                        }
+
+                        cssBoxListBySelector.get(key)!.push(conf);
                     }
                 } else {
                     Object.assign(groupedRule, rule);
+
+                    if (!cssBoxListBySelector.has(noSelectorKey)) {
+                        cssBoxListBySelector.set(noSelectorKey, []);
+                    }
+
+                    cssBoxListBySelector.get(noSelectorKey)!.push(conf);
                 }
             });
 
             if (Object.keys(groupedRule).length > 0) {
-                styleFn(groupedRule);
+                const fromRules = cssBoxListBySelector.get(noSelectorKey)!;
+                const debugId = getDebugIdGrouped({ name, type, count: allRules.size }, fromRules as any);
+
+                styleFn({
+                    name,
+                    type: "global",
+                    mode: "grouped",
+                    debugId,
+                    rule: groupedRule,
+                    fromRules,
+                } as GroupedGlobalCssBox);
             }
 
             Object.entries(groupedRuleBySelector).forEach(([key, rule]) => {
-                styleFn(rule, key);
+                const fromRules = cssBoxListBySelector.get(key)!;
+                const debugId = getDebugIdGrouped({ name, type, count: allRules.size }, fromRules as any);
+
+                styleFn({
+                    name,
+                    type: "global",
+                    mode: "grouped",
+                    rule,
+                    debugId,
+                    selector: key,
+                    fromRules,
+                } as GroupedGlobalCssBox);
             });
 
             toRemove.add(queryBox.getNode());
@@ -425,32 +564,57 @@ export function generateRulesFromExtraction({
             return;
         }
 
-        if (mode === "atomic" && classNameList.size > 0) {
-            logger.scoped("style", { name, classNameList: classNameList.size });
-            toReplace.set(queryBox.getNode(), Array.from(classNameList).join(" "));
+        if (mode === "atomic" && boxNodeClassList.size > 0) {
+            logger.scoped("style", { name, classNameList: boxNodeClassList.size });
+            toReplace.set(queryBox.getNode(), Array.from(boxNodeClassList).join(" "));
         }
     });
 
-    return { toReplace, toRemove, classByDebugId, rulesByDebugId, rulesByBoxNode };
+    return { toReplace, toRemove, classByDebugId, rulesByDebugId, rulesByBoxNode, allRules };
 }
 
 export const generateStyleFromExtraction = (
     args: Omit<GenerateRulesArgs, "generateClassName">
 ): ReturnType<typeof generateRulesFromExtraction> & {
-    allRules: Set<CssRule>;
+    allRules: Set<CssBox>;
 } => {
-    const allRules = new Set<CssRule>();
-    const generateClassName = (cssRule: CssRule) => {
-        allRules.add(cssRule);
+    const generateClassName = (cssRule: CssBox) => {
         if (cssRule.type === "local") return style(cssRule.rule, cssRule.debugId);
 
         globalStyle(cssRule.selector, cssRule.rule);
     };
 
-    const result = generateRulesFromExtraction({ ...args, generateClassName });
-    return { ...result, allRules };
+    return generateRulesFromExtraction({
+        ...args,
+        generateClassName,
+        getDebugId: defaultGetDebugId,
+        getDebugIdGrouped: defaultGetDebugIdGrouped,
+    });
 };
 
 type Nullable<T> = T | null | undefined;
 // TODO pastable
 export const isNotNullish = <T>(element: Nullable<T>): element is T => element != null;
+
+type GetDebugIdArgs = Pick<CssBox, "name" | "type"> &
+    Pick<AtomicLocalCssBox, "propName" | "conditionPath" | "token"> & { count: number };
+function defaultGetDebugId({ name, type, count, propName, conditionPath, token }: GetDebugIdArgs) {
+    const conditionPathString = conditionPath && conditionPath.length > 0 ? conditionPath.join("_") + "_" : "";
+    const typeStr = type === "local" ? "" : `_${count}_global`;
+    return `${name}${typeStr}_${propName}_${conditionPathString}${String(token)}`;
+}
+
+type GetDebugIdGroupedArgs = Pick<GetDebugIdArgs, "name" | "type" | "count">;
+function defaultGetDebugIdGrouped({ name, type, count }: GetDebugIdGroupedArgs, list: GetDebugIdArgs[]) {
+    const typeStr = type === "local" ? "" : `_${count}_global`;
+
+    return (
+        name +
+        typeStr +
+        list.reduce((acc, { propName, token, conditionPath }) => {
+            const conditionPathString = conditionPath && conditionPath.length > 0 ? conditionPath.join("_") + "_" : "";
+
+            return acc + `__${propName}_${conditionPathString}${String(token)}`;
+        }, "")
+    );
+}
