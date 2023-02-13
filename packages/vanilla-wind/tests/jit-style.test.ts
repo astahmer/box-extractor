@@ -62,6 +62,683 @@ const extractFromCode = (code: string | SourceFile, options?: Partial<ExtractOpt
     return extracted;
 };
 
+it("minimal atomic local class", () => {
+    const sourceFile = project.createSourceFile(
+        "minimal-atomic-local.ts",
+        `
+        const atomicLocal = defineProperties({
+            conditions: {
+                small: { selector: ".small &" },
+                hover: { selector: "&:hover" },
+                navItem: { selector: 'nav li > &' },
+            },
+            properties: {
+                backgroundColor: {
+                    primary: "blue",
+                    secondary: "green"
+                }
+                fontSize: true
+            },
+            shorthands: {
+                bgColor: ["backgroundColor"],
+            }
+        });
+
+        const className = atomicLocal({
+            fontSize: { hover: "2rem", navItem: "12px" },
+            bgColor: "primary",
+            small: { fontSize: "8px", backgroundColor: "secondary" }
+        });
+    `
+    );
+
+    const extractDefs = extractFromCode(sourceFile, { functions: ["defineProperties"] });
+    const queryList = (extractDefs.get("defineProperties") as FunctionNodesMap).queryList;
+
+    const configByName = new Map<string, { query: QueryFnBox; config: GenericConfig }>();
+    queryList.forEach((query) => {
+        const from = query.fromNode();
+        const declaration = from.getParentIfKindOrThrow(ts.SyntaxKind.VariableDeclaration);
+        const nameNode = declaration.getNameNode();
+        const name = nameNode.getText();
+        configByName.set(name, { query, config: unbox(query.box.value[0]) as GenericConfig });
+    });
+
+    const ctx = createAdapterContext("debug");
+    ctx.setAdapter();
+    setFileScope("test/jit-style.test.ts");
+
+    const fnName = "atomicLocal";
+    const extracted = extractFromCode(sourceFile, { functions: [fnName] });
+    const styles = generateStyleFromExtraction({
+        name: fnName,
+        extracted: extracted.get(fnName)! as FunctionNodesMap,
+        config: configByName.get(fnName)!.config,
+    });
+
+    const magicStr = new MagicString(sourceFile.getFullText());
+    const generateStyleResults = new Set<ReturnType<typeof generateStyleFromExtraction>>();
+    generateStyleResults.add(styles);
+
+    expect(styles.classByDebugId.size).toMatchInlineSnapshot("5");
+    expect(styles.classByDebugId).toMatchInlineSnapshot(`
+      {
+          atomicLocal_backgroundColor_primary: "atomicLocal_backgroundColor_primary__1rxundp0",
+          atomicLocal_fontSize_hover_2rem: "atomicLocal_fontSize_hover_2rem__1rxundp1",
+          atomicLocal_fontSize_navItem_12px: "atomicLocal_fontSize_navItem_12px__1rxundp2",
+          atomicLocal_fontSize_small_8px: "atomicLocal_fontSize_small_8px__1rxundp3",
+          atomicLocal_backgroundColor_small_secondary: "atomicLocal_backgroundColor_small_secondary__1rxundp4",
+      }
+    `);
+    expect(styles.allRules.size).toMatchInlineSnapshot("5");
+    expect(styles.allRules).toMatchInlineSnapshot(`
+      [
+          {
+              name: "atomicLocal",
+              type: "local",
+              mode: "atomic",
+              rule: {
+                  backgroundColor: "blue",
+              },
+              debugId: "atomicLocal_backgroundColor_primary",
+              propName: "backgroundColor",
+              value: "blue",
+              token: "primary",
+          },
+          {
+              name: "atomicLocal",
+              type: "local",
+              mode: "atomic",
+              rule: {
+                  selectors: {
+                      " &:hover": {
+                          fontSize: "2rem",
+                      },
+                  },
+              },
+              debugId: "atomicLocal_fontSize_hover_2rem",
+              propName: "fontSize",
+              value: "2rem",
+              token: "2rem",
+              conditionPath: ["hover"],
+          },
+          {
+              name: "atomicLocal",
+              type: "local",
+              mode: "atomic",
+              rule: {
+                  selectors: {
+                      "nav li > &": {
+                          fontSize: "12px",
+                      },
+                  },
+              },
+              debugId: "atomicLocal_fontSize_navItem_12px",
+              propName: "fontSize",
+              value: "12px",
+              token: "12px",
+              conditionPath: ["navItem"],
+          },
+          {
+              name: "atomicLocal",
+              type: "local",
+              mode: "atomic",
+              rule: {
+                  selectors: {
+                      ".small &": {
+                          fontSize: "8px",
+                      },
+                  },
+              },
+              debugId: "atomicLocal_fontSize_small_8px",
+              propName: "fontSize",
+              value: "8px",
+              token: "8px",
+              conditionPath: ["small"],
+          },
+          {
+              name: "atomicLocal",
+              type: "local",
+              mode: "atomic",
+              rule: {
+                  selectors: {
+                      ".small &": {
+                          backgroundColor: "green",
+                      },
+                  },
+              },
+              debugId: "atomicLocal_backgroundColor_small_secondary",
+              propName: "backgroundColor",
+              value: "green",
+              token: "secondary",
+              conditionPath: ["small"],
+          },
+      ]
+    `);
+
+    const { cssMap } = ctx.getCss();
+    expect(cssMap.get("test/jit-style.test.ts")).toMatchInlineSnapshot(`
+      ".atomicLocal_backgroundColor_primary__1rxundp0 {
+        background-color: blue;
+      }
+       .atomicLocal_fontSize_hover_2rem__1rxundp1:hover {
+        font-size: 2rem;
+      }
+      nav li > .atomicLocal_fontSize_navItem_12px__1rxundp2 {
+        font-size: 12px;
+      }
+      .small .atomicLocal_fontSize_small_8px__1rxundp3 {
+        font-size: 8px;
+      }
+      .small .atomicLocal_backgroundColor_small_secondary__1rxundp4 {
+        background-color: green;
+      }"
+    `);
+
+    transformStyleNodes(generateStyleResults, magicStr);
+
+    expect(magicStr.toString()).toMatchInlineSnapshot(`
+      "
+              const atomicLocal = defineProperties({
+                  conditions: {
+                      small: { selector: ".small &" },
+                      hover: { selector: "&:hover" },
+                      navItem: { selector: 'nav li > &' },
+                  },
+                  properties: {
+                      backgroundColor: {
+                          primary: "blue",
+                          secondary: "green"
+                      }
+                      fontSize: true
+                  },
+                  shorthands: {
+                      bgColor: ["backgroundColor"],
+                  }
+              });
+
+              const className = "atomicLocal_backgroundColor_primary__1rxundp0 atomicLocal_fontSize_hover_2rem__1rxundp1 atomicLocal_fontSize_navItem_12px__1rxundp2 atomicLocal_fontSize_small_8px__1rxundp3 atomicLocal_backgroundColor_small_secondary__1rxundp4";
+          "
+    `);
+
+    endFileScope();
+    ctx.removeAdapter();
+});
+
+it("minimal grouped local class", () => {
+    const sourceFile = project.createSourceFile(
+        "minimal-grouped-local.ts",
+        `
+        const groupedLocal = defineProperties({
+            conditions: {
+                small: { selector: ".small &" },
+                hover: { selector: "&:hover" },
+                navItem: { selector: 'nav li > &' },
+            },
+            properties: {
+                backgroundColor: {
+                    primary: "blue",
+                    secondary: "green"
+                }
+                fontSize: true
+            },
+            shorthands: {
+                bgColor: ["backgroundColor"],
+            }
+        });
+
+        const className = groupedLocal({
+            fontSize: { hover: "2rem", navItem: "12px" },
+            bgColor: "primary",
+            small: { fontSize: "8px", backgroundColor: "secondary" }
+        }, { mode: "grouped" });
+    `
+    );
+
+    const extractDefs = extractFromCode(sourceFile, { functions: ["defineProperties"] });
+    const queryList = (extractDefs.get("defineProperties") as FunctionNodesMap).queryList;
+
+    const configByName = new Map<string, { query: QueryFnBox; config: GenericConfig }>();
+    queryList.forEach((query) => {
+        const from = query.fromNode();
+        const declaration = from.getParentIfKindOrThrow(ts.SyntaxKind.VariableDeclaration);
+        const nameNode = declaration.getNameNode();
+        const name = nameNode.getText();
+        configByName.set(name, { query, config: unbox(query.box.value[0]) as GenericConfig });
+    });
+
+    const ctx = createAdapterContext("debug");
+    ctx.setAdapter();
+    setFileScope("test/jit-style.test.ts");
+
+    const fnName = "groupedLocal";
+    const extracted = extractFromCode(sourceFile, { functions: [fnName] });
+    const styles = generateStyleFromExtraction({
+        name: fnName,
+        extracted: extracted.get(fnName)! as FunctionNodesMap,
+        config: configByName.get(fnName)!.config,
+    });
+
+    const magicStr = new MagicString(sourceFile.getFullText());
+    const generateStyleResults = new Set<ReturnType<typeof generateStyleFromExtraction>>();
+    generateStyleResults.add(styles);
+
+    expect(styles.classByDebugId.size).toMatchInlineSnapshot("1");
+    expect(styles.classByDebugId).toMatchInlineSnapshot(`
+      {
+          groupedLocal__backgroundColor_primary__fontSize_hover_2rem__fontSize_navItem_12px__fontSize_small_8px__backgroundColor_small_secondary:
+              "groupedLocal__backgroundColor_primary__fontSize_hover_2rem__fontSize_navItem_12px__fontSize_small_8px__backgroundColor_small_secondary__1rxundp0",
+      }
+    `);
+    expect(styles.allRules.size).toMatchInlineSnapshot("1");
+    expect(styles.allRules).toMatchInlineSnapshot(`
+      [
+          {
+              name: "groupedLocal",
+              mode: "grouped",
+              type: "local",
+              rule: {
+                  backgroundColor: "blue",
+                  selectors: {
+                      " &:hover": {
+                          fontSize: "2rem",
+                      },
+                      "nav li > &": {
+                          fontSize: "12px",
+                      },
+                      ".small &": {
+                          fontSize: "8px",
+                          backgroundColor: "green",
+                      },
+                  },
+              },
+              debugId:
+                  "groupedLocal__backgroundColor_primary__fontSize_hover_2rem__fontSize_navItem_12px__fontSize_small_8px__backgroundColor_small_secondary",
+              fromRules: [
+                  {
+                      name: "groupedLocal",
+                      type: "local",
+                      mode: "atomic",
+                      rule: {
+                          backgroundColor: "blue",
+                          selectors: {
+                              " &:hover": {
+                                  fontSize: "2rem",
+                              },
+                              "nav li > &": {
+                                  fontSize: "12px",
+                              },
+                              ".small &": {
+                                  fontSize: "8px",
+                                  backgroundColor: "green",
+                              },
+                          },
+                      },
+                      debugId: "groupedLocal_backgroundColor_primary",
+                      propName: "backgroundColor",
+                      value: "blue",
+                      token: "primary",
+                  },
+                  {
+                      name: "groupedLocal",
+                      type: "local",
+                      mode: "atomic",
+                      rule: {
+                          selectors: {
+                              " &:hover": {
+                                  fontSize: "2rem",
+                              },
+                          },
+                      },
+                      debugId: "groupedLocal_fontSize_hover_2rem",
+                      propName: "fontSize",
+                      value: "2rem",
+                      token: "2rem",
+                      conditionPath: ["hover"],
+                  },
+                  {
+                      name: "groupedLocal",
+                      type: "local",
+                      mode: "atomic",
+                      rule: {
+                          selectors: {
+                              "nav li > &": {
+                                  fontSize: "12px",
+                              },
+                          },
+                      },
+                      debugId: "groupedLocal_fontSize_navItem_12px",
+                      propName: "fontSize",
+                      value: "12px",
+                      token: "12px",
+                      conditionPath: ["navItem"],
+                  },
+                  {
+                      name: "groupedLocal",
+                      type: "local",
+                      mode: "atomic",
+                      rule: {
+                          selectors: {
+                              ".small &": {
+                                  fontSize: "8px",
+                              },
+                          },
+                      },
+                      debugId: "groupedLocal_fontSize_small_8px",
+                      propName: "fontSize",
+                      value: "8px",
+                      token: "8px",
+                      conditionPath: ["small"],
+                  },
+                  {
+                      name: "groupedLocal",
+                      type: "local",
+                      mode: "atomic",
+                      rule: {
+                          selectors: {
+                              ".small &": {
+                                  backgroundColor: "green",
+                              },
+                          },
+                      },
+                      debugId: "groupedLocal_backgroundColor_small_secondary",
+                      propName: "backgroundColor",
+                      value: "green",
+                      token: "secondary",
+                      conditionPath: ["small"],
+                  },
+              ],
+          },
+      ]
+    `);
+
+    const { cssMap } = ctx.getCss();
+    expect(cssMap.get("test/jit-style.test.ts")).toMatchInlineSnapshot(`
+      ".groupedLocal__backgroundColor_primary__fontSize_hover_2rem__fontSize_navItem_12px__fontSize_small_8px__backgroundColor_small_secondary__1rxundp0 {
+        background-color: blue;
+      }
+       .groupedLocal__backgroundColor_primary__fontSize_hover_2rem__fontSize_navItem_12px__fontSize_small_8px__backgroundColor_small_secondary__1rxundp0:hover {
+        font-size: 2rem;
+      }
+      nav li > .groupedLocal__backgroundColor_primary__fontSize_hover_2rem__fontSize_navItem_12px__fontSize_small_8px__backgroundColor_small_secondary__1rxundp0 {
+        font-size: 12px;
+      }
+      .small .groupedLocal__backgroundColor_primary__fontSize_hover_2rem__fontSize_navItem_12px__fontSize_small_8px__backgroundColor_small_secondary__1rxundp0 {
+        font-size: 8px;
+        background-color: green;
+      }"
+    `);
+
+    transformStyleNodes(generateStyleResults, magicStr);
+
+    expect(magicStr.toString()).toMatchInlineSnapshot(`
+      "
+              const groupedLocal = defineProperties({
+                  conditions: {
+                      small: { selector: ".small &" },
+                      hover: { selector: "&:hover" },
+                      navItem: { selector: 'nav li > &' },
+                  },
+                  properties: {
+                      backgroundColor: {
+                          primary: "blue",
+                          secondary: "green"
+                      }
+                      fontSize: true
+                  },
+                  shorthands: {
+                      bgColor: ["backgroundColor"],
+                  }
+              });
+
+              const className = "groupedLocal__backgroundColor_primary__fontSize_hover_2rem__fontSize_navItem_12px__fontSize_small_8px__backgroundColor_small_secondary__1rxundp0";
+          "
+    `);
+
+    endFileScope();
+    ctx.removeAdapter();
+});
+
+it("minimal global", () => {
+    const sourceFile = project.createSourceFile(
+        "minimal-global.ts",
+        `
+        const minimalGlobal = defineProperties({
+            conditions: {
+                small: { selector: ".small &" },
+                hover: { selector: "&:hover" },
+                navItem: { selector: 'nav li > &' },
+            },
+            properties: {
+                backgroundColor: {
+                    primary: "blue",
+                    secondary: "green"
+                }
+                fontSize: true
+            },
+            shorthands: {
+                bgColor: ["backgroundColor"],
+            }
+        });
+
+        minimalGlobal({
+            fontSize: { hover: "2rem", navItem: "12px" },
+            bgColor: "primary",
+            small: { fontSize: "8px", backgroundColor: "secondary" }
+        }, { selector: ":root" });
+    `
+    );
+
+    const extractDefs = extractFromCode(sourceFile, { functions: ["defineProperties"] });
+    const queryList = (extractDefs.get("defineProperties") as FunctionNodesMap).queryList;
+
+    const configByName = new Map<string, { query: QueryFnBox; config: GenericConfig }>();
+    queryList.forEach((query) => {
+        const from = query.fromNode();
+        const declaration = from.getParentIfKindOrThrow(ts.SyntaxKind.VariableDeclaration);
+        const nameNode = declaration.getNameNode();
+        const name = nameNode.getText();
+        configByName.set(name, { query, config: unbox(query.box.value[0]) as GenericConfig });
+    });
+
+    const ctx = createAdapterContext("debug");
+    ctx.setAdapter();
+    setFileScope("test/jit-style.test.ts");
+
+    const fnName = "minimalGlobal";
+    const extracted = extractFromCode(sourceFile, { functions: [fnName] });
+    const styles = generateStyleFromExtraction({
+        name: fnName,
+        extracted: extracted.get(fnName)! as FunctionNodesMap,
+        config: configByName.get(fnName)!.config,
+    });
+
+    const magicStr = new MagicString(sourceFile.getFullText());
+    const generateStyleResults = new Set<ReturnType<typeof generateStyleFromExtraction>>();
+    generateStyleResults.add(styles);
+
+    expect(styles.classByDebugId.size).toMatchInlineSnapshot("0");
+    expect(styles.classByDebugId).toMatchInlineSnapshot("{}");
+    expect(styles.allRules.size).toMatchInlineSnapshot("4");
+    expect(styles.allRules).toMatchInlineSnapshot(`
+      [
+          {
+              name: "minimalGlobal",
+              type: "global",
+              mode: "grouped",
+              debugId: "minimalGlobal_0_global__backgroundColor_primary",
+              rule: {
+                  backgroundColor: "blue",
+              },
+              fromRules: [
+                  {
+                      name: "minimalGlobal",
+                      type: "global",
+                      mode: "atomic",
+                      rule: {
+                          backgroundColor: "blue",
+                      },
+                      debugId: "minimalGlobal_0_global_backgroundColor_primary",
+                      propName: "backgroundColor",
+                      value: "blue",
+                      token: "primary",
+                  },
+              ],
+              selector: ":root",
+          },
+          {
+              name: "minimalGlobal",
+              type: "global",
+              mode: "grouped",
+              rule: {
+                  fontSize: "2rem",
+              },
+              debugId: "minimalGlobal_1_global__fontSize_hover_2rem",
+              selector: ":root  &:hover",
+              fromRules: [
+                  {
+                      name: "minimalGlobal",
+                      type: "global",
+                      mode: "atomic",
+                      rule: {
+                          selectors: {
+                              " &:hover": {
+                                  fontSize: "2rem",
+                              },
+                          },
+                      },
+                      debugId: "minimalGlobal_0_global_fontSize_hover_2rem",
+                      propName: "fontSize",
+                      value: "2rem",
+                      token: "2rem",
+                      conditionPath: ["hover"],
+                  },
+              ],
+          },
+          {
+              name: "minimalGlobal",
+              type: "global",
+              mode: "grouped",
+              rule: {
+                  fontSize: "12px",
+              },
+              debugId: "minimalGlobal_2_global__fontSize_navItem_12px",
+              selector: ":root nav li > *",
+              fromRules: [
+                  {
+                      name: "minimalGlobal",
+                      type: "global",
+                      mode: "atomic",
+                      rule: {
+                          selectors: {
+                              "nav li > &": {
+                                  fontSize: "12px",
+                              },
+                          },
+                      },
+                      debugId: "minimalGlobal_0_global_fontSize_navItem_12px",
+                      propName: "fontSize",
+                      value: "12px",
+                      token: "12px",
+                      conditionPath: ["navItem"],
+                  },
+              ],
+          },
+          {
+              name: "minimalGlobal",
+              type: "global",
+              mode: "grouped",
+              rule: {
+                  fontSize: "8px",
+                  backgroundColor: "green",
+              },
+              debugId: "minimalGlobal_3_global__fontSize_small_8px__backgroundColor_small_secondary",
+              selector: ":root.small",
+              fromRules: [
+                  {
+                      name: "minimalGlobal",
+                      type: "global",
+                      mode: "atomic",
+                      rule: {
+                          selectors: {
+                              ".small &": {
+                                  fontSize: "8px",
+                              },
+                          },
+                      },
+                      debugId: "minimalGlobal_0_global_fontSize_small_8px",
+                      propName: "fontSize",
+                      value: "8px",
+                      token: "8px",
+                      conditionPath: ["small"],
+                  },
+                  {
+                      name: "minimalGlobal",
+                      type: "global",
+                      mode: "atomic",
+                      rule: {
+                          selectors: {
+                              ".small &": {
+                                  backgroundColor: "green",
+                              },
+                          },
+                      },
+                      debugId: "minimalGlobal_0_global_backgroundColor_small_secondary",
+                      propName: "backgroundColor",
+                      value: "green",
+                      token: "secondary",
+                      conditionPath: ["small"],
+                  },
+              ],
+          },
+      ]
+    `);
+
+    const { cssMap } = ctx.getCss();
+    expect(cssMap.get("test/jit-style.test.ts")).toMatchInlineSnapshot(`
+      ":root {
+        background-color: blue;
+      }
+      :root  &:hover {
+        font-size: 2rem;
+      }
+      :root nav li > * {
+        font-size: 12px;
+      }
+      :root.small {
+        font-size: 8px;
+        background-color: green;
+      }"
+    `);
+
+    transformStyleNodes(generateStyleResults, magicStr);
+
+    expect(magicStr.toString()).toMatchInlineSnapshot(`
+      "
+              const minimalGlobal = defineProperties({
+                  conditions: {
+                      small: { selector: ".small &" },
+                      hover: { selector: "&:hover" },
+                      navItem: { selector: 'nav li > &' },
+                  },
+                  properties: {
+                      backgroundColor: {
+                          primary: "blue",
+                          secondary: "green"
+                      }
+                      fontSize: true
+                  },
+                  shorthands: {
+                      bgColor: ["backgroundColor"],
+                  }
+              });;
+          "
+    `);
+
+    endFileScope();
+    ctx.removeAdapter();
+});
+
 it("simple CallExpression extract + JIT style + replace call by generated className", () => {
     const sourceFile = project.createSourceFile(
         "example.css.ts",
@@ -493,18 +1170,26 @@ it("simple CallExpression extract + JIT style + replace call by generated classN
           {
               name: "minimalSprinkles",
               type: "local",
+              mode: "atomic",
               rule: {
                   color: "var(--brand)",
               },
               debugId: "minimalSprinkles_color_brand",
+              propName: "color",
+              value: "var(--brand)",
+              token: "brand",
           },
           {
               name: "minimalSprinkles",
               type: "local",
+              mode: "atomic",
               rule: {
                   color: "red.100",
               },
               debugId: "minimalSprinkles_color_red.100",
+              propName: "color",
+              value: "red.100",
+              token: "red.100",
           },
       ]
     `);
@@ -580,18 +1265,26 @@ it("simple CallExpression extract + JIT style + replace call by generated classN
           {
               name: "tw",
               type: "local",
+              mode: "atomic",
               rule: {
                   padding: "24px",
               },
               debugId: "tw_padding_24",
+              propName: "padding",
+              value: "24px",
+              token: "24",
           },
           {
               name: "tw",
               type: "local",
+              mode: "atomic",
               rule: {
                   borderRadius: "0.5rem",
               },
               debugId: "tw_borderRadius_lg",
+              propName: "borderRadius",
+              value: "0.5rem",
+              token: "lg",
           },
       ]
     `);
@@ -819,7 +1512,7 @@ it("will generate multiple styles with nested conditions", () => {
     const magicStr = new MagicString(sourceFile.getFullText());
     const generateStyleResults = new Set<ReturnType<typeof generateStyleFromExtraction>>();
 
-    expect(twStyles.classByDebugId.size).toMatchInlineSnapshot('22');
+    expect(twStyles.classByDebugId.size).toMatchInlineSnapshot("22");
     expect(twStyles.classByDebugId).toMatchInlineSnapshot(`
       {
           "tw_backgroundColor_blue.500": "tw_backgroundColor_blue.500__1rxundp0",
@@ -852,30 +1545,43 @@ it("will generate multiple styles with nested conditions", () => {
           {
               name: "tw",
               type: "local",
+              mode: "atomic",
               rule: {
                   backgroundColor: "#3182ce",
               },
               debugId: "tw_backgroundColor_blue.500",
+              propName: "backgroundColor",
+              value: "#3182ce",
+              token: "blue.500",
           },
           {
               name: "tw",
               type: "local",
+              mode: "atomic",
               rule: {
                   padding: "24px",
               },
               debugId: "tw_padding_24",
+              propName: "padding",
+              value: "24px",
+              token: "24",
           },
           {
               name: "tw",
               type: "local",
+              mode: "atomic",
               rule: {
                   borderRadius: "0.5rem",
               },
               debugId: "tw_borderRadius_lg",
+              propName: "borderRadius",
+              value: "0.5rem",
+              token: "lg",
           },
           {
               name: "tw",
               type: "local",
+              mode: "atomic",
               rule: {
                   selectors: {
                       ".dark &:hover": {
@@ -884,10 +1590,15 @@ it("will generate multiple styles with nested conditions", () => {
                   },
               },
               debugId: "tw_display_dark_hover_table-footer-group",
+              propName: "display",
+              value: "table-footer-group",
+              token: "table-footer-group",
+              conditionPath: ["dark", "hover"],
           },
           {
               name: "tw",
               type: "local",
+              mode: "atomic",
               rule: {
                   selectors: {
                       "nav li > &:hover:not(:active)": {
@@ -896,10 +1607,15 @@ it("will generate multiple styles with nested conditions", () => {
                   },
               },
               debugId: "tw_color_navItem_hoverNotActive_brand.100",
+              propName: "color",
+              value: "#EFF6F8",
+              token: "brand.100",
+              conditionPath: ["navItem", "hoverNotActive"],
           },
           {
               name: "tw",
               type: "local",
+              mode: "atomic",
               rule: {
                   selectors: {
                       " &:hover": {
@@ -908,10 +1624,15 @@ it("will generate multiple styles with nested conditions", () => {
                   },
               },
               debugId: "tw_backgroundColor_hover_whitesmoke",
+              propName: "backgroundColor",
+              value: "whitesmoke",
+              token: "whitesmoke",
+              conditionPath: ["hover"],
           },
           {
               name: "tw",
               type: "local",
+              mode: "atomic",
               rule: {
                   selectors: {
                       " &:hover": {
@@ -920,10 +1641,15 @@ it("will generate multiple styles with nested conditions", () => {
                   },
               },
               debugId: "tw_borderRadius_hover_2xl",
+              propName: "borderRadius",
+              value: "1rem",
+              token: "2xl",
+              conditionPath: ["hover"],
           },
           {
               name: "tw",
               type: "local",
+              mode: "atomic",
               rule: {
                   selectors: {
                       " &:hover": {
@@ -932,10 +1658,15 @@ it("will generate multiple styles with nested conditions", () => {
                   },
               },
               debugId: "tw_color_hover_darkseagreen",
+              propName: "color",
+              value: "darkseagreen",
+              token: "darkseagreen",
+              conditionPath: ["hover"],
           },
           {
               name: "tw",
               type: "local",
+              mode: "atomic",
               rule: {
                   selectors: {
                       " &:hover": {
@@ -944,10 +1675,15 @@ it("will generate multiple styles with nested conditions", () => {
                   },
               },
               debugId: "tw_width_hover_12px",
+              propName: "width",
+              value: "12px",
+              token: "12px",
+              conditionPath: ["hover"],
           },
           {
               name: "tw",
               type: "local",
+              mode: "atomic",
               rule: {
                   selectors: {
                       " &:hover": {
@@ -956,10 +1692,15 @@ it("will generate multiple styles with nested conditions", () => {
                   },
               },
               debugId: "tw_padding_hover_100px",
+              propName: "padding",
+              value: "100px",
+              token: "100px",
+              conditionPath: ["hover"],
           },
           {
               name: "tw",
               type: "local",
+              mode: "atomic",
               rule: {
                   selectors: {
                       " &:hover": {
@@ -968,10 +1709,15 @@ it("will generate multiple styles with nested conditions", () => {
                   },
               },
               debugId: "tw_padding_hover_4",
+              propName: "padding",
+              value: "4px",
+              token: "4",
+              conditionPath: ["hover"],
           },
           {
               name: "tw",
               type: "local",
+              mode: "atomic",
               rule: {
                   selectors: {
                       ".dark.large &:hover": {
@@ -980,10 +1726,15 @@ it("will generate multiple styles with nested conditions", () => {
                   },
               },
               debugId: "tw_display_hover_dark_large_flex",
+              propName: "display",
+              value: "flex",
+              token: "flex",
+              conditionPath: ["hover", "dark", "large"],
           },
           {
               name: "tw",
               type: "local",
+              mode: "atomic",
               rule: {
                   selectors: {
                       ".light &:hover": {
@@ -992,10 +1743,15 @@ it("will generate multiple styles with nested conditions", () => {
                   },
               },
               debugId: "tw_display_hover_light_inline-flex",
+              propName: "display",
+              value: "inline-flex",
+              token: "inline-flex",
+              conditionPath: ["hover", "light"],
           },
           {
               name: "tw",
               type: "local",
+              mode: "atomic",
               rule: {
                   selectors: {
                       ".dark &:hover": {
@@ -1004,10 +1760,15 @@ it("will generate multiple styles with nested conditions", () => {
                   },
               },
               debugId: "tw_backgroundColor_hover_dark_blue.700",
+              propName: "backgroundColor",
+              value: "#2c5282",
+              token: "blue.700",
+              conditionPath: ["hover", "dark"],
           },
           {
               name: "tw",
               type: "local",
+              mode: "atomic",
               rule: {
                   selectors: {
                       ".light.large &:hover": {
@@ -1016,10 +1777,15 @@ it("will generate multiple styles with nested conditions", () => {
                   },
               },
               debugId: "tw_backgroundColor_hover_light_large_red.200",
+              propName: "backgroundColor",
+              value: "#FEB2B2",
+              token: "red.200",
+              conditionPath: ["hover", "light", "large"],
           },
           {
               name: "tw",
               type: "local",
+              mode: "atomic",
               rule: {
                   selectors: {
                       ".light.dark &:hover": {
@@ -1028,10 +1794,15 @@ it("will generate multiple styles with nested conditions", () => {
                   },
               },
               debugId: "tw_backgroundColor_hover_light_dark_ThreeDHighlight",
+              propName: "backgroundColor",
+              value: "ThreeDHighlight",
+              token: "ThreeDHighlight",
+              conditionPath: ["hover", "light", "dark"],
           },
           {
               name: "tw",
               type: "local",
+              mode: "atomic",
               rule: {
                   selectors: {
                       ".dark &": {
@@ -1040,10 +1811,15 @@ it("will generate multiple styles with nested conditions", () => {
                   },
               },
               debugId: "tw_padding_dark_24",
+              propName: "padding",
+              value: "24px",
+              token: "24",
+              conditionPath: ["dark"],
           },
           {
               name: "tw",
               type: "local",
+              mode: "atomic",
               rule: {
                   selectors: {
                       ".dark &": {
@@ -1052,10 +1828,15 @@ it("will generate multiple styles with nested conditions", () => {
                   },
               },
               debugId: "tw_backgroundColor_dark_red.800",
+              propName: "backgroundColor",
+              value: "#822727",
+              token: "red.800",
+              conditionPath: ["dark"],
           },
           {
               name: "tw",
               type: "local",
+              mode: "atomic",
               rule: {
                   selectors: {
                       ".dark &": {
@@ -1064,10 +1845,15 @@ it("will generate multiple styles with nested conditions", () => {
                   },
               },
               debugId: "tw_backgroundColor_dark_whitesmoke",
+              propName: "backgroundColor",
+              value: "whitesmoke",
+              token: "whitesmoke",
+              conditionPath: ["dark"],
           },
           {
               name: "tw",
               type: "local",
+              mode: "atomic",
               rule: {
                   selectors: {
                       ".dark &:hover": {
@@ -1076,10 +1862,15 @@ it("will generate multiple styles with nested conditions", () => {
                   },
               },
               debugId: "tw_color_dark_hover_blue.600",
+              propName: "color",
+              value: "#2b6cb0",
+              token: "blue.600",
+              conditionPath: ["dark", "hover"],
           },
           {
               name: "tw",
               type: "local",
+              mode: "atomic",
               rule: {
                   selectors: {
                       ".dark.light &:hover": {
@@ -1088,10 +1879,15 @@ it("will generate multiple styles with nested conditions", () => {
                   },
               },
               debugId: "tw_display_dark_hover_light_flex",
+              propName: "display",
+              value: "flex",
+              token: "flex",
+              conditionPath: ["dark", "hover", "light"],
           },
           {
               name: "tw",
               type: "local",
+              mode: "atomic",
               rule: {
                   selectors: {
                       ".dark.large.small &:hover": {
@@ -1100,6 +1896,10 @@ it("will generate multiple styles with nested conditions", () => {
                   },
               },
               debugId: "tw_display_dark_hover_large_small_contents",
+              propName: "display",
+              value: "contents",
+              token: "contents",
+              conditionPath: ["dark", "hover", "large", "small"],
           },
       ]
     `);
@@ -1299,16 +2099,18 @@ it("will generate multiple styles with nested conditions - grouped", () => {
     const magicStr = new MagicString(sourceFile.getFullText());
     const generateStyleResults = new Set<ReturnType<typeof generateStyleFromExtraction>>();
 
-    expect(twStyles.classByDebugId.size).toMatchInlineSnapshot('1');
+    expect(twStyles.classByDebugId.size).toMatchInlineSnapshot("1");
     expect(twStyles.classByDebugId).toMatchInlineSnapshot(`
       {
-          _1rxundp0: "_1rxundp0",
+          "tw__backgroundColor_blue.500__padding_24__borderRadius_lg__display_dark_hover_table-footer-group__color_navItem_hoverNotActive_brand.100__backgroundColor_hover_whitesmoke__borderRadius_hover_2xl__color_hover_darkseagreen__width_hover_12px__padding_hover_100px__padding_hover_4__display_hover_dark_large_flex__display_hover_light_inline-flex__backgroundColor_hover_dark_blue.700__backgroundColor_hover_light_large_red.200__backgroundColor_hover_light_dark_ThreeDHighlight__padding_dark_24__backgroundColor_dark_red.800__backgroundColor_dark_whitesmoke__color_dark_hover_blue.600__display_dark_hover_light_flex__display_dark_hover_large_small_contents":
+              "tw__backgroundColor_blue.500__padding_24__borderRadius_lg__display_dark_hover_table-footer-group__color_navItem_hoverNotActive_brand.100__backgroundColor_hover_whitesmoke__borderRadius_hover_2xl__color_hover_darkseagreen__width_hover_12px__padding_hover_100px__padding_hover_4__display_hover_dark_large_flex__display_hover_light_inline-flex__backgroundColor_hover_dark_blue.700__backgroundColor_hover_light_large_red.200__backgroundColor_hover_light_dark_ThreeDHighlight__padding_dark_24__backgroundColor_dark_red.800__backgroundColor_dark_whitesmoke__color_dark_hover_blue.600__display_dark_hover_light_flex__display_dark_hover_large_small_contents__1rxundp0",
       }
     `);
     expect(twStyles.allRules).toMatchInlineSnapshot(`
       [
           {
               name: "tw",
+              mode: "grouped",
               type: "local",
               rule: {
                   backgroundColor: "#3182ce",
@@ -1354,6 +2156,410 @@ it("will generate multiple styles with nested conditions - grouped", () => {
                       },
                   },
               },
+              debugId:
+                  "tw__backgroundColor_blue.500__padding_24__borderRadius_lg__display_dark_hover_table-footer-group__color_navItem_hoverNotActive_brand.100__backgroundColor_hover_whitesmoke__borderRadius_hover_2xl__color_hover_darkseagreen__width_hover_12px__padding_hover_100px__padding_hover_4__display_hover_dark_large_flex__display_hover_light_inline-flex__backgroundColor_hover_dark_blue.700__backgroundColor_hover_light_large_red.200__backgroundColor_hover_light_dark_ThreeDHighlight__padding_dark_24__backgroundColor_dark_red.800__backgroundColor_dark_whitesmoke__color_dark_hover_blue.600__display_dark_hover_light_flex__display_dark_hover_large_small_contents",
+              fromRules: [
+                  {
+                      name: "tw",
+                      type: "local",
+                      mode: "atomic",
+                      rule: {
+                          backgroundColor: "#3182ce",
+                          padding: "24px",
+                          borderRadius: "0.5rem",
+                          selectors: {
+                              ".dark &:hover": {
+                                  display: "table-footer-group",
+                                  backgroundColor: "#2c5282",
+                                  color: "#2b6cb0",
+                              },
+                              "nav li > &:hover:not(:active)": {
+                                  color: "#EFF6F8",
+                              },
+                              " &:hover": {
+                                  backgroundColor: "whitesmoke",
+                                  borderRadius: "1rem",
+                                  color: "darkseagreen",
+                                  width: "12px",
+                                  padding: "4px",
+                              },
+                              ".dark.large &:hover": {
+                                  display: "flex",
+                              },
+                              ".light &:hover": {
+                                  display: "inline-flex",
+                              },
+                              ".light.large &:hover": {
+                                  backgroundColor: "#FEB2B2",
+                              },
+                              ".light.dark &:hover": {
+                                  backgroundColor: "ThreeDHighlight",
+                              },
+                              ".dark &": {
+                                  padding: "24px",
+                                  backgroundColor: "whitesmoke",
+                              },
+                              ".dark.light &:hover": {
+                                  display: "flex",
+                              },
+                              ".dark.large.small &:hover": {
+                                  display: "contents",
+                              },
+                          },
+                      },
+                      debugId: "tw_backgroundColor_blue.500",
+                      propName: "backgroundColor",
+                      value: "#3182ce",
+                      token: "blue.500",
+                  },
+                  {
+                      name: "tw",
+                      type: "local",
+                      mode: "atomic",
+                      rule: {
+                          padding: "24px",
+                      },
+                      debugId: "tw_padding_24",
+                      propName: "padding",
+                      value: "24px",
+                      token: "24",
+                  },
+                  {
+                      name: "tw",
+                      type: "local",
+                      mode: "atomic",
+                      rule: {
+                          borderRadius: "0.5rem",
+                      },
+                      debugId: "tw_borderRadius_lg",
+                      propName: "borderRadius",
+                      value: "0.5rem",
+                      token: "lg",
+                  },
+                  {
+                      name: "tw",
+                      type: "local",
+                      mode: "atomic",
+                      rule: {
+                          selectors: {
+                              ".dark &:hover": {
+                                  display: "table-footer-group",
+                              },
+                          },
+                      },
+                      debugId: "tw_display_dark_hover_table-footer-group",
+                      propName: "display",
+                      value: "table-footer-group",
+                      token: "table-footer-group",
+                      conditionPath: ["dark", "hover"],
+                  },
+                  {
+                      name: "tw",
+                      type: "local",
+                      mode: "atomic",
+                      rule: {
+                          selectors: {
+                              "nav li > &:hover:not(:active)": {
+                                  color: "#EFF6F8",
+                              },
+                          },
+                      },
+                      debugId: "tw_color_navItem_hoverNotActive_brand.100",
+                      propName: "color",
+                      value: "#EFF6F8",
+                      token: "brand.100",
+                      conditionPath: ["navItem", "hoverNotActive"],
+                  },
+                  {
+                      name: "tw",
+                      type: "local",
+                      mode: "atomic",
+                      rule: {
+                          selectors: {
+                              " &:hover": {
+                                  backgroundColor: "whitesmoke",
+                              },
+                          },
+                      },
+                      debugId: "tw_backgroundColor_hover_whitesmoke",
+                      propName: "backgroundColor",
+                      value: "whitesmoke",
+                      token: "whitesmoke",
+                      conditionPath: ["hover"],
+                  },
+                  {
+                      name: "tw",
+                      type: "local",
+                      mode: "atomic",
+                      rule: {
+                          selectors: {
+                              " &:hover": {
+                                  borderRadius: "1rem",
+                              },
+                          },
+                      },
+                      debugId: "tw_borderRadius_hover_2xl",
+                      propName: "borderRadius",
+                      value: "1rem",
+                      token: "2xl",
+                      conditionPath: ["hover"],
+                  },
+                  {
+                      name: "tw",
+                      type: "local",
+                      mode: "atomic",
+                      rule: {
+                          selectors: {
+                              " &:hover": {
+                                  color: "darkseagreen",
+                              },
+                          },
+                      },
+                      debugId: "tw_color_hover_darkseagreen",
+                      propName: "color",
+                      value: "darkseagreen",
+                      token: "darkseagreen",
+                      conditionPath: ["hover"],
+                  },
+                  {
+                      name: "tw",
+                      type: "local",
+                      mode: "atomic",
+                      rule: {
+                          selectors: {
+                              " &:hover": {
+                                  width: "12px",
+                              },
+                          },
+                      },
+                      debugId: "tw_width_hover_12px",
+                      propName: "width",
+                      value: "12px",
+                      token: "12px",
+                      conditionPath: ["hover"],
+                  },
+                  {
+                      name: "tw",
+                      type: "local",
+                      mode: "atomic",
+                      rule: {
+                          selectors: {
+                              " &:hover": {
+                                  padding: "100px",
+                              },
+                          },
+                      },
+                      debugId: "tw_padding_hover_100px",
+                      propName: "padding",
+                      value: "100px",
+                      token: "100px",
+                      conditionPath: ["hover"],
+                  },
+                  {
+                      name: "tw",
+                      type: "local",
+                      mode: "atomic",
+                      rule: {
+                          selectors: {
+                              " &:hover": {
+                                  padding: "4px",
+                              },
+                          },
+                      },
+                      debugId: "tw_padding_hover_4",
+                      propName: "padding",
+                      value: "4px",
+                      token: "4",
+                      conditionPath: ["hover"],
+                  },
+                  {
+                      name: "tw",
+                      type: "local",
+                      mode: "atomic",
+                      rule: {
+                          selectors: {
+                              ".dark.large &:hover": {
+                                  display: "flex",
+                              },
+                          },
+                      },
+                      debugId: "tw_display_hover_dark_large_flex",
+                      propName: "display",
+                      value: "flex",
+                      token: "flex",
+                      conditionPath: ["hover", "dark", "large"],
+                  },
+                  {
+                      name: "tw",
+                      type: "local",
+                      mode: "atomic",
+                      rule: {
+                          selectors: {
+                              ".light &:hover": {
+                                  display: "inline-flex",
+                              },
+                          },
+                      },
+                      debugId: "tw_display_hover_light_inline-flex",
+                      propName: "display",
+                      value: "inline-flex",
+                      token: "inline-flex",
+                      conditionPath: ["hover", "light"],
+                  },
+                  {
+                      name: "tw",
+                      type: "local",
+                      mode: "atomic",
+                      rule: {
+                          selectors: {
+                              ".dark &:hover": {
+                                  backgroundColor: "#2c5282",
+                              },
+                          },
+                      },
+                      debugId: "tw_backgroundColor_hover_dark_blue.700",
+                      propName: "backgroundColor",
+                      value: "#2c5282",
+                      token: "blue.700",
+                      conditionPath: ["hover", "dark"],
+                  },
+                  {
+                      name: "tw",
+                      type: "local",
+                      mode: "atomic",
+                      rule: {
+                          selectors: {
+                              ".light.large &:hover": {
+                                  backgroundColor: "#FEB2B2",
+                              },
+                          },
+                      },
+                      debugId: "tw_backgroundColor_hover_light_large_red.200",
+                      propName: "backgroundColor",
+                      value: "#FEB2B2",
+                      token: "red.200",
+                      conditionPath: ["hover", "light", "large"],
+                  },
+                  {
+                      name: "tw",
+                      type: "local",
+                      mode: "atomic",
+                      rule: {
+                          selectors: {
+                              ".light.dark &:hover": {
+                                  backgroundColor: "ThreeDHighlight",
+                              },
+                          },
+                      },
+                      debugId: "tw_backgroundColor_hover_light_dark_ThreeDHighlight",
+                      propName: "backgroundColor",
+                      value: "ThreeDHighlight",
+                      token: "ThreeDHighlight",
+                      conditionPath: ["hover", "light", "dark"],
+                  },
+                  {
+                      name: "tw",
+                      type: "local",
+                      mode: "atomic",
+                      rule: {
+                          selectors: {
+                              ".dark &": {
+                                  padding: "24px",
+                              },
+                          },
+                      },
+                      debugId: "tw_padding_dark_24",
+                      propName: "padding",
+                      value: "24px",
+                      token: "24",
+                      conditionPath: ["dark"],
+                  },
+                  {
+                      name: "tw",
+                      type: "local",
+                      mode: "atomic",
+                      rule: {
+                          selectors: {
+                              ".dark &": {
+                                  backgroundColor: "#822727",
+                              },
+                          },
+                      },
+                      debugId: "tw_backgroundColor_dark_red.800",
+                      propName: "backgroundColor",
+                      value: "#822727",
+                      token: "red.800",
+                      conditionPath: ["dark"],
+                  },
+                  {
+                      name: "tw",
+                      type: "local",
+                      mode: "atomic",
+                      rule: {
+                          selectors: {
+                              ".dark &": {
+                                  backgroundColor: "whitesmoke",
+                              },
+                          },
+                      },
+                      debugId: "tw_backgroundColor_dark_whitesmoke",
+                      propName: "backgroundColor",
+                      value: "whitesmoke",
+                      token: "whitesmoke",
+                      conditionPath: ["dark"],
+                  },
+                  {
+                      name: "tw",
+                      type: "local",
+                      mode: "atomic",
+                      rule: {
+                          selectors: {
+                              ".dark &:hover": {
+                                  color: "#2b6cb0",
+                              },
+                          },
+                      },
+                      debugId: "tw_color_dark_hover_blue.600",
+                      propName: "color",
+                      value: "#2b6cb0",
+                      token: "blue.600",
+                      conditionPath: ["dark", "hover"],
+                  },
+                  {
+                      name: "tw",
+                      type: "local",
+                      mode: "atomic",
+                      rule: {
+                          selectors: {
+                              ".dark.light &:hover": {
+                                  display: "flex",
+                              },
+                          },
+                      },
+                      debugId: "tw_display_dark_hover_light_flex",
+                      propName: "display",
+                      value: "flex",
+                      token: "flex",
+                      conditionPath: ["dark", "hover", "light"],
+                  },
+                  {
+                      name: "tw",
+                      type: "local",
+                      mode: "atomic",
+                      rule: {
+                          selectors: {
+                              ".dark.large.small &:hover": {
+                                  display: "contents",
+                              },
+                          },
+                      },
+                      debugId: "tw_display_dark_hover_large_small_contents",
+                      propName: "display",
+                      value: "contents",
+                      token: "contents",
+                      conditionPath: ["dark", "hover", "large", "small"],
+                  },
+              ],
           },
       ]
     `);
@@ -1446,50 +2652,50 @@ it("will generate multiple styles with nested conditions - grouped", () => {
           },
       });
 
-      const className = "_1rxundp0";"
+      const className = "tw__backgroundColor_blue.500__padding_24__borderRadius_lg__display_dark_hover_table-footer-group__color_navItem_hoverNotActive_brand.100__backgroundColor_hover_whitesmoke__borderRadius_hover_2xl__color_hover_darkseagreen__width_hover_12px__padding_hover_100px__padding_hover_4__display_hover_dark_large_flex__display_hover_light_inline-flex__backgroundColor_hover_dark_blue.700__backgroundColor_hover_light_large_red.200__backgroundColor_hover_light_dark_ThreeDHighlight__padding_dark_24__backgroundColor_dark_red.800__backgroundColor_dark_whitesmoke__color_dark_hover_blue.600__display_dark_hover_light_flex__display_dark_hover_large_small_contents__1rxundp0";"
     `);
 
     expect(ctx.getCss().cssMap.get("test/jit-style.test.ts")).toMatchInlineSnapshot(`
-      "._1rxundp0 {
+      ".tw__backgroundColor_blue\\.500__padding_24__borderRadius_lg__display_dark_hover_table-footer-group__color_navItem_hoverNotActive_brand\\.100__backgroundColor_hover_whitesmoke__borderRadius_hover_2xl__color_hover_darkseagreen__width_hover_12px__padding_hover_100px__padding_hover_4__display_hover_dark_large_flex__display_hover_light_inline-flex__backgroundColor_hover_dark_blue\\.700__backgroundColor_hover_light_large_red\\.200__backgroundColor_hover_light_dark_ThreeDHighlight__padding_dark_24__backgroundColor_dark_red\\.800__backgroundColor_dark_whitesmoke__color_dark_hover_blue\\.600__display_dark_hover_light_flex__display_dark_hover_large_small_contents__1rxundp0 {
         background-color: #3182ce;
         padding: 24px;
         border-radius: 0.5rem;
       }
-      .dark ._1rxundp0:hover {
+      .dark .tw__backgroundColor_blue\\.500__padding_24__borderRadius_lg__display_dark_hover_table-footer-group__color_navItem_hoverNotActive_brand\\.100__backgroundColor_hover_whitesmoke__borderRadius_hover_2xl__color_hover_darkseagreen__width_hover_12px__padding_hover_100px__padding_hover_4__display_hover_dark_large_flex__display_hover_light_inline-flex__backgroundColor_hover_dark_blue\\.700__backgroundColor_hover_light_large_red\\.200__backgroundColor_hover_light_dark_ThreeDHighlight__padding_dark_24__backgroundColor_dark_red\\.800__backgroundColor_dark_whitesmoke__color_dark_hover_blue\\.600__display_dark_hover_light_flex__display_dark_hover_large_small_contents__1rxundp0:hover {
         display: table-footer-group;
         background-color: #2c5282;
         color: #2b6cb0;
       }
-      nav li > ._1rxundp0:hover:not(:active) {
+      nav li > .tw__backgroundColor_blue\\.500__padding_24__borderRadius_lg__display_dark_hover_table-footer-group__color_navItem_hoverNotActive_brand\\.100__backgroundColor_hover_whitesmoke__borderRadius_hover_2xl__color_hover_darkseagreen__width_hover_12px__padding_hover_100px__padding_hover_4__display_hover_dark_large_flex__display_hover_light_inline-flex__backgroundColor_hover_dark_blue\\.700__backgroundColor_hover_light_large_red\\.200__backgroundColor_hover_light_dark_ThreeDHighlight__padding_dark_24__backgroundColor_dark_red\\.800__backgroundColor_dark_whitesmoke__color_dark_hover_blue\\.600__display_dark_hover_light_flex__display_dark_hover_large_small_contents__1rxundp0:hover:not(:active) {
         color: #EFF6F8;
       }
-       ._1rxundp0:hover {
+       .tw__backgroundColor_blue\\.500__padding_24__borderRadius_lg__display_dark_hover_table-footer-group__color_navItem_hoverNotActive_brand\\.100__backgroundColor_hover_whitesmoke__borderRadius_hover_2xl__color_hover_darkseagreen__width_hover_12px__padding_hover_100px__padding_hover_4__display_hover_dark_large_flex__display_hover_light_inline-flex__backgroundColor_hover_dark_blue\\.700__backgroundColor_hover_light_large_red\\.200__backgroundColor_hover_light_dark_ThreeDHighlight__padding_dark_24__backgroundColor_dark_red\\.800__backgroundColor_dark_whitesmoke__color_dark_hover_blue\\.600__display_dark_hover_light_flex__display_dark_hover_large_small_contents__1rxundp0:hover {
         background-color: whitesmoke;
         border-radius: 1rem;
         color: darkseagreen;
         width: 12px;
         padding: 4px;
       }
-      .dark.large ._1rxundp0:hover {
+      .dark.large .tw__backgroundColor_blue\\.500__padding_24__borderRadius_lg__display_dark_hover_table-footer-group__color_navItem_hoverNotActive_brand\\.100__backgroundColor_hover_whitesmoke__borderRadius_hover_2xl__color_hover_darkseagreen__width_hover_12px__padding_hover_100px__padding_hover_4__display_hover_dark_large_flex__display_hover_light_inline-flex__backgroundColor_hover_dark_blue\\.700__backgroundColor_hover_light_large_red\\.200__backgroundColor_hover_light_dark_ThreeDHighlight__padding_dark_24__backgroundColor_dark_red\\.800__backgroundColor_dark_whitesmoke__color_dark_hover_blue\\.600__display_dark_hover_light_flex__display_dark_hover_large_small_contents__1rxundp0:hover {
         display: flex;
       }
-      .light ._1rxundp0:hover {
+      .light .tw__backgroundColor_blue\\.500__padding_24__borderRadius_lg__display_dark_hover_table-footer-group__color_navItem_hoverNotActive_brand\\.100__backgroundColor_hover_whitesmoke__borderRadius_hover_2xl__color_hover_darkseagreen__width_hover_12px__padding_hover_100px__padding_hover_4__display_hover_dark_large_flex__display_hover_light_inline-flex__backgroundColor_hover_dark_blue\\.700__backgroundColor_hover_light_large_red\\.200__backgroundColor_hover_light_dark_ThreeDHighlight__padding_dark_24__backgroundColor_dark_red\\.800__backgroundColor_dark_whitesmoke__color_dark_hover_blue\\.600__display_dark_hover_light_flex__display_dark_hover_large_small_contents__1rxundp0:hover {
         display: inline-flex;
       }
-      .light.large ._1rxundp0:hover {
+      .light.large .tw__backgroundColor_blue\\.500__padding_24__borderRadius_lg__display_dark_hover_table-footer-group__color_navItem_hoverNotActive_brand\\.100__backgroundColor_hover_whitesmoke__borderRadius_hover_2xl__color_hover_darkseagreen__width_hover_12px__padding_hover_100px__padding_hover_4__display_hover_dark_large_flex__display_hover_light_inline-flex__backgroundColor_hover_dark_blue\\.700__backgroundColor_hover_light_large_red\\.200__backgroundColor_hover_light_dark_ThreeDHighlight__padding_dark_24__backgroundColor_dark_red\\.800__backgroundColor_dark_whitesmoke__color_dark_hover_blue\\.600__display_dark_hover_light_flex__display_dark_hover_large_small_contents__1rxundp0:hover {
         background-color: #FEB2B2;
       }
-      .light.dark ._1rxundp0:hover {
+      .light.dark .tw__backgroundColor_blue\\.500__padding_24__borderRadius_lg__display_dark_hover_table-footer-group__color_navItem_hoverNotActive_brand\\.100__backgroundColor_hover_whitesmoke__borderRadius_hover_2xl__color_hover_darkseagreen__width_hover_12px__padding_hover_100px__padding_hover_4__display_hover_dark_large_flex__display_hover_light_inline-flex__backgroundColor_hover_dark_blue\\.700__backgroundColor_hover_light_large_red\\.200__backgroundColor_hover_light_dark_ThreeDHighlight__padding_dark_24__backgroundColor_dark_red\\.800__backgroundColor_dark_whitesmoke__color_dark_hover_blue\\.600__display_dark_hover_light_flex__display_dark_hover_large_small_contents__1rxundp0:hover {
         background-color: ThreeDHighlight;
       }
-      .dark ._1rxundp0 {
+      .dark .tw__backgroundColor_blue\\.500__padding_24__borderRadius_lg__display_dark_hover_table-footer-group__color_navItem_hoverNotActive_brand\\.100__backgroundColor_hover_whitesmoke__borderRadius_hover_2xl__color_hover_darkseagreen__width_hover_12px__padding_hover_100px__padding_hover_4__display_hover_dark_large_flex__display_hover_light_inline-flex__backgroundColor_hover_dark_blue\\.700__backgroundColor_hover_light_large_red\\.200__backgroundColor_hover_light_dark_ThreeDHighlight__padding_dark_24__backgroundColor_dark_red\\.800__backgroundColor_dark_whitesmoke__color_dark_hover_blue\\.600__display_dark_hover_light_flex__display_dark_hover_large_small_contents__1rxundp0 {
         padding: 24px;
         background-color: whitesmoke;
       }
-      .dark.light ._1rxundp0:hover {
+      .dark.light .tw__backgroundColor_blue\\.500__padding_24__borderRadius_lg__display_dark_hover_table-footer-group__color_navItem_hoverNotActive_brand\\.100__backgroundColor_hover_whitesmoke__borderRadius_hover_2xl__color_hover_darkseagreen__width_hover_12px__padding_hover_100px__padding_hover_4__display_hover_dark_large_flex__display_hover_light_inline-flex__backgroundColor_hover_dark_blue\\.700__backgroundColor_hover_light_large_red\\.200__backgroundColor_hover_light_dark_ThreeDHighlight__padding_dark_24__backgroundColor_dark_red\\.800__backgroundColor_dark_whitesmoke__color_dark_hover_blue\\.600__display_dark_hover_light_flex__display_dark_hover_large_small_contents__1rxundp0:hover {
         display: flex;
       }
-      .dark.large.small ._1rxundp0:hover {
+      .dark.large.small .tw__backgroundColor_blue\\.500__padding_24__borderRadius_lg__display_dark_hover_table-footer-group__color_navItem_hoverNotActive_brand\\.100__backgroundColor_hover_whitesmoke__borderRadius_hover_2xl__color_hover_darkseagreen__width_hover_12px__padding_hover_100px__padding_hover_4__display_hover_dark_large_flex__display_hover_light_inline-flex__backgroundColor_hover_dark_blue\\.700__backgroundColor_hover_light_large_red\\.200__backgroundColor_hover_light_dark_ThreeDHighlight__padding_dark_24__backgroundColor_dark_red\\.800__backgroundColor_dark_whitesmoke__color_dark_hover_blue\\.600__display_dark_hover_light_flex__display_dark_hover_large_small_contents__1rxundp0:hover {
         display: contents;
       }"
     `);
@@ -1548,7 +2754,7 @@ it("minimal example with <Box /> component", () => {
     const magicStr = new MagicString(sourceFile.getFullText());
     const generateStyleResults = new Set<ReturnType<typeof generateStyleFromExtraction>>();
 
-    expect(boxStyles.classByDebugId.size).toMatchInlineSnapshot('4');
+    expect(boxStyles.classByDebugId.size).toMatchInlineSnapshot("4");
     expect(boxStyles.classByDebugId).toMatchInlineSnapshot(`
       {
           Box_display_flex: "Box_display_flex__1rxundp0",
@@ -1562,34 +2768,50 @@ it("minimal example with <Box /> component", () => {
           {
               name: "Box",
               type: "local",
+              mode: "atomic",
               rule: {
                   display: "flex",
               },
               debugId: "Box_display_flex",
+              propName: "display",
+              value: "flex",
+              token: "flex",
           },
           {
               name: "Box",
               type: "local",
+              mode: "atomic",
               rule: {
                   padding: "4px",
               },
               debugId: "Box_padding_4",
+              propName: "padding",
+              value: "4px",
+              token: "4",
           },
           {
               name: "Box",
               type: "local",
+              mode: "atomic",
               rule: {
                   backgroundColor: "#3182ce",
               },
               debugId: "Box_backgroundColor_blue.500",
+              propName: "backgroundColor",
+              value: "#3182ce",
+              token: "blue.500",
           },
           {
               name: "Box",
               type: "local",
+              mode: "atomic",
               rule: {
                   borderRadius: "0.5rem",
               },
               debugId: "Box_borderRadius_lg",
+              propName: "borderRadius",
+              value: "0.5rem",
+              token: "lg",
           },
       ]
     `);
@@ -1716,8 +2938,6 @@ it("minimal example with <Box /> component", () => {
 });
 
 it("minimal example with global style", () => {
-    // css({ fontSize: "24px", backgroundColor: "green" });
-
     const sourceFile = project.createSourceFile(
         "global-style.tsx",
         `
@@ -1792,11 +3012,10 @@ it("minimal example with global style", () => {
     const extractResult = extractFromCode(sourceFile, { functions: [name] });
     const extracted = extractResult.get(name)! as ComponentNodesMap;
 
-    console.log({ extractDefs, extractResult, configByName });
     const conf = configByName.get("css")!;
     const globalStyles = generateStyleFromExtraction({ name, extracted, config: conf.config });
 
-    expect(globalStyles.classByDebugId.size).toMatchInlineSnapshot('9');
+    expect(globalStyles.classByDebugId.size).toMatchInlineSnapshot("9");
     expect(globalStyles.classByDebugId).toMatchInlineSnapshot(`
       {
           css_fontSize_small_8px: "css_fontSize_small_8px__1rxundp0",
@@ -1806,7 +3025,8 @@ it("minimal example with global style", () => {
           css_backgroundColor_green: "css_backgroundColor_green__1rxundp4",
           css_display_flex: "css_display_flex__1rxundp5",
           css_color_blue: "css_color_blue__1rxundp6",
-          _1rxundp7: "_1rxundp7",
+          css__fontSize_small_8px__fontSize_large_20px__backgroundColor_navItem_red__fontSize_navItem_16px__backgroundColor_green__display_flex__color_blue:
+              "css__fontSize_small_8px__fontSize_large_20px__backgroundColor_navItem_red__fontSize_navItem_16px__backgroundColor_green__display_flex__color_blue__1rxundp7",
           css_colorScheme_dark: "css_colorScheme_dark__1rxundp8",
       }
     `);
@@ -1815,6 +3035,7 @@ it("minimal example with global style", () => {
           {
               name: "css",
               type: "local",
+              mode: "atomic",
               rule: {
                   selectors: {
                       ".small &": {
@@ -1823,10 +3044,15 @@ it("minimal example with global style", () => {
                   },
               },
               debugId: "css_fontSize_small_8px",
+              propName: "fontSize",
+              value: "8px",
+              token: "8px",
+              conditionPath: ["small"],
           },
           {
               name: "css",
               type: "local",
+              mode: "atomic",
               rule: {
                   selectors: {
                       ".large &": {
@@ -1835,10 +3061,15 @@ it("minimal example with global style", () => {
                   },
               },
               debugId: "css_fontSize_large_20px",
+              propName: "fontSize",
+              value: "20px",
+              token: "20px",
+              conditionPath: ["large"],
           },
           {
               name: "css",
               type: "local",
+              mode: "atomic",
               rule: {
                   selectors: {
                       "nav li > &": {
@@ -1847,10 +3078,15 @@ it("minimal example with global style", () => {
                   },
               },
               debugId: "css_backgroundColor_navItem_red",
+              propName: "backgroundColor",
+              value: "red",
+              token: "red",
+              conditionPath: ["navItem"],
           },
           {
               name: "css",
               type: "local",
+              mode: "atomic",
               rule: {
                   selectors: {
                       "nav li > &": {
@@ -1859,33 +3095,50 @@ it("minimal example with global style", () => {
                   },
               },
               debugId: "css_fontSize_navItem_16px",
+              propName: "fontSize",
+              value: "16px",
+              token: "16px",
+              conditionPath: ["navItem"],
           },
           {
               name: "css",
               type: "local",
+              mode: "atomic",
               rule: {
                   backgroundColor: "green",
               },
               debugId: "css_backgroundColor_green",
+              propName: "backgroundColor",
+              value: "green",
+              token: "green",
           },
           {
               name: "css",
               type: "local",
+              mode: "atomic",
               rule: {
                   display: "flex",
               },
               debugId: "css_display_flex",
+              propName: "display",
+              value: "flex",
+              token: "flex",
           },
           {
               name: "css",
               type: "local",
+              mode: "atomic",
               rule: {
                   color: "blue",
               },
               debugId: "css_color_blue",
+              propName: "color",
+              value: "blue",
+              token: "blue",
           },
           {
               name: "css",
+              mode: "grouped",
               type: "local",
               rule: {
                   selectors: {
@@ -1904,54 +3157,322 @@ it("minimal example with global style", () => {
                   display: "flex",
                   color: "blue",
               },
+              debugId:
+                  "css__fontSize_small_8px__fontSize_large_20px__backgroundColor_navItem_red__fontSize_navItem_16px__backgroundColor_green__display_flex__color_blue",
+              fromRules: [
+                  {
+                      name: "css",
+                      type: "local",
+                      mode: "atomic",
+                      rule: {
+                          selectors: {
+                              ".small &": {
+                                  fontSize: "8px",
+                              },
+                              ".large &": {
+                                  fontSize: "20px",
+                              },
+                              "nav li > &": {
+                                  backgroundColor: "red",
+                                  fontSize: "16px",
+                              },
+                          },
+                          backgroundColor: "green",
+                          display: "flex",
+                          color: "blue",
+                      },
+                      debugId: "css_fontSize_small_8px",
+                      propName: "fontSize",
+                      value: "8px",
+                      token: "8px",
+                      conditionPath: ["small"],
+                  },
+                  {
+                      name: "css",
+                      type: "local",
+                      mode: "atomic",
+                      rule: {
+                          selectors: {
+                              ".large &": {
+                                  fontSize: "20px",
+                              },
+                          },
+                      },
+                      debugId: "css_fontSize_large_20px",
+                      propName: "fontSize",
+                      value: "20px",
+                      token: "20px",
+                      conditionPath: ["large"],
+                  },
+                  {
+                      name: "css",
+                      type: "local",
+                      mode: "atomic",
+                      rule: {
+                          selectors: {
+                              "nav li > &": {
+                                  backgroundColor: "red",
+                              },
+                          },
+                      },
+                      debugId: "css_backgroundColor_navItem_red",
+                      propName: "backgroundColor",
+                      value: "red",
+                      token: "red",
+                      conditionPath: ["navItem"],
+                  },
+                  {
+                      name: "css",
+                      type: "local",
+                      mode: "atomic",
+                      rule: {
+                          selectors: {
+                              "nav li > &": {
+                                  fontSize: "16px",
+                              },
+                          },
+                      },
+                      debugId: "css_fontSize_navItem_16px",
+                      propName: "fontSize",
+                      value: "16px",
+                      token: "16px",
+                      conditionPath: ["navItem"],
+                  },
+                  {
+                      name: "css",
+                      type: "local",
+                      mode: "atomic",
+                      rule: {
+                          backgroundColor: "green",
+                      },
+                      debugId: "css_backgroundColor_green",
+                      propName: "backgroundColor",
+                      value: "green",
+                      token: "green",
+                  },
+                  {
+                      name: "css",
+                      type: "local",
+                      mode: "atomic",
+                      rule: {
+                          display: "flex",
+                      },
+                      debugId: "css_display_flex",
+                      propName: "display",
+                      value: "flex",
+                      token: "flex",
+                  },
+                  {
+                      name: "css",
+                      type: "local",
+                      mode: "atomic",
+                      rule: {
+                          color: "blue",
+                      },
+                      debugId: "css_color_blue",
+                      propName: "color",
+                      value: "blue",
+                      token: "blue",
+                  },
+              ],
           },
           {
               name: "css",
               type: "global",
+              mode: "grouped",
+              debugId: "css_8_global__backgroundColor_green__display_flex__color_blue",
               rule: {
                   backgroundColor: "green",
                   display: "flex",
                   color: "blue",
               },
+              fromRules: [
+                  {
+                      name: "css",
+                      type: "global",
+                      mode: "atomic",
+                      rule: {
+                          backgroundColor: "green",
+                      },
+                      debugId: "css_8_global_backgroundColor_green",
+                      propName: "backgroundColor",
+                      value: "green",
+                      token: "green",
+                  },
+                  {
+                      name: "css",
+                      type: "global",
+                      mode: "atomic",
+                      rule: {
+                          display: "flex",
+                      },
+                      debugId: "css_8_global_display_flex",
+                      propName: "display",
+                      value: "flex",
+                      token: "flex",
+                  },
+                  {
+                      name: "css",
+                      type: "global",
+                      mode: "atomic",
+                      rule: {
+                          color: "blue",
+                      },
+                      debugId: "css_8_global_color_blue",
+                      propName: "color",
+                      value: "blue",
+                      token: "blue",
+                  },
+              ],
               selector: ":root",
           },
           {
               name: "css",
               type: "global",
+              mode: "grouped",
               rule: {
                   fontSize: "8px",
               },
+              debugId: "css_9_global__fontSize_small_8px",
               selector: ":root.small",
+              fromRules: [
+                  {
+                      name: "css",
+                      type: "global",
+                      mode: "atomic",
+                      rule: {
+                          selectors: {
+                              ".small &": {
+                                  fontSize: "8px",
+                              },
+                          },
+                      },
+                      debugId: "css_8_global_fontSize_small_8px",
+                      propName: "fontSize",
+                      value: "8px",
+                      token: "8px",
+                      conditionPath: ["small"],
+                  },
+              ],
           },
           {
               name: "css",
               type: "global",
+              mode: "grouped",
               rule: {
                   fontSize: "20px",
               },
+              debugId: "css_10_global__fontSize_large_20px",
               selector: ":root.large",
+              fromRules: [
+                  {
+                      name: "css",
+                      type: "global",
+                      mode: "atomic",
+                      rule: {
+                          selectors: {
+                              ".large &": {
+                                  fontSize: "20px",
+                              },
+                          },
+                      },
+                      debugId: "css_8_global_fontSize_large_20px",
+                      propName: "fontSize",
+                      value: "20px",
+                      token: "20px",
+                      conditionPath: ["large"],
+                  },
+              ],
           },
           {
               name: "css",
               type: "global",
+              mode: "grouped",
               rule: {
                   backgroundColor: "red",
                   fontSize: "16px",
               },
+              debugId: "css_11_global__backgroundColor_navItem_red__fontSize_navItem_16px",
               selector: ":root nav li > *",
+              fromRules: [
+                  {
+                      name: "css",
+                      type: "global",
+                      mode: "atomic",
+                      rule: {
+                          selectors: {
+                              "nav li > &": {
+                                  backgroundColor: "red",
+                              },
+                          },
+                      },
+                      debugId: "css_8_global_backgroundColor_navItem_red",
+                      propName: "backgroundColor",
+                      value: "red",
+                      token: "red",
+                      conditionPath: ["navItem"],
+                  },
+                  {
+                      name: "css",
+                      type: "global",
+                      mode: "atomic",
+                      rule: {
+                          selectors: {
+                              "nav li > &": {
+                                  fontSize: "16px",
+                              },
+                          },
+                      },
+                      debugId: "css_8_global_fontSize_navItem_16px",
+                      propName: "fontSize",
+                      value: "16px",
+                      token: "16px",
+                      conditionPath: ["navItem"],
+                  },
+              ],
           },
           {
               name: "css",
               type: "global",
+              mode: "grouped",
+              debugId: "css_12_global__display_grid__fontWeight_bold",
               rule: {
                   display: "grid",
                   fontWeight: "bold",
               },
+              fromRules: [
+                  {
+                      name: "css",
+                      type: "global",
+                      mode: "atomic",
+                      rule: {
+                          display: "grid",
+                      },
+                      debugId: "css_12_global_display_grid",
+                      propName: "display",
+                      value: "grid",
+                      token: "grid",
+                  },
+                  {
+                      name: "css",
+                      type: "global",
+                      mode: "atomic",
+                      rule: {
+                          fontWeight: "bold",
+                      },
+                      debugId: "css_12_global_fontWeight_bold",
+                      propName: "fontWeight",
+                      value: "bold",
+                      token: "bold",
+                  },
+              ],
               selector: "body",
           },
           {
               name: "css",
               type: "global",
+              mode: "grouped",
+              debugId: "css_13_global__colorScheme_dark__vars_6",
               rule: {
                   colorScheme: "dark",
                   vars: {
@@ -1963,15 +3484,52 @@ it("minimal example with global style", () => {
                       "var(--color-bgHover__1du39r75)": "#324989",
                   },
               },
+              fromRules: [
+                  {
+                      name: "css",
+                      type: "global",
+                      mode: "atomic",
+                      rule: {
+                          colorScheme: "dark",
+                      },
+                      debugId: "css_13_global_colorScheme_dark",
+                      propName: "colorScheme",
+                      value: "dark",
+                      token: "dark",
+                  },
+                  {
+                      name: "css",
+                      type: "global",
+                      mode: "atomic",
+                      rule: {
+                          vars: {
+                              "var(--color-mainBg__1du39r70)": "#39539b",
+                              "var(--color-secondaryBg__1du39r71)": "#324989",
+                              "var(--color-text__1du39r72)": "#63b3ed",
+                              "var(--color-bg__1du39r73)": "#8297d1",
+                              "var(--color-bgSecondary__1du39r74)": "#2b3f76",
+                              "var(--color-bgHover__1du39r75)": "#324989",
+                          },
+                      },
+                      propName: "vars",
+                      value: 6,
+                      token: 6,
+                      debugId: "css_vars_6",
+                  },
+              ],
               selector: ".dark",
           },
           {
               name: "css",
               type: "local",
+              mode: "atomic",
               rule: {
                   colorScheme: "dark",
               },
               debugId: "css_colorScheme_dark",
+              propName: "colorScheme",
+              value: "dark",
+              token: "dark",
           },
       ]
     `);
@@ -1996,7 +3554,7 @@ it("minimal example with global style", () => {
                 });
 
               const localClassName = "css_fontSize_small_8px__1rxundp0 css_fontSize_large_20px__1rxundp1 css_backgroundColor_navItem_red__1rxundp2 css_fontSize_navItem_16px__1rxundp3 css_backgroundColor_green__1rxundp4 css_display_flex__1rxundp5 css_color_blue__1rxundp6";
-              const localClassNameGrouped = "_1rxundp7";;;
+              const localClassNameGrouped = "css__fontSize_small_8px__fontSize_large_20px__backgroundColor_navItem_red__fontSize_navItem_16px__backgroundColor_green__display_flex__color_blue__1rxundp7";;;
 
               const darkVars = {
                   "var(--color-mainBg__1du39r70)": "#39539b",
@@ -2032,18 +3590,18 @@ it("minimal example with global style", () => {
       .css_color_blue__1rxundp6 {
         color: blue;
       }
-      ._1rxundp7 {
+      .css__fontSize_small_8px__fontSize_large_20px__backgroundColor_navItem_red__fontSize_navItem_16px__backgroundColor_green__display_flex__color_blue__1rxundp7 {
         background-color: green;
         display: flex;
         color: blue;
       }
-      .small ._1rxundp7 {
+      .small .css__fontSize_small_8px__fontSize_large_20px__backgroundColor_navItem_red__fontSize_navItem_16px__backgroundColor_green__display_flex__color_blue__1rxundp7 {
         font-size: 8px;
       }
-      .large ._1rxundp7 {
+      .large .css__fontSize_small_8px__fontSize_large_20px__backgroundColor_navItem_red__fontSize_navItem_16px__backgroundColor_green__display_flex__color_blue__1rxundp7 {
         font-size: 20px;
       }
-      nav li > ._1rxundp7 {
+      nav li > .css__fontSize_small_8px__fontSize_large_20px__backgroundColor_navItem_red__fontSize_navItem_16px__backgroundColor_green__display_flex__color_blue__1rxundp7 {
         background-color: red;
         font-size: 16px;
       }
