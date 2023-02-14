@@ -10,6 +10,7 @@ import { box, castObjectLikeAsMapValue, MapTypeValue } from "./type-factory";
 import type {
     BoxNodesMap,
     ComponentNodesMap,
+    ExtractableMap,
     ExtractOptions,
     FunctionNodesMap,
     ListOrAll,
@@ -21,6 +22,27 @@ import { castAsExtractableMap, isNotNullish } from "./utils";
 const logger = createLogger("box-ex:extractor:extract");
 type QueryComponentMap = Map<JsxOpeningElement | JsxSelfClosingElement, { name: string; props: MapTypeValue }>;
 
+const getComponentName = ({
+    node,
+    components,
+    factories,
+}: {
+    node: JsxOpeningElement | JsxSelfClosingElement;
+    components: ExtractableMap;
+    factories: Record<string, string>;
+}) => {
+    const tagNameNode = node.getTagNameNode();
+    if (Node.isPropertyAccessExpression(tagNameNode)) {
+        const factoryName = tagNameNode.getExpression().getText();
+        const factoryGlob = factories[factoryName];
+        if (factoryGlob && components[factoryGlob]) {
+            return factoryGlob;
+        }
+    }
+
+    return tagNameNode.getText();
+};
+
 export const extract = ({
     ast,
     components: _components,
@@ -29,6 +51,11 @@ export const extract = ({
 }: ExtractOptions) => {
     const components = castAsExtractableMap(_components ?? {});
     const functions = castAsExtractableMap(_functions ?? {});
+    const factories = Object.fromEntries(
+        Object.keys(components)
+            .filter((key) => key.includes(".*"))
+            .map((key) => [key.replace(".*", ""), key])
+    );
 
     // contains all the extracted nodes from this ast parsing
     // whereas `extractMap` is the global map that could be populated by this function in multiple `extract` calls
@@ -56,7 +83,7 @@ export const extract = ({
             );
             if (!componentNode) return;
 
-            const componentName = componentNode.getTagNameNode().getText(); // TODO PropertyAccessExpression only check first identifier (use '*' for second identifier)
+            const componentName = getComponentName({ node: componentNode, components, factories });
             const component = components[componentName];
             if (!component) return;
 
@@ -115,7 +142,7 @@ export const extract = ({
                 );
                 if (!componentNode) return;
 
-                const componentName = componentNode.getTagNameNode().getText(); // TODO PropertyAccessExpression only check first identifier (use '*' for second identifier)
+                const componentName = getComponentName({ node: componentNode, components, factories });
                 const component = components[componentName];
                 if (!component) return;
 
