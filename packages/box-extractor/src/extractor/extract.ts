@@ -1,7 +1,7 @@
 import { createLogger } from "@box-extractor/logger";
 import { tsquery } from "@phenomnomnominal/tsquery";
 import { castAsArray } from "pastable";
-import { Identifier, JsxOpeningElement, JsxSelfClosingElement, JsxSpreadAttribute, Node, ts } from "ts-morph";
+import { JsxOpeningElement, JsxSelfClosingElement, Node } from "ts-morph";
 
 import { extractCallExpressionValues } from "./extractCallExpressionIdentifierValues";
 import { extractJsxAttributeIdentifierValue } from "./extractJsxAttributeIdentifierValue";
@@ -13,9 +13,8 @@ import type {
     ExtractOptions,
     FunctionNodesMap,
     ListOrAll,
-    PropNodesMap,
-    QueryFnBox,
     QueryComponentBox,
+    QueryFnBox,
 } from "./types";
 import { castAsExtractableMap, isNotNullish } from "./utils";
 
@@ -31,91 +30,65 @@ export const extract = ({
     const components = castAsExtractableMap(_components ?? {});
     const functions = castAsExtractableMap(_functions ?? {});
 
-    // contains all the extracted nodes from this ast
-    // where as `used` is the global map that is populated by this function in multiple calls
-    const extracted = new Map() as BoxNodesMap;
+    // contains all the extracted nodes from this ast parsing
+    // whereas `extractMap` is the global map that could be populated by this function in multiple `extract` calls
+    const localExtraction = new Map() as BoxNodesMap;
+    const queryComponentMap = new Map() as QueryComponentMap;
 
-    Object.entries(components ?? {}).forEach(([componentName, component]) => {
-        const propNameList = component.properties;
-        const canTakeAllProp = propNameList === "all";
+    const visitedCallExpresisionList = new WeakSet<Node>();
 
-        const localNodes = new Map() as PropNodesMap["nodesByProp"];
-        const localList = [] as ComponentNodesMap["queryList"];
-        extracted.set(componentName, { kind: "component", nodesByProp: localNodes, queryList: localList });
-
-        if (!extractMap.has(componentName)) {
-            extractMap.set(componentName, { kind: "component", nodesByProp: new Map(), queryList: [] });
+    ast.forEachDescendant((node, traversal) => {
+        // quick win
+        if (Node.isImportDeclaration(node)) {
+            traversal.skip();
+            return;
         }
 
-        const componentMap = extractMap.get(componentName)! as ComponentNodesMap;
-        const identifierSelector = componentName.includes(".")
-            ? `PropertyAccessExpression:has(Identifier[name="${componentName.split(".")[0]}"])`
-            : `Identifier[name="${componentName}"]`;
-        const componentSelector = `:matches(JsxOpeningElement, JsxSelfClosingElement):has(${identifierSelector})`;
+        const parentNode = node.getParent() ?? null;
 
-        const namedProp = canTakeAllProp ? "" : `[name=/${propNameList.join("|")}/]`;
-        const propIdentifier = `Identifier${namedProp}`;
-        const propSelector = `${componentSelector} JsxAttribute > ${propIdentifier}`;
-        // <ColorBox color="red.200" backgroundColor="blackAlpha.100" />
-        //           ^^^^^           ^^^^^^^^^^^^^^^
+        if (parentNode && Node.isJsxSpreadAttribute(node)) {
+            // <ColorBox {...{ color: "facebook.100" }}>spread</ColorBox>
+            //           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-        const queryComponentMap = new Map() as QueryComponentMap;
+            const componentNode = parentNode.getFirstAncestor(
+                (node): node is JsxOpeningElement | JsxSelfClosingElement =>
+                    Node.isJsxOpeningElement(node) || Node.isJsxSelfClosingElement(node)
+            );
+            if (!componentNode) return;
 
-        const identifierNodesFromJsxAttribute = query<Identifier>(ast, propSelector) ?? [];
-        identifierNodesFromJsxAttribute.forEach((node) => {
-            const propName = node.getText();
-            const propNodes = componentMap.nodesByProp.get(propName) ?? [];
+            const componentName = componentNode.getTagNameNode().getText(); // TODO PropertyAccessExpression only check first identifier (use '*' for second identifier)
+            const component = components[componentName];
+            if (!component) return;
 
-            const maybeBox = extractJsxAttributeIdentifierValue(node);
-            if (!isNotNullish(maybeBox)) return;
-
-            logger({ propName, maybeBox });
-            localNodes.set(propName, (localNodes.get(propName) ?? []).concat(maybeBox));
-
-            const parent = node.getFirstAncestor(
-                (n) => Node.isJsxOpeningElement(n) || Node.isJsxSelfClosingElement(n)
-            ) as JsxOpeningElement | JsxSelfClosingElement | undefined;
-            if (!parent) return;
-
-            if (!queryComponentMap.has(parent)) {
-                queryComponentMap.set(parent, { name: componentName, props: new Map() });
+            if (!localExtraction.has(componentName)) {
+                localExtraction.set(componentName, {
+                    kind: "component",
+                    nodesByProp: new Map(),
+                    queryList: [],
+                });
             }
 
-            const parentRef = queryComponentMap.get(parent)!;
-            parentRef.props.set(propName, [maybeBox]);
+            const localNodes = localExtraction.get(componentName)!.nodesByProp;
 
-            propNodes.push(maybeBox);
-
-            if (propNodes.length > 0) {
-                componentMap.nodesByProp.set(propName, propNodes);
+            if (!extractMap.has(componentName)) {
+                extractMap.set(componentName, { kind: "component", nodesByProp: new Map(), queryList: [] });
             }
-        });
 
-        const spreadSelector = `${componentSelector} JsxSpreadAttribute`;
-        // <ColorBox {...{ color: "facebook.100" }}>spread</ColorBox>
-        //           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            const componentMap = extractMap.get(componentName)! as ComponentNodesMap;
+            // console.log(componentName, componentMap);
 
-        const spreadNodes = query<JsxSpreadAttribute>(ast, spreadSelector) ?? [];
-        spreadNodes.forEach((node) => {
+            if (!queryComponentMap.has(componentNode)) {
+                queryComponentMap.set(componentNode, { name: componentName, props: new Map() });
+            }
+
             const objectOrMapType = extractJsxSpreadAttributeValues(node);
             const map = castObjectLikeAsMapValue(objectOrMapType, node);
 
-            const parent = node.getFirstAncestor(
-                (n) => Node.isJsxOpeningElement(n) || Node.isJsxSelfClosingElement(n)
-            ) as JsxOpeningElement | JsxSelfClosingElement | undefined;
-            if (!parent) return;
-
-            if (!queryComponentMap.has(parent)) {
-                queryComponentMap.set(parent, { name: componentName, props: new Map() });
-            }
-
-            const stack = [parent];
-
-            const parentRef = queryComponentMap.get(parent)!;
-            const boxed = box.map(map, node, stack);
+            const parentRef = queryComponentMap.get(componentNode)!;
+            const boxed = box.map(map, node, [componentNode]);
             parentRef.props.set(`_SPREAD_${parentRef.props.size}`, [boxed]);
 
-            const entries = mergeSpreadEntries({ map, propNameList });
+            const entries = mergeSpreadEntries({ map, propNameList: component.properties });
             entries.forEach(([propName, propValue]) => {
                 logger.scoped("merge-spread", { jsx: true, propName, propValue });
 
@@ -127,80 +100,159 @@ export const extract = ({
                     );
                 });
             });
-        });
 
-        queryComponentMap.forEach((ref, jsxNode) => {
-            const fromNode = () => jsxNode;
-            // TODO ?
-            const query = { name: ref.name, fromNode, box: box.map(ref.props, jsxNode, []) } as QueryComponentBox;
-
-            componentMap.queryList.push(query);
-            localList.push(query);
-        });
-    });
-
-    Object.entries(functions ?? {}).forEach(([functionName, component]) => {
-        const propNameList = component.properties;
-        const localNodes = new Map() as PropNodesMap["nodesByProp"];
-        const localList = [] as QueryFnBox[];
-        extracted.set(functionName, { kind: "function", nodesByProp: localNodes, queryList: localList });
-
-        if (!extractMap.has(functionName)) {
-            extractMap.set(functionName, { kind: "function", nodesByProp: new Map(), queryList: [] });
+            return;
         }
 
-        const fnMap = extractMap.get(functionName)! as FunctionNodesMap;
-        const fnSelector = `CallExpression > Identifier[name="${functionName}"]`;
-        // <div className={colorSprinkles({ color: "blue.100" })}></ColorBox>
-        //                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        if (parentNode && Node.isIdentifier(node)) {
+            if (Node.isJsxAttribute(parentNode)) {
+                // <ColorBox color="red.200" backgroundColor="blackAlpha.100" />
+                //           ^^^^^           ^^^^^^^^^^^^^^^
 
-        logger({ fnSelector, functionName, propNameList });
-        const maybeObjectNodes = query<Identifier>(ast, fnSelector) ?? [];
-        maybeObjectNodes.forEach((identifier) => {
-            const node = identifier.getParentIfKind(ts.SyntaxKind.CallExpression);
-            if (!node) return;
+                const componentNode = parentNode.getFirstAncestor(
+                    (node): node is JsxOpeningElement | JsxSelfClosingElement =>
+                        Node.isJsxOpeningElement(node) || Node.isJsxSelfClosingElement(node)
+                );
+                if (!componentNode) return;
 
-            const maybeBox = extractCallExpressionValues(node);
-            if (!maybeBox) return;
-            // console.log({ objectOrMapType });
+                const componentName = componentNode.getTagNameNode().getText(); // TODO PropertyAccessExpression only check first identifier (use '*' for second identifier)
+                const component = components[componentName];
+                if (!component) return;
 
-            const fromNode = () => node;
-            const boxList = castAsArray(maybeBox)
-                .map((boxNode) => {
-                    if (boxNode.isEmptyInitializer()) return;
+                const propName = node.getText();
+                if (component.properties !== "all" && !component.properties.includes(propName)) return;
+                // console.log({ componentName, propName });
 
-                    if (boxNode.isObject() || boxNode.isMap()) {
-                        const map = castObjectLikeAsMapValue(boxNode, node);
-                        const entries = mergeSpreadEntries({ map, propNameList });
+                const maybeBox = extractJsxAttributeIdentifierValue(node);
+                if (!maybeBox) return;
 
-                        const mapAfterSpread = new Map() as MapTypeValue;
-                        entries.forEach(([propName, propValue]) => {
-                            mapAfterSpread.set(propName, propValue);
-                        });
+                logger({ propName, maybeBox });
 
-                        entries.forEach(([propName, propValue]) => {
-                            logger.scoped("merge-spread", { fn: true, propName, propValue });
+                if (!localExtraction.has(componentName)) {
+                    localExtraction.set(componentName, {
+                        kind: "component",
+                        nodesByProp: new Map(),
+                        queryList: [],
+                    });
+                }
 
-                            propValue.forEach((value) => {
-                                localNodes.set(propName, (localNodes.get(propName) ?? []).concat(value));
-                                fnMap.nodesByProp.set(propName, (fnMap.nodesByProp.get(propName) ?? []).concat(value));
+                const localNodes = localExtraction.get(componentName)!.nodesByProp;
+
+                if (!extractMap.has(componentName)) {
+                    extractMap.set(componentName, { kind: "component", nodesByProp: new Map(), queryList: [] });
+                }
+
+                const componentMap = extractMap.get(componentName)! as ComponentNodesMap;
+
+                localNodes.set(propName, (localNodes.get(propName) ?? []).concat(maybeBox));
+
+                if (!queryComponentMap.has(componentNode)) {
+                    queryComponentMap.set(componentNode, { name: componentName, props: new Map() });
+                }
+
+                const parentRef = queryComponentMap.get(componentNode)!;
+                parentRef.props.set(propName, [maybeBox]);
+
+                const propNodes = componentMap.nodesByProp.get(propName) ?? [];
+                propNodes.push(maybeBox);
+
+                if (propNodes.length > 0) {
+                    componentMap.nodesByProp.set(propName, propNodes);
+                }
+            }
+
+            if (Node.isCallExpression(parentNode) && !visitedCallExpresisionList.has(parentNode)) {
+                visitedCallExpresisionList.add(parentNode);
+
+                const expr = parentNode.getExpression();
+                const functionName = expr.getText();
+                const component = functions[functionName];
+                if (!component) return;
+
+                const maybeBox = extractCallExpressionValues(parentNode);
+                if (!maybeBox) return;
+                // console.log({ objectOrMapType });
+
+                if (!localExtraction.has(functionName)) {
+                    localExtraction.set(functionName, {
+                        kind: "function",
+                        nodesByProp: new Map(),
+                        queryList: [],
+                    });
+                }
+
+                if (!extractMap.has(functionName)) {
+                    extractMap.set(functionName, { kind: "component", nodesByProp: new Map(), queryList: [] });
+                }
+
+                const fnMap = extractMap.get(functionName)! as FunctionNodesMap;
+                const localFnMap = localExtraction.get(functionName)! as FunctionNodesMap;
+
+                const localNodes = localFnMap.nodesByProp;
+                const localList = localFnMap.queryList;
+                // console.log(componentName, componentMap);
+
+                const fromNode = () => parentNode;
+                const boxList = castAsArray(maybeBox)
+                    .map((boxNode) => {
+                        if (boxNode.isEmptyInitializer()) return;
+
+                        if (boxNode.isObject() || boxNode.isMap()) {
+                            const map = castObjectLikeAsMapValue(boxNode, parentNode);
+                            const entries = mergeSpreadEntries({ map, propNameList: component.properties });
+
+                            const mapAfterSpread = new Map() as MapTypeValue;
+                            entries.forEach(([propName, propValue]) => {
+                                mapAfterSpread.set(propName, propValue);
                             });
-                        });
 
-                        return box.map(mapAfterSpread, node, boxNode.getStack());
-                    }
+                            entries.forEach(([propName, propValue]) => {
+                                logger.scoped("merge-spread", { fn: true, propName, propValue });
 
-                    return boxNode;
-                })
-                .filter(isNotNullish);
+                                propValue.forEach((value) => {
+                                    localNodes.set(propName, (localNodes.get(propName) ?? []).concat(value));
+                                    fnMap.nodesByProp.set(
+                                        propName,
+                                        (fnMap.nodesByProp.get(propName) ?? []).concat(value)
+                                    );
+                                });
+                            });
 
-            const query = { name: functionName, fromNode, box: box.list(boxList, node, [node]) } as QueryFnBox;
-            fnMap.queryList.push(query);
-            localList.push(query);
-        });
+                            return box.map(mapAfterSpread, parentNode, boxNode.getStack());
+                        }
+
+                        return boxNode;
+                    })
+                    .filter(isNotNullish);
+
+                const query = {
+                    name: functionName,
+                    fromNode,
+                    box: box.list(boxList, parentNode, [parentNode]),
+                } as QueryFnBox;
+                fnMap.queryList.push(query);
+                localList.push(query);
+            }
+        }
     });
 
-    return extracted;
+    queryComponentMap.forEach((parentRef, componentNode) => {
+        const componentName = parentRef.name;
+        const componentMap = extractMap.get(componentName)! as ComponentNodesMap;
+        const localList = (localExtraction.get(componentName)! as ComponentNodesMap).queryList;
+
+        const query = {
+            name: parentRef.name,
+            fromNode: () => componentNode,
+            box: box.map(parentRef.props, componentNode, []),
+        } as QueryComponentBox;
+        queryComponentMap;
+
+        componentMap.queryList.push(query);
+        localList.push(query);
+    });
+
+    return localExtraction;
 };
 
 /**
