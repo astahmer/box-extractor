@@ -51,11 +51,10 @@ const getExtract = (code: string, options: Omit<ExtractOptions, "ast">) => {
 };
 
 const extractFromCode = (code: string, options?: Partial<ExtractOptions>) => {
-    const extractMap = options?.extractMap ?? (new Map() as BoxNodesMap);
     const fileName = `file${fileCount++}.tsx`;
     sourceFile = project.createSourceFile(fileName, code, { scriptKind: ts.ScriptKind.TSX });
     // console.log(sourceFile.forEachDescendant((c) => [c.getKindName(), c.getText()]));
-    const extracted = extract({ ast: sourceFile, components: config, extractMap, ...options });
+    const extracted = extract({ ast: sourceFile, components: config, ...options });
     // console.dir({ test: true, usedMap, extracted }, { depth: null });
     return Array.from(extracted.entries()).map(([name, props]) => [
         name,
@@ -63,7 +62,7 @@ const extractFromCode = (code: string, options?: Partial<ExtractOptions>) => {
             propName,
             getBoxLiteralValue(propValues),
         ]),
-        extractMap.get(name)!.nodesByProp,
+        extracted.get(name)!.nodesByProp,
     ]);
 };
 
@@ -109,6 +108,16 @@ it("extract it all", () => {
                           ["gray.600", "gray.800"],
                           ["gray.700", "gray.100"],
                           "gray.100",
+                          "facebook.100",
+                          "blackAlpha.400",
+                          "blackAlpha.400",
+                          "facebook.200",
+                          "facebook.200",
+                          "twitter.100",
+                          "orange.100",
+                          "orange.200",
+                          "orange.400",
+                          "telegram.300",
                           {
                               default: "red.100",
                               hover: "green.100",
@@ -126,32 +135,22 @@ it("extract it all", () => {
                           "orange.300",
                           "red.100",
                           "orange.400",
-                          "facebook.100",
-                          "blackAlpha.400",
-                          "blackAlpha.400",
-                          "facebook.200",
-                          "facebook.200",
-                          "twitter.100",
-                          "orange.100",
-                          "orange.200",
-                          "orange.400",
-                          "telegram.300",
                       ],
                   ],
                   [
                       "backgroundColor",
                       [
                           "blackAlpha.100",
-                          {
-                              default: "orange.800",
-                              hover: "telegram.200",
-                              focus: "yellow.700",
-                          },
                           "blackAlpha.100",
                           "twitter.200",
                           "twitter.200",
                           "twitter.200",
                           "telegram.400",
+                          {
+                              default: "orange.800",
+                              hover: "telegram.200",
+                              focus: "yellow.700",
+                          },
                       ],
                   ],
               ],
@@ -590,6 +589,76 @@ it("extract it all", () => {
                           kind: "string",
                       },
                       {
+                          stack: ["PropertyAssignment", "StringLiteral"],
+                          type: "literal",
+                          node: "StringLiteral",
+                          value: "facebook.100",
+                          kind: "string",
+                      },
+                      {
+                          stack: ["VariableDeclaration", "ObjectLiteralExpression", "PropertyAssignment", "StringLiteral"],
+                          type: "literal",
+                          node: "StringLiteral",
+                          value: "blackAlpha.400",
+                          kind: "string",
+                      },
+                      {
+                          stack: ["VariableDeclaration", "ObjectLiteralExpression", "PropertyAssignment", "StringLiteral"],
+                          type: "literal",
+                          node: "StringLiteral",
+                          value: "blackAlpha.400",
+                          kind: "string",
+                      },
+                      {
+                          stack: ["PropertyAssignment", "StringLiteral"],
+                          type: "literal",
+                          node: "StringLiteral",
+                          value: "facebook.200",
+                          kind: "string",
+                      },
+                      {
+                          stack: ["PropertyAssignment", "StringLiteral"],
+                          type: "literal",
+                          node: "StringLiteral",
+                          value: "facebook.200",
+                          kind: "string",
+                      },
+                      {
+                          stack: [],
+                          type: "literal",
+                          node: "CallExpression",
+                          value: "twitter.100",
+                          kind: "string",
+                      },
+                      {
+                          stack: ["PropertyAssignment", "StringLiteral"],
+                          type: "literal",
+                          node: "StringLiteral",
+                          value: "orange.100",
+                          kind: "string",
+                      },
+                      {
+                          stack: ["PropertyAssignment", "StringLiteral"],
+                          type: "literal",
+                          node: "StringLiteral",
+                          value: "orange.200",
+                          kind: "string",
+                      },
+                      {
+                          stack: ["PropertyAssignment", "StringLiteral"],
+                          type: "literal",
+                          node: "StringLiteral",
+                          value: "orange.400",
+                          kind: "string",
+                      },
+                      {
+                          stack: ["PropertyAssignment", "StringLiteral"],
+                          type: "literal",
+                          node: "StringLiteral",
+                          value: "telegram.300",
+                          kind: "string",
+                      },
+                      {
                           stack: ["JsxAttribute", "JsxExpression", "ObjectLiteralExpression"],
                           type: "map",
                           node: "ObjectLiteralExpression",
@@ -725,76 +794,6 @@ it("extract it all", () => {
                           value: "orange.400",
                           kind: "string",
                       },
-                      {
-                          stack: ["PropertyAssignment", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "facebook.100",
-                          kind: "string",
-                      },
-                      {
-                          stack: ["VariableDeclaration", "ObjectLiteralExpression", "PropertyAssignment", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "blackAlpha.400",
-                          kind: "string",
-                      },
-                      {
-                          stack: ["VariableDeclaration", "ObjectLiteralExpression", "PropertyAssignment", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "blackAlpha.400",
-                          kind: "string",
-                      },
-                      {
-                          stack: ["PropertyAssignment", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "facebook.200",
-                          kind: "string",
-                      },
-                      {
-                          stack: ["PropertyAssignment", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "facebook.200",
-                          kind: "string",
-                      },
-                      {
-                          stack: [],
-                          type: "literal",
-                          node: "CallExpression",
-                          value: "twitter.100",
-                          kind: "string",
-                      },
-                      {
-                          stack: ["PropertyAssignment", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "orange.100",
-                          kind: "string",
-                      },
-                      {
-                          stack: ["PropertyAssignment", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "orange.200",
-                          kind: "string",
-                      },
-                      {
-                          stack: ["PropertyAssignment", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "orange.400",
-                          kind: "string",
-                      },
-                      {
-                          stack: ["PropertyAssignment", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "telegram.300",
-                          kind: "string",
-                      },
                   ],
                   backgroundColor: [
                       {
@@ -802,6 +801,41 @@ it("extract it all", () => {
                           type: "literal",
                           node: "StringLiteral",
                           value: "blackAlpha.100",
+                          kind: "string",
+                      },
+                      {
+                          stack: ["PropertyAssignment", "StringLiteral"],
+                          type: "literal",
+                          node: "StringLiteral",
+                          value: "blackAlpha.100",
+                          kind: "string",
+                      },
+                      {
+                          stack: [],
+                          type: "literal",
+                          node: "CallExpression",
+                          value: "twitter.200",
+                          kind: "string",
+                      },
+                      {
+                          stack: ["SpreadAssignment", "CallExpression"],
+                          type: "literal",
+                          node: "CallExpression",
+                          value: "twitter.200",
+                          kind: "string",
+                      },
+                      {
+                          stack: ["SpreadAssignment", "ConditionalExpression"],
+                          type: "literal",
+                          node: "CallExpression",
+                          value: "twitter.200",
+                          kind: "string",
+                      },
+                      {
+                          stack: ["PropertyAssignment", "StringLiteral"],
+                          type: "literal",
+                          node: "StringLiteral",
+                          value: "telegram.400",
                           kind: "string",
                       },
                       {
@@ -855,41 +889,6 @@ it("extract it all", () => {
                                   },
                               ],
                           },
-                      },
-                      {
-                          stack: ["PropertyAssignment", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "blackAlpha.100",
-                          kind: "string",
-                      },
-                      {
-                          stack: [],
-                          type: "literal",
-                          node: "CallExpression",
-                          value: "twitter.200",
-                          kind: "string",
-                      },
-                      {
-                          stack: ["SpreadAssignment", "CallExpression"],
-                          type: "literal",
-                          node: "CallExpression",
-                          value: "twitter.200",
-                          kind: "string",
-                      },
-                      {
-                          stack: ["SpreadAssignment", "ConditionalExpression"],
-                          type: "literal",
-                          node: "CallExpression",
-                          value: "twitter.200",
-                          kind: "string",
-                      },
-                      {
-                          stack: ["PropertyAssignment", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "telegram.400",
-                          kind: "string",
                       },
                   ],
               },
@@ -1877,450 +1876,6 @@ it("ExtractSample - groups extract props in parent component instance", () => {
                   type: "map",
                   node: "JsxOpeningElement",
                   value: {
-                      color: [
-                          {
-                              stack: ["JsxAttribute", "JsxExpression", "ObjectLiteralExpression"],
-                              type: "map",
-                              node: "ObjectLiteralExpression",
-                              value: {
-                                  default: [
-                                      {
-                                          stack: [
-                                              "JsxAttribute",
-                                              "JsxExpression",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "StringLiteral",
-                                          ],
-                                          type: "literal",
-                                          node: "StringLiteral",
-                                          value: "red.100",
-                                          kind: "string",
-                                      },
-                                  ],
-                                  hover: [
-                                      {
-                                          stack: [
-                                              "JsxAttribute",
-                                              "JsxExpression",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "StringLiteral",
-                                          ],
-                                          type: "literal",
-                                          node: "StringLiteral",
-                                          value: "green.100",
-                                          kind: "string",
-                                      },
-                                  ],
-                                  focus: [
-                                      {
-                                          stack: [
-                                              "JsxAttribute",
-                                              "JsxExpression",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "StringLiteral",
-                                          ],
-                                          type: "literal",
-                                          node: "StringLiteral",
-                                          value: "blue.100",
-                                          kind: "string",
-                                      },
-                                  ],
-                              },
-                          },
-                      ],
-                  },
-              },
-          },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxOpeningElement",
-                  value: {
-                      backgroundColor: [
-                          {
-                              stack: ["JsxAttribute", "JsxExpression", "ObjectLiteralExpression"],
-                              type: "map",
-                              node: "ObjectLiteralExpression",
-                              value: {
-                                  default: [
-                                      {
-                                          stack: [
-                                              "JsxAttribute",
-                                              "JsxExpression",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "StringLiteral",
-                                          ],
-                                          type: "literal",
-                                          node: "StringLiteral",
-                                          value: "orange.800",
-                                          kind: "string",
-                                      },
-                                  ],
-                                  hover: [
-                                      {
-                                          stack: [
-                                              "JsxAttribute",
-                                              "JsxExpression",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "StringLiteral",
-                                          ],
-                                          type: "literal",
-                                          node: "StringLiteral",
-                                          value: "telegram.200",
-                                          kind: "string",
-                                      },
-                                  ],
-                                  focus: [
-                                      {
-                                          stack: [
-                                              "JsxAttribute",
-                                              "JsxExpression",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "StringLiteral",
-                                          ],
-                                          type: "literal",
-                                          node: "StringLiteral",
-                                          value: "yellow.700",
-                                          kind: "string",
-                                      },
-                                  ],
-                              },
-                          },
-                      ],
-                  },
-              },
-          },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxOpeningElement",
-                  value: {
-                      color: [
-                          {
-                              stack: ["JsxAttribute", "StringLiteral"],
-                              type: "literal",
-                              node: "StringLiteral",
-                              value: "facebook.900",
-                              kind: "string",
-                          },
-                      ],
-                      _SPREAD_1: [
-                          {
-                              stack: ["JsxOpeningElement"],
-                              type: "map",
-                              node: "JsxSpreadAttribute",
-                              value: {},
-                          },
-                      ],
-                  },
-              },
-          },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxOpeningElement",
-                  value: {
-                      color: [
-                          {
-                              stack: ["JsxAttribute", "StringLiteral"],
-                              type: "literal",
-                              node: "StringLiteral",
-                              value: "facebook.900",
-                              kind: "string",
-                          },
-                      ],
-                      _SPREAD_1: [
-                          {
-                              stack: ["JsxOpeningElement"],
-                              type: "map",
-                              node: "JsxSpreadAttribute",
-                              value: {},
-                          },
-                      ],
-                  },
-              },
-          },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxOpeningElement",
-                  value: {
-                      color: [
-                          {
-                              stack: ["JsxAttribute", "StringLiteral"],
-                              type: "literal",
-                              node: "StringLiteral",
-                              value: "facebook.900",
-                              kind: "string",
-                          },
-                      ],
-                  },
-              },
-          },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxOpeningElement",
-                  value: {
-                      color: [
-                          {
-                              stack: ["JsxAttribute", "StringLiteral"],
-                              type: "literal",
-                              node: "StringLiteral",
-                              value: "red.100",
-                              kind: "string",
-                          },
-                      ],
-                      _SPREAD_1: [
-                          {
-                              stack: ["JsxOpeningElement"],
-                              type: "map",
-                              node: "JsxSpreadAttribute",
-                              value: {},
-                          },
-                      ],
-                  },
-              },
-          },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxOpeningElement",
-                  value: {
-                      color: [
-                          {
-                              stack: ["JsxAttribute", "StringLiteral"],
-                              type: "literal",
-                              node: "StringLiteral",
-                              value: "red.100",
-                              kind: "string",
-                          },
-                      ],
-                      _SPREAD_1: [
-                          {
-                              stack: ["JsxOpeningElement"],
-                              type: "map",
-                              node: "JsxSpreadAttribute",
-                              value: {},
-                          },
-                      ],
-                  },
-              },
-          },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxSelfClosingElement",
-                  value: {
-                      color: [
-                          {
-                              stack: ["JsxAttribute", "StringLiteral"],
-                              type: "literal",
-                              node: "StringLiteral",
-                              value: "green.100",
-                              kind: "string",
-                          },
-                      ],
-                      _SPREAD_1: [
-                          {
-                              stack: ["JsxSelfClosingElement"],
-                              type: "map",
-                              node: "JsxSpreadAttribute",
-                              value: {},
-                          },
-                      ],
-                  },
-              },
-          },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxSelfClosingElement",
-                  value: {
-                      color: [
-                          {
-                              stack: ["JsxAttribute", "StringLiteral"],
-                              type: "literal",
-                              node: "StringLiteral",
-                              value: "blue.100",
-                              kind: "string",
-                          },
-                      ],
-                      _SPREAD_1: [
-                          {
-                              stack: ["JsxSelfClosingElement"],
-                              type: "map",
-                              node: "JsxSpreadAttribute",
-                              value: {},
-                          },
-                      ],
-                  },
-              },
-          },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxSelfClosingElement",
-                  value: {
-                      color: [
-                          {
-                              stack: ["JsxAttribute", "StringLiteral"],
-                              type: "literal",
-                              node: "StringLiteral",
-                              value: "yellow.100",
-                              kind: "string",
-                          },
-                      ],
-                      _SPREAD_1: [
-                          {
-                              stack: ["JsxSelfClosingElement"],
-                              type: "map",
-                              node: "JsxSpreadAttribute",
-                              value: {},
-                          },
-                      ],
-                  },
-              },
-          },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxSelfClosingElement",
-                  value: {
-                      color: [
-                          {
-                              stack: ["JsxAttribute", "StringLiteral"],
-                              type: "literal",
-                              node: "StringLiteral",
-                              value: "orange.100",
-                              kind: "string",
-                          },
-                      ],
-                      _SPREAD_1: [
-                          {
-                              stack: ["JsxSelfClosingElement"],
-                              type: "map",
-                              node: "JsxSpreadAttribute",
-                              value: {},
-                          },
-                      ],
-                  },
-              },
-          },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxSelfClosingElement",
-                  value: {
-                      color: [
-                          {
-                              stack: ["JsxAttribute", "StringLiteral"],
-                              type: "literal",
-                              node: "StringLiteral",
-                              value: "orange.300",
-                              kind: "string",
-                          },
-                      ],
-                      _SPREAD_1: [
-                          {
-                              stack: ["JsxSelfClosingElement"],
-                              type: "map",
-                              node: "JsxSpreadAttribute",
-                              value: {},
-                          },
-                      ],
-                  },
-              },
-          },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxSelfClosingElement",
-                  value: {
-                      color: [
-                          {
-                              stack: ["JsxAttribute", "StringLiteral"],
-                              type: "literal",
-                              node: "StringLiteral",
-                              value: "red.100",
-                              kind: "string",
-                          },
-                      ],
-                      _SPREAD_1: [
-                          {
-                              stack: ["JsxSelfClosingElement"],
-                              type: "map",
-                              node: "JsxSpreadAttribute",
-                              value: {},
-                          },
-                      ],
-                  },
-              },
-          },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxSelfClosingElement",
-                  value: {
-                      color: [
-                          {
-                              stack: ["JsxAttribute", "StringLiteral"],
-                              type: "literal",
-                              node: "StringLiteral",
-                              value: "orange.400",
-                              kind: "string",
-                          },
-                      ],
-                      _SPREAD_1: [
-                          {
-                              stack: ["JsxSelfClosingElement"],
-                              type: "map",
-                              node: "JsxSpreadAttribute",
-                              value: {},
-                          },
-                      ],
-                  },
-              },
-          },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxOpeningElement",
-                  value: {
                       _SPREAD_0: [
                           {
                               stack: ["JsxOpeningElement"],
@@ -2671,6 +2226,450 @@ it("ExtractSample - groups extract props in parent component instance", () => {
                                       },
                                   ],
                               },
+                          },
+                      ],
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              box: {
+                  stack: [],
+                  type: "map",
+                  node: "JsxOpeningElement",
+                  value: {
+                      color: [
+                          {
+                              stack: ["JsxAttribute", "JsxExpression", "ObjectLiteralExpression"],
+                              type: "map",
+                              node: "ObjectLiteralExpression",
+                              value: {
+                                  default: [
+                                      {
+                                          stack: [
+                                              "JsxAttribute",
+                                              "JsxExpression",
+                                              "ObjectLiteralExpression",
+                                              "PropertyAssignment",
+                                              "StringLiteral",
+                                          ],
+                                          type: "literal",
+                                          node: "StringLiteral",
+                                          value: "red.100",
+                                          kind: "string",
+                                      },
+                                  ],
+                                  hover: [
+                                      {
+                                          stack: [
+                                              "JsxAttribute",
+                                              "JsxExpression",
+                                              "ObjectLiteralExpression",
+                                              "PropertyAssignment",
+                                              "StringLiteral",
+                                          ],
+                                          type: "literal",
+                                          node: "StringLiteral",
+                                          value: "green.100",
+                                          kind: "string",
+                                      },
+                                  ],
+                                  focus: [
+                                      {
+                                          stack: [
+                                              "JsxAttribute",
+                                              "JsxExpression",
+                                              "ObjectLiteralExpression",
+                                              "PropertyAssignment",
+                                              "StringLiteral",
+                                          ],
+                                          type: "literal",
+                                          node: "StringLiteral",
+                                          value: "blue.100",
+                                          kind: "string",
+                                      },
+                                  ],
+                              },
+                          },
+                      ],
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              box: {
+                  stack: [],
+                  type: "map",
+                  node: "JsxOpeningElement",
+                  value: {
+                      backgroundColor: [
+                          {
+                              stack: ["JsxAttribute", "JsxExpression", "ObjectLiteralExpression"],
+                              type: "map",
+                              node: "ObjectLiteralExpression",
+                              value: {
+                                  default: [
+                                      {
+                                          stack: [
+                                              "JsxAttribute",
+                                              "JsxExpression",
+                                              "ObjectLiteralExpression",
+                                              "PropertyAssignment",
+                                              "StringLiteral",
+                                          ],
+                                          type: "literal",
+                                          node: "StringLiteral",
+                                          value: "orange.800",
+                                          kind: "string",
+                                      },
+                                  ],
+                                  hover: [
+                                      {
+                                          stack: [
+                                              "JsxAttribute",
+                                              "JsxExpression",
+                                              "ObjectLiteralExpression",
+                                              "PropertyAssignment",
+                                              "StringLiteral",
+                                          ],
+                                          type: "literal",
+                                          node: "StringLiteral",
+                                          value: "telegram.200",
+                                          kind: "string",
+                                      },
+                                  ],
+                                  focus: [
+                                      {
+                                          stack: [
+                                              "JsxAttribute",
+                                              "JsxExpression",
+                                              "ObjectLiteralExpression",
+                                              "PropertyAssignment",
+                                              "StringLiteral",
+                                          ],
+                                          type: "literal",
+                                          node: "StringLiteral",
+                                          value: "yellow.700",
+                                          kind: "string",
+                                      },
+                                  ],
+                              },
+                          },
+                      ],
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              box: {
+                  stack: [],
+                  type: "map",
+                  node: "JsxOpeningElement",
+                  value: {
+                      _SPREAD_0: [
+                          {
+                              stack: ["JsxOpeningElement"],
+                              type: "map",
+                              node: "JsxSpreadAttribute",
+                              value: {},
+                          },
+                      ],
+                      color: [
+                          {
+                              stack: ["JsxAttribute", "StringLiteral"],
+                              type: "literal",
+                              node: "StringLiteral",
+                              value: "facebook.900",
+                              kind: "string",
+                          },
+                      ],
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              box: {
+                  stack: [],
+                  type: "map",
+                  node: "JsxOpeningElement",
+                  value: {
+                      color: [
+                          {
+                              stack: ["JsxAttribute", "StringLiteral"],
+                              type: "literal",
+                              node: "StringLiteral",
+                              value: "facebook.900",
+                              kind: "string",
+                          },
+                      ],
+                      _SPREAD_1: [
+                          {
+                              stack: ["JsxOpeningElement"],
+                              type: "map",
+                              node: "JsxSpreadAttribute",
+                              value: {},
+                          },
+                      ],
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              box: {
+                  stack: [],
+                  type: "map",
+                  node: "JsxOpeningElement",
+                  value: {
+                      color: [
+                          {
+                              stack: ["JsxAttribute", "StringLiteral"],
+                              type: "literal",
+                              node: "StringLiteral",
+                              value: "facebook.900",
+                              kind: "string",
+                          },
+                      ],
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              box: {
+                  stack: [],
+                  type: "map",
+                  node: "JsxOpeningElement",
+                  value: {
+                      color: [
+                          {
+                              stack: ["JsxAttribute", "StringLiteral"],
+                              type: "literal",
+                              node: "StringLiteral",
+                              value: "red.100",
+                              kind: "string",
+                          },
+                      ],
+                      _SPREAD_1: [
+                          {
+                              stack: ["JsxOpeningElement"],
+                              type: "map",
+                              node: "JsxSpreadAttribute",
+                              value: {},
+                          },
+                      ],
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              box: {
+                  stack: [],
+                  type: "map",
+                  node: "JsxOpeningElement",
+                  value: {
+                      color: [
+                          {
+                              stack: ["JsxAttribute", "StringLiteral"],
+                              type: "literal",
+                              node: "StringLiteral",
+                              value: "red.100",
+                              kind: "string",
+                          },
+                      ],
+                      _SPREAD_1: [
+                          {
+                              stack: ["JsxOpeningElement"],
+                              type: "map",
+                              node: "JsxSpreadAttribute",
+                              value: {},
+                          },
+                      ],
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              box: {
+                  stack: [],
+                  type: "map",
+                  node: "JsxSelfClosingElement",
+                  value: {
+                      color: [
+                          {
+                              stack: ["JsxAttribute", "StringLiteral"],
+                              type: "literal",
+                              node: "StringLiteral",
+                              value: "green.100",
+                              kind: "string",
+                          },
+                      ],
+                      _SPREAD_1: [
+                          {
+                              stack: ["JsxSelfClosingElement"],
+                              type: "map",
+                              node: "JsxSpreadAttribute",
+                              value: {},
+                          },
+                      ],
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              box: {
+                  stack: [],
+                  type: "map",
+                  node: "JsxSelfClosingElement",
+                  value: {
+                      color: [
+                          {
+                              stack: ["JsxAttribute", "StringLiteral"],
+                              type: "literal",
+                              node: "StringLiteral",
+                              value: "blue.100",
+                              kind: "string",
+                          },
+                      ],
+                      _SPREAD_1: [
+                          {
+                              stack: ["JsxSelfClosingElement"],
+                              type: "map",
+                              node: "JsxSpreadAttribute",
+                              value: {},
+                          },
+                      ],
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              box: {
+                  stack: [],
+                  type: "map",
+                  node: "JsxSelfClosingElement",
+                  value: {
+                      color: [
+                          {
+                              stack: ["JsxAttribute", "StringLiteral"],
+                              type: "literal",
+                              node: "StringLiteral",
+                              value: "yellow.100",
+                              kind: "string",
+                          },
+                      ],
+                      _SPREAD_1: [
+                          {
+                              stack: ["JsxSelfClosingElement"],
+                              type: "map",
+                              node: "JsxSpreadAttribute",
+                              value: {},
+                          },
+                      ],
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              box: {
+                  stack: [],
+                  type: "map",
+                  node: "JsxSelfClosingElement",
+                  value: {
+                      color: [
+                          {
+                              stack: ["JsxAttribute", "StringLiteral"],
+                              type: "literal",
+                              node: "StringLiteral",
+                              value: "orange.100",
+                              kind: "string",
+                          },
+                      ],
+                      _SPREAD_1: [
+                          {
+                              stack: ["JsxSelfClosingElement"],
+                              type: "map",
+                              node: "JsxSpreadAttribute",
+                              value: {},
+                          },
+                      ],
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              box: {
+                  stack: [],
+                  type: "map",
+                  node: "JsxSelfClosingElement",
+                  value: {
+                      color: [
+                          {
+                              stack: ["JsxAttribute", "StringLiteral"],
+                              type: "literal",
+                              node: "StringLiteral",
+                              value: "orange.300",
+                              kind: "string",
+                          },
+                      ],
+                      _SPREAD_1: [
+                          {
+                              stack: ["JsxSelfClosingElement"],
+                              type: "map",
+                              node: "JsxSpreadAttribute",
+                              value: {},
+                          },
+                      ],
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              box: {
+                  stack: [],
+                  type: "map",
+                  node: "JsxSelfClosingElement",
+                  value: {
+                      color: [
+                          {
+                              stack: ["JsxAttribute", "StringLiteral"],
+                              type: "literal",
+                              node: "StringLiteral",
+                              value: "red.100",
+                              kind: "string",
+                          },
+                      ],
+                      _SPREAD_1: [
+                          {
+                              stack: ["JsxSelfClosingElement"],
+                              type: "map",
+                              node: "JsxSpreadAttribute",
+                              value: {},
+                          },
+                      ],
+                  },
+              },
+          },
+          {
+              name: "ColorBox",
+              box: {
+                  stack: [],
+                  type: "map",
+                  node: "JsxSelfClosingElement",
+                  value: {
+                      color: [
+                          {
+                              stack: ["JsxAttribute", "StringLiteral"],
+                              type: "literal",
+                              node: "StringLiteral",
+                              value: "orange.400",
+                              kind: "string",
+                          },
+                      ],
+                      _SPREAD_1: [
+                          {
+                              stack: ["JsxSelfClosingElement"],
+                              type: "map",
+                              node: "JsxSpreadAttribute",
+                              value: {},
                           },
                       ],
                   },
