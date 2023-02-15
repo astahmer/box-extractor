@@ -1,7 +1,7 @@
 {
     "name": "@box-extractor/example-vite-plugin-ssr",
     "private": true,
-    "version": "0.2.7",
+    "version": "0.3.0",
     "type": "module",
     "scripts": {
         "dev": "tsx ./src/server/index.ts",
@@ -14,7 +14,7 @@
     "dependencies": {
         "@box-extractor/core": "workspace:*",
         "@box-extractor/vanilla-theme": "workspace:*",
-        "@box-extractor/vanilla-wind": "workspace:^0.1.2",
+        "@box-extractor/vanilla-wind": "workspace:^0.2.0",
         "@vanilla-extract/css": "^1.9.5",
         "@vitejs/plugin-react": "^3.1.0",
         "compression": "^1.7.4",

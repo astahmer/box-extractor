@@ -1,5 +1,19 @@
 # @box-extractor/cli
 
+## 0.2.0
+
+### Minor Changes
+
+-   [`1f897a5`](https://github.com/astahmer/box-extractor/commit/1f897a5463ade29e8680fecaff4c0eee2823a739) Thanks [@astahmer](https://github.com/astahmer)! - chore: rm vanilla-extract adapter/plugins -> vanilla-wind
+    chore: explicitly add package.json + tsconfig.json to files published
+    refactor(vanilla-theme): publish as raw .ts, rm /css entrypoint & typings
+    chore(examples/react-rakkas): rm baseUrl
+
+### Patch Changes
+
+-   Updated dependencies [[`0265aea`](https://github.com/astahmer/box-extractor/commit/0265aeabc590aed8837107739d9fdb9b51d40e34), [`b7b72ac`](https://github.com/astahmer/box-extractor/commit/b7b72ac0ba5bdad5fb920e87e036d2571f6894f0), [`1f897a5`](https://github.com/astahmer/box-extractor/commit/1f897a5463ade29e8680fecaff4c0eee2823a739)]:
+    -   @box-extractor/core@0.5.0
+
 ## 0.1.1
 
 ### Patch Changes

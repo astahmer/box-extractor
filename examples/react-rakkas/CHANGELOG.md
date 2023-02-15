@@ -1,5 +1,20 @@
 # @box-extractor/examples-react-rakkas
 
+## 0.2.0
+
+### Minor Changes
+
+-   [`1f897a5`](https://github.com/astahmer/box-extractor/commit/1f897a5463ade29e8680fecaff4c0eee2823a739) Thanks [@astahmer](https://github.com/astahmer)! - chore: rm vanilla-extract adapter/plugins -> vanilla-wind
+    chore: explicitly add package.json + tsconfig.json to files published
+    refactor(vanilla-theme): publish as raw .ts, rm /css entrypoint & typings
+    chore(examples/react-rakkas): rm baseUrl
+
+### Patch Changes
+
+-   Updated dependencies [[`1f897a5`](https://github.com/astahmer/box-extractor/commit/1f897a5463ade29e8680fecaff4c0eee2823a739)]:
+    -   @box-extractor/vanilla-theme@0.3.0
+    -   @box-extractor/vanilla-wind@0.2.0
+
 ## 0.1.8
 
 ### Patch Changes
