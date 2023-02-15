@@ -1,5 +1,13 @@
 # @box-extractor/examples-react-rakkas
 
+## 0.1.8
+
+### Patch Changes
+
+-   Updated dependencies [[`9660e84`](https://github.com/astahmer/box-extractor/commit/9660e8448365589141ac317cad59c4fc9071d516), [`ec1a0e0`](https://github.com/astahmer/box-extractor/commit/ec1a0e04adee11ffdab8d56ed9d4ea4d041f3174), [`f0728ca`](https://github.com/astahmer/box-extractor/commit/f0728ca0eb1b3332ce7218584497e9bb2a6f5cdf), [`149af44`](https://github.com/astahmer/box-extractor/commit/149af44c09d12c54b5868afef60ae2388e4a4478), [`dbcde43`](https://github.com/astahmer/box-extractor/commit/dbcde43a64b74192fc524bb29229084087445fb2)]:
+    -   @box-extractor/vanilla-extract@0.2.7
+    -   @box-extractor/vanilla-theme@0.2.8
+
 ## 0.1.7
 
 ### Patch Changes
