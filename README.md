@@ -14,12 +14,6 @@ Optimize your code and elevate your developer experience with compile-time optim
 
 💾 &nbsp; Low-level AST output with access to `ts-morph` `Node` objects for fine-grained control
 
----
-
-[🖥 Try it out yourself in Stackblitz !](https://stackblitz.com/github/astahmer/box-extractor-ve-demo?file=vite.config.ts) or check the example `build` logs [here](#example-build-run)
-
----
-
 # Installation
 
 ## core (static AST extraction)
