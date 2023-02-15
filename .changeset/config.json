@@ -7,5 +7,10 @@
     "access": "public",
     "baseBranch": "main",
     "updateInternalDependencies": "patch",
-    "ignore": ["@box-extractor/vanilla-extract", "@box-extractor/vanilla-theme"]
+    "ignore": [
+        "@box-extractor/vanilla-extract",
+        "@box-extractor/vanilla-theme",
+        "@box-extractor/example-vite-plugin-ssr",
+        "@box-extractor/examples-react-rakkas"
+    ]
 }
