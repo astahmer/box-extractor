@@ -109,8 +109,7 @@ export function maybeBoxNode(node: Node, stack: Node[]): MaybeBoxNodeReturn {
 
     // <ColorBox color={xxx[yyy]} /> / <ColorBox color={xxx["zzz"]} />
     if (Node.isElementAccessExpression(node)) {
-        // TODO cache this & others missed
-        return getElementAccessedExpressionValue(node, stack);
+        return cache(getElementAccessedExpressionValue(node, stack));
     }
 
     // <ColorBox color={xxx.yyy} />
@@ -128,8 +127,7 @@ export function maybeBoxNode(node: Node, stack: Node[]): MaybeBoxNodeReturn {
         const whenTrueExpr = unwrapExpression(node.getWhenTrue());
         const whenFalseExpr = unwrapExpression(node.getWhenFalse());
 
-        // TODO cache this & others missed
-        return maybeExpandConditionalExpression({ whenTrueExpr, whenFalseExpr, node, stack, kind: "ternary" });
+        return cache(maybeExpandConditionalExpression({ whenTrueExpr, whenFalseExpr, node, stack, kind: "ternary" }));
     }
 
     // <ColorBox color={fn()} />
@@ -153,15 +151,16 @@ export function maybeBoxNode(node: Node, stack: Node[]): MaybeBoxNodeReturn {
             const whenTrueExpr = unwrapExpression(node.getLeft());
             const whenFalseExpr = unwrapExpression(node.getRight());
 
-            // TODO cache this & others missed
-            return maybeExpandConditionalExpression({
-                whenTrueExpr,
-                whenFalseExpr,
-                node,
-                stack,
-                kind: conditionalKindByOperatorKind[operatorKind],
-                canReturnWhenTrue: true,
-            });
+            return cache(
+                maybeExpandConditionalExpression({
+                    whenTrueExpr,
+                    whenFalseExpr,
+                    node,
+                    stack,
+                    kind: conditionalKindByOperatorKind[operatorKind],
+                    canReturnWhenTrue: true,
+                })
+            );
         }
     }
 
