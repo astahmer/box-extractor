@@ -25,7 +25,6 @@
         "zod": "^3.19.1"
     },
     "devDependencies": {
-        "@box-extractor/vanilla-theme": "workspace:*",
         "@types/node": "^18.11.9",
         "prettier": "^2.7.1",
         "ts-toolbelt": "^9.6.0",
