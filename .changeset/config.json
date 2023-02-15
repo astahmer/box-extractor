@@ -6,13 +6,5 @@
     "linked": [],
     "access": "public",
     "baseBranch": "main",
-    "updateInternalDependencies": "patch",
-    "ignore": [
-        "@box-extractor/site",
-        "@box-extractor/vanilla-extract",
-        "@box-extractor/vanilla-theme",
-        "@box-extractor/example-vite-plugin-ssr",
-        "@box-extractor/examples-react-rakkas",
-        "@box-extractor/example-react-basic"
-    ]
+    "updateInternalDependencies": "patch"
 }
