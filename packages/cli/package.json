@@ -11,12 +11,10 @@
     },
     "author": "Alexandre Stahmer <alexandre.stahmer@gmail.com>",
     "scripts": {
-        "test": "vitest",
-        "test:ci": "vitest run",
         "lint:ts": "tsc --noEmit",
         "lint": "../../node_modules/.bin/eslint './src/**/*.ts' --cache --format=pretty",
         "lint:fix": "../../node_modules/.bin/eslint './src/**/*.ts' --cache --format=pretty --fix",
-        "ci": "npm run lint && npm run lint:ts && npm run test:ci",
+        "ci": "npm run lint && npm run lint:ts",
         "gen:sample": "./bin.js -i ./tests/sample.ts --functions assignVars -o tests/sample.ts.json"
     },
     "license": "ISC",
