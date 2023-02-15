@@ -441,12 +441,12 @@ export const vanillaWind = (
             async transform(code, id, _options) {
                 if (!isIncluded(id)) return null;
 
-                console.time("transform");
+                // console.time("transform");
                 const validId = id.split("?")[0]!;
                 logger.scoped("usage", "scanning", { validId });
 
                 if (validId.endsWith(virtualExtCss)) {
-                    console.timeEnd("transform");
+                    // console.timeEnd("transform");
                     return null;
                 }
 
@@ -475,16 +475,16 @@ export const vanillaWind = (
                 });
 
                 if (functionsNameFound.length === 0 && componentNamesFound.length === 0) {
-                    console.timeEnd("transform");
+                    // console.timeEnd("transform");
                     return null;
                 }
 
-                console.time("createSourceFile");
+                // console.time("createSourceFile");
                 const sourceFile = project.createSourceFile(normalizeTsx(validId), code, {
                     overwrite: true,
                     scriptKind: ts.ScriptKind.TSX,
                 });
-                console.timeEnd("createSourceFile");
+                // console.timeEnd("createSourceFile");
 
                 // console.time("createAdapterContext");
                 const absoluteId = validId + virtualExtCss;
@@ -493,11 +493,11 @@ export const vanillaWind = (
                 setFileScope(validId);
                 // console.timeEnd("createAdapterContext");
 
-                console.log({
-                    id: validId,
-                    functionNames: functionsNameFound,
-                    componentNames: componentNamesFound,
-                });
+                // console.log({
+                //     id: validId,
+                //     functionNames: functionsNameFound,
+                //     componentNames: componentNamesFound,
+                // });
                 // console.time("usage");
                 logger.scoped("usage", {
                     id: validId,
@@ -510,10 +510,14 @@ export const vanillaWind = (
 
                 functionsNameFound.forEach((name) => {
                     logger.scoped("usage", `extracting ${name}() usage...`);
-                    console.time("usage:fn:extract");
+                    // console.time("usage:fn:extract");
                     const extractResult = extract({ ast: sourceFile, functions: [name] });
-                    console.timeEnd("usage:fn:extract");
+                    // console.timeEnd("usage:fn:extract");
                     const extracted = extractResult.get(name)! as FunctionNodesMap;
+                    if (!extracted) {
+                        logger.scoped("usage", `no usage found for <${name} />. (skipped)`);
+                        return;
+                    }
 
                     const config = configByThemeName.get(name);
                     if (!config) {
@@ -529,7 +533,7 @@ export const vanillaWind = (
                 });
                 // console.timeEnd("usage:fn");
 
-                console.time("usage:component");
+                // console.time("usage:component");
                 componentNamesFound.forEach((component) => {
                     const name = component.name;
                     const themeName = component.themeName;
@@ -538,6 +542,10 @@ export const vanillaWind = (
                     const extractResult = extract({ ast: sourceFile, components: [name] });
                     // console.timeEnd("usage:component:extract");
                     const extracted = extractResult.get(name)! as FunctionNodesMap;
+                    if (!extracted) {
+                        logger.scoped("usage", `no usage found for <${name} />. (skipped)`);
+                        return;
+                    }
 
                     const config = configByThemeName.get(themeName);
                     if (!config) {
@@ -551,7 +559,7 @@ export const vanillaWind = (
                     logger.scoped("usage", { result: result.classByDebugId });
                     generateStyleResults.add(result);
                 });
-                console.timeEnd("usage:component");
+                // console.timeEnd("usage:component");
                 // console.timeEnd("usage");
 
                 // console.time("css");
@@ -562,9 +570,9 @@ export const vanillaWind = (
                 ctx.removeAdapter();
                 // console.timeEnd("css");
 
-                console.time("usage:transform-replace");
+                // console.time("usage:transform-replace");
                 transformStyleNodes(generateStyleResults, magicStr);
-                console.timeEnd("usage:transform-replace");
+                // console.timeEnd("usage:transform-replace");
 
                 if (server) {
                     const hasCache = cssCacheMap.has(absoluteId);
@@ -590,7 +598,7 @@ export const vanillaWind = (
                     cssCacheMap.set(absoluteId, css);
                 }
 
-                console.timeEnd("transform");
+                // console.timeEnd("transform");
                 return {
                     code: `import "${absoluteId}";\n` + magicStr.toString(),
                 };
