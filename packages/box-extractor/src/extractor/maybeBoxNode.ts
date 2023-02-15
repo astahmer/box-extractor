@@ -3,6 +3,7 @@ import { castAsArray, isObject } from "pastable";
 import type {
     ArrayLiteralExpression,
     BinaryExpression,
+    BindingElement,
     ElementAccessExpression,
     Identifier,
     ObjectLiteralElementLike,
@@ -20,16 +21,7 @@ import { safeEvaluateNode } from "./evaluate";
 import { getNameLiteral } from "./getNameLiteral";
 // eslint-disable-next-line import/no-cycle
 import { maybeObjectLikeBox, MaybeObjectLikeBoxReturn } from "./maybeObjectLikeBox";
-import {
-    box,
-    BoxNode,
-    BoxNodeLiteral,
-    BoxNodeObject,
-    BoxNodeUnresolvable,
-    ConditionalKind,
-    isBoxNode,
-    LiteralValue,
-} from "./type-factory";
+import { box, BoxNode, ConditionalKind, isBoxNode, LiteralValue } from "./type-factory";
 import type { ExtractedPropMap, PrimitiveType } from "./types";
 import { isNotNullish, unwrapExpression } from "./utils";
 
@@ -403,138 +395,162 @@ const maybeTemplateStringValue = (template: TemplateExpression, stack: Node[]) =
     }
 };
 
-const maybePropIdentifierDefinitionValue = (
-    elementAccessed: Identifier,
-    propName: string,
-    _stack: Node[]
-): BoxNodeLiteral | BoxNodeObject | BoxNodeUnresolvable | undefined => {
-    const stack = [..._stack];
-    // logger.scoped("id-def", {
-    //     elementAccessed: elementAccessed.getText()?.slice(0, 100),
-    //     propName,
-    // });
+const maybeBindingElementValue = (def: BindingElement, stack: Node[], propName: string) => {
+    const parent = def.getParent();
 
-    const defs = elementAccessed.getDefinitionNodes();
-    while (defs.length > 0) {
-        const def = unwrapExpression(defs.shift()!);
-        logger.scoped("id-def", {
-            // def: def?.getText()?.slice(0, 100),
-            // elementAccessed: elementAccessed.getText()?.slice(0, 100),
-            kind: def?.getKindName(),
-            // type: def?.getType().getText()?.slice(0, 100),
+    logger.scoped("id-def", { parent: parent?.getKindName() });
+    if (!parent) return;
+
+    const grandParent = parent.getParent();
+    logger.scoped("id-def", { grandParent: grandParent?.getKindName() });
+    if (!grandParent) return;
+
+    if (Node.isArrayBindingPattern(parent)) {
+        const index = parent.getChildIndex();
+        if (Number.isNaN(index)) return;
+
+        if (Node.isVariableDeclaration(grandParent)) {
+            const init = grandParent.getInitializer();
+            logger.scoped("id-def", { grandParentInit: init?.getKindName() });
+            if (!init) return;
+
+            const initializer = unwrapExpression(init);
+            if (!Node.isArrayLiteralExpression(initializer)) return;
+
+            const element = initializer.getElements()[index + 1];
+            logger.scoped("id-def", { index, propName, elementKind: element?.getKindName() });
+            if (!element) return;
+
+            const innerStack = [...stack, initializer, element];
+            const maybeObject = maybeObjectLikeBox(element, innerStack);
+            if (!isNotNullish(maybeObject)) return;
+
+            if (box.isObject(maybeObject)) {
+                const propValue = maybeObject.value[propName];
+                logger.scoped("id-def", { propName, propValue });
+
+                return box.cast(propValue, element, innerStack);
+            }
+
+            if (maybeObject.isUnresolvable()) {
+                return maybeObject;
+            }
+
+            const propValue = maybeObject.value.get(propName);
+            if (!isNotNullish(propValue)) return;
+            logger.scoped("id-def", { propName, propValue });
+
+            return box.cast(propValue[0], element, innerStack);
+        }
+    }
+
+    // TODO
+    if (Node.isObjectBindingPattern(parent)) {
+        //
+    }
+};
+
+const maybePropDefinitionValue = (def: Node, propName: string, stack: Node[]) => {
+    logger.scoped("maybe-prop-def-value", { kind: def.getKindName() });
+
+    if (Node.isVariableDeclaration(def)) {
+        const init = def.getInitializer();
+        logger.scoped("prop-id-value", {
+            initializer: init?.getText(),
+            kind: init?.getKindName(),
             propName,
         });
 
-        stack.push(def);
+        if (!init) {
+            const type = def.getTypeNode();
+            if (!type) return;
 
-        if (Node.isVariableDeclaration(def)) {
-            const init = def.getInitializer();
-            logger.scoped("id-def", {
-                initializer: init?.getText(),
-                kind: init?.getKindName(),
-                propName,
-            });
-
-            if (!init) {
-                const type = def.getTypeNode();
-                if (!type) return;
-
-                if (Node.isTypeLiteral(type)) {
-                    const propValue = getTypeLiteralNodePropValue(type, propName, stack);
-                    if (isNotNullish(propValue)) {
-                        stack.push(type);
-                        return box.cast(propValue, type, stack);
-                    }
-                }
-
-                return;
-            }
-
-            const initializer = unwrapExpression(init);
-            logger.scoped("id-def", {
-                initializer: initializer.getText(),
-                kind: initializer.getKindName(),
-                propName,
-            });
-
-            if (Node.isObjectLiteralExpression(initializer)) {
-                const propValue = getPropValue(initializer, propName, stack);
-                if (!propValue) return;
-
-                stack.push(initializer);
-                return propValue;
-            }
-
-            if (Node.isArrayLiteralExpression(initializer)) {
-                const index = Number(propName);
-                if (Number.isNaN(index)) return;
-
-                const element = initializer.getElements()[index];
-                if (!element) return;
-
-                stack.push(initializer);
-                const boxed = maybeBoxNode(element, stack);
-                if (boxed && isBoxNode(boxed) && box.isLiteral(boxed)) {
-                    return boxed;
+            if (Node.isTypeLiteral(type)) {
+                const propValue = getTypeLiteralNodePropValue(type, propName, stack);
+                if (isNotNullish(propValue)) {
+                    stack.push(type);
+                    return box.cast(propValue, type, stack);
                 }
             }
+
+            return;
         }
 
-        if (Node.isBindingElement(def)) {
-            const parent = def.getParent();
+        const initializer = unwrapExpression(init);
+        logger.scoped("prop-id-value", {
+            initializer: initializer.getText(),
+            kind: initializer.getKindName(),
+            propName,
+        });
 
-            logger.scoped("id-def", { parent: parent?.getKindName() });
-            if (!parent) return;
+        if (Node.isObjectLiteralExpression(initializer)) {
+            const propValue = getPropValue(initializer, propName, stack);
+            if (!propValue) return;
 
-            const grandParent = parent.getParent();
-            logger.scoped("id-def", { grandParent: grandParent?.getKindName() });
-            if (!grandParent) return;
+            stack.push(initializer);
+            return propValue;
+        }
 
-            if (Node.isArrayBindingPattern(parent)) {
-                const index = parent.getChildIndex();
-                if (Number.isNaN(index)) return;
+        if (Node.isArrayLiteralExpression(initializer)) {
+            const index = Number(propName);
+            if (Number.isNaN(index)) return;
 
-                if (Node.isVariableDeclaration(grandParent)) {
-                    const init = grandParent.getInitializer();
-                    logger.scoped("id-def", { grandParentInit: init?.getKindName() });
-                    if (!init) return;
+            const element = initializer.getElements()[index];
+            if (!element) return;
 
-                    const initializer = unwrapExpression(init);
-                    if (!Node.isArrayLiteralExpression(initializer)) return;
-
-                    const element = initializer.getElements()[index + 1];
-                    logger.scoped("id-def", { index, propName, elementKind: element?.getKindName() });
-                    if (!element) return;
-
-                    const innerStack = [...stack, initializer, element];
-                    const maybeObject = maybeObjectLikeBox(element, innerStack);
-                    if (!isNotNullish(maybeObject)) return;
-
-                    if (box.isObject(maybeObject)) {
-                        const propValue = maybeObject.value[propName];
-                        logger.scoped("id-def", { propName, propValue });
-
-                        return box.cast(propValue, elementAccessed, innerStack);
-                    }
-
-                    if (maybeObject.isUnresolvable()) {
-                        return maybeObject;
-                    }
-
-                    const propValue = maybeObject.value.get(propName);
-                    if (!isNotNullish(propValue)) return;
-                    logger.scoped("id-def", { propName, propValue });
-
-                    return box.cast(propValue[0], elementAccessed, innerStack);
-                }
-            }
-
-            // TODO ?
-            if (Node.isObjectBindingPattern(parent)) {
-                //
+            stack.push(initializer);
+            const boxed = maybeBoxNode(element, stack);
+            if (boxed && isBoxNode(boxed) && box.isLiteral(boxed)) {
+                return boxed;
             }
         }
     }
+
+    if (Node.isBindingElement(def)) {
+        const value = maybeBindingElementValue(def, stack, propName);
+        if (value) return value;
+    }
+};
+
+const maybePropIdentifierDefinitionValue = (
+    identifier: Identifier,
+    propName: string,
+    _stack: Node[]
+): BoxNode | undefined => {
+    const symbol = identifier.getSymbol();
+    logger.scoped("prop-id-value", { elementAccessed: identifier.getKindName(), symbol: !!symbol, propName });
+    if (!symbol) return;
+
+    const valueDeclaration = symbol.getValueDeclaration();
+    if (!valueDeclaration) return;
+
+    const def = unwrapExpression(valueDeclaration);
+    logger.scoped("prop-id-value", { def: def.getKindName() });
+
+    const stack = [..._stack, def];
+
+    logger.scoped("prop-id-value", {
+        // def: def?.getText()?.slice(0, 100),
+        // elementAccessed: elementAccessed.getText()?.slice(0, 100),
+        kind: def?.getKindName(),
+        // type: def?.getType().getText()?.slice(0, 100),
+        propName,
+    });
+
+    if (Node.isShorthandPropertyAssignment(def)) {
+        const defs = identifier.getDefinitionNodes();
+        while (defs.length > 0) {
+            const nestedDef = unwrapExpression(defs.shift()!);
+            logger.scoped("prop-id-value", { nestedDef: nestedDef.getKindName() });
+
+            const maybePropValue = maybeDefinitionValue(nestedDef, stack);
+            if (maybePropValue) {
+                return maybePropValue;
+            }
+        }
+    }
+
+    return maybePropDefinitionValue(def, propName, stack);
 };
 
 // TODO pass & push in stack ?
@@ -633,62 +649,93 @@ const getTypeNodeValue = (type: TypeNode, stack: Node[]): LiteralValue => {
     typeNodeCache.set(type, undefined);
 };
 
-export const getIdentifierReferenceValue = (identifier: Identifier, _stack: Node[]): MaybeBoxNodeReturn => {
-    const defs = identifier.getDefinitionNodes();
-    const stack = [..._stack];
+const maybeDefinitionValue = (def: Node, stack: Node[]): BoxNode | undefined => {
+    logger.scoped("maybe-def-value", { kind: def.getKindName() });
 
-    while (defs.length > 0) {
-        const def = unwrapExpression(defs.shift()!);
+    if (Node.isShorthandPropertyAssignment(def)) {
+        const propNameNode = def.getNameNode();
+        const maybePropValue = maybePropIdentifierDefinitionValue(propNameNode, propNameNode.getText(), stack);
+        if (maybePropValue) return maybePropValue;
+    }
+
+    // const staticColor =
+    if (Node.isVariableDeclaration(def)) {
+        const init = def.getInitializer();
+        logger.scoped("maybe-def-value", {
+            varDeclaration: true,
+            initializer: init?.getText(),
+            kind: init?.getKindName(),
+        });
+
+        if (!init) {
+            const type = def.getTypeNode();
+            if (!type) return;
+
+            logger.scoped("maybe-def-value", { noInit: true, kind: type.getKindName() });
+            if (Node.isTypeLiteral(type)) {
+                stack.push(type);
+                const maybeTypeValue = getTypeNodeValue(type, stack);
+                if (isNotNullish(maybeTypeValue)) return box.cast(maybeTypeValue, def, stack);
+            }
+
+            return;
+        }
+
+        const initializer = unwrapExpression(init);
+        const innerStack = [...stack, initializer];
+        const maybeValue = maybeBoxNode(initializer, innerStack);
+        if (isNotNullish(maybeValue)) return maybeValue as BoxNode;
+
+        if (Node.isObjectLiteralExpression(initializer)) {
+            logger.scoped("maybe-def-value", { objectLiteral: true });
+            return maybeObjectLikeBox(initializer, innerStack);
+        }
 
         // logger(({
+        //     getIdentifierReferenceValue: true,
         //     def: def?.getText(),
         //     identifier: identifier.getText(),
         //     kind: def?.getKindName(),
         //     type: def?.getType().getText(),
+        //     initializer: initializer?.getText(),
+        //     initializerKind: initializer?.getKindName(),
         // }));
+    }
 
-        stack.push(def);
+    if (Node.isBindingElement(def)) {
+        const init = def.getInitializer();
+        if (!init) {
+            const nameNode = def.getPropertyNameNode() ?? def.getNameNode();
+            const propName = nameNode.getText();
+            const innerStack = [...stack, nameNode];
 
-        // const staticColor =
-        if (Node.isVariableDeclaration(def)) {
-            const init = def.getInitializer();
-            logger.scoped("id-ref", { initializer: init?.getText(), kind: init?.getKindName() });
-
-            if (!init) {
-                const type = def.getTypeNode();
-                if (!type) return;
-
-                logger.scoped("id-type", { kind: type.getKindName() });
-                if (Node.isTypeLiteral(type)) {
-                    stack.push(type);
-                    const maybeTypeValue = getTypeNodeValue(type, stack);
-                    if (isNotNullish(maybeTypeValue)) return box.cast(maybeTypeValue, def, stack);
-                }
-
-                return;
-            }
-
-            const initializer = unwrapExpression(init);
-            const innerStack = [...stack, initializer];
-            const maybeValue = maybeBoxNode(initializer, innerStack);
-            if (isNotNullish(maybeValue)) return maybeValue;
-
-            if (Node.isObjectLiteralExpression(initializer)) {
-                logger.scoped("get-id-value");
-                return maybeObjectLikeBox(initializer, innerStack);
-            }
-
-            // logger(({
-            //     getIdentifierReferenceValue: true,
-            //     def: def?.getText(),
-            //     identifier: identifier.getText(),
-            //     kind: def?.getKindName(),
-            //     type: def?.getType().getText(),
-            //     initializer: initializer?.getText(),
-            //     initializerKind: initializer?.getKindName(),
-            // }));
+            logger.scoped("maybe-def-value", { bindingElement: true, propName });
+            const value = maybeBindingElementValue(def, innerStack, propName);
+            if (value) return value;
         }
     }
+};
+
+export const getIdentifierReferenceValue = (identifier: Identifier, _stack: Node[]): MaybeBoxNodeReturn => {
+    const symbol = identifier.getSymbol();
+    logger.scoped("id-ref", { identifier: identifier.getKindName(), symbol: !!symbol });
+    if (!symbol) return;
+
+    const valueDeclaration = symbol.getValueDeclaration();
+    if (!valueDeclaration) return;
+
+    const def = unwrapExpression(valueDeclaration);
+    logger.scoped("id-ref", { def: def.getKindName() });
+    // logger(({
+    //     def: def?.getText(),
+    //     identifier: identifier.getText(),
+    //     kind: def?.getKindName(),
+    //     type: def?.getType().getText(),
+    // }));
+
+    const stack = [..._stack, def];
+    const maybeValue = maybeDefinitionValue(def, stack);
+    if (maybeValue) return maybeValue;
 };
 
 const tryUnwrapBinaryExpression = (node: BinaryExpression, stack: Node[]) => {
