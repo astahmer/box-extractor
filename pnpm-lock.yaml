@@ -358,10 +358,10 @@ importers:
     specifiers:
       '@astahmer/eslint-config-react': ^0.1.5
       '@astahmer/eslint-config-ts': ^0.1.5
-      '@box-extractor/core': workspace:^0.3.0
+      '@box-extractor/core': workspace:^0.4.0
       '@box-extractor/logger': workspace:*
-      '@box-extractor/vanilla-theme': workspace:^0.2.7
-      '@box-extractor/vanilla-wind': workspace:^0.1.1
+      '@box-extractor/vanilla-theme': workspace:^0.2.8
+      '@box-extractor/vanilla-wind': workspace:^0.1.2
       '@esbuild-plugins/node-globals-polyfill': ^0.1.1
       '@iconify/json': ^2.1.132
       '@monaco-editor/react': ^4.4.6
@@ -678,7 +678,6 @@ packages:
       semver: 6.3.0
     transitivePeerDependencies:
       - supports-color
-    dev: true
 
   /@babel/generator/7.20.4:
     resolution: {integrity: sha512-luCf7yk/cm7yab6CAW1aiFnmEfBJplb/JojV56MYEK7ziWfGmFlTfmL9Ehwfy4gFhbjBfWO1wj7/TuSbVNEEtA==}
@@ -761,7 +760,6 @@ packages:
       browserslist: 4.21.4
       lru-cache: 5.1.1
       semver: 6.3.0
-    dev: true
 
   /@babel/helper-create-class-features-plugin/7.20.2_@babel+core@7.20.2:
     resolution: {integrity: sha512-k22GoYRAHPYr9I+Gvy2ZQlAe5mGy8BqWst2wRt8cwIufWTxrsVshhIBvYNqC80N0GSFWTsqRVexOtfzlgOEDvA==}
@@ -3783,6 +3781,22 @@ packages:
     transitivePeerDependencies:
       - supports-color
 
+  /@vitejs/plugin-react/3.0.0_vite@3.2.5:
+    resolution: {integrity: sha512-1mvyPc0xYW5G8CHQvJIJXLoMjl5Ct3q2g5Y2s6Ccfgwm45y48LBvsla7az+GkkAtYikWQ4Lxqcsq5RHLcZgtNQ==}
+    engines: {node: ^14.18.0 || >=16.0.0}
+    peerDependencies:
+      vite: ^4.0.0
+    dependencies:
+      '@babel/core': 7.20.12
+      '@babel/plugin-transform-react-jsx-self': 7.18.6_@babel+core@7.20.12
+      '@babel/plugin-transform-react-jsx-source': 7.19.6_@babel+core@7.20.12
+      magic-string: 0.27.0
+      react-refresh: 0.14.0
+      vite: 3.2.5
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
+
   /@vitejs/plugin-react/3.0.0_vite@4.0.3:
     resolution: {integrity: sha512-1mvyPc0xYW5G8CHQvJIJXLoMjl5Ct3q2g5Y2s6Ccfgwm45y48LBvsla7az+GkkAtYikWQ4Lxqcsq5RHLcZgtNQ==}
     engines: {node: ^14.18.0 || >=16.0.0}
@@ -3813,6 +3827,7 @@ packages:
       vite: 3.2.5
     transitivePeerDependencies:
       - supports-color
+    dev: true
 
   /@xstate/react/3.0.2_o5u6bh43w5rmf7t7erwjktck7q:
     resolution: {integrity: sha512-sFbnMyi+FHF6bXbdvOF6RKVJ9VxrhhUz7KJ/8qKwpqFs0h+EoGOXdfAeuS3aEy29JsFaRclozBxDpsEJd/vlkg==}
@@ -8330,7 +8345,7 @@ packages:
       react-dom: '18'
       vite: 3 || 4
     dependencies:
-      '@babel/core': 7.20.12
+      '@babel/core': 7.20.7
       '@babel/types': 7.20.7
       '@hattip/adapter-node': 0.0.24
       '@hattip/bundler-cloudflare-workers': 0.0.24
@@ -8346,7 +8361,7 @@ packages:
       '@vavite/connect': 1.5.2_vite@3.2.5
       '@vavite/expose-vite-dev-server': 1.5.2_vite@3.2.5
       '@vavite/multibuild': 1.5.2_vite@3.2.5
-      '@vitejs/plugin-react': 3.1.0_vite@3.2.5
+      '@vitejs/plugin-react': 3.0.0_vite@3.2.5
       cac: 6.7.14
       cheerio: 1.0.0-rc.12
       devalue: 4.2.0
@@ -9786,7 +9801,7 @@ packages:
       fast-glob: 3.2.12
       picocolors: 1.0.0
       sirv: 2.0.2
-      vite: 3.2.3
+      vite: 3.2.3_@types+node@18.11.9
     dev: false
 
   /vite-tsconfig-paths/4.0.3_p2fwcaxbionflq6hjivvbcsv5a:
