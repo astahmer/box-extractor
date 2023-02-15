@@ -1,6 +1,6 @@
 {
     "name": "@box-extractor/vanilla-wind",
-    "version": "0.1.2",
+    "version": "0.2.0",
     "main": "dist/box-extractor-vanilla-wind.cjs.js",
     "module": "dist/box-extractor-vanilla-wind.esm.js",
     "exports": {

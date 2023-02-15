@@ -1,5 +1,13 @@
 # @box-extractor/vanilla-extract
 
+## 0.2.8
+
+### Patch Changes
+
+-   Updated dependencies [[`0265aea`](https://github.com/astahmer/box-extractor/commit/0265aeabc590aed8837107739d9fdb9b51d40e34), [`b7b72ac`](https://github.com/astahmer/box-extractor/commit/b7b72ac0ba5bdad5fb920e87e036d2571f6894f0), [`1f897a5`](https://github.com/astahmer/box-extractor/commit/1f897a5463ade29e8680fecaff4c0eee2823a739)]:
+    -   @box-extractor/core@0.5.0
+    -   @box-extractor/logger@0.1.0
+
 ## 0.2.7
 
 ### Patch Changes
