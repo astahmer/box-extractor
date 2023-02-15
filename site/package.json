@@ -1,6 +1,7 @@
 {
     "name": "@box-extractor/site",
     "private": true,
+    "version": "0.1.1",
     "type": "module",
     "scripts": {
         "dev": "rakkas",
