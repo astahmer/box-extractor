@@ -1,5 +1,13 @@
 # @box-extractor/example-react-basic
 
+## 0.2.7
+
+### Patch Changes
+
+-   Updated dependencies []:
+    -   @box-extractor/vanilla-wind@0.1.2
+    -   @box-extractor/vanilla-theme@0.2.8
+
 ## 0.2.6
 
 ### Patch Changes

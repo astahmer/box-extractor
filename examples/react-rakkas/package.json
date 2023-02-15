@@ -1,7 +1,7 @@
 {
     "name": "@box-extractor/examples-react-rakkas",
     "type": "module",
-    "version": "0.1.7",
+    "version": "0.1.8",
     "private": true,
     "scripts": {
         "dev": "rakkas",
