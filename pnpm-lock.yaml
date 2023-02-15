@@ -75,7 +75,7 @@ importers:
   examples/react-rakkas:
     specifiers:
       '@box-extractor/vanilla-theme': workspace:*
-      '@box-extractor/vanilla-wind': workspace:^0.1.2
+      '@box-extractor/vanilla-wind': workspace:*
       '@types/react': ^18.0.28
       '@types/react-dom': ^18.0.11
       '@vanilla-extract/css': ^1.9.5
@@ -105,7 +105,7 @@ importers:
     specifiers:
       '@box-extractor/core': workspace:*
       '@box-extractor/vanilla-theme': workspace:*
-      '@box-extractor/vanilla-wind': workspace:^0.1.2
+      '@box-extractor/vanilla-wind': workspace:*
       '@mdx-js/react': ^2.3.0
       '@mdx-js/rollup': ^2.3.0
       '@stefanprobst/rehype-extract-toc': ^2.2.0
@@ -333,10 +333,10 @@ importers:
     specifiers:
       '@astahmer/eslint-config-react': ^0.1.5
       '@astahmer/eslint-config-ts': ^0.1.5
-      '@box-extractor/core': workspace:^0.4.0
+      '@box-extractor/core': workspace:*
       '@box-extractor/logger': workspace:*
-      '@box-extractor/vanilla-theme': workspace:^0.2.8
-      '@box-extractor/vanilla-wind': workspace:^0.1.2
+      '@box-extractor/vanilla-theme': workspace:*
+      '@box-extractor/vanilla-wind': workspace:*
       '@esbuild-plugins/node-globals-polyfill': ^0.1.1
       '@iconify/json': ^2.1.132
       '@monaco-editor/react': ^4.4.6
