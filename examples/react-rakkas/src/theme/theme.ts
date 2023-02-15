@@ -1,58 +1,9 @@
-import { flatColors, tokens } from "@box-extractor/vanilla-theme";
-import { assignVars, ConfigConditions, createTheme, defineProperties } from "@box-extractor/vanilla-wind";
-import { darkMode, lightMode } from "./color-mode";
-import { primary } from "./site-tokens";
-
-const colorModeVars = createTheme("contract", {
-    color: {
-        mainBg: "",
-        secondaryBg: "",
-        text: "",
-        bg: "",
-        bgSecondary: "",
-        bgHover: "",
-    },
-});
-
-const lightVars = assignVars(colorModeVars, {
-    color: {
-        mainBg: primary["200"],
-        secondaryBg: primary["300"],
-        text: tokens.colors.blue["400"],
-        bg: primary["600"],
-        bgSecondary: primary["400"],
-        bgHover: primary["100"],
-    },
-});
-
-const darkVars = assignVars(colorModeVars, {
-    color: {
-        mainBg: primary["600"],
-        secondaryBg: primary["700"],
-        text: tokens.colors.blue["300"],
-        bg: primary["300"],
-        bgSecondary: primary["800"],
-        bgHover: primary["700"],
-    },
-});
+import { defineProperties, ConfigConditions } from "@box-extractor/vanilla-wind";
+import { tokens, flatColors } from "@box-extractor/vanilla-theme";
 
 const space = tokens.space as Record<keyof typeof tokens.space | `${keyof typeof tokens.space}`, string>;
 const sizes = tokens.sizes as Record<keyof typeof tokens.sizes | `${keyof typeof tokens.sizes}`, string>;
-
-const flatPrimaryColors = {
-    "brand.50": primary["50"],
-    "brand.100": primary["100"],
-    "brand.200": primary["200"],
-    "brand.300": primary["300"],
-    "brand.400": primary["400"],
-    "brand.500": primary["500"],
-    "brand.600": primary["600"],
-    "brand.700": primary["700"],
-    "brand.800": primary["800"],
-    "brand.900": primary["900"],
-};
-
-const colors = { ...flatColors, ...colorModeVars.color, ...flatPrimaryColors };
+const colors = flatColors;
 
 const screens = {
     mobile: { max: "599px" },
@@ -74,7 +25,7 @@ const twBreakpointsToAppBreakpoints = (breakpointsMap: TwResponsiveBreakpointsMa
         ])
     ) as Record<TwResponsiveBreakpoints, ConfigConditions[string]>;
 
-export const css = defineProperties({
+export const tw = defineProperties({
     conditions: {
         ...twBreakpointsToAppBreakpoints(screens),
         default: {},
@@ -175,7 +126,7 @@ export const css = defineProperties({
         peerPlaceholderShown: {
             selector: "&[data-peer]::placeholder-shown ~ &,.peer::placeholder-shown ~ &",
         },
-        _placeholder: { selector: "&::placeholder" },
+        placeholder: { selector: "&::placeholder" },
         placeholderShown: { selector: "&::placeholder-shown" },
         fullScreen: { selector: "&:fullscreen" },
         selection: { selector: "&::selection" },
@@ -185,11 +136,6 @@ export const css = defineProperties({
         mediaReduceMotion: { "@media": "(prefers-reduced-motion: reduce)" },
         dark: { selector: "&[data-theme=dark] &,&[data-theme=dark]" },
         light: { selector: "&[data-theme=light] &,&[data-theme=light]" },
-        // dark: { selector: `&[data-theme=dark] &,[data-theme=dark] &,.${darkMode} &` },
-        // light: { selector: `&[data-theme=light] &,[data-theme=light] &,.${lightMode} &` },
-        resizeHandleActive: { selector: "[data-resize-handle-active] &" },
-        panelHorizontalActive: { selector: '[data-panel-group-direction="horizontal"] &' },
-        panelVerticalActive: { selector: '[data-panel-group-direction="vertical"] &' },
     },
     properties: {
         boxShadow: tokens.shadows,
@@ -311,7 +257,6 @@ export const css = defineProperties({
         objectFit: true,
         objectPosition: true,
         listStyleType: true,
-        colorScheme: true,
     },
     shorthands: {
         // base props
@@ -367,17 +312,3 @@ export const css = defineProperties({
         borderXColor: ["borderLeftColor", "borderRightColor"],
     },
 });
-
-// global css
-css(
-    {
-        background: `linear-gradient(to bottom, ${colorModeVars.color.mainBg} 20%, ${colorModeVars.color.secondaryBg})`,
-        backgroundAttachment: "fixed",
-        color: colorModeVars.color.text,
-    },
-    { selector: "body" }
-);
-
-css({ colorScheme: "light", vars: lightVars }, { selector: `.${lightMode}` });
-css({ colorScheme: "dark", vars: darkVars }, { selector: `.${darkMode}` });
-css({ backgroundColor: primary[800], color: tokens.colors.whiteAlpha[700] }, { selector: "a.active" });

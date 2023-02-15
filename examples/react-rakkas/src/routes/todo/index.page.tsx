@@ -3,7 +3,7 @@ import { Todo } from "./Todo";
 import css from "./page.module.css";
 import { runServerSideMutation, useMutation, useServerSideQuery } from "rakkasjs";
 
-import { createTodo, readAllTodos } from "src/crud";
+import { createTodo, readAllTodos } from "../../crud";
 
 export default function TodoPage() {
     const { data, refetch } = useServerSideQuery(readAllTodos, {

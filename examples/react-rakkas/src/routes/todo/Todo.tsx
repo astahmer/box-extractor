@@ -1,6 +1,6 @@
 import { runServerSideMutation, useMutation } from "rakkasjs";
 import { useState, FC } from "react";
-import { deleteTodo, TodoItem, updateTodo } from "src/crud";
+import { deleteTodo, TodoItem, updateTodo } from "../../crud";
 import css from "./Todo.module.css";
 
 export interface TodoProps {

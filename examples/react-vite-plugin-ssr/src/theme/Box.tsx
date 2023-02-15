@@ -1,35 +1,24 @@
+import type { WithStyledProps } from "@box-extractor/vanilla-wind";
 import type { PropsWithChildren } from "react";
-import { composeClassNames, getBoxProps } from "@box-extractor/vanilla-extract";
-import { ThemeSprinkles, themeSprinkles } from "@box-extractor/vanilla-theme/css";
-import type { EscapeHatchProps, ReversedConditionsProps } from "@box-extractor/vanilla-theme";
+import type { tw } from "./theme";
 
 const defaultElement = "div";
 
 export const Box = <TType extends React.ElementType = typeof defaultElement>({
-    children,
     as,
-    className,
-    style,
+    _styled,
+    children,
     ...props
-}: PolymorphicComponentProps<PropsWithChildren<BoxProps>, TType>) => {
+}: PolymorphicComponentProps<WithStyledProps<typeof tw> & PropsWithChildren, TType>) => {
     const Component = as ?? defaultElement;
-    const boxProps = getBoxProps(props, themeSprinkles);
-
     return (
-        <Component
-            {...boxProps.otherProps}
-            className={composeClassNames(className, themeSprinkles(boxProps.sprinklesProps))}
-            children={children}
-            style={boxProps.sprinklesEscapeHatchProps}
-        />
+        <Component {...props} className={_styled}>
+            {children}
+        </Component>
     );
 };
 
-export type BoxProps = ThemeSprinkles &
-    EscapeHatchProps<ThemeSprinkles> &
-    ReversedConditionsProps<typeof themeSprinkles>;
-
-export type AsProp<TType extends React.ElementType = React.ElementType> = {
+type AsProp<TType extends React.ElementType = React.ElementType> = {
     as?: TType;
 };
 

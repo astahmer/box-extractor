@@ -3,7 +3,7 @@ import { PageShell } from "./PageShell";
 import { escapeInject, dangerouslySkipEscape } from "vite-plugin-ssr";
 import logoUrl from "./logo.svg";
 import type { PageContextServer } from "./types";
-import { lightMode, darkMode } from "@box-extractor/vanilla-theme/css";
+import { darkMode, lightMode } from "../theme/color-mode";
 
 // See https://vite-plugin-ssr.com/data-fetching
 export const passToClient = ["pageProps", "urlPathname"];

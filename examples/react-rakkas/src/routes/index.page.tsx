@@ -1,9 +1,10 @@
 import { Page } from "rakkasjs";
+import { tw } from "../theme/theme";
 
 const HomePage: Page = function HomePage() {
     return (
         <main>
-            <h1>Hello world!</h1>
+            <h1 className={tw({ fontSize: "4xl", color: "red.400" })}>Hello world!</h1>
             <p>Welcome to the Rakkas demo page 💃</p>
             <p>
                 Try editing the files in <code>src/routes</code> to get started or go to the{" "}

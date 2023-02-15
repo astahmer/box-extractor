@@ -42,6 +42,8 @@
         }
     },
     "files": [
+        "package.json",
+        "tsconfig.json",
         "src",
         "dist"
     ],

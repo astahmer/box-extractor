@@ -1,6 +1,5 @@
 import vw from "@box-extractor/vanilla-wind/vite";
 import { vanillaExtractPlugin } from "@vanilla-extract/vite-plugin";
-import { vanillaExtractPlugin as vanillaExtractPluginEsbuild } from "@vanilla-extract/esbuild-plugin";
 import Inspect from "vite-plugin-inspect";
 
 import { NodeGlobalsPolyfillPlugin } from "@esbuild-plugins/node-globals-polyfill";

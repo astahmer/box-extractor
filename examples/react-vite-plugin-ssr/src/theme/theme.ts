@@ -1,14 +1,58 @@
-import { defineProperties } from "@vanilla-extract/sprinkles";
-import { flatColors } from "../flat-colors";
-import { tokens } from "../tokens";
-import { colorModeVars } from "./color-mode.css";
+import { flatColors, tokens } from "@box-extractor/vanilla-theme";
+import { assignVars, ConfigConditions, createTheme, defineProperties } from "@box-extractor/vanilla-wind";
+import { darkMode, lightMode } from "./color-mode";
+import { primary } from "./site-tokens";
 
-const colors = { ...flatColors, main: colorModeVars.color.primary, secondary: colorModeVars.color.primary };
+const colorModeVars = createTheme("contract", {
+    color: {
+        mainBg: "",
+        secondaryBg: "",
+        text: "",
+        bg: "",
+        bgSecondary: "",
+        bgHover: "",
+    },
+});
 
-// TODO theme vars ?
-const absPos = ["auto", "0", "-50%", "0%", "50%", "100%"] as const;
-const size = ["auto", "0", "0%", "25%", "50%", "75%", "100%", "100vh", "100vw"] as const;
-const flexAlign = ["stretch", "flex-start", "center", "flex-end", "space-around", "space-between"] as const;
+const lightVars = assignVars(colorModeVars, {
+    color: {
+        mainBg: primary["200"],
+        secondaryBg: primary["300"],
+        text: tokens.colors.blue["400"],
+        bg: primary["600"],
+        bgSecondary: primary["400"],
+        bgHover: primary["100"],
+    },
+});
+
+const darkVars = assignVars(colorModeVars, {
+    color: {
+        mainBg: primary["600"],
+        secondaryBg: primary["700"],
+        text: tokens.colors.blue["300"],
+        bg: primary["300"],
+        bgSecondary: primary["800"],
+        bgHover: primary["700"],
+    },
+});
+
+const space = tokens.space as Record<keyof typeof tokens.space | `${keyof typeof tokens.space}`, string>;
+const sizes = tokens.sizes as Record<keyof typeof tokens.sizes | `${keyof typeof tokens.sizes}`, string>;
+
+const flatPrimaryColors = {
+    "brand.50": primary["50"],
+    "brand.100": primary["100"],
+    "brand.200": primary["200"],
+    "brand.300": primary["300"],
+    "brand.400": primary["400"],
+    "brand.500": primary["500"],
+    "brand.600": primary["600"],
+    "brand.700": primary["700"],
+    "brand.800": primary["800"],
+    "brand.900": primary["900"],
+};
+
+const colors = { ...flatColors, ...colorModeVars.color, ...flatPrimaryColors };
 
 const screens = {
     mobile: { max: "599px" },
@@ -17,13 +61,6 @@ const screens = {
 } as const;
 type TwResponsiveBreakpoints = keyof typeof screens;
 type TwResponsiveBreakpointsMap = Record<TwResponsiveBreakpoints, { min?: string; max?: string }>;
-
-// https://github.com/seek-oss/vanilla-extract/blob/2b0abcd646cbbc8836301822c27c10f393870f4a/packages/sprinkles/src/index.ts
-type Condition = {
-    "@media"?: string;
-    "@supports"?: string;
-    selector?: string;
-};
 
 const twBreakpointsToAppBreakpoints = (breakpointsMap: TwResponsiveBreakpointsMap) =>
     Object.fromEntries(
@@ -35,13 +72,9 @@ const twBreakpointsToAppBreakpoints = (breakpointsMap: TwResponsiveBreakpointsMa
                     .join(" and "),
             },
         ])
-    ) as Record<TwResponsiveBreakpoints, Condition>;
+    ) as Record<TwResponsiveBreakpoints, ConfigConditions[string]>;
 
-const overflow = ["auto", "hidden", "scroll", "visible"] as const;
-const space = tokens.space as Record<keyof typeof tokens.space | `${keyof typeof tokens.space}`, string>;
-
-/** https://chakra-ui.com/docs/styled-system/style-props#pseudo */
-export const interactiveProperties = defineProperties({
+export const tw = defineProperties({
     conditions: {
         ...twBreakpointsToAppBreakpoints(screens),
         default: {},
@@ -142,7 +175,7 @@ export const interactiveProperties = defineProperties({
         peerPlaceholderShown: {
             selector: "&[data-peer]::placeholder-shown ~ &,.peer::placeholder-shown ~ &",
         },
-        placeholder: { selector: "&::placeholder" },
+        _placeholder: { selector: "&::placeholder" },
         placeholderShown: { selector: "&::placeholder-shown" },
         fullScreen: { selector: "&:fullscreen" },
         selection: { selector: "&::selection" },
@@ -152,8 +185,12 @@ export const interactiveProperties = defineProperties({
         mediaReduceMotion: { "@media": "(prefers-reduced-motion: reduce)" },
         dark: { selector: "&[data-theme=dark] &,&[data-theme=dark]" },
         light: { selector: "&[data-theme=light] &,&[data-theme=light]" },
+        // dark: { selector: `&[data-theme=dark] &,[data-theme=dark] &,.${darkMode} &` },
+        // light: { selector: `&[data-theme=light] &,[data-theme=light] &,.${lightMode} &` },
+        resizeHandleActive: { selector: "[data-resize-handle-active] &" },
+        panelHorizontalActive: { selector: '[data-panel-group-direction="horizontal"] &' },
+        panelVerticalActive: { selector: '[data-panel-group-direction="vertical"] &' },
     },
-    defaultCondition: "default",
     properties: {
         boxShadow: tokens.shadows,
         textShadow: tokens.shadows,
@@ -163,50 +200,50 @@ export const interactiveProperties = defineProperties({
             "0.6": "0.6",
             "1": "1",
         },
-        cursor: ["inherit", "pointer", "not-allowed", "initial", "wait", "col-resize"],
-        pointerEvents: ["inherit", "all", "none"],
-        userSelect: ["inherit", "none", "text", "all"],
+        cursor: true,
+        pointerEvents: true,
+        userSelect: true,
         //
         fontFamily: tokens.typography.fonts,
         fontSize: tokens.typography.fontSizes,
         fontWeight: tokens.typography.fontWeights,
         lineHeight: tokens.typography.lineHeights,
         letterSpacing: tokens.typography.letterSpacings,
-        textAlign: ["inherit", "left", "center", "right"],
-        fontStyle: ["normal", "italic"],
-        textTransform: ["inherit", "uppercase", "lowercase", "capitalize", "none"],
-        textDecoration: ["none", "underline", "line-through"],
+        textAlign: true,
+        fontStyle: true,
+        textTransform: true,
+        textDecoration: true,
         //
-        position: ["absolute", "relative", "fixed", "sticky"],
-        display: ["none", "flex", "inline-flex", "block", "inline", "inline-block"],
-        flexDirection: ["row", "column", "row-reverse"],
-        flexShrink: [0, 1] as const,
-        flexGrow: [0, 1] as const,
-        flex: [0, 1] as const,
-        flexWrap: ["wrap", "nowrap", "revert", "wrap-reverse"],
-        justifyContent: flexAlign,
-        justifySelf: flexAlign,
-        alignItems: flexAlign,
-        alignSelf: flexAlign,
-        top: absPos,
-        bottom: absPos,
-        left: absPos,
-        right: absPos,
-        inset: absPos,
+        position: true,
+        display: true,
+        flexDirection: true,
+        flexShrink: true,
+        flexGrow: true,
+        flex: true,
+        flexWrap: true,
+        justifyContent: true,
+        justifySelf: true,
+        alignItems: true,
+        alignSelf: true,
+        top: sizes,
+        bottom: sizes,
+        left: sizes,
+        right: sizes,
+        inset: sizes,
         // base props
-        width: size,
-        minWidth: size,
-        maxWidth: size,
-        height: size,
-        minHeight: size,
-        maxHeight: size,
-        whiteSpace: ["nowrap", "unset"],
-        textOverflow: ["ellipsis", "clip", "unset"],
-        overflow: overflow,
-        overflowX: overflow,
-        overflowY: overflow,
-        visibility: ["unset", "hidden", "visible"],
-        verticalAlign: ["baseline", "top", "middle", "bottom", "text-top", "text-bottom"],
+        width: sizes,
+        minWidth: sizes,
+        maxWidth: sizes,
+        height: sizes,
+        minHeight: sizes,
+        maxHeight: sizes,
+        whiteSpace: true,
+        textOverflow: true,
+        overflow: true,
+        overflowX: true,
+        overflowY: true,
+        visibility: true,
+        verticalAlign: true,
         // spacing props
         // TODO negative values
         // https://github.com/vanilla-extract-css/vanilla-extract/blob/master/site/src/system/styles/sprinkles.css.ts
@@ -228,7 +265,7 @@ export const interactiveProperties = defineProperties({
         marginInlineStart: space,
         marginInlineEnd: space,
         border: tokens.borders,
-        borderStyle: ["solid", "dashed", "dotted", "double", "groove", "ridge", "inset", "outset"],
+        borderStyle: true,
         borderWidth: tokens.borders,
         borderTopWidth: tokens.borders,
         borderRightWidth: tokens.borders,
@@ -257,8 +294,24 @@ export const interactiveProperties = defineProperties({
         fill: colors,
         stroke: colors,
         // transform props
-        transform: ["none"],
-        transformOrigin: ["center"],
+        transform: true,
+        transformOrigin: true,
+        // static properties
+        zIndex: tokens.zIndices,
+        transition: {
+            none: "none",
+            slow: "all .3s ease, opacity .3s ease",
+            fast: "all .15s ease, opacity .15s ease",
+        },
+        backgroundSize: true,
+        backgroundRepeat: true,
+        backgroundPosition: true,
+        backgroundAttachment: true,
+        wordBreak: true,
+        objectFit: true,
+        objectPosition: true,
+        listStyleType: true,
+        colorScheme: true,
     },
     shorthands: {
         // base props
@@ -315,21 +368,16 @@ export const interactiveProperties = defineProperties({
     },
 });
 
-export const staticProperties = defineProperties({
-    properties: {
-        zIndex: tokens.zIndices,
-        transition: {
-            none: "none",
-            slow: "all .3s ease, opacity .3s ease",
-            fast: "all .15s ease, opacity .15s ease",
-        },
-        backgroundSize: ["cover", "contain"],
-        backgroundRepeat: ["no-repeat", "repeat"],
-        backgroundPosition: ["center", "top", "bottom", "left", "right"],
-        backgroundAttachment: ["fixed", "scroll"],
-        wordBreak: ["break-all", "break-word", "normal"],
-        objectFit: ["cover", "contain"],
-        objectPosition: ["center", "top", "bottom", "left", "right"],
-        listStyleType: ["none", "disc", "decimal"],
+// global css
+tw(
+    {
+        background: `linear-gradient(to bottom, ${colorModeVars.color.mainBg} 20%, ${colorModeVars.color.secondaryBg})`,
+        backgroundAttachment: "fixed",
+        color: colorModeVars.color.text,
     },
-});
+    { selector: "body" }
+);
+
+tw({ colorScheme: "light", vars: lightVars }, { selector: `.${lightMode}` });
+tw({ colorScheme: "dark", vars: darkVars }, { selector: `.${darkMode}` });
+tw({ backgroundColor: primary[800], color: tokens.colors.whiteAlpha[700] }, { selector: "a.active" });

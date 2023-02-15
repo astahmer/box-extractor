@@ -281,6 +281,7 @@ export const vanillaWind = (
             // Re-parse theme files when they change
             async handleHotUpdate({ file, modules }) {
                 if (!themePathList.has(file)) return;
+                if (!server) return;
 
                 try {
                     const virtuals: any[] = [];
@@ -344,7 +345,7 @@ export const vanillaWind = (
                         await onStyledFound(Array.from(extracted.keys()), "any");
 
                         // TODO check if useful ?
-                        if (_options?.ssr) {
+                        if (_options?.ssr && server) {
                             server.moduleGraph.invalidateAll();
                             server.ws.send({ type: "full-reload", path: absoluteId });
                         }

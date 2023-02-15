@@ -1,9 +1,10 @@
 // This is the main layout of our app. It renders the header and the footer.
 
-import { themeSprinkles } from "@box-extractor/vanilla-theme/css";
+import { WithStyledProps } from "@box-extractor/vanilla-wind";
 import { Head, Link, StyledLink, Layout } from "rakkasjs";
-import { Box, BoxProps, PolymorphicComponentProps } from "src/theme/Box";
-import { Stack } from "src/theme/components";
+import { Box, PolymorphicComponentProps } from "../theme/Box";
+import { Stack } from "../theme/components";
+import { tw } from "../theme/theme";
 
 import "./layout.css";
 
@@ -24,10 +25,10 @@ const MainLayout: Layout = ({ children }) => (
             borderStyle="solid"
             borderBottomWidth="1px"
             borderBottomColor="gray.200"
-            _tablet={{ justifyContent: "center" }}
+            tablet={{ justifyContent: "center" }}
         >
             {/* <Link /> is like <a /> but it provides client-side navigation without full page reload. */}
-            <Box as={Link} __fontSize="150%" fontWeight="bold" href="/">
+            <Box as={Link} fontSize="150%" fontWeight="bold" href="/">
                 Rakkas Demo App
             </Box>
 
@@ -39,7 +40,7 @@ const MainLayout: Layout = ({ children }) => (
             </Stack>
         </Box>
 
-        <Box as="section" pr="4" pb="4" __minHeight="calc(100vh - 16rem)">
+        <Box as="section" pr="4" pb="4" minHeight="calc(100vh - 16rem)">
             {children}
         </Box>
 
@@ -68,14 +69,8 @@ const MainLayout: Layout = ({ children }) => (
     </>
 );
 
-const NavLink = (props: PolymorphicComponentProps<BoxProps, typeof StyledLink>) => (
-    <Box
-        as={StyledLink}
-        p={2}
-        borderRadius="md"
-        activeClass={themeSprinkles({ backgroundColor: "gray.200" })}
-        {...props}
-    />
+const NavLink = (props: PolymorphicComponentProps<WithStyledProps<typeof tw>, typeof StyledLink>) => (
+    <Box as={StyledLink} p={2} borderRadius="md" activeClass={tw({ backgroundColor: "gray.200" })} {...props} />
 );
 
 export default MainLayout;

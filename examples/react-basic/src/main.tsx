@@ -1,6 +1,7 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { DjangoApp } from "./django/django-entrypoint";
+import App from "./App";
+// import { DjangoApp } from "./django/django-entrypoint";
 // import "uno.css";
 
 // import App from "./App";
@@ -8,7 +9,7 @@ import { DjangoApp } from "./django/django-entrypoint";
 const root = createRoot(document.querySelector("#root")!);
 root.render(
     <React.StrictMode>
-        {/* <App /> */}
-        <DjangoApp />
+        <App />
+        {/* <DjangoApp /> */}
     </React.StrictMode>
 );

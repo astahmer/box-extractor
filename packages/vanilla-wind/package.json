@@ -21,7 +21,7 @@
     "repository": {
         "type": "git",
         "url": "https://github.com/astahmer/box-extractor.git",
-        "directory": "packages/vanilla-extract"
+        "directory": "packages/vanilla-wind"
     },
     "author": "Alexandre Stahmer <alexandre.stahmer@gmail.com>",
     "scripts": {
@@ -36,27 +36,27 @@
     "dependencies": {
         "@box-extractor/core": "workspace:*",
         "@box-extractor/logger": "workspace:*",
-        "@vanilla-extract/css": "^1.9.2",
-        "@vanilla-extract/integration": "^6.0.2",
+        "@vanilla-extract/css": "^1.9.5",
+        "@vanilla-extract/integration": "^6.1.0",
         "csstype": "^3.1.1",
-        "esbuild": "^0.16.7",
+        "esbuild": "^0.17.8",
         "eval": "^0.1.8",
-        "magic-string": "^0.27.0",
-        "pastable": "^2.1.0",
+        "magic-string": "^0.29.0",
+        "pastable": "^2.2.0",
         "ts-morph": "^17.0.1",
-        "ts-pattern": "^4.0.5"
+        "ts-pattern": "^4.1.4"
     },
     "peerDependencies": {
         "@vanilla-extract/css": ">= 1.9",
         "vite": "^2.2.3 || ^3.0.0 || ^4.0.3"
     },
     "devDependencies": {
-        "prettier": "^2.7.1",
+        "prettier": "^2.8.4",
         "ts-toolbelt": "^9.6.0",
-        "tsx": "^3.12.1",
-        "typescript": "4.9.4",
-        "vite": "^3.0.4",
-        "vitest": "^0.25.8"
+        "tsx": "^3.12.3",
+        "typescript": "4.9.5",
+        "vite": "^4.1.1",
+        "vitest": "^0.28.5"
     },
     "preconstruct": {
         "entrypoints": [
