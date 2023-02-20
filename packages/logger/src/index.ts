@@ -60,6 +60,11 @@ export const enableLogs = (namespaces: string) => {
     return namespaceLists;
 };
 
+export const disableLogs = () => {
+    namespaceLists.allows = [];
+    namespaceLists.skips = [];
+};
+
 const isEnabled = (name: string) => {
     let len = namespaceLists.skips.length;
     for (len = namespaceLists.skips.length; len--; ) {

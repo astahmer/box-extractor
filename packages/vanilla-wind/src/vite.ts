@@ -14,6 +14,7 @@ import { extractCreateTheme } from "./extractCreateTheme";
 import { extractDefinePropertiesConfig } from "./extractDefinePropertiesConfig";
 import { findTypeReferenceUsage } from "./findTypeReferenceUsage";
 import { createAdapterContext, generateStyleFromExtraction } from "./jit";
+import { transformStyleNodes } from "./transformStyleNodes";
 import {
     hasAnyStyled,
     hasStyledComponent,
@@ -23,7 +24,6 @@ import {
     tsConfigFilePath,
     virtualExtCss,
 } from "./utils";
-import { transformStyleNodes } from "./transformStyleNodes";
 
 const logger = createLogger("box-ex:vanilla-wind:vite");
 
@@ -329,6 +329,7 @@ export const vanillaWind = (
 
                 logger.scoped("define-properties-extract", "scanning", { validId });
                 const extracted = extractDefinePropertiesConfig(sourceFile);
+
                 extracted.forEach((conf, name) => {
                     configByThemeName.set(name, conf);
                     logger.scoped("define-properties-extract", "extracted theme config", { name, conf });
@@ -344,7 +345,6 @@ export const vanillaWind = (
 
                         await onStyledFound(Array.from(extracted.keys()), "any");
 
-                        // TODO check if useful ?
                         if (_options?.ssr && server) {
                             server.moduleGraph.invalidateAll();
                             server.ws.send({ type: "full-reload", path: absoluteId });
@@ -434,7 +434,7 @@ export const vanillaWind = (
                 const css = cssCacheMap.get(validId);
 
                 if (typeof css !== "string") {
-                    return;
+                    return "";
                 }
 
                 return css;
@@ -570,6 +570,11 @@ export const vanillaWind = (
                 endFileScope();
                 ctx.removeAdapter();
                 // console.timeEnd("css");
+
+                if (!css) {
+                    // console.timeEnd("transform");
+                    return null;
+                }
 
                 // console.time("usage:transform-replace");
                 transformStyleNodes(generateStyleResults, magicStr);

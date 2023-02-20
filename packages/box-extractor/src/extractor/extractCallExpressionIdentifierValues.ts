@@ -24,7 +24,7 @@ export const extractCallExpressionValues = (node: CallExpression) => {
             const maybeValue = maybeBoxNode(argNode, stack);
             logger({ extractCallExpression: true, maybeValue });
             // !maybeValue && console.log("maybeBoxNode empty", expression.getKindName(), expression.getText());
-            if (isNotNullish(maybeValue)) {
+            if (maybeValue) {
                 if (Array.isArray(maybeValue)) {
                     throw new TypeError("unexpected array");
                 }
@@ -35,12 +35,12 @@ export const extractCallExpressionValues = (node: CallExpression) => {
             const maybeObject = maybeObjectLikeBox(argNode, stack);
             logger({ maybeObject });
             // console.log("expr", expression.getKindName(), expression.getText());
-            if (isNotNullish(maybeObject)) return maybeObject;
+            if (maybeObject) return maybeObject;
         })
         .filter(isNotNullish);
 
     if (boxes.length === 0) return;
-    if (boxes.length === 1) return boxes[0];
+    if (boxes.length === 1) return boxes[0]!;
 
     return boxes;
 };

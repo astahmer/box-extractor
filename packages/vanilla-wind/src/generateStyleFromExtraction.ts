@@ -130,8 +130,10 @@ export function generateRulesFromExtraction({
             const debugId = cssBox.debugId;
 
             if (cssBox.type === "local") {
+                if (!rulesByDebugId.has(debugId)) {
                 allRules.add(cssBox);
                 rulesByDebugId.set(debugId, cssBox);
+                }
 
                 const rule = cssBox.rule;
 
@@ -163,8 +165,10 @@ export function generateRulesFromExtraction({
             }
 
             const globalCssBox = { ...cssBox, selector: `${selector}${innerSelector ?? ""}` };
+            if (!rulesByDebugId.has(debugId)) {
             rulesByDebugId.set(debugId, globalCssBox);
             allRules.add(globalCssBox);
+            }
 
             generateClassName(globalCssBox);
             logger.scoped("global", { global: true, selector, innerSelector, rule });
@@ -218,8 +222,17 @@ export function generateRulesFromExtraction({
                     const primitive = boxNode.value;
                     if (!isNotNullish(primitive) || typeof primitive === "boolean") return;
 
+                    logger.scoped("literal", {
+                        argName,
+                        primitive,
+                        path,
+                        hasProp: propertyNames.has(argName),
+                        propertyNames: propertyNames.size,
+                    });
+
                     if (path.length === 0) {
                         if (propertyNames.size > 0 && !propertyNames.has(argName)) {
+                            logger.scoped("skip", "unlisted prop", { argName, primitive });
                             return;
                         }
 
@@ -467,6 +480,19 @@ export function generateRulesFromExtraction({
         const rules = rulesByBoxNode.get(queryBox)!;
         const rulesList = Array.from(rules ?? []);
         logger(rules);
+
+        if (rules.size === 0) {
+            rulesByBoxNode.delete(queryBox);
+        }
+
+        // console.log({
+        //     name,
+        //     mode,
+        //     rulesList,
+        //     boxNodeClassList,
+        //     node: queryBox.getNode().getText(),
+        //     nodeKind: queryBox.getNode().getKindName(),
+        // });
 
         if (mode === "grouped") {
             if (rules.size === 0) {
