@@ -17,6 +17,7 @@ import type {
 import { Node, ts } from "ts-morph";
 
 import { safeEvaluateNode } from "./evaluate";
+import { findNearestParentNodeWithName } from "./findNearestParentNodeWithName";
 // eslint-disable-next-line import/no-cycle
 import { getNameLiteral } from "./getNameLiteral";
 // eslint-disable-next-line import/no-cycle
@@ -82,7 +83,7 @@ export function maybeBoxNode(node: Node, stack: Node[]): MaybeBoxNodeReturn {
         if (name === "undefined") return cache(box.literal(undefined, node, stack));
 
         const value = getIdentifierReferenceValue(node, stack);
-        if (isNotNullish(value) && !Node.isNode(value)) {
+        if (value && !Node.isNode(value)) {
             return cache(box.cast(value, node, stack));
         }
     }
@@ -166,7 +167,7 @@ const conditionalKindByOperatorKind = {
 };
 
 export const onlyStringLiteral = (boxNode: MaybeBoxNodeReturn) => {
-    if (!isNotNullish(boxNode)) return;
+    if (!boxNode) return;
 
     if (isBoxNode(boxNode) && box.isLiteral(boxNode) && typeof boxNode.value === "string") {
         return boxNode;
@@ -174,7 +175,7 @@ export const onlyStringLiteral = (boxNode: MaybeBoxNodeReturn) => {
 };
 
 const onlyNumberLiteral = (boxNode: MaybeBoxNodeReturn) => {
-    if (!isNotNullish(boxNode)) return;
+    if (!boxNode) return;
 
     if (isBoxNode(boxNode) && box.isLiteral(boxNode) && typeof boxNode.value === "number") {
         return boxNode;
@@ -234,21 +235,21 @@ const maybeExpandConditionalExpression = ({
     logger.scoped("cond", { before: true, whenTrueValue, whenFalseValue });
 
     // <ColorBox color={isDark ? { mobile: "blue.100", desktop: "blue.300" } : "whiteAlpha.100"} />
-    if (!isNotNullish(whenTrueValue)) {
+    if (!whenTrueValue) {
         const maybeObject = maybeObjectLikeBox(whenTrueExpr, stack);
-        if (isNotNullish(maybeObject) && !maybeObject.isUnresolvable()) {
+        if (maybeObject && !maybeObject.isUnresolvable()) {
             whenTrueValue = maybeObject;
         }
     }
 
-    if (canReturnWhenTrue && isNotNullish(whenTrueValue)) {
+    if (canReturnWhenTrue && whenTrueValue) {
         return box.cast(whenTrueValue, whenTrueExpr, stack);
     }
 
     // <ColorBox color={isDark ? { mobile: "blue.100", desktop: "blue.300" } : "whiteAlpha.100"} />
-    if (!isNotNullish(whenFalseValue)) {
+    if (!whenFalseValue) {
         const maybeObject = maybeObjectLikeBox(whenFalseExpr, stack);
-        if (isNotNullish(maybeObject) && !maybeObject.isUnresolvable()) {
+        if (maybeObject && !maybeObject.isUnresolvable()) {
             whenFalseValue = maybeObject;
         }
     }
@@ -423,7 +424,7 @@ const maybeBindingElementValue = (def: BindingElement, stack: Node[], propName: 
 
             const innerStack = [...stack, initializer, element];
             const maybeObject = maybeObjectLikeBox(element, innerStack);
-            if (!isNotNullish(maybeObject)) return;
+            if (!maybeObject) return;
 
             if (box.isObject(maybeObject)) {
                 const propValue = maybeObject.value[propName];
@@ -437,7 +438,7 @@ const maybeBindingElementValue = (def: BindingElement, stack: Node[], propName: 
             }
 
             const propValue = maybeObject.value.get(propName);
-            if (!isNotNullish(propValue)) return;
+            if (!propValue) return;
             logger.scoped("id-def", { propName, propValue });
 
             return box.cast(propValue[0], element, innerStack);
@@ -455,7 +456,7 @@ const maybePropDefinitionValue = (def: Node, propName: string, stack: Node[]) =>
 
     if (Node.isVariableDeclaration(def)) {
         const init = def.getInitializer();
-        logger.scoped("prop-id-value", {
+        logger.scoped("maybe-prop-def-value", {
             initializer: init?.getText(),
             kind: init?.getKindName(),
             propName,
@@ -477,7 +478,7 @@ const maybePropDefinitionValue = (def: Node, propName: string, stack: Node[]) =>
         }
 
         const initializer = unwrapExpression(init);
-        logger.scoped("prop-id-value", {
+        logger.scoped("maybe-prop-def-value", {
             initializer: initializer.getText(),
             kind: initializer.getKindName(),
             propName,
@@ -522,7 +523,26 @@ const maybePropIdentifierDefinitionValue = (
     if (!symbol) return;
 
     const valueDeclaration = symbol.getValueDeclaration();
-    if (!valueDeclaration) return;
+    logger.scoped("prop-id-value", { valueDeclaration: valueDeclaration?.getKindName() });
+    if (!valueDeclaration) {
+        const maybeValue = safeEvaluateNode<PrimitiveType | PrimitiveType[] | ExtractedPropMap>(identifier);
+        logger.scoped("prop-id-value", { propName, maybeValue });
+        if (isNotNullish(maybeValue) && isObject(maybeValue) && !Array.isArray(maybeValue) && maybeValue[propName]) {
+            return box.cast(maybeValue[propName], identifier, _stack);
+        }
+
+        const maybeIdentifierValue = maybeIdentifierReferenceOrValue(identifier, _stack);
+        if (maybeIdentifierValue && !Array.isArray(maybeIdentifierValue)) {
+            if (maybeIdentifierValue.isMap()) {
+                // TODO as any ?
+                return maybeIdentifierValue.value.get(propName) as any;
+            } else if (maybeIdentifierValue.isObject()) {
+                return box.cast(maybeIdentifierValue.value[propName], identifier, _stack);
+            }
+        }
+
+        return;
+    }
 
     const def = unwrapExpression(valueDeclaration);
     logger.scoped("prop-id-value", { def: def.getKindName() });
@@ -684,22 +704,22 @@ const maybeDefinitionValue = (def: Node, stack: Node[]): BoxNode | undefined => 
         const initializer = unwrapExpression(init);
         const innerStack = [...stack, initializer];
         const maybeValue = maybeBoxNode(initializer, innerStack);
-        if (isNotNullish(maybeValue)) return maybeValue as BoxNode;
+        if (maybeValue) return maybeValue as BoxNode;
 
         if (Node.isObjectLiteralExpression(initializer)) {
             logger.scoped("maybe-def-value", { objectLiteral: true });
             return maybeObjectLikeBox(initializer, innerStack);
         }
 
-        // logger(({
-        //     getIdentifierReferenceValue: true,
-        //     def: def?.getText(),
-        //     identifier: identifier.getText(),
-        //     kind: def?.getKindName(),
-        //     type: def?.getType().getText(),
-        //     initializer: initializer?.getText(),
-        //     initializerKind: initializer?.getKindName(),
-        // }));
+        logger({
+            getIdentifierReferenceValue: true,
+            def: def?.getText(),
+            // identifier: identifier.getText(),
+            kind: def?.getKindName(),
+            type: def?.getType().getText(),
+            initializer: initializer?.getText(),
+            initializerKind: initializer?.getKindName(),
+        });
     }
 
     if (Node.isBindingElement(def)) {
@@ -716,26 +736,56 @@ const maybeDefinitionValue = (def: Node, stack: Node[]): BoxNode | undefined => 
     }
 };
 
+const maybeIdentifierReferenceOrValue = (identifier: Node, stack: Node[]) => {
+    const maybeLiteralValue = findNearestParentNodeWithName(identifier, identifier.getText());
+    if (maybeLiteralValue === undefined) return;
+
+    if (Node.isNode(maybeLiteralValue)) {
+        return maybeBoxNode(maybeLiteralValue, stack);
+    }
+
+    return box.cast(maybeLiteralValue, identifier, stack);
+};
+
+// TODO rename getIdentifierValue ?
 export const getIdentifierReferenceValue = (identifier: Identifier, _stack: Node[]): MaybeBoxNodeReturn => {
+    const evalFallback = () => {
+        const maybeLiteral = safeEvaluateNode(identifier);
+        if (maybeLiteral !== undefined) {
+            return box.cast(maybeLiteral as any, identifier, _stack);
+        }
+    };
+
     const symbol = identifier.getSymbol();
     logger.scoped("id-ref", { identifier: identifier.getKindName(), symbol: !!symbol });
-    if (!symbol) return;
+    if (!symbol) return evalFallback();
 
     const valueDeclaration = symbol.getValueDeclaration();
-    if (!valueDeclaration) return;
+    logger.scoped("id-ref", { identifier: identifier.getText(), valueDeclaration: !!valueDeclaration });
+    if (!valueDeclaration) {
+        const maybeValue = safeEvaluateNode<PrimitiveType | PrimitiveType[] | ExtractedPropMap>(identifier);
+        logger.scoped("prop-id-value", { maybeValue });
+        if (isNotNullish(maybeValue)) {
+            return box.cast(maybeValue, identifier, _stack);
+        }
+
+        return maybeIdentifierReferenceOrValue(identifier, _stack);
+    }
 
     const def = unwrapExpression(valueDeclaration);
     logger.scoped("id-ref", { def: def.getKindName() });
-    // logger(({
+    // logger.scoped("yes", {
     //     def: def?.getText(),
     //     identifier: identifier.getText(),
     //     kind: def?.getKindName(),
     //     type: def?.getType().getText(),
-    // }));
+    // });
 
     const stack = [..._stack, def];
     const maybeValue = maybeDefinitionValue(def, stack);
     if (maybeValue) return maybeValue;
+
+    return evalFallback();
 };
 
 const tryUnwrapBinaryExpression = (node: BinaryExpression, stack: Node[]) => {
@@ -780,7 +830,7 @@ const getElementAccessedExpressionValue = (expression: ElementAccessExpression, 
     }));
 
     // <ColorBox color={xxx["yyy"]} />
-    if (Node.isIdentifier(elementAccessed) && isNotNullish(argLiteral)) {
+    if (Node.isIdentifier(elementAccessed) && argLiteral) {
         if (!isNotNullish(argLiteral.value)) return;
 
         const maybeValue = maybePropIdentifierDefinitionValue(elementAccessed, argLiteral.value.toString(), stack);
@@ -795,7 +845,7 @@ const getElementAccessedExpressionValue = (expression: ElementAccessExpression, 
 
         const propName = tryUnwrapBinaryExpression(arg, stack) ?? maybePropName(arg, stack);
 
-        if (isNotNullish(propName) && Node.isIdentifier(elementAccessed)) {
+        if (propName && Node.isIdentifier(elementAccessed)) {
             if (!isNotNullish(propName.value)) return;
 
             const maybeValue = maybePropIdentifierDefinitionValue(elementAccessed, propName.value.toString(), stack);
@@ -809,7 +859,7 @@ const getElementAccessedExpressionValue = (expression: ElementAccessExpression, 
     if (Node.isTemplateExpression(arg)) {
         const propName = maybeTemplateStringValue(arg, stack);
 
-        if (isNotNullish(propName) && Node.isIdentifier(elementAccessed)) {
+        if (propName && Node.isIdentifier(elementAccessed)) {
             const maybeValue = maybePropIdentifierDefinitionValue(elementAccessed, propName, stack);
             if (!maybeValue) return;
 
@@ -818,7 +868,7 @@ const getElementAccessedExpressionValue = (expression: ElementAccessExpression, 
     }
 
     // <ColorBox color={{ staticColor: "facebook.900" }["staticColor"]}></ColorBox>
-    if (Node.isObjectLiteralExpression(elementAccessed) && isNotNullish(argLiteral)) {
+    if (Node.isObjectLiteralExpression(elementAccessed) && argLiteral) {
         if (!isNotNullish(argLiteral.value)) return;
 
         return getPropValue(elementAccessed, argLiteral.value.toString(), stack);
@@ -831,17 +881,13 @@ const getElementAccessedExpressionValue = (expression: ElementAccessExpression, 
     }
 
     // tokens.colors.blue["400"]
-    if (
-        Node.isPropertyAccessExpression(elementAccessed) &&
-        isNotNullish(argLiteral) &&
-        isNotNullish(argLiteral.value)
-    ) {
+    if (Node.isPropertyAccessExpression(elementAccessed) && argLiteral && isNotNullish(argLiteral.value)) {
         const propRefValue = getPropertyAccessedExpressionValue(elementAccessed, stack);
         const propName = argLiteral.value.toString();
 
         elAccessedLogger("PropertyAccessExpression", { propRefValue, propName });
 
-        if (isNotNullish(propRefValue) && propRefValue.isObject() && propName) {
+        if (propRefValue?.isObject() && propName) {
             const propValue = propRefValue.value[propName];
             return box.cast(propValue, arg, stack);
         }
@@ -861,7 +907,7 @@ const getElementAccessedExpressionValue = (expression: ElementAccessExpression, 
     }
 
     // <ColorBox color={xxx[yyy["zzz"]]} />
-    if (Node.isElementAccessExpression(elementAccessed) && isNotNullish(argLiteral) && isNotNullish(argLiteral.value)) {
+    if (Node.isElementAccessExpression(elementAccessed) && argLiteral && isNotNullish(argLiteral.value)) {
         const identifier = getElementAccessedExpressionValue(elementAccessed, stack);
         elAccessedLogger({ isElementAccessExpression: true, identifier, argValue: argLiteral });
 
@@ -893,7 +939,7 @@ const getElementAccessedExpressionValue = (expression: ElementAccessExpression, 
     }
 
     // <ColorBox color={xxx[[yyy][zzz]]} />
-    if (Node.isArrayLiteralExpression(elementAccessed) && isNotNullish(argLiteral)) {
+    if (Node.isArrayLiteralExpression(elementAccessed) && argLiteral) {
         return getArrayElementValueAtIndex(elementAccessed, Number(argLiteral.value), stack);
     }
 
@@ -934,11 +980,11 @@ const getElementAccessedExpressionValue = (expression: ElementAccessExpression, 
 
         if (Node.isIdentifier(elementAccessed)) {
             const whenTrueResolved =
-                isNotNullish(whenTrueValue) && isNotNullish(whenTrueValue.value)
+                whenTrueValue && isNotNullish(whenTrueValue.value)
                     ? maybePropIdentifierDefinitionValue(elementAccessed, whenTrueValue.value.toString(), stack)
                     : undefined;
             const whenFalseResolved =
-                isNotNullish(whenFalseValue) && isNotNullish(whenFalseValue.value)
+                whenFalseValue && isNotNullish(whenFalseValue.value)
                     ? maybePropIdentifierDefinitionValue(elementAccessed, whenFalseValue.value.toString(), stack)
                     : undefined;
 
@@ -1005,7 +1051,7 @@ const getPropertyAccessedExpressionValue = (
 
     if (Node.isPropertyAccessExpression(elementAccessed)) {
         const propValue = getPropertyAccessedExpressionValue(elementAccessed, stack);
-        if (isNotNullish(propValue) && box.isObject(propValue)) {
+        if (propValue && box.isObject(propValue)) {
             return box.cast(propValue.value[propName], elementAccessed, stack);
         }
     }

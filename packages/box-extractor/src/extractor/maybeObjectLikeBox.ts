@@ -59,18 +59,18 @@ export const maybeObjectLikeBox = (node: Node, stack: Node[]): MaybeObjectLikeBo
 
     // <ColorBox {...(xxx ? yyy : zzz)} />
     if (Node.isConditionalExpression(node)) {
-        const maybeObject = evaluateNode(node);
+        const maybeObjectLiteral = evaluateNode(node);
 
         // fallback to both possible outcome
-        if (isEvalError(maybeObject)) {
+        if (isEvalError(maybeObjectLiteral)) {
             const whenTrue = maybeObjectLikeBox(node.getWhenTrue(), stack);
             const whenFalse = maybeObjectLikeBox(node.getWhenFalse(), stack);
             logger.scoped("cond", { whenTrue, whenFalse });
             return cache(box.map(mergePossibleEntries(whenTrue, whenFalse, node), node, stack));
         }
 
-        if (isNotNullish(maybeObject) && isObjectLiteral(maybeObject)) {
-            return cache(box.object(maybeObject, node, stack));
+        if (isNotNullish(maybeObjectLiteral) && isObjectLiteral(maybeObjectLiteral)) {
+            return cache(box.object(maybeObjectLiteral, node, stack));
         }
 
         return cache(box.emptyObject(node, stack));
@@ -145,17 +145,22 @@ const getObjectLiteralExpressionPropPairs = (expression: ObjectLiteralExpression
             logger.scoped("prop", { propName, kind: initializer.getKindName() });
 
             const maybeValue = maybeBoxNode(initializer, stack);
-            if (isNotNullish(maybeValue)) {
+            logger.scoped("prop-value", { propName, hasValue: !!maybeValue });
+
+            if (maybeValue) {
                 const value = box.cast(maybeValue, initializer, stack);
                 if (!value) return;
 
+                logger.scoped("prop-value", { propName, value });
                 extractedPropValues.push([propName.toString(), Array.isArray(value) ? value : [value]]);
                 return;
             }
 
             const maybeObject = maybeObjectLikeBox(initializer, stack);
+            logger.scoped("prop-obj", { propName, hasObject: !!maybeObject });
             // console.log({ maybeObject });
-            if (isNotNullish(maybeObject)) {
+            if (maybeObject) {
+                logger.scoped("prop-obj", { propName, maybeObject });
                 extractedPropValues.push([propName.toString(), [maybeObject]]);
                 return;
             }
@@ -166,7 +171,7 @@ const getObjectLiteralExpressionPropPairs = (expression: ObjectLiteralExpression
             stack.push(initializer);
 
             const extracted = maybeObjectLikeBox(initializer, stack);
-            if (!isNotNullish(extracted)) return;
+            if (!extracted) return;
 
             logger("isSpreadAssignment", extracted);
             if (extracted.type === "object") {

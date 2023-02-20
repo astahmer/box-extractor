@@ -57,7 +57,7 @@ const extractFromCode = (code: string | SourceFile, options?: Partial<ExtractOpt
 };
 
 it("extract example.css.ts defineProperties arg result", () => {
-    const sourceFile = project.addSourceFileAtPath(path.resolve(__dirname, "./sample-files-split/example.css.ts"));
+    sourceFile = project.addSourceFileAtPath(path.resolve(__dirname, "./sample-files-split/example.css.ts"));
 
     expect(extractFromCode(sourceFile, { functions: ["defineProperties"] })).toMatchInlineSnapshot(
         `
@@ -571,4 +571,156 @@ it("extract example.css.ts defineProperties arg result", () => {
       ]
     `
     );
+});
+
+it("extract lightVars.ts assignVars using another file values", () => {
+    sourceFile = project.addSourceFileAtPath(path.resolve(__dirname, "./samples/lightVars.ts"));
+    project.resolveSourceFileDependencies();
+
+    expect(extractFromCode(sourceFile, { functions: ["assignVars"] })).toMatchInlineSnapshot(`
+      [
+          [
+              "assignVars",
+              [
+                  [
+                      "color",
+                      {
+                          mainBg: "#95a7d8",
+                          secondaryBg: "#8297d1",
+                          text: "#4299e1",
+                          bg: "#39539b",
+                          bgSecondary: "#6f88cb",
+                          bgHover: "#a7b6df",
+                      },
+                  ],
+              ],
+              {
+                  color: [
+                      {
+                          stack: [
+                              "CallExpression",
+                              "ObjectLiteralExpression",
+                              "PropertyAssignment",
+                              "ObjectLiteralExpression",
+                          ],
+                          type: "map",
+                          node: "ObjectLiteralExpression",
+                          value: {
+                              mainBg: [
+                                  {
+                                      stack: [
+                                          "CallExpression",
+                                          "ObjectLiteralExpression",
+                                          "PropertyAssignment",
+                                          "ObjectLiteralExpression",
+                                          "PropertyAssignment",
+                                          "ElementAccessExpression",
+                                          "Identifier",
+                                          "StringLiteral",
+                                      ],
+                                      type: "literal",
+                                      node: "Identifier",
+                                      value: "#95a7d8",
+                                      kind: "string",
+                                  },
+                              ],
+                              secondaryBg: [
+                                  {
+                                      stack: [
+                                          "CallExpression",
+                                          "ObjectLiteralExpression",
+                                          "PropertyAssignment",
+                                          "ObjectLiteralExpression",
+                                          "PropertyAssignment",
+                                          "ElementAccessExpression",
+                                          "Identifier",
+                                          "StringLiteral",
+                                      ],
+                                      type: "literal",
+                                      node: "Identifier",
+                                      value: "#8297d1",
+                                      kind: "string",
+                                  },
+                              ],
+                              text: [
+                                  {
+                                      stack: [
+                                          "CallExpression",
+                                          "ObjectLiteralExpression",
+                                          "PropertyAssignment",
+                                          "ObjectLiteralExpression",
+                                          "PropertyAssignment",
+                                          "ElementAccessExpression",
+                                          "PropertyAccessExpression",
+                                          "StringLiteral",
+                                          "PropertyAccessExpression",
+                                          "Identifier",
+                                      ],
+                                      type: "literal",
+                                      node: "StringLiteral",
+                                      value: "#4299e1",
+                                      kind: "string",
+                                  },
+                              ],
+                              bg: [
+                                  {
+                                      stack: [
+                                          "CallExpression",
+                                          "ObjectLiteralExpression",
+                                          "PropertyAssignment",
+                                          "ObjectLiteralExpression",
+                                          "PropertyAssignment",
+                                          "ElementAccessExpression",
+                                          "Identifier",
+                                          "StringLiteral",
+                                      ],
+                                      type: "literal",
+                                      node: "Identifier",
+                                      value: "#39539b",
+                                      kind: "string",
+                                  },
+                              ],
+                              bgSecondary: [
+                                  {
+                                      stack: [
+                                          "CallExpression",
+                                          "ObjectLiteralExpression",
+                                          "PropertyAssignment",
+                                          "ObjectLiteralExpression",
+                                          "PropertyAssignment",
+                                          "ElementAccessExpression",
+                                          "Identifier",
+                                          "StringLiteral",
+                                      ],
+                                      type: "literal",
+                                      node: "Identifier",
+                                      value: "#6f88cb",
+                                      kind: "string",
+                                  },
+                              ],
+                              bgHover: [
+                                  {
+                                      stack: [
+                                          "CallExpression",
+                                          "ObjectLiteralExpression",
+                                          "PropertyAssignment",
+                                          "ObjectLiteralExpression",
+                                          "PropertyAssignment",
+                                          "ElementAccessExpression",
+                                          "Identifier",
+                                          "StringLiteral",
+                                      ],
+                                      type: "literal",
+                                      node: "Identifier",
+                                      value: "#a7b6df",
+                                      kind: "string",
+                                  },
+                              ],
+                          },
+                      },
+                  ],
+              },
+          ],
+      ]
+    `);
 });
