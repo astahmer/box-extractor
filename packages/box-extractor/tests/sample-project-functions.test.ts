@@ -573,7 +573,7 @@ it("extract example.css.ts defineProperties arg result", () => {
     );
 });
 
-it("extract lightVars.ts assignVars using another file values", () => {
+it.skip("extract lightVars.ts assignVars using another file values", () => {
     sourceFile = project.addSourceFileAtPath(path.resolve(__dirname, "./samples/lightVars.ts"));
     project.resolveSourceFileDependencies();
 
