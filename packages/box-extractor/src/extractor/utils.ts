@@ -38,3 +38,9 @@ export const castAsExtractableMap = (extractable: Extractable) => {
         ? (Object.fromEntries(extractable.map((name) => [name, { properties: "all" }])) as ExtractableMap)
         : extractable;
 };
+
+export const unquote = (str: string) => {
+    if (str.startsWith('"') && str.endsWith('"')) return str.slice(1, -1);
+    if (str.startsWith("'") && str.endsWith("'")) return str.slice(1, -1);
+    return str;
+};

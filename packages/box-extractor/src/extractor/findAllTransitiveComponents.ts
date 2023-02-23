@@ -17,9 +17,9 @@ import {
     ts,
 } from "ts-morph";
 import { query } from "./extract";
-import { getNameLiteral, unquote } from "./getNameLiteral";
+import { getIdentifierReferenceValue, getNameLiteral, onlyStringLiteral } from "./maybeBoxNode";
 import type { ExtractOptions } from "./types";
-import { unwrapExpression } from "./utils";
+import { unquote, unwrapExpression } from "./utils";
 
 // :matches(JsxOpeningElement, JsxSelfClosingElement):has(Identifier[name="Box"])
 
@@ -64,8 +64,25 @@ export const findAllTransitiveComponents = ({
             const wrapper = getAncestorComponent(jsxNode) as Identifier | StringLiteral;
             if (!wrapper) return;
 
-            const nameLiteral = getNameLiteral(wrapper, []);
-            if (!nameLiteral) return;
+            let nameLiteral;
+            if (Node.isIdentifier(wrapper)) {
+                const parent = unwrapExpression(wrapper.getParent());
+
+                if (Node.isComputedPropertyName(parent)) {
+                    const identifierValue = onlyStringLiteral(getIdentifierReferenceValue(wrapper, []));
+                    if (!identifierValue) return;
+
+                    nameLiteral = identifierValue.value as string;
+                } else {
+                    nameLiteral = getNameLiteral(wrapper);
+                }
+            } else {
+                nameLiteral = getNameLiteral(wrapper);
+            }
+
+            if (!nameLiteral) {
+                return;
+            }
 
             const name = unquote(nameLiteral);
             if (!name) return;
@@ -269,10 +286,6 @@ const unwrapName = (node: PropertyName | BindingName) => {
 
     // { [computed]: "value" }
     if (Node.isComputedPropertyName(node)) return unwrapExpression(node.getExpression());
-};
-
-const isJsxNamedComponent = (node: Node): node is JsxOpeningElement | JsxSelfClosingElement => {
-    return Node.isJsxOpeningElement(node) || Node.isJsxSelfClosingElement(node);
 };
 
 const isJsx = (

@@ -79,10 +79,16 @@
                                                 "PropertyAssignment",
                                                 "ObjectLiteralExpression",
                                                 "PropertyAssignment",
-                                                "ElementAccessExpression"
+                                                "ElementAccessExpression",
+                                                "PropertyAccessExpression",
+                                                "StringLiteral",
+                                                "PropertyAccessExpression",
+                                                "Identifier"
                                             ],
-                                            "type": "unresolvable",
-                                            "node": "ElementAccessExpression"
+                                            "type": "literal",
+                                            "node": "StringLiteral",
+                                            "value": "#4299e1",
+                                            "kind": "string"
                                         }
                                     ],
                                     "bg": [
@@ -152,6 +158,7 @@
                 "color": {
                     "mainBg": "#95a7d8",
                     "secondaryBg": "#8297d1",
+                    "text": "#4299e1",
                     "bg": "#39539b",
                     "bgSecondary": "#6f88cb",
                     "bgHover": "#a7b6df"

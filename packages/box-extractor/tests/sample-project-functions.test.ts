@@ -573,6 +573,8 @@ it("extract example.css.ts defineProperties arg result", () => {
     );
 });
 
+// run this instead of the test to see the output, from `packages/cli`
+// DEBUG=box* ./bin.js -i /Users/astahmer/dev/alex/vite-box-extractor/packages/box-extractor/tests/samples/lightVars.ts --functions=assignVars -o /Users/astahmer/dev/alex/vite-box-extractor/packages/box-extractor/tests/samples/lightVars.json
 it.skip("extract lightVars.ts assignVars using another file values", () => {
     sourceFile = project.addSourceFileAtPath(path.resolve(__dirname, "./samples/lightVars.ts"));
     project.resolveSourceFileDependencies();
