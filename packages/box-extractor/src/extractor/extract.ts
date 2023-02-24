@@ -6,7 +6,7 @@ import { JsxOpeningElement, JsxSelfClosingElement, Node } from "ts-morph";
 import { extractCallExpressionValues } from "./extractCallExpressionIdentifierValues";
 import { extractJsxAttributeIdentifierValue } from "./extractJsxAttributeIdentifierValue";
 import { extractJsxSpreadAttributeValues } from "./extractJsxSpreadAttributeValues";
-import { box, castObjectLikeAsMapValue, MapTypeValue } from "./type-factory";
+import { box, BoxNode, BoxNodeMap, BoxNodeObject, castObjectLikeAsMapValue, MapTypeValue } from "./type-factory";
 import type {
     BoxNodesMap,
     ComponentNodesMap,
@@ -62,11 +62,12 @@ export const extract = ({
     const localExtraction = new Map() as BoxNodesMap;
     const queryComponentMap = new Map() as QueryComponentMap;
 
-    const visitedCallExpresisionList = new WeakSet<Node>();
+    const visitedCallExpressionList = new WeakSet<Node>();
+    const visitedComponentFromSpreadList = new WeakSet<Node>();
 
     ast.forEachDescendant((node, traversal) => {
         // quick win
-        if (Node.isImportDeclaration(node)) {
+        if (Node.isImportDeclaration(node) || Node.isExportDeclaration(node)) {
             traversal.skip();
             return;
         }
@@ -82,6 +83,14 @@ export const extract = ({
                     Node.isJsxOpeningElement(node) || Node.isJsxSelfClosingElement(node)
             );
             if (!componentNode) return;
+
+            // skip re-extracting nested spread attribute
+            if (visitedComponentFromSpreadList.has(componentNode)) {
+                traversal.skip();
+                return;
+            }
+
+            visitedComponentFromSpreadList.add(componentNode);
 
             const componentName = getComponentName({ node: componentNode, components, factories });
             const component = components[componentName];
@@ -108,25 +117,54 @@ export const extract = ({
                 queryComponentMap.set(componentNode, { name: componentName, props: new Map() });
             }
 
-            const objectOrMapType = extractJsxSpreadAttributeValues(node);
-            const map = castObjectLikeAsMapValue(objectOrMapType, node);
-
+            const spreadNode = extractJsxSpreadAttributeValues(node);
             const parentRef = queryComponentMap.get(componentNode)!;
-            const boxed = box.map(map, node, [componentNode]);
-            parentRef.props.set(`_SPREAD_${parentRef.props.size}`, [boxed]);
 
-            const entries = mergeSpreadEntries({ map, propNameList: component.properties });
-            entries.forEach(([propName, propValue]) => {
-                logger.scoped("merge-spread", { jsx: true, propName, propValue });
+            // increment count since there might be conditional
+            // so it doesn't override the whole spread prop
+            let count = 0;
+            const propSizeAtThisPoint = parentRef.props.size;
+            const getSpreadPropName = () => `_SPREAD_${propSizeAtThisPoint}_${count++}`;
 
-                propValue.forEach((value) => {
-                    localNodes.set(propName, (localNodes.get(propName) ?? []).concat(value));
-                    componentMap.nodesByProp.set(
-                        propName,
-                        (componentMap.nodesByProp.get(propName) ?? []).concat(value)
-                    );
+            const processObjectLike = (objLike: BoxNodeMap | BoxNodeObject) => {
+                const map = castObjectLikeAsMapValue(objLike, node);
+                const boxed = box.map(map, node, [componentNode]);
+                parentRef.props.set(getSpreadPropName(), [boxed]);
+
+                const entries = mergeSpreadEntries({ map, propNameList: component.properties });
+                entries.forEach(([propName, propValue]) => {
+                    logger.scoped("merge-spread", { jsx: true, propName, propValue });
+
+                    propValue.forEach((value) => {
+                        localNodes.set(propName, (localNodes.get(propName) ?? []).concat(value));
+                        componentMap.nodesByProp.set(
+                            propName,
+                            (componentMap.nodesByProp.get(propName) ?? []).concat(value)
+                        );
+                    });
                 });
-            });
+            };
+
+            const processBoxNode = (boxNode: BoxNode) => {
+                if (boxNode.isUnresolvable()) {
+                    parentRef.props.set(getSpreadPropName(), [boxNode]);
+                    return;
+                }
+
+                if (boxNode.isConditional()) {
+                    processBoxNode(boxNode.whenTrue);
+                    processBoxNode(boxNode.whenFalse);
+                }
+
+                // shouldnt' happen
+                if (!boxNode.isObject() && !boxNode.isMap()) {
+                    return;
+                }
+
+                processObjectLike(boxNode);
+            };
+
+            processBoxNode(spreadNode);
 
             return;
         }
@@ -188,8 +226,8 @@ export const extract = ({
                 }
             }
 
-            if (Node.isCallExpression(parentNode) && !visitedCallExpresisionList.has(parentNode)) {
-                visitedCallExpresisionList.add(parentNode);
+            if (Node.isCallExpression(parentNode) && !visitedCallExpressionList.has(parentNode)) {
+                visitedCallExpressionList.add(parentNode);
 
                 const expr = parentNode.getExpression();
                 const functionName = expr.getText();

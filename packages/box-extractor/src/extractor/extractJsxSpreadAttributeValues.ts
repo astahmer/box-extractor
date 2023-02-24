@@ -4,16 +4,27 @@ import { createLogger } from "@box-extractor/logger";
 import { maybeObjectLikeBox } from "./maybeObjectLikeBox";
 import { box } from "./type-factory";
 import { unwrapExpression } from "./utils";
+import { maybeBoxNode } from "./maybeBoxNode";
 
 const logger = createLogger("box-ex:extractor:jsx-spread");
 
 export const extractJsxSpreadAttributeValues = (spreadAttribute: JsxSpreadAttribute) => {
     const node = unwrapExpression(spreadAttribute.getExpression());
+    logger.scoped("extractJsxSpreadAttributeValues", { node: node.getKindName() });
 
     const stack = [] as Node[];
+    const maybeValue = maybeBoxNode(node, stack);
+    if (
+        maybeValue &&
+        (maybeValue.isMap() || maybeValue.isObject() || maybeValue.isUnresolvable() || maybeValue.isConditional())
+    ) {
+        return maybeValue;
+    }
+
     const maybeEntries = maybeObjectLikeBox(node, stack);
     logger({ maybeEntries });
     if (maybeEntries) return maybeEntries;
 
+    // TODO unresolvable ?
     return box.emptyObject(node, stack);
 };
