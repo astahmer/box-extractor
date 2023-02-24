@@ -2,7 +2,7 @@ import { Project, SourceFile, ts } from "ts-morph";
 import { afterEach, expect, it } from "vitest";
 import { extract } from "../src/extractor/extract";
 import { getBoxLiteralValue } from "../src/extractor/getBoxLiteralValue";
-import type { ExtractOptions, BoxNodesMap, FunctionNodesMap } from "../src/extractor/types";
+import type { ExtractOptions, FunctionNodesMap } from "../src/extractor/types";
 // @ts-ignore
 import { default as ExtractSample } from "./ExtractSample?raw";
 
@@ -540,8 +540,7 @@ it("extract it all", () => {
                                   "ConditionalExpression",
                                   "VariableDeclaration",
                                   "ShorthandPropertyAssignment",
-                                  "ShorthandPropertyAssignment",
-                                  "ShorthandPropertyAssignment",
+                                  "VariableDeclaration",
                                   "PropertyAccessExpression",
                                   "Identifier",
                                   "VariableDeclaration",
@@ -1788,8 +1787,7 @@ it("ExtractSample - groups extract props in parent component instance", () => {
                                       "ConditionalExpression",
                                       "VariableDeclaration",
                                       "ShorthandPropertyAssignment",
-                                      "ShorthandPropertyAssignment",
-                                      "ShorthandPropertyAssignment",
+                                      "VariableDeclaration",
                                       "PropertyAccessExpression",
                                       "Identifier",
                                       "VariableDeclaration",
@@ -3780,8 +3778,7 @@ it("extract JsxAttribute > JsxExpression > ElementAccessExpression (AsExpression
                               "BinaryExpression",
                               "VariableDeclaration",
                               "ShorthandPropertyAssignment",
-                              "ShorthandPropertyAssignment",
-                              "ShorthandPropertyAssignment",
+                              "VariableDeclaration",
                               "StringLiteral",
                           ],
                           type: "literal",
@@ -3825,8 +3822,7 @@ it("extract JsxAttribute > JsxExpression > ElementAccessExpression > BinaryExpre
                               "BinaryExpression",
                               "VariableDeclaration",
                               "ShorthandPropertyAssignment",
-                              "ShorthandPropertyAssignment",
-                              "ShorthandPropertyAssignment",
+                              "VariableDeclaration",
                               "StringLiteral",
                           ],
                           type: "literal",
@@ -3871,8 +3867,7 @@ it("extract JsxAttribute > JsxExpression > ElementAccessExpression > ElementAcce
                               "ElementAccessExpression",
                               "VariableDeclaration",
                               "ShorthandPropertyAssignment",
-                              "ShorthandPropertyAssignment",
-                              "ShorthandPropertyAssignment",
+                              "VariableDeclaration",
                               "StringLiteral",
                           ],
                           type: "literal",
@@ -4198,8 +4193,7 @@ it("extract JsxAttribute > JsxExpression > ElementAccessExpression > TemplateExp
                               "TemplateExpression",
                               "VariableDeclaration",
                               "ShorthandPropertyAssignment",
-                              "ShorthandPropertyAssignment",
-                              "ShorthandPropertyAssignment",
+                              "VariableDeclaration",
                               "StringLiteral",
                           ],
                           type: "literal",
@@ -4243,8 +4237,7 @@ it("extract JsxAttribute > JsxExpression > ElementAccessExpression > TemplateExp
                               "TemplateExpression",
                               "VariableDeclaration",
                               "ShorthandPropertyAssignment",
-                              "ShorthandPropertyAssignment",
-                              "ShorthandPropertyAssignment",
+                              "VariableDeclaration",
                               "StringLiteral",
                           ],
                           type: "literal",
@@ -4300,8 +4293,7 @@ it("extract JsxAttribute > JsxExpression > ElementAccessExpression > BinaryExpre
                               "Identifier",
                               "VariableDeclaration",
                               "ShorthandPropertyAssignment",
-                              "ShorthandPropertyAssignment",
-                              "ShorthandPropertyAssignment",
+                              "VariableDeclaration",
                               "StringLiteral",
                           ],
                           type: "literal",
@@ -4732,8 +4724,7 @@ it("extract JsxAttribute > JsxExpression > ConditionalExpression with Unexpected
                                   "Identifier",
                                   "VariableDeclaration",
                                   "ShorthandPropertyAssignment",
-                                  "ShorthandPropertyAssignment",
-                                  "ShorthandPropertyAssignment",
+                                  "VariableDeclaration",
                                   "StringLiteral",
                               ],
                               type: "literal",
@@ -6135,13 +6126,71 @@ it("extract JsxAttribute > JsxExpression > PropertyAccessExpression > ObjectLite
               {
                   color: [
                       {
-                          stack: ["JsxAttribute", "JsxExpression", "PropertyAccessExpression", "Identifier"],
-                          type: "object",
-                          node: "PropertyAccessExpression",
+                          stack: [
+                              "JsxAttribute",
+                              "JsxExpression",
+                              "PropertyAccessExpression",
+                              "Identifier",
+                              "VariableDeclaration",
+                              "PropertyAssignment",
+                          ],
+                          type: "map",
+                          node: "ObjectLiteralExpression",
                           value: {
-                              mobile: "white.600",
-                              tablet: "white.700",
-                              desktop: "white.800",
+                              mobile: [
+                                  {
+                                      stack: [
+                                          "JsxAttribute",
+                                          "JsxExpression",
+                                          "PropertyAccessExpression",
+                                          "Identifier",
+                                          "VariableDeclaration",
+                                          "PropertyAssignment",
+                                          "PropertyAssignment",
+                                          "StringLiteral",
+                                      ],
+                                      type: "literal",
+                                      node: "StringLiteral",
+                                      value: "white.600",
+                                      kind: "string",
+                                  },
+                              ],
+                              tablet: [
+                                  {
+                                      stack: [
+                                          "JsxAttribute",
+                                          "JsxExpression",
+                                          "PropertyAccessExpression",
+                                          "Identifier",
+                                          "VariableDeclaration",
+                                          "PropertyAssignment",
+                                          "PropertyAssignment",
+                                          "StringLiteral",
+                                      ],
+                                      type: "literal",
+                                      node: "StringLiteral",
+                                      value: "white.700",
+                                      kind: "string",
+                                  },
+                              ],
+                              desktop: [
+                                  {
+                                      stack: [
+                                          "JsxAttribute",
+                                          "JsxExpression",
+                                          "PropertyAccessExpression",
+                                          "Identifier",
+                                          "VariableDeclaration",
+                                          "PropertyAssignment",
+                                          "PropertyAssignment",
+                                          "StringLiteral",
+                                      ],
+                                      type: "literal",
+                                      node: "StringLiteral",
+                                      value: "white.800",
+                                      kind: "string",
+                                  },
+                              ],
                           },
                       },
                   ],
@@ -6151,7 +6200,7 @@ it("extract JsxAttribute > JsxExpression > PropertyAccessExpression > ObjectLite
     `);
 });
 
-it("extract JsxAttribute > JsxExpression > PropertyAccessExpression > ObjectLiteralExpression", () => {
+it("extract JsxAttribute > JsxExpression > PropertyAccessExpression > CallExpression > ObjectLiteralExpression", () => {
     expect(
         extractFromCode(`
             const map = {
@@ -7076,15 +7125,18 @@ it("extract JsxAttribute > ObjectLiteralExpression > css prop > PropertyAssignme
 it("extract JsxAttribute > JsxExpression > Identifier > BinaryExpression > (PropertyAccessExpression + QuestionQuestionToken + StringLiteral)", () => {
     expect(
         extractFromCode(`
-            const color = props.color ?? "apple.100";
+            const Demo = (props) => {
+                const color = props.color ?? "apple.100";
 
-            <ColorBox color={color}></ColorBox>
+                <ColorBox color={color}></ColorBox>
+            }
+
         `)
     ).toMatchInlineSnapshot(`
       [
           [
               "ColorBox",
-              [["color", "apple.100"]],
+              [["color", ["apple.100"]]],
               {
                   color: [
                       {
@@ -7096,10 +7148,35 @@ it("extract JsxAttribute > JsxExpression > Identifier > BinaryExpression > (Prop
                               "BinaryExpression",
                               "Identifier",
                           ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "apple.100",
-                          kind: "string",
+                          type: "conditional",
+                          node: "BinaryExpression",
+                          whenTrue: {
+                              stack: [
+                                  "JsxAttribute",
+                                  "JsxExpression",
+                                  "Identifier",
+                                  "VariableDeclaration",
+                                  "BinaryExpression",
+                                  "Identifier",
+                              ],
+                              type: "unresolvable",
+                              node: "Identifier",
+                          },
+                          whenFalse: {
+                              stack: [
+                                  "JsxAttribute",
+                                  "JsxExpression",
+                                  "Identifier",
+                                  "VariableDeclaration",
+                                  "BinaryExpression",
+                                  "Identifier",
+                              ],
+                              type: "literal",
+                              node: "StringLiteral",
+                              value: "apple.100",
+                              kind: "string",
+                          },
+                          kind: "nullish-coalescing",
                       },
                   ],
               },
@@ -7119,7 +7196,7 @@ it("extract JsxAttribute > JsxExpression > Identifier > BinaryExpression > (Prop
       [
           [
               "ColorBox",
-              [["color", "apple.200"]],
+              [["color", ["apple.200"]]],
               {
                   color: [
                       {
@@ -7131,10 +7208,35 @@ it("extract JsxAttribute > JsxExpression > Identifier > BinaryExpression > (Prop
                               "BinaryExpression",
                               "Identifier",
                           ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "apple.200",
-                          kind: "string",
+                          type: "conditional",
+                          node: "BinaryExpression",
+                          whenTrue: {
+                              stack: [
+                                  "JsxAttribute",
+                                  "JsxExpression",
+                                  "Identifier",
+                                  "VariableDeclaration",
+                                  "BinaryExpression",
+                                  "Identifier",
+                              ],
+                              type: "unresolvable",
+                              node: "Identifier",
+                          },
+                          whenFalse: {
+                              stack: [
+                                  "JsxAttribute",
+                                  "JsxExpression",
+                                  "Identifier",
+                                  "VariableDeclaration",
+                                  "BinaryExpression",
+                                  "Identifier",
+                              ],
+                              type: "literal",
+                              node: "StringLiteral",
+                              value: "apple.200",
+                              kind: "string",
+                          },
+                          kind: "and",
                       },
                   ],
               },
@@ -7154,7 +7256,7 @@ it("extract JsxAttribute > JsxExpression > Identifier > BinaryExpression > (Prop
       [
           [
               "ColorBox",
-              [["color", "apple.300"]],
+              [["color", ["apple.300"]]],
               {
                   color: [
                       {
@@ -7166,10 +7268,35 @@ it("extract JsxAttribute > JsxExpression > Identifier > BinaryExpression > (Prop
                               "BinaryExpression",
                               "Identifier",
                           ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "apple.300",
-                          kind: "string",
+                          type: "conditional",
+                          node: "BinaryExpression",
+                          whenTrue: {
+                              stack: [
+                                  "JsxAttribute",
+                                  "JsxExpression",
+                                  "Identifier",
+                                  "VariableDeclaration",
+                                  "BinaryExpression",
+                                  "Identifier",
+                              ],
+                              type: "unresolvable",
+                              node: "Identifier",
+                          },
+                          whenFalse: {
+                              stack: [
+                                  "JsxAttribute",
+                                  "JsxExpression",
+                                  "Identifier",
+                                  "VariableDeclaration",
+                                  "BinaryExpression",
+                                  "Identifier",
+                              ],
+                              type: "literal",
+                              node: "StringLiteral",
+                              value: "apple.300",
+                              kind: "string",
+                          },
+                          kind: "or",
                       },
                   ],
               },
@@ -7754,7 +7881,7 @@ it("extract real-world Stack example ", () => {
               "Box",
               [
                   ["display", "flex"],
-                  ["flexDirection", "column"],
+                  ["flexDirection", ["column"]],
                   ["key", null],
                   ["pr", null],
                   ["pb", null],
@@ -7779,10 +7906,35 @@ it("extract real-world Stack example ", () => {
                               "BinaryExpression",
                               "Identifier",
                           ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "column",
-                          kind: "string",
+                          type: "conditional",
+                          node: "BinaryExpression",
+                          whenTrue: {
+                              stack: [
+                                  "JsxAttribute",
+                                  "JsxExpression",
+                                  "Identifier",
+                                  "VariableDeclaration",
+                                  "BinaryExpression",
+                                  "Identifier",
+                              ],
+                              type: "unresolvable",
+                              node: "Identifier",
+                          },
+                          whenFalse: {
+                              stack: [
+                                  "JsxAttribute",
+                                  "JsxExpression",
+                                  "Identifier",
+                                  "VariableDeclaration",
+                                  "BinaryExpression",
+                                  "Identifier",
+                              ],
+                              type: "literal",
+                              node: "StringLiteral",
+                              value: "column",
+                              kind: "string",
+                          },
+                          kind: "nullish-coalescing",
                       },
                   ],
                   key: [
@@ -7906,7 +8058,7 @@ it("extract real-world Stack example ", () => {
                       {
                           stack: ["JsxAttribute", "JsxExpression", "PropertyAccessExpression", "Identifier"],
                           type: "unresolvable",
-                          node: "PropertyAccessExpression",
+                          node: "Identifier",
                       },
                   ],
                   _tablet: [
@@ -8472,7 +8624,7 @@ it("extract defineProperties config", () => {
                                                       "Identifier",
                                                   ],
                                                   type: "unresolvable",
-                                                  node: "PropertyAccessExpression",
+                                                  node: "Identifier",
                                               },
                                           ],
                                           backgroundColor: [
@@ -8487,7 +8639,7 @@ it("extract defineProperties config", () => {
                                                       "Identifier",
                                                   ],
                                                   type: "unresolvable",
-                                                  node: "PropertyAccessExpression",
+                                                  node: "Identifier",
                                               },
                                           ],
                                           borderColor: [
@@ -8502,7 +8654,7 @@ it("extract defineProperties config", () => {
                                                       "Identifier",
                                                   ],
                                                   type: "unresolvable",
-                                                  node: "PropertyAccessExpression",
+                                                  node: "Identifier",
                                               },
                                           ],
                                           borderRadius: [
@@ -8517,7 +8669,7 @@ it("extract defineProperties config", () => {
                                                       "Identifier",
                                                   ],
                                                   type: "unresolvable",
-                                                  node: "PropertyAccessExpression",
+                                                  node: "Identifier",
                                               },
                                           ],
                                           padding: [

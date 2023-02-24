@@ -43,6 +43,7 @@ export type BoxNode =
     | BoxNodeUnresolvable
     | BoxNodeConditional
     | BoxNodeEmptyInitializer;
+// TODO Map<string, BoxNode>, not BoxNode[] as value
 export type MapTypeValue = Map<string, BoxNode[]>;
 
 export abstract class BoxNodeType<Definition extends BoxNodeDefinition = BoxNodeDefinition> {

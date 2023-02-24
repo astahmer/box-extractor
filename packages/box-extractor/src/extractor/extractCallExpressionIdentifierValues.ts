@@ -25,10 +25,6 @@ export const extractCallExpressionValues = (node: CallExpression) => {
             logger({ extractCallExpression: true, maybeValue });
             // !maybeValue && console.log("maybeBoxNode empty", expression.getKindName(), expression.getText());
             if (maybeValue) {
-                if (Array.isArray(maybeValue)) {
-                    throw new TypeError("unexpected array");
-                }
-
                 return maybeValue;
             }
 

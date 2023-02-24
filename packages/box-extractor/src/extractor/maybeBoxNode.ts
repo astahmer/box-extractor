@@ -1,5 +1,5 @@
-import { createLogger } from "@box-extractor/logger";
-import { castAsArray, isObject } from "pastable";
+import { createLogger, disableLogs, enableLogs } from "@box-extractor/logger";
+import { isObject } from "pastable";
 import type {
     ArrayLiteralExpression,
     BinaryExpression,
@@ -7,6 +7,7 @@ import type {
     ElementAccessExpression,
     ExportDeclaration,
     Identifier,
+    ImportDeclaration,
     ObjectLiteralElementLike,
     ObjectLiteralExpression,
     PropertyAccessExpression,
@@ -21,16 +22,17 @@ import type {
 import { Node, ts } from "ts-morph";
 
 import { safeEvaluateNode } from "./evaluate";
+import { findIdentifierValueDeclaration } from "./findIdentifierValueDeclaration";
 // eslint-disable-next-line import/no-cycle
 import { maybeObjectLikeBox, MaybeObjectLikeBoxReturn } from "./maybeObjectLikeBox";
-import { box, BoxNode, BoxNodeLiteral, ConditionalKind, isBoxNode, LiteralValue } from "./type-factory";
+import { box, BoxNode, ConditionalKind, isBoxNode, LiteralValue } from "./type-factory";
 import type { ExtractedPropMap, PrimitiveType } from "./types";
 import { isNotNullish, unwrapExpression } from "./utils";
 
 const logger = createLogger("box-ex:extractor:maybe-box");
 const cacheMap = new WeakMap<Node, MaybeBoxNodeReturn>();
 
-export type MaybeBoxNodeReturn = BoxNode | BoxNode[] | undefined;
+export type MaybeBoxNodeReturn = BoxNode | undefined;
 export function maybeBoxNode(node: Node, stack: Node[]): MaybeBoxNodeReturn {
     const isCached = cacheMap.has(node);
     logger({ kind: node.getKindName(), isCached });
@@ -52,7 +54,7 @@ export function maybeBoxNode(node: Node, stack: Node[]): MaybeBoxNodeReturn {
             const maybeBox = maybeBoxNode(element, stack);
             if (!maybeBox) return cache(box.unresolvable(element, stack));
 
-            return Array.isArray(maybeBox) ? box.list(maybeBox, node, stack) : maybeBox;
+            return maybeBox;
         });
 
         return cache(box.list(boxes as any, node, stack));
@@ -83,10 +85,13 @@ export function maybeBoxNode(node: Node, stack: Node[]): MaybeBoxNodeReturn {
         const name = node.getText();
         if (name === "undefined") return cache(box.literal(undefined, node, stack));
 
-        const value = getIdentifierReferenceValue(node, stack);
-        if (value && !Node.isNode(value)) {
-            return cache(box.cast(value, node, stack));
+        const maybeValueDeclaration = findIdentifierValueDeclaration(node);
+        if (!maybeValueDeclaration) {
+            return box.unresolvable(node, stack);
         }
+
+        const maybeBox = maybeDefinitionValue(maybeValueDeclaration, stack.concat(maybeValueDeclaration));
+        return cache(maybeBox);
     }
 
     if (Node.isTemplateHead(node)) {
@@ -114,8 +119,8 @@ export function maybeBoxNode(node: Node, stack: Node[]): MaybeBoxNodeReturn {
 
     // <ColorBox color={isDark ? darkValue : "whiteAlpha.100"} />
     if (Node.isConditionalExpression(node)) {
-        const maybeValue = safeEvaluateNode<PrimitiveType | PrimitiveType[] | ExtractedPropMap>(node);
-        if (isNotNullish(maybeValue)) return cache(box.cast(maybeValue, node, stack));
+        const maybeLiteral = safeEvaluateNode<PrimitiveType | PrimitiveType[] | ExtractedPropMap>(node);
+        if (isNotNullish(maybeLiteral)) return cache(box.cast(maybeLiteral, node, stack));
 
         // unresolvable condition will return both possible outcome
         const whenTrueExpr = unwrapExpression(node.getWhenTrue());
@@ -126,8 +131,8 @@ export function maybeBoxNode(node: Node, stack: Node[]): MaybeBoxNodeReturn {
 
     // <ColorBox color={fn()} />
     if (Node.isCallExpression(node)) {
-        const maybeValue = safeEvaluateNode<PrimitiveType | ExtractedPropMap>(node);
-        return cache(box.cast(maybeValue, node, stack));
+        const maybeLiteral = safeEvaluateNode<PrimitiveType | ExtractedPropMap>(node);
+        return cache(box.cast(maybeLiteral, node, stack));
     }
 
     if (Node.isBinaryExpression(node)) {
@@ -223,7 +228,7 @@ const maybeExpandConditionalExpression = ({
     stack: Node[];
     kind: ConditionalKind;
     canReturnWhenTrue?: boolean;
-}): BoxNode | BoxNode[] | MaybeObjectLikeBoxReturn => {
+}): BoxNode | MaybeObjectLikeBoxReturn => {
     let whenTrueValue: ReturnType<typeof maybeBoxNode> | ReturnType<typeof maybeObjectLikeBox> = maybeBoxNode(
         whenTrueExpr,
         stack
@@ -233,7 +238,7 @@ const maybeExpandConditionalExpression = ({
         stack
     );
 
-    logger.scoped("cond", { before: true, whenTrueValue, whenFalseValue });
+    logger.scoped("cond", { before: true, whenTrueValue, whenFalseValue, canReturnWhenTrue });
 
     // <ColorBox color={isDark ? { mobile: "blue.100", desktop: "blue.300" } : "whiteAlpha.100"} />
     if (!whenTrueValue) {
@@ -243,7 +248,7 @@ const maybeExpandConditionalExpression = ({
         }
     }
 
-    if (canReturnWhenTrue && whenTrueValue) {
+    if (canReturnWhenTrue && whenTrueValue && !whenTrueValue.isUnresolvable()) {
         return box.cast(whenTrueValue, whenTrueExpr, stack);
     }
 
@@ -276,13 +281,6 @@ const maybeExpandConditionalExpression = ({
 
     const whenTrue = whenTrueValue!;
     const whenFalse = whenFalseValue!;
-
-    if (Array.isArray(whenTrue) || Array.isArray(whenFalse)) {
-        const merged = castAsArray(whenTrue).concat(whenFalse);
-        if (merged.length === 1) return merged[0];
-
-        return merged;
-    }
 
     if (whenTrue.isLiteral() && whenFalse.isLiteral() && whenTrue.value === whenFalse.value) {
         return whenTrue;
@@ -336,7 +334,7 @@ const getPropValue = (
     initializer: ObjectLiteralExpression,
     accessList: string[],
     _stack: Node[]
-): BoxNodeLiteral | undefined => {
+): MaybeBoxNodeReturn => {
     const stack = [..._stack];
     let propName = accessList.pop()!;
     const property =
@@ -367,21 +365,47 @@ const getPropValue = (
             propInitKind: propInit.getKindName(),
         });
 
-        if (accessList.length > 0 && Node.isObjectLiteralExpression(propInit)) {
-            return getPropValue(propInit, accessList, stack);
+        if (Node.isObjectLiteralExpression(propInit)) {
+            if (accessList.length > 0) {
+                return getPropValue(propInit, accessList, stack);
+            }
+
+            return maybeObjectLikeBox(propInit, stack);
         }
 
-        // TODO maybeStringLiteral -> any literal ?
-        const maybePropValue = maybeStringLiteral(propInit, stack);
+        const maybePropValue = maybeBoxNode(propInit, stack);
         if (maybePropValue) {
             return maybePropValue;
         }
     }
 
     if (Node.isShorthandPropertyAssignment(property)) {
-        const propInit = property.getNameNode();
-        // TODO maybeStringLiteral -> any literal ?
-        const maybePropValue = maybeStringLiteral(propInit, stack);
+        const identifier = property.getNameNode();
+        logger.scoped("get-prop", { shorthand: true, accessList, propInit: identifier });
+
+        if (accessList.length > 0) {
+            const maybeValueDeclaration = findIdentifierValueDeclaration(identifier);
+            if (!maybeValueDeclaration) {
+                return box.unresolvable(identifier, _stack);
+            }
+
+            const value = maybePropDefinitionValue(
+                maybeValueDeclaration,
+                accessList,
+                _stack.concat(maybeValueDeclaration)
+            );
+            // logger.scoped("maybePropIdentifierDefinitionValue", {
+            //     maybeValueDeclarationKind: maybeValueDeclaration?.getKindName?.(),
+            //     maybeValueDeclaration: maybeValueDeclaration?.getText(),
+            //     accessList,
+            //     value,
+            // });
+            if (value) return value;
+
+            return box.unresolvable(identifier, _stack);
+        }
+
+        const maybePropValue = maybeBoxNode(identifier, stack);
 
         if (maybePropValue) {
             return maybePropValue;
@@ -468,7 +492,7 @@ const maybeBindingElementValue = (def: BindingElement, stack: Node[], propName: 
     }
 };
 
-const maybePropDefinitionValue = (def: Node, accessList: string[], _stack: Node[]) => {
+function maybePropDefinitionValue(def: Node, accessList: string[], _stack: Node[]) {
     const propName = accessList.at(-1)!;
     logger.scoped("maybe-prop-def-value", { propName, accessList, kind: def.getKindName() });
 
@@ -485,6 +509,8 @@ const maybePropDefinitionValue = (def: Node, accessList: string[], _stack: Node[
             if (!type) return;
 
             if (Node.isTypeLiteral(type)) {
+                logger.scoped("maybe-prop-def-value", { typeLiteral: true });
+
                 if (accessList.length > 0) {
                     const stack = [..._stack];
                     stack.push(type);
@@ -511,7 +537,6 @@ const maybePropDefinitionValue = (def: Node, accessList: string[], _stack: Node[
                     //     typeProp: typeProp?.getText(),
                     //     typeLiteral: typeLiteral?.getText(),
                     // });
-
                     if (!typeLiteral) return;
 
                     const typeValue = getTypeNodeValue(typeLiteral, stack);
@@ -555,83 +580,56 @@ const maybePropDefinitionValue = (def: Node, accessList: string[], _stack: Node[
                 return boxed;
             }
         }
+
+        const innerStack = [..._stack, initializer];
+        const maybeValue = maybeBoxNode(initializer, innerStack);
+        if (maybeValue) return maybeValue;
     }
 
     if (Node.isBindingElement(def)) {
         const value = maybeBindingElementValue(def, _stack, propName);
         if (value) return value;
     }
-};
+}
 
-// let count = 0;
+let count = 0;
 const maybePropIdentifierDefinitionValue = (
     identifier: Identifier,
     accessList: string[],
     _stack: Node[]
 ): BoxNode | undefined => {
-    // console.log(count++);
-    const symbol = identifier.getSymbol();
-    logger.scoped("prop-id-value", {
-        elementAccessed: identifier.getKindName(),
-        accessList,
-        symbol: !!symbol,
-    });
-    if (!symbol) return;
-
-    const valueDeclaration = symbol.getValueDeclaration();
-    logger.scoped("prop-id-value", { valueDeclaration: valueDeclaration?.getKindName(), accessList });
-    if (!valueDeclaration) {
-        const maybeValue = safeEvaluateNode<PrimitiveType | PrimitiveType[] | ExtractedPropMap>(identifier);
-        const propName = accessList.at(-1)!;
-        logger.scoped("prop-id-value", { noValueDeclaration: true, propName, maybeValue, accessList });
-        if (isNotNullish(maybeValue) && isObject(maybeValue) && !Array.isArray(maybeValue) && maybeValue[propName]) {
-            return box.cast(maybeValue[propName], identifier, _stack);
-        }
-
-        const maybeIdentifierValue = maybeSymbolReferenceValue(symbol, _stack, accessList);
-        logger.scoped("prop-id-value", { propName, maybeIdentifierValue, accessList });
-        if (maybeIdentifierValue && !Array.isArray(maybeIdentifierValue)) {
-            if (maybeIdentifierValue.isObject()) {
-                return box.cast(maybeIdentifierValue.value, identifier, _stack);
-            }
-            // TODO ?
-            // if (maybeIdentifierValue.isMap()) {
-            //     return maybeIdentifierValue.value.get(propName) as any;
-            // }
-        }
-
-        return;
+    const maybeValueDeclaration = findIdentifierValueDeclaration(identifier);
+    if (!maybeValueDeclaration) {
+        return box.unresolvable(identifier, _stack);
     }
 
-    const def = unwrapExpression(valueDeclaration);
-    logger.scoped("prop-id-value", { def: def.getKindName(), accessList });
+    const value = maybePropDefinitionValue(maybeValueDeclaration, accessList, _stack.concat(maybeValueDeclaration));
+    // logger.scoped("maybePropIdentifierDefinitionValue", {
+    //     maybeValueDeclarationKind: maybeValueDeclaration?.getKindName?.(),
+    //     maybeValueDeclaration: maybeValueDeclaration?.getText(),
+    //     accessList,
+    //     value,
+    // });
+    if (value) return value;
 
-    const stack = [..._stack, def];
-    const propName = accessList.at(-1)!;
+    // const refparent = maybeValueDeclaration.getParent();
+    // logger.scoped("maybePropIdentifierDefinitionValue", { refparent: refparent?.getText(), refparentKind: refparent?.getKindName() });
 
-    logger.scoped("prop-id-value", {
-        // def: def?.getText()?.slice(0, 100),
-        // elementAccessed: elementAccessed.getText()?.slice(0, 100),
-        kind: def?.getKindName(),
-        // type: def?.getType().getText()?.slice(0, 100),
-        propName,
+    // const parent = identifier.getParent();
+    // logger.scoped("maybePropIdentifierDefinitionValue", {
+    //     parent: parent.getText(),
+    //     parentKind: parent?.getKindName(),
+    //     accessList,
+    //     identifier: identifier.getText(),
+    //     kind: identifier.getKindName(),
+    // });
+    logger.scoped("maybePropIdentifierDefinitionValue", count++, {
+        identifier: identifier.getText(),
         accessList,
+        // maybeValueDeclaration: maybeValueDeclaration?.getText(),
     });
 
-    if (Node.isShorthandPropertyAssignment(def)) {
-        const defs = identifier.getDefinitionNodes();
-        while (defs.length > 0) {
-            const nestedDef = unwrapExpression(defs.shift()!);
-            logger.scoped("prop-id-value", { nestedDef: nestedDef.getKindName(), accessList });
-
-            const maybePropValue = maybeDefinitionValue(nestedDef, stack);
-            if (maybePropValue) {
-                return maybePropValue;
-            }
-        }
-    }
-
-    return maybePropDefinitionValue(def, accessList, stack);
+    return box.unresolvable(identifier, _stack);
 };
 
 // TODO pass & push in stack ?
@@ -771,22 +769,22 @@ const maybeDefinitionValue = (def: Node, stack: Node[]): BoxNode | undefined => 
         const initializer = unwrapExpression(init);
         const innerStack = [...stack, initializer];
         const maybeValue = maybeBoxNode(initializer, innerStack);
-        if (maybeValue) return maybeValue as BoxNode;
+        if (maybeValue) return maybeValue;
 
         if (Node.isObjectLiteralExpression(initializer)) {
             logger.scoped("maybe-def-value", { objectLiteral: true });
             return maybeObjectLikeBox(initializer, innerStack);
         }
 
-        logger({
-            getIdentifierReferenceValue: true,
-            def: def?.getText(),
-            // identifier: identifier.getText(),
-            kind: def?.getKindName(),
-            type: def?.getType().getText(),
-            initializer: initializer?.getText(),
-            initializerKind: initializer?.getKindName(),
-        });
+        // logger({
+        //     maybeDefinitionValue: true,
+        //     def: def?.getText(),
+        //     // identifier: identifier.getText(),
+        //     kind: def?.getKindName(),
+        //     type: def?.getType().getText(),
+        //     initializer: initializer?.getText(),
+        //     initializerKind: initializer?.getKindName(),
+        // });
     }
 
     if (Node.isBindingElement(def)) {
@@ -803,21 +801,28 @@ const maybeDefinitionValue = (def: Node, stack: Node[]): BoxNode | undefined => 
     }
 };
 
-const getSymbolVarDeclaration = (symbolName: string, sourceFile: SourceFile): VariableDeclaration | undefined => {
-    const maybeVar = sourceFile.getVariableDeclaration(symbolName);
+export const getExportedVarDeclarationWithName = (
+    varName: string,
+    sourceFile: SourceFile
+): VariableDeclaration | undefined => {
+    const maybeVar = sourceFile.getVariableDeclaration(varName);
 
-    logger.scoped("getSymbolVarDeclaration", { symbolName, path: sourceFile.getFilePath(), hasVar: !!maybeVar });
+    logger.scoped("getExportedVarDeclarationWithName", { varName, path: sourceFile.getFilePath(), hasVar: !!maybeVar });
     if (maybeVar) return maybeVar;
 
-    const exportDeclaration = getExportedSymbolDeclaration(symbolName, sourceFile);
-    logger.scoped("getSymbolVarDeclaration", { exportDeclaration: typeof exportDeclaration });
-    if (Array.isArray(exportDeclaration)) return;
+    const exportDeclaration = resolveVarDeclarationFromExportWithName(varName, sourceFile);
+    logger.scoped("getExportedVarDeclarationWithName", { exportDeclaration: Boolean(exportDeclaration) });
+    if (!exportDeclaration) return;
 
     return exportDeclaration;
 };
 
-const getExportDeclarationByName = (name: string, exportDeclaration: ExportDeclaration) => {
+const getExportDeclarationWithName = (name: string, exportDeclaration: ExportDeclaration) => {
     const namedExports = exportDeclaration.getNamedExports();
+
+    // no namedExports means it's a full re-export like this: `export * from "xxx"`
+    if (!namedExports.length) return exportDeclaration;
+
     for (const namedExport of namedExports) {
         const exportedName = namedExport.getNameNode().getText();
         logger.scoped("export-declaration", { searching: name, exportedName });
@@ -828,54 +833,57 @@ const getExportDeclarationByName = (name: string, exportDeclaration: ExportDecla
     }
 };
 
-function getExportedSymbolDeclaration(
+/**
+ * Faster than declaration.getModuleSpecifierSourceFile()
+ *
+ * since it does NOT require a call to `initializeTypeChecker`
+ * > getModuleSpecifierSourceFile > getSymbol > getTypechecker > createTypeChecker > initializeTypeChecker
+ *
+ * which costs a minimum of around 90ms (and scales up with the file/project, could be hundreds of ms)
+ * @see https://github.com/dsherret/ts-morph/blob/42d811ed9a5177fc678a5bfec4923a2048124fe0/packages/ts-morph/src/compiler/ast/module/ExportDeclaration.ts#L160
+ */
+export const getModuleSpecifierSourceFile = (declaration: ExportDeclaration | ImportDeclaration) => {
+    const project = declaration.getProject();
+    const moduleName = declaration.getModuleSpecifierValue();
+
+    logger.scoped("getModuleSpecifierSourceFile", { moduleName });
+    if (!moduleName) return;
+
+    const containingFile = declaration.getSourceFile().getFilePath();
+    const resolved = ts.resolveModuleName(
+        moduleName,
+        containingFile,
+        project.getCompilerOptions(),
+        project.getModuleResolutionHost()
+    );
+    logger.scoped("getModuleSpecifierSourceFile", resolved);
+    if (!resolved.resolvedModule) return;
+
+    const sourceFile = project.addSourceFileAtPath(resolved.resolvedModule.resolvedFileName);
+    logger.scoped("getModuleSpecifierSourceFile", { found: Boolean(sourceFile) });
+
+    return sourceFile;
+};
+
+function resolveVarDeclarationFromExportWithName(
     symbolName: string,
     sourceFile: SourceFile
-): VariableDeclaration | ExportDeclaration[] {
+): VariableDeclaration | undefined {
     for (const exportDeclaration of sourceFile.getExportDeclarations()) {
-        const symbol = exportDeclaration.getSymbol();
-        logger.scoped("export-declaration", {
+        logger("resolveVarDeclarationFromExportWithName", {
             symbolName,
             exporDeclaration: exportDeclaration.getText(),
             exporDeclarationKind: exportDeclaration.getKindName(),
-            valueDeclaration: symbol?.getValueDeclaration(),
-            hasSymbol: !!symbol,
         });
-        if (!symbol) {
-            const found = getExportDeclarationByName(symbolName, exportDeclaration);
-            if (!found) continue;
+        const found = getExportDeclarationWithName(symbolName, exportDeclaration);
+        if (!found) continue;
 
-            const maybeFile = found.getModuleSpecifierSourceFile();
-            if (!maybeFile) continue;
+        const maybeFile = getModuleSpecifierSourceFile(found);
+        if (!maybeFile) continue;
 
-            const maybeVar = getSymbolVarDeclaration(symbolName, maybeFile);
-            // logger.scoped("found", { maybeVar });
-            if (maybeVar) return maybeVar;
-
-            continue;
-        }
-
-        for (const declaration of symbol.getDeclarations()) {
-            logger.scoped("export-declaration", {
-                declaration: declaration.getText(),
-                declarationKind: declaration.getKindName(),
-            });
-
-            if (Node.isExportDeclaration(declaration)) {
-                const transitiveSourceFile = declaration.getModuleSpecifierSourceFile();
-                logger.scoped("export-declaration", {
-                    transitive: transitiveSourceFile?.getFilePath(),
-                });
-                if (!transitiveSourceFile) continue;
-
-                const maybeVar = getExportedSymbolDeclaration(symbolName, transitiveSourceFile);
-                logger.scoped("export-declaration", { maybeVar1: typeof maybeVar });
-                if (!Array.isArray(maybeVar)) return maybeVar;
-            }
-        }
+        const maybeVar = getExportedVarDeclarationWithName(symbolName, maybeFile);
+        if (maybeVar) return maybeVar;
     }
-
-    return [];
 }
 
 const maybeSymbolReferenceValue = (symbol: Symbol, _stack: Node[], accessList: string[]) => {
@@ -896,8 +904,7 @@ const maybeSymbolReferenceValue = (symbol: Symbol, _stack: Node[], accessList: s
 
         logger.scoped("maybe-symbol-ref", { accessList, sourceFile: sourceFile.getFilePath() });
 
-        // TODO ExportDeclaration stack push
-        const varDeclaration = getSymbolVarDeclaration(name, sourceFile);
+        const varDeclaration = getExportedVarDeclarationWithName(name, sourceFile);
         logger.scoped("maybe-symbol-value", { name, varDeclaration: varDeclaration?.getText() });
         if (!varDeclaration) return undefined;
 
@@ -955,6 +962,7 @@ const maybeSymbolReferenceValue = (symbol: Symbol, _stack: Node[], accessList: s
 
 // TODO rename getIdentifierValue ?
 export const getIdentifierReferenceValue = (identifier: Identifier, _stack: Node[]): MaybeBoxNodeReturn => {
+    // console.trace();
     const evalFallback = () => {
         const maybeLiteral = safeEvaluateNode(identifier);
         if (maybeLiteral !== undefined) {
@@ -1123,7 +1131,7 @@ const getElementAccessedExpressionValue = (expression: ElementAccessExpression, 
         const identifier = getElementAccessedExpressionValue(elementAccessed, stack);
         elAccessedLogger({ isElementAccessExpression: true, identifier, argValue: argLiteral });
 
-        if (isObject(identifier) && !Array.isArray(identifier)) {
+        if (isObject(identifier)) {
             const argValue = argLiteral.value.toString();
 
             if (box.isMap(identifier)) {
@@ -1271,7 +1279,7 @@ const getPropertyAccessedExpressionValue = (
     }
 
     // TODO evaluate as fallback instead of upfront everywhere possible
-    const maybeValue = safeEvaluateNode<PrimitiveType | PrimitiveType[] | ExtractedPropMap>(expression);
-    logger.scoped("prop-access-value", { maybeValue: Boolean(maybeValue) });
-    if (isNotNullish(maybeValue)) return box.cast(maybeValue, expression, stack);
+    const maybeLiteral = safeEvaluateNode<PrimitiveType | PrimitiveType[] | ExtractedPropMap>(expression);
+    logger.scoped("prop-access-value", { maybeValue: Boolean(maybeLiteral) });
+    if (isNotNullish(maybeLiteral)) return box.cast(maybeLiteral, expression, stack);
 };

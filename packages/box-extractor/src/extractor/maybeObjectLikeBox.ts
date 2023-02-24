@@ -43,18 +43,10 @@ export const maybeObjectLikeBox = (node: Node, stack: Node[]): MaybeObjectLikeBo
         const maybeObject = getIdentifierReferenceValue(node, stack);
         if (!maybeObject) return cache(box.unresolvable(node, stack));
         if (isBoxNode(maybeObject) && (maybeObject.type === "object" || maybeObject.type === "map")) {
-            const first = Array.isArray(maybeObject) ? maybeObject[0] : maybeObject;
-            if (!first) return cache(box.unresolvable(node, stack));
-
-            return first;
+            return maybeObject;
         }
 
-        if (!maybeObject || !Node.isNode(maybeObject)) return cache(box.unresolvable(node, stack));
-
-        // <ColorBox {...objectLiteral} />
-        if (Node.isObjectLiteralExpression(maybeObject)) {
-            return cache(getObjectLiteralExpressionPropPairs(maybeObject, stack));
-        }
+        if (!maybeObject) return cache(box.unresolvable(node, stack));
     }
 
     // <ColorBox {...(xxx ? yyy : zzz)} />
@@ -79,40 +71,42 @@ export const maybeObjectLikeBox = (node: Node, stack: Node[]): MaybeObjectLikeBo
     // <ColorBox {...(condition && objectLiteral)} />
     if (Node.isBinaryExpression(node) && node.getOperatorToken().getKind() === ts.SyntaxKind.AmpersandAmpersandToken) {
         // TODO eval as fallback instead
-        const maybeObject = safeEvaluateNode(node);
-        if (!maybeObject) return cache(box.unresolvable(node, stack));
+        const maybeObjectLiteral = safeEvaluateNode(node);
+        if (!maybeObjectLiteral) return cache(box.unresolvable(node, stack));
 
-        if (isObjectLiteral(maybeObject)) {
-            return cache(box.object(maybeObject, node, stack));
+        if (isObjectLiteral(maybeObjectLiteral)) {
+            return cache(box.object(maybeObjectLiteral, node, stack));
         }
     }
 
     if (Node.isCallExpression(node)) {
-        const maybeObject = safeEvaluateNode(node);
-        if (!maybeObject) return cache(box.unresolvable(node, stack));
+        const maybeObjectLiteral = safeEvaluateNode(node);
+        if (!maybeObjectLiteral) return cache(box.unresolvable(node, stack));
 
-        if (isObjectLiteral(maybeObject)) {
-            return cache(box.object(maybeObject, node, stack));
+        if (isObjectLiteral(maybeObjectLiteral)) {
+            return cache(box.object(maybeObjectLiteral, node, stack));
         }
     }
 
     if (Node.isPropertyAccessExpression(node)) {
+        // TODO getPropertyAccessedExpressionValue
         // TODO eval as fallback instead
-        const maybeObject = safeEvaluateNode(node);
-        if (!maybeObject) return cache(box.unresolvable(node, stack));
+        const maybeObjectLiteral = safeEvaluateNode(node);
+        if (!maybeObjectLiteral) return cache(box.unresolvable(node, stack));
 
-        if (isObjectLiteral(maybeObject)) {
-            return cache(box.object(maybeObject, node, stack));
+        if (isObjectLiteral(maybeObjectLiteral)) {
+            return cache(box.object(maybeObjectLiteral, node, stack));
         }
     }
 
     if (Node.isElementAccessExpression(node)) {
+        // TODO getElementAccessedExpressionValue
         // TODO eval as fallback instead
-        const maybeObject = safeEvaluateNode(node);
-        if (!maybeObject) return cache(box.unresolvable(node, stack));
+        const maybeObjectLiteral = safeEvaluateNode(node);
+        if (!maybeObjectLiteral) return cache(box.unresolvable(node, stack));
 
-        if (isObjectLiteral(maybeObject)) {
-            return cache(box.object(maybeObject, node, stack));
+        if (isObjectLiteral(maybeObjectLiteral)) {
+            return cache(box.object(maybeObjectLiteral, node, stack));
         }
     }
 };
@@ -152,7 +146,7 @@ const getObjectLiteralExpressionPropPairs = (expression: ObjectLiteralExpression
                 if (!value) return;
 
                 logger.scoped("prop-value", { propName, value });
-                extractedPropValues.push([propName.toString(), Array.isArray(value) ? value : [value]]);
+                extractedPropValues.push([propName.toString(), [value]]);
                 return;
             }
 

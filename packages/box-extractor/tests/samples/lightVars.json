@@ -45,10 +45,12 @@
                                                 "PropertyAssignment",
                                                 "ElementAccessExpression",
                                                 "Identifier",
-                                                "StringLiteral"
+                                                "StringLiteral",
+                                                "VariableDeclaration",
+                                                "PropertyAssignment"
                                             ],
                                             "type": "literal",
-                                            "node": "Identifier",
+                                            "node": "StringLiteral",
                                             "value": "#95a7d8",
                                             "kind": "string"
                                         }
@@ -63,10 +65,12 @@
                                                 "PropertyAssignment",
                                                 "ElementAccessExpression",
                                                 "Identifier",
-                                                "StringLiteral"
+                                                "StringLiteral",
+                                                "VariableDeclaration",
+                                                "PropertyAssignment"
                                             ],
                                             "type": "literal",
-                                            "node": "Identifier",
+                                            "node": "StringLiteral",
                                             "value": "#8297d1",
                                             "kind": "string"
                                         }
@@ -101,10 +105,12 @@
                                                 "PropertyAssignment",
                                                 "ElementAccessExpression",
                                                 "Identifier",
-                                                "StringLiteral"
+                                                "StringLiteral",
+                                                "VariableDeclaration",
+                                                "PropertyAssignment"
                                             ],
                                             "type": "literal",
-                                            "node": "Identifier",
+                                            "node": "StringLiteral",
                                             "value": "#39539b",
                                             "kind": "string"
                                         }
@@ -119,10 +125,12 @@
                                                 "PropertyAssignment",
                                                 "ElementAccessExpression",
                                                 "Identifier",
-                                                "StringLiteral"
+                                                "StringLiteral",
+                                                "VariableDeclaration",
+                                                "PropertyAssignment"
                                             ],
                                             "type": "literal",
-                                            "node": "Identifier",
+                                            "node": "StringLiteral",
                                             "value": "#6f88cb",
                                             "kind": "string"
                                         }
@@ -137,10 +145,12 @@
                                                 "PropertyAssignment",
                                                 "ElementAccessExpression",
                                                 "Identifier",
-                                                "StringLiteral"
+                                                "StringLiteral",
+                                                "VariableDeclaration",
+                                                "PropertyAssignment"
                                             ],
                                             "type": "literal",
-                                            "node": "Identifier",
+                                            "node": "StringLiteral",
                                             "value": "#a7b6df",
                                             "kind": "string"
                                         }
