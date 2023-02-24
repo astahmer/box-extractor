@@ -11,8 +11,8 @@ export type {
 } from "./extractor/findAllTransitiveComponents";
 export { findAllTransitiveComponents, getAncestorComponent } from "./extractor/findAllTransitiveComponents";
 export { getBoxLiteralValue } from "./extractor/getBoxLiteralValue";
-export { maybeBoxNode, getNameLiteral } from "./extractor/maybeBoxNode";
 export type { MaybeBoxNodeReturn } from "./extractor/maybeBoxNode";
+export { getNameLiteral, maybeBoxNode } from "./extractor/maybeBoxNode";
 export type {
     BoxNode,
     ConditionalType,
@@ -50,5 +50,5 @@ export type {
     QueryFnBox,
 } from "./extractor/types";
 export { unbox } from "./extractor/unbox";
-export { castAsExtractableMap, unwrapExpression, unquote } from "./extractor/utils";
+export { castAsExtractableMap, unquote, unwrapExpression } from "./extractor/utils";
 export { visitBoxNode } from "./extractor/visitBoxNode";

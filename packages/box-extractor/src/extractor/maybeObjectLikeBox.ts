@@ -9,6 +9,7 @@ import { getIdentifierReferenceValue, maybeBoxNode, maybePropName } from "./mayb
 import {
     box,
     BoxNode,
+    BoxNodeConditional,
     BoxNodeLiteral,
     BoxNodeMap,
     BoxNodeObject,
@@ -22,7 +23,12 @@ import { isNotNullish, unwrapExpression } from "./utils";
 const logger = createLogger("box-ex:extractor:maybe-object");
 const cacheMap = new WeakMap<Node, MaybeObjectLikeBoxReturn>();
 
-export type MaybeObjectLikeBoxReturn = BoxNodeObject | BoxNodeMap | BoxNodeUnresolvable | undefined;
+export type MaybeObjectLikeBoxReturn =
+    | BoxNodeObject
+    | BoxNodeMap
+    | BoxNodeUnresolvable
+    | BoxNodeConditional
+    | undefined;
 
 export const maybeObjectLikeBox = (node: Node, stack: Node[]): MaybeObjectLikeBoxReturn => {
     const isCached = cacheMap.has(node);
