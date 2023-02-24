@@ -13,6 +13,8 @@ const main = async () => {
         tsconfig: z.string().default("tsconfig.json").describe("tsconfig path"),
         functions: z.string().default(""),
         components: z.string().default(""),
+        "resolveSourceFileDependencies rdeps": z.boolean().default(false),
+        "printSourceFileDependencies pdeps": z.boolean().default(false),
     }).parse();
     console.log(args);
 
@@ -32,21 +34,37 @@ const main = async () => {
             jsxFragmentFactory: "React.Fragment",
             module: ts.ModuleKind.ESNext,
             target: ts.ScriptTarget.ESNext,
-            noUnusedParameters: false,
             declaration: false,
             noEmit: true,
-            emitDeclarationOnly: false,
             allowJs: true,
-            useVirtualFileSystem: true,
+            skipDefaultLibCheck: true,
+            skipLibCheck: true,
+            strict: true,
+            strictFunctionTypes: true,
+            disableSolutionSearching: true,
+            disableReferencedProjectLoad: true,
+            resolveJsonModule: false,
         },
         tsConfigFilePath: args.tsconfig,
         skipAddingFilesFromTsConfig: true,
         skipLoadingLibFiles: true,
         skipFileDependencyResolution: true,
     });
-    const sourceFile = project.addSourceFileAtPath(path.resolve(root, args.input));
-    project.resolveSourceFileDependencies();
     console.timeEnd("init project");
+
+    console.time("addSourceFileAtPath");
+    const sourceFile = project.addSourceFileAtPath(path.resolve(root, args.input));
+    console.timeEnd("addSourceFileAtPath");
+
+    if (args.resolveSourceFileDependencies) {
+        console.time("resolveSourceFileDependencies");
+        project.resolveSourceFileDependencies();
+        console.timeEnd("resolveSourceFileDependencies");
+    }
+
+    if (args.printSourceFileDependencies) {
+        console.log(project.getSourceFiles().map((sf) => sf.getFilePath()));
+    }
 
     console.log("extracting", args.input);
     console.time("extracting");

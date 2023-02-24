@@ -16,8 +16,10 @@ const cacheMap = new WeakMap<Expression, unknown>();
  * @see https://github.com/wessberg/ts-evaluator#setting-up-policies
  */
 const evaluateExpression = (node: Expression, morphTypeChecker: TypeChecker) => {
+    // return;
     const compilerNode = node.compilerNode;
     const typeChecker = morphTypeChecker.compilerObject;
+    // console.trace();
 
     if (cacheMap.has(node)) {
         return cacheMap.get(node);
