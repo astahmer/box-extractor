@@ -1,5 +1,22 @@
 # @box-extractor/example-react-basic
 
+## 0.4.0
+
+### Minor Changes
+
+-   [#35](https://github.com/astahmer/box-extractor/pull/35) [`529b8ad`](https://github.com/astahmer/box-extractor/commit/529b8adad1272da480b97cbb45319f3b6dec7960) Thanks [@astahmer](https://github.com/astahmer)! - fix(core): identifier value from external file
+    refactor(core): rm extra isNotNullish calls
+    feat(vwind): dedupe rules + add logs
+
+-   [#35](https://github.com/astahmer/box-extractor/pull/35) [`5ca6fef`](https://github.com/astahmer/box-extractor/commit/5ca6fef23e0c588198aaee88a72640cdaa012c3c) Thanks [@astahmer](https://github.com/astahmer)! - fix(core): external identifier reference value with better perf
+    fix(examples/react-basic): re-add vanilla-extract/css since vite HMR crash without it (?)
+
+### Patch Changes
+
+-   Updated dependencies [[`529b8ad`](https://github.com/astahmer/box-extractor/commit/529b8adad1272da480b97cbb45319f3b6dec7960), [`764a176`](https://github.com/astahmer/box-extractor/commit/764a176538eab6bab02948884e40c8b14a8dfeef)]:
+    -   @box-extractor/vanilla-wind@0.3.0
+    -   @box-extractor/vanilla-theme@0.3.1
+
 ## 0.3.0
 
 ### Minor Changes

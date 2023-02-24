@@ -1,5 +1,13 @@
 # @box-extractor/logger
 
+## 0.2.0
+
+### Minor Changes
+
+-   [#35](https://github.com/astahmer/box-extractor/pull/35) [`529b8ad`](https://github.com/astahmer/box-extractor/commit/529b8adad1272da480b97cbb45319f3b6dec7960) Thanks [@astahmer](https://github.com/astahmer)! - fix(core): identifier value from external file
+    refactor(core): rm extra isNotNullish calls
+    feat(vwind): dedupe rules + add logs
+
 ## 0.1.0
 
 ### Minor Changes
