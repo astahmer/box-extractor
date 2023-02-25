@@ -4,11 +4,7 @@ import { cacheMap } from "./getBoxLiteralValue";
 
 export const unbox = (rootNode: BoxNode | undefined, localCacheMap: WeakMap<BoxNode, unknown> = cacheMap) => {
     if (!rootNode) return;
-    if (rootNode.isUnresolvable()) return;
-    if (rootNode.isConditional()) return;
-    if (rootNode.isEmptyInitializer()) return;
-    if (rootNode.isObject()) return rootNode.value;
-    if (rootNode.isLiteral()) return rootNode.value;
+    if (!rootNode.isMap() && !rootNode.isList()) return;
 
     const reconstructed = rootNode.isMap() ? {} : [];
     const pathByNode = new WeakMap<BoxNode, string[]>();
@@ -62,6 +58,5 @@ export const unbox = (rootNode: BoxNode | undefined, localCacheMap: WeakMap<BoxN
 
         localCacheMap.set(node, current);
     });
-
     return reconstructed;
 };

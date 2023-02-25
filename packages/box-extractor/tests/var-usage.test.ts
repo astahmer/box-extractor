@@ -91,9 +91,9 @@ it("can find usage references from a variable", () => {
     );
     const sprinklesFn = extracted.get("sprinklesFn")!;
 
-    const properties = (sprinklesFn.queryBox.value[0]! as BoxNodeMap).value.get("properties")![0]! as BoxNodeMap;
-    const backgroundColor = properties.value.get("backgroundColor")![0]! as BoxNodeMap;
-    const warning = backgroundColor.value.get("warning")![0]! as BoxNodeLiteral;
+    const properties = (sprinklesFn.queryBox.value[0]! as BoxNodeMap).value.get("properties")! as BoxNodeMap;
+    const backgroundColor = properties.value.get("backgroundColor")! as BoxNodeMap;
+    const warning = backgroundColor.value.get("warning")! as BoxNodeLiteral;
 
     expect(warning.getNode().getText()).toMatchInlineSnapshot('""var(--backgroundColor-warning__1dghp00t)""');
     expect(warning).toMatchInlineSnapshot(`

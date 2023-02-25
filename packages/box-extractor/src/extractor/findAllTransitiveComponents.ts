@@ -17,7 +17,7 @@ import {
     ts,
 } from "ts-morph";
 import { query } from "./extract";
-import { getIdentifierReferenceValue, getNameLiteral, onlyStringLiteral } from "./maybeBoxNode";
+import { maybeIdentifierValue, getNameLiteral, onlyStringLiteral } from "./maybeBoxNode";
 import type { ExtractOptions } from "./types";
 import { unquote, unwrapExpression } from "./utils";
 
@@ -69,7 +69,7 @@ export const findAllTransitiveComponents = ({
                 const parent = unwrapExpression(wrapper.getParent());
 
                 if (Node.isComputedPropertyName(parent)) {
-                    const identifierValue = onlyStringLiteral(getIdentifierReferenceValue(wrapper, []));
+                    const identifierValue = onlyStringLiteral(maybeIdentifierValue(wrapper, []));
                     if (!identifierValue) return;
 
                     nameLiteral = identifierValue.value as string;

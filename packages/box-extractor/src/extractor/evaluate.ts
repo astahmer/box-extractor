@@ -1,6 +1,6 @@
 import { createLogger } from "@box-extractor/logger";
 import { evaluate } from "ts-evaluator";
-import type { Expression, TypeChecker } from "ts-morph";
+import type { Expression } from "ts-morph";
 import { ts } from "ts-morph";
 
 const TsEvalError = Symbol("EvalError");
@@ -15,11 +15,10 @@ const cacheMap = new WeakMap<Expression, unknown>();
  * Evaluates with strict policies restrictions
  * @see https://github.com/wessberg/ts-evaluator#setting-up-policies
  */
-const evaluateExpression = (node: Expression, morphTypeChecker: TypeChecker) => {
+export const evaluateNode = (node: Expression) => {
+    // console.trace();
     // return;
     const compilerNode = node.compilerNode;
-    const typeChecker = morphTypeChecker.compilerObject;
-    // console.trace();
 
     if (cacheMap.has(node)) {
         return cacheMap.get(node);
@@ -27,7 +26,8 @@ const evaluateExpression = (node: Expression, morphTypeChecker: TypeChecker) => 
 
     const result = evaluate({
         node: compilerNode as any,
-        typeChecker: typeChecker as any,
+        // TODO only with a flag
+        // typeChecker: node.getProject().getTypeChecker().compilerObject as any,
         typescript: ts as any,
         policy: {
             deterministic: true,
@@ -76,10 +76,10 @@ const evaluateExpression = (node: Expression, morphTypeChecker: TypeChecker) => 
 };
 
 export const safeEvaluateNode = <T>(node: Expression) => {
-    const result = evaluateExpression(node, node.getProject().getTypeChecker());
+    const result = evaluateNode(node);
     if (result === TsEvalError) return;
+
     return result as T;
 };
 
-export const evaluateNode = <T>(node: Expression) => evaluateExpression(node, node.getProject().getTypeChecker()) as T;
 export const isEvalError = (value: unknown): value is typeof TsEvalError => value === TsEvalError;

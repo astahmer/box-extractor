@@ -26,6 +26,50 @@ type CreateThemeArguments = {
     boxNode: BoxNodeList;
 };
 
+const getTheme = (boxNode: BoxNodeList) => {
+    if (boxNode.value.length === 0) return null;
+
+    const _arg1 = unbox(boxNode.value[0]);
+    const _arg2 = unbox(boxNode.value[1]);
+    const _arg3 = unbox(boxNode.value[2]);
+
+    // createThemeContract / createGlobalThemeContract
+    if (_arg1 === "contract") {
+        // createGlobalThemeContract
+        if (typeof _arg2 === "string") {
+            return null;
+            // return { boxNode, kind: "createGlobalThemeContract", selector: _arg1, contract: _arg3 };
+        }
+
+        // createThemeContract
+        return { boxNode, kind: "createThemeContract", contract: _arg2 };
+    }
+
+    // createGlobalTheme
+    if (typeof _arg1 === "string") {
+        // createGlobalTheme from another theme contract
+        if (_arg3) {
+            return {
+                kind: "createGlobalTheme-using-contract",
+                selector: _arg1,
+                contract: _arg2,
+                tokens: _arg3,
+            };
+        }
+
+        // createGlobalTheme basic
+        return { boxNode, kind: "createGlobalTheme-basic", selector: _arg1, tokens: _arg2 };
+    }
+
+    // createTheme from another theme contract
+    if (typeof _arg2 === "object") {
+        return { boxNode, kind: "createTheme-using-contract", contract: _arg1, tokens: _arg2 };
+    }
+
+    // createTheme basic
+    return { boxNode, kind: "createTheme-basic", contract: _arg1, tokens: _arg2 };
+};
+
 export const extractCreateTheme = (project: Project, code: string, validId: string) => {
     // console.log("extractCreateTheme", { validId });
     // avoid full AST-parsing if possible
@@ -42,50 +86,6 @@ export const extractCreateTheme = (project: Project, code: string, validId: stri
 
     const extracted = extractFunctionFrom<CreateThemeArguments | null>(sourceFile, "createTheme", (boxNode) => {
         logger.scoped("get-result", boxNode);
-
-        const getTheme = (boxNode: BoxNodeList) => {
-            if (boxNode.value.length === 0) return null;
-
-            const _arg1 = unbox(boxNode.value[0]);
-            const _arg2 = unbox(boxNode.value[1]);
-            const _arg3 = unbox(boxNode.value[2]);
-
-            // createThemeContract / createGlobalThemeContract
-            if (_arg1 === "contract") {
-                // createGlobalThemeContract
-                if (typeof _arg2 === "string") {
-                    return null;
-                    // return { boxNode, kind: "createGlobalThemeContract", selector: _arg1, contract: _arg3 };
-                }
-
-                // createThemeContract
-                return { boxNode, kind: "createThemeContract", contract: _arg2 };
-            }
-
-            // createGlobalTheme
-            if (typeof _arg1 === "string") {
-                // createGlobalTheme from another theme contract
-                if (_arg3) {
-                    return {
-                        kind: "createGlobalTheme-using-contract",
-                        selector: _arg1,
-                        contract: _arg2,
-                        tokens: _arg3,
-                    };
-                }
-
-                // createGlobalTheme basic
-                return { boxNode, kind: "createGlobalTheme-basic", selector: _arg1, tokens: _arg2 };
-            }
-
-            // createTheme from another theme contract
-            if (typeof _arg2 === "object") {
-                return { boxNode, kind: "createTheme-using-contract", contract: _arg1, tokens: _arg2 };
-            }
-
-            // createTheme basic
-            return { boxNode, kind: "createTheme-basic", contract: _arg1, tokens: _arg2 };
-        };
 
         return getTheme(boxNode) as CreateThemeArguments | null;
     });

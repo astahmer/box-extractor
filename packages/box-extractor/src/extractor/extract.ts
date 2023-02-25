@@ -127,27 +127,29 @@ export const extract = ({
             const getSpreadPropName = () => `_SPREAD_${propSizeAtThisPoint}_${count++}`;
 
             const processObjectLike = (objLike: BoxNodeMap | BoxNodeObject) => {
-                const map = castObjectLikeAsMapValue(objLike, node);
-                const boxed = box.map(map, node, [componentNode]);
-                parentRef.props.set(getSpreadPropName(), [boxed]);
+                const mapValue = castObjectLikeAsMapValue(objLike, node);
+                const boxed = box.map(mapValue, node, [componentNode]);
+                if (objLike.isMap() && objLike.spreadConditions?.length) {
+                    boxed.spreadConditions = objLike.spreadConditions;
+                }
 
-                const entries = mergeSpreadEntries({ map, propNameList: component.properties });
+                parentRef.props.set(getSpreadPropName(), boxed);
+
+                const entries = mergeSpreadEntries({ map: mapValue, propNameList: component.properties });
                 entries.forEach(([propName, propValue]) => {
                     logger.scoped("merge-spread", { jsx: true, propName, propValue });
 
-                    propValue.forEach((value) => {
-                        localNodes.set(propName, (localNodes.get(propName) ?? []).concat(value));
-                        componentMap.nodesByProp.set(
-                            propName,
-                            (componentMap.nodesByProp.get(propName) ?? []).concat(value)
-                        );
-                    });
+                    localNodes.set(propName, (localNodes.get(propName) ?? []).concat(propValue));
+                    componentMap.nodesByProp.set(
+                        propName,
+                        (componentMap.nodesByProp.get(propName) ?? []).concat(propValue)
+                    );
                 });
             };
 
             const processBoxNode = (boxNode: BoxNode) => {
                 if (boxNode.isUnresolvable()) {
-                    parentRef.props.set(getSpreadPropName(), [boxNode]);
+                    parentRef.props.set(getSpreadPropName(), boxNode);
                     return;
                 }
 
@@ -216,7 +218,7 @@ export const extract = ({
                 }
 
                 const parentRef = queryComponentMap.get(componentNode)!;
-                parentRef.props.set(propName, [maybeBox]);
+                parentRef.props.set(propName, maybeBox);
 
                 const propNodes = componentMap.nodesByProp.get(propName) ?? [];
                 propNodes.push(maybeBox);
@@ -274,13 +276,11 @@ export const extract = ({
                             entries.forEach(([propName, propValue]) => {
                                 logger.scoped("merge-spread", { fn: true, propName, propValue });
 
-                                propValue.forEach((value) => {
-                                    localNodes.set(propName, (localNodes.get(propName) ?? []).concat(value));
-                                    fnMap.nodesByProp.set(
-                                        propName,
-                                        (fnMap.nodesByProp.get(propName) ?? []).concat(value)
-                                    );
-                                });
+                                localNodes.set(propName, (localNodes.get(propName) ?? []).concat(propValue));
+                                fnMap.nodesByProp.set(
+                                    propName,
+                                    (fnMap.nodesByProp.get(propName) ?? []).concat(propValue)
+                                );
                             });
 
                             return box.map(mapAfterSpread, parentNode, boxNode.getStack());
@@ -341,7 +341,7 @@ function mergeSpreadEntries({ map, propNameList: maybePropNameList }: { map: Map
             foundPropList.add(propName);
             return true;
         });
-    logger.lazyScoped("merge-spread", () => ({ extracted: map, merged }));
+    logger.scoped("merge-spread", { extracted: map, merged });
 
     // reverse again to keep the original order
     return merged.reverse();

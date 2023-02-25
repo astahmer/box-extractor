@@ -16,6 +16,7 @@ export type LiteralType = WithNode & {
 export type MapType = WithNode & { type: "map"; value: MapTypeValue };
 export type ListType = WithNode & { type: "list"; value: BoxNode[] };
 export type UnresolvableType = WithNode & { type: "unresolvable" };
+
 export type ConditionalKind = "ternary" | "and" | "or" | "nullish-coalescing";
 export type ConditionalType = WithNode & {
     type: "conditional";
@@ -23,6 +24,8 @@ export type ConditionalType = WithNode & {
     whenFalse: BoxNode;
     kind: ConditionalKind;
 };
+
+/** -> Jsx boolean attribute <Box flex /> */
 export type EmptyInitializerType = WithNode & { type: "empty-initializer" };
 
 // export type PrimitiveBoxNode = ObjectType | LiteralType | MapType
@@ -43,8 +46,7 @@ export type BoxNode =
     | BoxNodeUnresolvable
     | BoxNodeConditional
     | BoxNodeEmptyInitializer;
-// TODO Map<string, BoxNode>, not BoxNode[] as value
-export type MapTypeValue = Map<string, BoxNode[]>;
+export type MapTypeValue = Map<string, BoxNode>;
 
 export abstract class BoxNodeType<Definition extends BoxNodeDefinition = BoxNodeDefinition> {
     public readonly type: Definition["type"];
@@ -110,6 +112,8 @@ export class BoxNodeLiteral extends BoxNodeType<LiteralType> {
 
 export class BoxNodeMap extends BoxNodeType<MapType> {
     public value: MapType["value"];
+    public spreadConditions?: BoxNodeConditional[];
+
     constructor(definition: MapType) {
         super(definition);
         this.value = definition.value;
@@ -248,17 +252,19 @@ function toBoxType<Value>(value: Value, node: Node, stack: Node[]): BoxNode | Bo
 }
 
 export const castObjectLikeAsMapValue = (maybeObject: MaybeObjectLikeBoxReturn, node: Node): MapTypeValue => {
-    if (!maybeObject) return new Map<string, BoxNode[]>();
-    if (!isBoxNode(maybeObject)) return new Map<string, BoxNode[]>(Object.entries(maybeObject));
-    if (maybeObject.isUnresolvable()) return new Map<string, BoxNode[]>();
+    if (!maybeObject) return new Map<string, BoxNode>();
+    if (!isBoxNode(maybeObject)) return new Map<string, BoxNode>(Object.entries(maybeObject));
+    if (maybeObject.isUnresolvable() || maybeObject.isConditional()) return new Map<string, BoxNode>();
     if (box.isMap(maybeObject)) return maybeObject.value;
 
     // console.dir({ entries }, { depth: null });
-    return new Map<string, BoxNode[]>(
-        Object.entries(maybeObject.value).map(([key, value]) => {
-            const boxed = box.cast(value, maybeObject.getNode() ?? node, maybeObject.getStack() ?? []);
-            if (!boxed) return [key, []];
-            return [key, [boxed]];
-        })
+    return new Map<string, BoxNode>(
+        Object.entries(maybeObject.value)
+            .map(([key, value]) => {
+                const boxed = box.cast(value, maybeObject.getNode() ?? node, maybeObject.getStack() ?? []);
+                if (!boxed) return [key, null];
+                return [key, boxed];
+            })
+            .filter(([, value]) => value !== null) as Array<[string, BoxNodeObject | BoxNodeLiteral]>
     );
 };

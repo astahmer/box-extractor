@@ -47,15 +47,19 @@ const getExtract = (code: string, options: Omit<ExtractOptions, "ast">) => {
 };
 
 describe("unbox", () => {
-    const extracted = getExtract(BigThemeSampleInlined, { functions: ["defineProperties"] });
-    const defineProperties = extracted.get("defineProperties")!;
-    const properties = (defineProperties as FunctionNodesMap).queryList[0].box;
-
     bench("getBoxLiteralValue", () => {
-        getBoxLiteralValue(properties);
+        const extracted = getExtract(BigThemeSampleInlined, { functions: ["defineProperties"] });
+        const defineProperties = extracted.get("defineProperties")!;
+        const properties = (defineProperties as FunctionNodesMap).queryList[0].box;
+        const cache = new WeakMap();
+        getBoxLiteralValue(properties, cache);
     });
 
     bench("unbox", () => {
-        unbox(properties);
+        const extracted = getExtract(BigThemeSampleInlined, { functions: ["defineProperties"] });
+        const defineProperties = extracted.get("defineProperties")!;
+        const properties = (defineProperties as FunctionNodesMap).queryList[0].box;
+        const cache = new WeakMap();
+        unbox(properties, cache);
     });
 });
