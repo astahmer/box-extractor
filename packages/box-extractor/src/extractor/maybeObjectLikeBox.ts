@@ -1,11 +1,11 @@
 import { createLogger } from "@box-extractor/logger";
 import { isObjectLiteral } from "pastable";
 import type { ObjectLiteralElementLike, ObjectLiteralExpression } from "ts-morph";
-import { Node, ts } from "ts-morph";
+import { Node } from "ts-morph";
 
-import { evaluateNode, isEvalError, safeEvaluateNode } from "./evaluate";
+import { evaluateNode, isEvalError } from "./evaluate";
 // eslint-disable-next-line import/no-cycle
-import { getIdentifierReferenceValue, maybeBoxNode, maybePropName } from "./maybeBoxNode";
+import { maybeBoxNode, maybeExpandConditionalExpression, maybePropName } from "./maybeBoxNode";
 import {
     box,
     BoxNode,
@@ -14,9 +14,6 @@ import {
     BoxNodeMap,
     BoxNodeObject,
     BoxNodeUnresolvable,
-    castObjectLikeAsMapValue,
-    isBoxNode,
-    MapTypeValue,
 } from "./type-factory";
 import { isNotNullish, unwrapExpression } from "./utils";
 
@@ -44,27 +41,27 @@ export const maybeObjectLikeBox = (node: Node, stack: Node[]): MaybeObjectLikeBo
         return cache(getObjectLiteralExpressionPropPairs(node, stack));
     }
 
-    // <ColorBox {...xxx} />
-    if (Node.isIdentifier(node)) {
-        const maybeObject = getIdentifierReferenceValue(node, stack);
-        if (!maybeObject) return cache(box.unresolvable(node, stack));
-        if (isBoxNode(maybeObject) && (maybeObject.type === "object" || maybeObject.type === "map")) {
-            return maybeObject;
-        }
-
-        if (!maybeObject) return cache(box.unresolvable(node, stack));
-    }
-
     // <ColorBox {...(xxx ? yyy : zzz)} />
     if (Node.isConditionalExpression(node)) {
         const maybeObjectLiteral = evaluateNode(node);
 
-        // fallback to both possible outcome
+        // unresolvable condition will return both possible outcome
         if (isEvalError(maybeObjectLiteral)) {
-            const whenTrue = maybeObjectLikeBox(node.getWhenTrue(), stack);
-            const whenFalse = maybeObjectLikeBox(node.getWhenFalse(), stack);
-            logger.scoped("cond", { whenTrue, whenFalse });
-            return cache(box.map(mergePossibleEntries(whenTrue, whenFalse, node), node, stack));
+            const whenTrueExpr = unwrapExpression(node.getWhenTrue());
+            const whenFalseExpr = unwrapExpression(node.getWhenFalse());
+
+            const maybeBox = maybeExpandConditionalExpression({
+                whenTrueExpr,
+                whenFalseExpr,
+                node,
+                stack,
+                kind: "ternary",
+                // canReturnWhenTrue: true,
+            });
+            if (!maybeBox) return;
+            if (maybeBox.isConditional() || maybeBox.isObject() || maybeBox.isMap()) return cache(maybeBox);
+
+            return cache(box.unresolvable(node, stack));
         }
 
         if (isNotNullish(maybeObjectLiteral) && isObjectLiteral(maybeObjectLiteral)) {
@@ -74,57 +71,22 @@ export const maybeObjectLikeBox = (node: Node, stack: Node[]): MaybeObjectLikeBo
         return cache(box.emptyObject(node, stack));
     }
 
-    // <ColorBox {...(condition && objectLiteral)} />
-    if (Node.isBinaryExpression(node) && node.getOperatorToken().getKind() === ts.SyntaxKind.AmpersandAmpersandToken) {
-        // TODO eval as fallback instead
-        const maybeObjectLiteral = safeEvaluateNode(node);
-        if (!maybeObjectLiteral) return cache(box.unresolvable(node, stack));
-
-        if (isObjectLiteral(maybeObjectLiteral)) {
-            return cache(box.object(maybeObjectLiteral, node, stack));
-        }
-    }
-
-    if (Node.isCallExpression(node)) {
-        const maybeObjectLiteral = safeEvaluateNode(node);
-        if (!maybeObjectLiteral) return cache(box.unresolvable(node, stack));
-
-        if (isObjectLiteral(maybeObjectLiteral)) {
-            return cache(box.object(maybeObjectLiteral, node, stack));
-        }
-    }
-
-    if (Node.isPropertyAccessExpression(node)) {
-        // TODO getPropertyAccessedExpressionValue
-        // TODO eval as fallback instead
-        const maybeObjectLiteral = safeEvaluateNode(node);
-        if (!maybeObjectLiteral) return cache(box.unresolvable(node, stack));
-
-        if (isObjectLiteral(maybeObjectLiteral)) {
-            return cache(box.object(maybeObjectLiteral, node, stack));
-        }
-    }
-
-    if (Node.isElementAccessExpression(node)) {
-        // TODO getElementAccessedExpressionValue
-        // TODO eval as fallback instead
-        const maybeObjectLiteral = safeEvaluateNode(node);
-        if (!maybeObjectLiteral) return cache(box.unresolvable(node, stack));
-
-        if (isObjectLiteral(maybeObjectLiteral)) {
-            return cache(box.object(maybeObjectLiteral, node, stack));
-        }
-    }
+    const maybeBox = maybeBoxNode(node, stack);
+    if (!maybeBox) return cache(box.unresolvable(node, stack));
+    if (maybeBox.isMap() || maybeBox.isObject() || maybeBox.isConditional()) return cache(maybeBox);
 };
 
-const getObjectLiteralExpressionPropPairs = (expression: ObjectLiteralExpression, _stack: Node[]): BoxNodeMap => {
-    const extractedPropValues = [] as Array<[string, BoxNode[]]>;
+const getObjectLiteralExpressionPropPairs = (expression: ObjectLiteralExpression, _stack: Node[]) => {
+    const properties = expression.getProperties();
+    if (properties.length === 0) return box.emptyObject(expression, _stack);
+
+    const extractedPropValues = [] as Array<[string, BoxNode]>;
+    const spreadConditions = [] as BoxNodeConditional[];
     // console.log({
     //     expression: expression.getText(),
     //     properties: expression.getProperties().map((prop) => prop.getText()),
     // });
 
-    const properties = expression.getProperties();
     properties.forEach((propElement) => {
         const stack = [..._stack];
 
@@ -148,11 +110,8 @@ const getObjectLiteralExpressionPropPairs = (expression: ObjectLiteralExpression
             logger.scoped("prop-value", { propName, hasValue: !!maybeValue });
 
             if (maybeValue) {
-                const value = box.cast(maybeValue, initializer, stack);
-                if (!value) return;
-
-                logger.scoped("prop-value", { propName, value });
-                extractedPropValues.push([propName.toString(), [value]]);
+                logger.scoped("prop-value", { propName, maybeValue });
+                extractedPropValues.push([propName.toString(), maybeValue]);
                 return;
             }
 
@@ -161,7 +120,7 @@ const getObjectLiteralExpressionPropPairs = (expression: ObjectLiteralExpression
             // console.log({ maybeObject });
             if (maybeObject) {
                 logger.scoped("prop-obj", { propName, maybeObject });
-                extractedPropValues.push([propName.toString(), [maybeObject]]);
+                extractedPropValues.push([propName.toString(), maybeObject]);
                 return;
             }
         }
@@ -170,44 +129,49 @@ const getObjectLiteralExpressionPropPairs = (expression: ObjectLiteralExpression
             const initializer = unwrapExpression(propElement.getExpression());
             stack.push(initializer);
 
-            const extracted = maybeObjectLikeBox(initializer, stack);
-            if (!extracted) return;
+            const maybeObject = maybeObjectLikeBox(initializer, stack);
+            logger("isSpreadAssignment", { extracted: Boolean(maybeObject) });
+            if (!maybeObject) return;
 
-            logger("isSpreadAssignment", extracted);
-            if (extracted.type === "object") {
-                Object.entries(extracted.value).forEach(([propName, value]) => {
+            if (maybeObject.isObject()) {
+                Object.entries(maybeObject.value).forEach(([propName, value]) => {
                     const boxed = box.cast(value, initializer, stack);
                     if (!boxed) return;
 
-                    extractedPropValues.push([propName, [boxed]]);
+                    extractedPropValues.push([propName, boxed]);
                 });
                 return;
             }
 
-            if (box.isMap(extracted)) {
-                extracted.value.forEach((value, propName) => {
-                    value.forEach((nested) => {
-                        const boxed = box.cast(nested, initializer, stack);
-                        if (!boxed) return;
-
-                        return extractedPropValues.push([propName, [boxed]]);
-                    });
+            if (maybeObject.isMap()) {
+                maybeObject.value.forEach((nested, propName) => {
+                    extractedPropValues.push([propName, nested]);
                 });
+                return;
+            }
+
+            if (maybeObject.isConditional()) {
+                spreadConditions.push(maybeObject);
             }
         }
     });
 
     // preserves order of insertion, useful for spread operator to override props
-    const map = new Map();
+    const orderedMapValue = new Map();
     extractedPropValues.forEach(([propName, value]) => {
-        if (map.has(propName)) {
-            map.delete(propName);
+        if (orderedMapValue.has(propName)) {
+            orderedMapValue.delete(propName);
         }
 
-        map.set(propName, value);
+        orderedMapValue.set(propName, value);
     });
 
-    return box.map(map, expression, _stack);
+    const map = box.map(orderedMapValue, expression, _stack);
+    if (spreadConditions.length > 0) {
+        map.spreadConditions = spreadConditions;
+    }
+
+    return map;
 };
 
 const getPropertyName = (property: ObjectLiteralElementLike, stack: Node[]): BoxNodeLiteral | undefined => {
@@ -224,8 +188,7 @@ const getPropertyName = (property: ObjectLiteralElementLike, stack: Node[]): Box
             const expression = node.getExpression();
             stack.push(expression);
 
-            const computedPropName = maybePropName(expression, stack);
-            if (isNotNullish(computedPropName)) return computedPropName;
+            return maybePropName(expression, stack);
         }
 
         // { "propName": "value" }
@@ -244,44 +207,4 @@ const getPropertyName = (property: ObjectLiteralElementLike, stack: Node[]): Box
         const name = property.getName();
         if (isNotNullish(name)) return box.cast(name, property, stack);
     }
-};
-
-/**
- * TODO - rewrite comment as map rather than entries after refactoring
- * whenTrue: [ [ 'color', 'never.250' ] ],
- * whenFalse: [ [ 'color', [ 'salmon.850', 'salmon.900' ] ] ],
- * merged: [ [ 'color', [ 'never.250', 'salmon.850', 'salmon.900' ] ] ]
- */
-const mergePossibleEntries = (
-    _whenTrue: MaybeObjectLikeBoxReturn,
-    _whenFalse: MaybeObjectLikeBoxReturn,
-    node: Node
-) => {
-    const whenTrue = castObjectLikeAsMapValue(_whenTrue, node);
-    const whenFalse = castObjectLikeAsMapValue(_whenFalse, node);
-    const merged = new Map() as MapTypeValue;
-
-    whenTrue.forEach((propValues, propName) => {
-        const whenFalsePairWithPropName = whenFalse.get(propName);
-        if (whenFalsePairWithPropName) {
-            merged.set(propName, propValues.concat(whenFalsePairWithPropName));
-            return;
-        }
-
-        merged.set(propName, propValues);
-    });
-
-    whenFalse.forEach((propValues, propName) => {
-        if (merged.has(propName)) return;
-
-        const whenTruePairWithPropName = whenTrue.get(propName);
-        if (whenTruePairWithPropName) {
-            merged.set(propName, propValues.concat(whenTruePairWithPropName));
-            return;
-        }
-
-        merged.set(propName, propValues);
-    });
-
-    return merged;
 };

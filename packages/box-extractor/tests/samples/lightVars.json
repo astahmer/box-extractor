@@ -24,140 +24,126 @@
                     "type": "map",
                     "node": "CallExpression",
                     "value": {
-                        "color": [
-                            {
-                                "stack": [
-                                    "CallExpression",
-                                    "ObjectLiteralExpression",
-                                    "PropertyAssignment",
-                                    "ObjectLiteralExpression"
-                                ],
-                                "type": "map",
-                                "node": "ObjectLiteralExpression",
-                                "value": {
-                                    "mainBg": [
-                                        {
-                                            "stack": [
-                                                "CallExpression",
-                                                "ObjectLiteralExpression",
-                                                "PropertyAssignment",
-                                                "ObjectLiteralExpression",
-                                                "PropertyAssignment",
-                                                "ElementAccessExpression",
-                                                "Identifier",
-                                                "StringLiteral",
-                                                "VariableDeclaration",
-                                                "PropertyAssignment"
-                                            ],
-                                            "type": "literal",
-                                            "node": "StringLiteral",
-                                            "value": "#95a7d8",
-                                            "kind": "string"
-                                        }
+                        "color": {
+                            "stack": [
+                                "CallExpression",
+                                "ObjectLiteralExpression",
+                                "PropertyAssignment",
+                                "ObjectLiteralExpression"
+                            ],
+                            "type": "map",
+                            "node": "ObjectLiteralExpression",
+                            "value": {
+                                "mainBg": {
+                                    "stack": [
+                                        "CallExpression",
+                                        "ObjectLiteralExpression",
+                                        "PropertyAssignment",
+                                        "ObjectLiteralExpression",
+                                        "PropertyAssignment",
+                                        "ElementAccessExpression",
+                                        "Identifier",
+                                        "StringLiteral",
+                                        "VariableDeclaration",
+                                        "PropertyAssignment"
                                     ],
-                                    "secondaryBg": [
-                                        {
-                                            "stack": [
-                                                "CallExpression",
-                                                "ObjectLiteralExpression",
-                                                "PropertyAssignment",
-                                                "ObjectLiteralExpression",
-                                                "PropertyAssignment",
-                                                "ElementAccessExpression",
-                                                "Identifier",
-                                                "StringLiteral",
-                                                "VariableDeclaration",
-                                                "PropertyAssignment"
-                                            ],
-                                            "type": "literal",
-                                            "node": "StringLiteral",
-                                            "value": "#8297d1",
-                                            "kind": "string"
-                                        }
+                                    "type": "literal",
+                                    "node": "StringLiteral",
+                                    "value": "#95a7d8",
+                                    "kind": "string"
+                                },
+                                "secondaryBg": {
+                                    "stack": [
+                                        "CallExpression",
+                                        "ObjectLiteralExpression",
+                                        "PropertyAssignment",
+                                        "ObjectLiteralExpression",
+                                        "PropertyAssignment",
+                                        "ElementAccessExpression",
+                                        "Identifier",
+                                        "StringLiteral",
+                                        "VariableDeclaration",
+                                        "PropertyAssignment"
                                     ],
-                                    "text": [
-                                        {
-                                            "stack": [
-                                                "CallExpression",
-                                                "ObjectLiteralExpression",
-                                                "PropertyAssignment",
-                                                "ObjectLiteralExpression",
-                                                "PropertyAssignment",
-                                                "ElementAccessExpression",
-                                                "PropertyAccessExpression",
-                                                "StringLiteral",
-                                                "PropertyAccessExpression",
-                                                "Identifier"
-                                            ],
-                                            "type": "literal",
-                                            "node": "StringLiteral",
-                                            "value": "#4299e1",
-                                            "kind": "string"
-                                        }
+                                    "type": "literal",
+                                    "node": "StringLiteral",
+                                    "value": "#8297d1",
+                                    "kind": "string"
+                                },
+                                "text": {
+                                    "stack": [
+                                        "CallExpression",
+                                        "ObjectLiteralExpression",
+                                        "PropertyAssignment",
+                                        "ObjectLiteralExpression",
+                                        "PropertyAssignment",
+                                        "ElementAccessExpression",
+                                        "PropertyAccessExpression",
+                                        "StringLiteral",
+                                        "PropertyAccessExpression",
+                                        "Identifier"
                                     ],
-                                    "bg": [
-                                        {
-                                            "stack": [
-                                                "CallExpression",
-                                                "ObjectLiteralExpression",
-                                                "PropertyAssignment",
-                                                "ObjectLiteralExpression",
-                                                "PropertyAssignment",
-                                                "ElementAccessExpression",
-                                                "Identifier",
-                                                "StringLiteral",
-                                                "VariableDeclaration",
-                                                "PropertyAssignment"
-                                            ],
-                                            "type": "literal",
-                                            "node": "StringLiteral",
-                                            "value": "#39539b",
-                                            "kind": "string"
-                                        }
+                                    "type": "literal",
+                                    "node": "StringLiteral",
+                                    "value": "#4299e1",
+                                    "kind": "string"
+                                },
+                                "bg": {
+                                    "stack": [
+                                        "CallExpression",
+                                        "ObjectLiteralExpression",
+                                        "PropertyAssignment",
+                                        "ObjectLiteralExpression",
+                                        "PropertyAssignment",
+                                        "ElementAccessExpression",
+                                        "Identifier",
+                                        "StringLiteral",
+                                        "VariableDeclaration",
+                                        "PropertyAssignment"
                                     ],
-                                    "bgSecondary": [
-                                        {
-                                            "stack": [
-                                                "CallExpression",
-                                                "ObjectLiteralExpression",
-                                                "PropertyAssignment",
-                                                "ObjectLiteralExpression",
-                                                "PropertyAssignment",
-                                                "ElementAccessExpression",
-                                                "Identifier",
-                                                "StringLiteral",
-                                                "VariableDeclaration",
-                                                "PropertyAssignment"
-                                            ],
-                                            "type": "literal",
-                                            "node": "StringLiteral",
-                                            "value": "#6f88cb",
-                                            "kind": "string"
-                                        }
+                                    "type": "literal",
+                                    "node": "StringLiteral",
+                                    "value": "#39539b",
+                                    "kind": "string"
+                                },
+                                "bgSecondary": {
+                                    "stack": [
+                                        "CallExpression",
+                                        "ObjectLiteralExpression",
+                                        "PropertyAssignment",
+                                        "ObjectLiteralExpression",
+                                        "PropertyAssignment",
+                                        "ElementAccessExpression",
+                                        "Identifier",
+                                        "StringLiteral",
+                                        "VariableDeclaration",
+                                        "PropertyAssignment"
                                     ],
-                                    "bgHover": [
-                                        {
-                                            "stack": [
-                                                "CallExpression",
-                                                "ObjectLiteralExpression",
-                                                "PropertyAssignment",
-                                                "ObjectLiteralExpression",
-                                                "PropertyAssignment",
-                                                "ElementAccessExpression",
-                                                "Identifier",
-                                                "StringLiteral",
-                                                "VariableDeclaration",
-                                                "PropertyAssignment"
-                                            ],
-                                            "type": "literal",
-                                            "node": "StringLiteral",
-                                            "value": "#a7b6df",
-                                            "kind": "string"
-                                        }
-                                    ]
+                                    "type": "literal",
+                                    "node": "StringLiteral",
+                                    "value": "#6f88cb",
+                                    "kind": "string"
+                                },
+                                "bgHover": {
+                                    "stack": [
+                                        "CallExpression",
+                                        "ObjectLiteralExpression",
+                                        "PropertyAssignment",
+                                        "ObjectLiteralExpression",
+                                        "PropertyAssignment",
+                                        "ElementAccessExpression",
+                                        "Identifier",
+                                        "StringLiteral",
+                                        "VariableDeclaration",
+                                        "PropertyAssignment"
+                                    ],
+                                    "type": "literal",
+                                    "node": "StringLiteral",
+                                    "value": "#a7b6df",
+                                    "kind": "string"
                                 }
                             }
-                        ]
+                        }
                     }
                 }
             ]

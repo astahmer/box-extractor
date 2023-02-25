@@ -131,8 +131,8 @@ export function generateRulesFromExtraction({
 
             if (cssBox.type === "local") {
                 if (!rulesByDebugId.has(debugId)) {
-                allRules.add(cssBox);
-                rulesByDebugId.set(debugId, cssBox);
+                    allRules.add(cssBox);
+                    rulesByDebugId.set(debugId, cssBox);
                 }
 
                 const rule = cssBox.rule;
@@ -166,25 +166,25 @@ export function generateRulesFromExtraction({
 
             const globalCssBox = { ...cssBox, selector: `${selector}${innerSelector ?? ""}` };
             if (!rulesByDebugId.has(debugId)) {
-            rulesByDebugId.set(debugId, globalCssBox);
-            allRules.add(globalCssBox);
+                rulesByDebugId.set(debugId, globalCssBox);
+                allRules.add(globalCssBox);
             }
 
             generateClassName(globalCssBox);
             logger.scoped("global", { global: true, selector, innerSelector, rule });
         };
 
-        const argMap = new Map<string, BoxNode[]>();
+        const argMap = new Map<string, BoxNode>();
         shorthandNames.forEach((shorthand) => {
             if (!queryBox.value.has(shorthand)) return;
             config.shorthands![shorthand]!.forEach((prop) => argMap.set(prop, queryBox.value.get(shorthand)!));
         });
-        for (const [arg, nodeList] of queryBox.value.entries()) {
+        for (const [arg, argValue] of queryBox.value.entries()) {
             if (shorthandNames.has(arg)) continue;
-            argMap.set(arg, nodeList);
+            argMap.set(arg, argValue);
         }
 
-        argMap.forEach((nodeList, argName) => {
+        argMap.forEach((argValue, argName) => {
             const processValue = (boxNode: BoxNode, path: string[] = []) => {
                 if (argName === "vars" && path.length === 0 && boxNode.isMap()) {
                     const vars = unbox(boxNode);
@@ -408,8 +408,8 @@ export function generateRulesFromExtraction({
                 }
 
                 if (box.isMap(boxNode)) {
-                    boxNode.value.forEach((propNodeList, propName) => {
-                        propNodeList.forEach((propNode) => processValue(propNode, [...path, propName]));
+                    boxNode.value.forEach((propNode, propName) => {
+                        processValue(propNode, [...path, propName]);
                     });
                     return;
                 }
@@ -453,28 +453,26 @@ export function generateRulesFromExtraction({
                 }
             };
 
-            nodeList.forEach((box) => {
-                processValue(box);
+            processValue(argValue);
 
-                if (extracted.kind === "component") {
-                    const node = box.getNode();
-                    if (Node.isJsxSpreadAttribute(node)) {
-                        // TODO only remove the props needed rather than the whole spread, this is a bit too aggressive
-                        toRemove.add(node);
-                        return;
-                    }
+            if (extracted.kind === "component") {
+                const node = argValue.getNode();
+                if (Node.isJsxSpreadAttribute(node)) {
+                    // TODO only remove the props needed rather than the whole spread, this is a bit too aggressive
+                    toRemove.add(node);
+                    return;
+                }
 
-                    const jsxAttribute = box.getStack()[0];
-                    if (Node.isJsxAttribute(jsxAttribute)) {
-                        // don't remove anything if no known possible prop name were specified
-                        if (propertyNames.size === 0 && shorthandNames.size === 0 && conditionNames.size === 0) return;
+                const jsxAttribute = argValue.getStack()[0];
+                if (Node.isJsxAttribute(jsxAttribute)) {
+                    // don't remove anything if no known possible prop name were specified
+                    if (propertyNames.size === 0 && shorthandNames.size === 0 && conditionNames.size === 0) return;
 
-                        if (propertyNames.has(argName) || shorthandNames.has(argName) || conditionNames.has(argName)) {
-                            toRemove.add(jsxAttribute);
-                        }
+                    if (propertyNames.has(argName) || shorthandNames.has(argName) || conditionNames.has(argName)) {
+                        toRemove.add(jsxAttribute);
                     }
                 }
-            });
+            }
         });
 
         const rules = rulesByBoxNode.get(queryBox)!;

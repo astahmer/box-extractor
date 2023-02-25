@@ -1,5 +1,6 @@
 import { createLogger } from "@box-extractor/logger";
 import { Identifier, Node, ts } from "ts-morph";
+// eslint-disable-next-line import/no-cycle
 import { getExportedVarDeclarationWithName, getModuleSpecifierSourceFile } from "./maybeBoxNode";
 
 const logger = createLogger("box-extractor:extractor:findIdentifierValueDeclaration");
@@ -108,6 +109,7 @@ export function findIdentifierValueDeclaration(
         if (!scope) return;
 
         const refName = identifier.getText();
+        // eslint-disable-next-line @typescript-eslint/no-loop-func
         scope.forEachDescendant((node, traversal) => {
             // logger.scoped("find", node.getKindName());
             if (visiteds.has(node)) {
