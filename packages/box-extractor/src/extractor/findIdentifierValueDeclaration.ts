@@ -9,11 +9,11 @@ const logger = createLogger("box-extractor:extractor:findIdentifierValueDeclarat
 
 export function isScope(node: Node): boolean {
     return (
-        // node.isKind(ts.SyntaxKind.Block) ||
-        node.isKind(ts.SyntaxKind.FunctionDeclaration) ||
-        node.isKind(ts.SyntaxKind.FunctionExpression) ||
-        node.isKind(ts.SyntaxKind.ArrowFunction) ||
-        node.isKind(ts.SyntaxKind.SourceFile)
+        // Node.isBlock(node) ||
+        Node.isFunctionDeclaration(node) ||
+        Node.isFunctionExpression(node) ||
+        Node.isArrowFunction(node) ||
+        Node.isSourceFile(node)
         // TODO more?
     );
 }
@@ -21,19 +21,6 @@ export function isScope(node: Node): boolean {
 export function getDeclarationFor(node: Identifier) {
     const parent = node.getParent();
     if (!parent) {
-        const isSourceFile = Node.isSourceFile(node);
-        logger.scoped("getDeclarationFor", { noParent: true, isSourceFile });
-
-        // TODO probably useless
-        if (isSourceFile) {
-            const imports = node.getImportDeclarations();
-            const namedImports = imports.flatMap((i) => i.getNamedImports());
-            const namedImport = namedImports.find((i) => i.getName() == node.getText());
-            if (namedImport) {
-                return namedImport;
-            }
-        }
-
         return;
     }
 
@@ -121,7 +108,7 @@ export function findIdentifierValueDeclaration(
             visiteds.add(node);
             if (node == identifier) return;
 
-            if (node.isKind(ts.SyntaxKind.Identifier) && node.getText() == refName) {
+            if (Node.isIdentifier(node) && node.getText() == refName) {
                 const maybeDeclaration = getDeclarationFor(node);
                 if (maybeDeclaration) {
                     if (Node.isParameterDeclaration(maybeDeclaration)) {
