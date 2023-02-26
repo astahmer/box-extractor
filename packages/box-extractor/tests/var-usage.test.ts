@@ -106,6 +106,7 @@ it("can find usage references from a variable", () => {
               "PropertyAssignment",
               "PropertyAccessExpression",
               "Identifier",
+              "Identifier",
               "BindingElement",
               "ArrayLiteralExpression",
               "ObjectLiteralExpression",

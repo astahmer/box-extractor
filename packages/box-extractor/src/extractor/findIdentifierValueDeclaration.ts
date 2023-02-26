@@ -18,11 +18,13 @@ export function isScope(node: Node): boolean {
     );
 }
 
-export function getDeclarationFor(node: Identifier) {
+export function getDeclarationFor(node: Identifier, stack: Node[] = []) {
     const parent = node.getParent();
     if (!parent) {
         return;
     }
+
+    const declarationStack = [] as Node[];
 
     let declaration;
     if (
@@ -32,15 +34,15 @@ export function getDeclarationFor(node: Identifier) {
         parent.getNameNode() == node
     ) {
         logger.scoped("getDeclarationFor", { isDeclarationLike: true, kind: parent.getKindName() });
+        declarationStack.push(parent);
         declaration = parent;
-    }
-
-    if (Node.isImportSpecifier(parent) && parent.getNameNode() == node) {
+    } else if (Node.isImportSpecifier(parent) && parent.getNameNode() == node) {
         const sourceFile = getModuleSpecifierSourceFile(parent.getImportDeclaration());
         logger.scoped("getDeclarationFor", { isImportDeclaration: true, sourceFile: Boolean(sourceFile) });
 
         if (sourceFile) {
-            const maybeVar = getExportedVarDeclarationWithName(node.getText(), sourceFile);
+            const exportStack = [parent, sourceFile] as Node[];
+            const maybeVar = getExportedVarDeclarationWithName(node.getText(), sourceFile, exportStack);
 
             logger.scoped("getDeclarationFor", {
                 from: sourceFile.getFilePath(),
@@ -49,6 +51,7 @@ export function getDeclarationFor(node: Identifier) {
             });
 
             if (maybeVar) {
+                declarationStack.push(...exportStack.concat(maybeVar));
                 declaration = maybeVar;
             }
         }
@@ -59,6 +62,10 @@ export function getDeclarationFor(node: Identifier) {
         parent: parent.getKindName(),
         declaration: declaration?.getKindName(),
     });
+
+    if (declaration) {
+        stack.push(...declarationStack);
+    }
 
     // console.log({ found: node.getText(), parent: parent.getKindName() });
     return declaration;
@@ -76,15 +83,16 @@ const getInnermostScope = (from: Node) => {
     return scope;
 };
 
-// TODO stack push ?
 export function findIdentifierValueDeclaration(
     identifier: Identifier,
-    visiteds: WeakSet<Node> = new Set()
+    stack: Node[] = [],
+    visitedsWithStack: WeakMap<Node, Node[]> = new Map()
 ): Node | undefined {
     let scope = identifier as Node | undefined;
     let foundNode: Node | undefined;
     let isUnresolvable = false;
     let count = 0;
+    const innerStack = [] as Node[];
 
     do {
         scope = getInnermostScope(scope!);
@@ -99,23 +107,27 @@ export function findIdentifierValueDeclaration(
         // eslint-disable-next-line @typescript-eslint/no-loop-func
         scope.forEachDescendant((node, traversal) => {
             // logger.scoped("find", node.getKindName());
-            if (visiteds.has(node)) {
+            if (visitedsWithStack.has(node)) {
                 traversal.skip();
+                innerStack.push(...visitedsWithStack.get(node)!);
                 return;
             }
 
-            // TODO reverse ?
-            visiteds.add(node);
             if (node == identifier) return;
+            visitedsWithStack.set(node, innerStack);
 
             if (Node.isIdentifier(node) && node.getText() == refName) {
-                const maybeDeclaration = getDeclarationFor(node);
+                const declarationStack = [node] as Node[];
+                const maybeDeclaration = getDeclarationFor(node, declarationStack);
                 if (maybeDeclaration) {
                     if (Node.isParameterDeclaration(maybeDeclaration)) {
+                        const initializer = maybeDeclaration.getInitializer();
                         const typeNode = maybeDeclaration.getTypeNode();
-                        if (maybeDeclaration.getInitializer()) {
+                        if (initializer) {
+                            innerStack.push(...declarationStack.concat(initializer));
                             foundNode = maybeDeclaration;
                         } else if (typeNode && Node.isTypeLiteral(typeNode)) {
+                            innerStack.push(...declarationStack.concat(typeNode));
                             foundNode = maybeDeclaration;
                         } else {
                             isUnresolvable = true;
@@ -125,6 +137,7 @@ export function findIdentifierValueDeclaration(
                         return;
                     }
 
+                    innerStack.push(...declarationStack);
                     foundNode = maybeDeclaration;
                     traversal.stop();
                 }
@@ -137,6 +150,10 @@ export function findIdentifierValueDeclaration(
             isUnresolvable,
         });
         if (foundNode || isUnresolvable) {
+            if (foundNode) {
+                stack.push(...innerStack);
+            }
+
             return foundNode;
         }
     } while (scope && !Node.isSourceFile(scope) && !foundNode && !isUnresolvable && count < 100);

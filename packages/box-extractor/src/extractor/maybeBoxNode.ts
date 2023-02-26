@@ -36,7 +36,10 @@ export type MaybeBoxNodeReturn = BoxNode | undefined;
 export function maybeBoxNode(node: Node, stack: Node[]): MaybeBoxNodeReturn {
     const isCached = cacheMap.has(node);
     logger({ kind: node.getKindName(), isCached });
-    if (isCached) return cacheMap.get(node);
+    if (isCached) {
+        logger.scoped("cached", { kind: node.getKindName() });
+        return cacheMap.get(node);
+    }
 
     const cache = (value: MaybeBoxNodeReturn) => {
         cacheMap.set(node, value);
@@ -585,7 +588,7 @@ const maybePropIdentifierValue = (
     _stack: Node[]
 ): BoxNode | undefined => {
     // console.trace();
-    const maybeValueDeclaration = findIdentifierValueDeclaration(identifier);
+    const maybeValueDeclaration = findIdentifierValueDeclaration(identifier, _stack);
     logger.scoped("maybePropIdentifierValue", {
         identifier: identifier.getText(),
         hasValueDeclaration: Boolean(maybeValueDeclaration),
@@ -597,7 +600,7 @@ const maybePropIdentifierValue = (
     const declaration = unwrapExpression(maybeValueDeclaration);
     logger.scoped("maybePropIdentifierValue", { def: declaration.getKindName(), accessList });
 
-    const maybeValue = maybePropDefinitionValue(maybeValueDeclaration, accessList, _stack.concat(declaration));
+    const maybeValue = maybePropDefinitionValue(maybeValueDeclaration, accessList, _stack);
     if (maybeValue) return maybeValue;
 
     const maybeLiteral = safeEvaluateNode(identifier);
@@ -613,6 +616,7 @@ const typeLiteralCache = new WeakMap<TypeLiteralNode, null | Map<string, Literal
 const getTypeLiteralNodePropValue = (type: TypeLiteralNode, propName: string, stack: Node[]): LiteralValue => {
     if (typeLiteralCache.has(type)) {
         const map = typeLiteralCache.get(type);
+        logger.scoped("cached", { typeLiteralNodeProp: true, kind: type.getKindName() });
         if (map === null) return;
 
         if (map?.has(propName)) {
@@ -668,6 +672,7 @@ export function getNameLiteral(wrapper: Node) {
 const typeNodeCache = new WeakMap();
 const getTypeNodeValue = (type: TypeNode, stack: Node[]): LiteralValue => {
     if (typeNodeCache.has(type)) {
+        logger.scoped("cached", { typeNode: true, kind: type.getKindName() });
         return typeNodeCache.get(type);
     }
 
@@ -780,32 +785,33 @@ const maybeDefinitionValue = (def: Node, stack: Node[]): BoxNode | undefined => 
 
 export const getExportedVarDeclarationWithName = (
     varName: string,
-    sourceFile: SourceFile
+    sourceFile: SourceFile,
+    stack: Node[] = []
 ): VariableDeclaration | undefined => {
     const maybeVar = sourceFile.getVariableDeclaration(varName);
 
     logger.scoped("getExportedVarDeclarationWithName", { varName, path: sourceFile.getFilePath(), hasVar: !!maybeVar });
     if (maybeVar) return maybeVar;
 
-    const exportDeclaration = resolveVarDeclarationFromExportWithName(varName, sourceFile);
+    const exportDeclaration = resolveVarDeclarationFromExportWithName(varName, sourceFile, stack);
     logger.scoped("getExportedVarDeclarationWithName", { exportDeclaration: Boolean(exportDeclaration) });
     if (!exportDeclaration) return;
 
     return exportDeclaration;
 };
 
-const getExportDeclarationWithName = (name: string, exportDeclaration: ExportDeclaration) => {
+const hasNamedExportWithName = (name: string, exportDeclaration: ExportDeclaration) => {
     const namedExports = exportDeclaration.getNamedExports();
 
     // no namedExports means it's a full re-export like this: `export * from "xxx"`
-    if (namedExports.length === 0) return exportDeclaration;
+    if (namedExports.length === 0) return true;
 
     for (const namedExport of namedExports) {
         const exportedName = namedExport.getNameNode().getText();
         logger.scoped("export-declaration", { searching: name, exportedName });
 
         if (exportedName === name) {
-            return exportDeclaration;
+            return true;
         }
     }
 };
@@ -844,28 +850,33 @@ export const getModuleSpecifierSourceFile = (declaration: ExportDeclaration | Im
 
 function resolveVarDeclarationFromExportWithName(
     symbolName: string,
-    sourceFile: SourceFile
+    sourceFile: SourceFile,
+    stack: Node[] = []
 ): VariableDeclaration | undefined {
     for (const exportDeclaration of sourceFile.getExportDeclarations()) {
+        const exportStack = [exportDeclaration] as Node[];
         logger("resolveVarDeclarationFromExportWithName", {
             symbolName,
             exporDeclaration: exportDeclaration.getText(),
             exporDeclarationKind: exportDeclaration.getKindName(),
         });
-        const found = getExportDeclarationWithName(symbolName, exportDeclaration);
-        if (!found) continue;
+        if (!hasNamedExportWithName(symbolName, exportDeclaration)) continue;
 
-        const maybeFile = getModuleSpecifierSourceFile(found);
+        const maybeFile = getModuleSpecifierSourceFile(exportDeclaration);
         if (!maybeFile) continue;
 
+        exportStack.push(maybeFile);
         const maybeVar = getExportedVarDeclarationWithName(symbolName, maybeFile);
-        if (maybeVar) return maybeVar;
+        if (maybeVar) {
+            stack.push(...exportStack.concat(maybeVar));
+            return maybeVar;
+        }
     }
 }
 
 export const maybeIdentifierValue = (identifier: Identifier, _stack: Node[]) => {
     // console.trace();
-    const valueDeclaration = findIdentifierValueDeclaration(identifier);
+    const valueDeclaration = findIdentifierValueDeclaration(identifier, _stack);
     logger.scoped("id-ref", { identifier: identifier.getText(), hasValueDeclaration: Boolean(valueDeclaration) });
     if (!valueDeclaration) {
         return box.unresolvable(identifier, _stack);
@@ -874,7 +885,7 @@ export const maybeIdentifierValue = (identifier: Identifier, _stack: Node[]) => 
     const declaration = unwrapExpression(valueDeclaration);
     logger.scoped("id-ref", { def: declaration.getKindName() });
 
-    const stack = [..._stack, declaration];
+    const stack = [..._stack];
     const maybeValue = maybeDefinitionValue(declaration, stack);
     if (maybeValue) return maybeValue;
 
@@ -1020,8 +1031,7 @@ const getElementAccessedExpressionValue = (expression: ElementAccessExpression, 
 
     // <ColorBox color={xxx[aaa ? yyy : zzz]]} />
     if (Node.isConditionalExpression(arg)) {
-        // TODO maybePropName ?
-        const propName = maybeStringLiteral(arg, stack);
+        const propName = maybePropName(arg, stack);
         elAccessedLogger({ isConditionalExpression: true, propName });
         // eslint-disable-next-line sonarjs/no-collapsible-if
         if (isNotNullish(propName) && isNotNullish(propName.value)) {
@@ -1034,9 +1044,8 @@ const getElementAccessedExpressionValue = (expression: ElementAccessExpression, 
         const whenTrueExpr = unwrapExpression(arg.getWhenTrue());
         const whenFalseExpr = unwrapExpression(arg.getWhenFalse());
 
-        // TODO ?
-        const whenTrueValue = maybeStringLiteral(whenTrueExpr, stack);
-        const whenFalseValue = maybeStringLiteral(whenFalseExpr, stack);
+        const whenTrueValue = maybePropName(whenTrueExpr, stack);
+        const whenFalseValue = maybePropName(whenFalseExpr, stack);
 
         elAccessedLogger({
             conditionalElementAccessed: true,
@@ -1123,7 +1132,6 @@ const getPropertyAccessedExpressionValue = (
         return propValue;
     }
 
-    // TODO evaluate as fallback instead of upfront everywhere possible
     const maybeLiteral = safeEvaluateNode<PrimitiveType | PrimitiveType[] | EvaluatedObjectResult>(expression);
     logger.scoped("prop-access-value", { maybeValue: Boolean(maybeLiteral) });
     if (isNotNullish(maybeLiteral)) return box.cast(maybeLiteral, expression, stack);

@@ -30,7 +30,10 @@ export type MaybeObjectLikeBoxReturn =
 export const maybeObjectLikeBox = (node: Node, stack: Node[]): MaybeObjectLikeBoxReturn => {
     const isCached = cacheMap.has(node);
     logger({ kind: node.getKindName(), isCached });
-    if (isCached) return cacheMap.get(node);
+    if (isCached) {
+        logger.scoped("cached", { kind: node.getKindName() });
+        return cacheMap.get(node);
+    }
 
     const cache = (value: MaybeObjectLikeBoxReturn) => {
         cacheMap.set(node, value);
