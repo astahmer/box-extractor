@@ -16,7 +16,10 @@ importers:
       '@typescript-eslint/parser': ^5.46.1
       eslint: ^8.27.0
       eslint-formatter-pretty: ^4.1.0
+      fast-glob: ^3.2.12
       prettier: ^2.7.1
+      rimraf: ^4.1.2
+      tsx: ^3.12.3
       typescript: 4.9.4
     dependencies:
       '@babel/core': 7.20.2
@@ -32,7 +35,10 @@ importers:
       '@typescript-eslint/parser': 5.46.1_fqmqyeinda7panflsqpj5zauc4
       eslint: 8.27.0
       eslint-formatter-pretty: 4.1.0
+      fast-glob: 3.2.12
       prettier: 2.7.1
+      rimraf: 4.1.2
+      tsx: 3.12.3
       typescript: 4.9.4
 
   examples/react-basic:
@@ -9684,6 +9690,12 @@ packages:
     hasBin: true
     dependencies:
       glob: 7.2.3
+    dev: true
+
+  /rimraf/4.1.2:
+    resolution: {integrity: sha512-BlIbgFryTbw3Dz6hyoWFhKk+unCcHMSkZGrTFVAx2WmttdBSonsdtRlwiuTbDqTKr+UlXIUqJVS4QT5tUzGENQ==}
+    engines: {node: '>=14'}
+    hasBin: true
     dev: true
 
   /rollup-plugin-dts/5.1.1_fhibmf72xnv5tve6nwed265eae:
