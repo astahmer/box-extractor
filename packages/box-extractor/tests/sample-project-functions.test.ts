@@ -2,7 +2,7 @@ import { Project, SourceFile, ts } from "ts-morph";
 import { afterEach, expect, it } from "vitest";
 import { extract } from "../src/extractor/extract";
 import { getBoxLiteralValue } from "../src/extractor/getBoxLiteralValue";
-import type { ExtractOptions, BoxNodesMap } from "../src/extractor/types";
+import type { ExtractOptions, ExtractResultByName } from "../src/extractor/types";
 import * as path from "node:path";
 
 const createProject = () => {
@@ -39,7 +39,7 @@ afterEach(() => {
 });
 
 const extractFromCode = (code: string | SourceFile, options?: Partial<ExtractOptions>) => {
-    const extractMap = new Map() as BoxNodesMap;
+    const extractMap = new Map() as ExtractResultByName;
     const fileName = `file${fileCount++}.tsx`;
     sourceFile =
         typeof code === "string" ? project.createSourceFile(fileName, code, { scriptKind: ts.ScriptKind.TSX }) : code;

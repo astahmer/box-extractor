@@ -7,7 +7,7 @@ import {
     BoxNodeLiteral,
     BoxNodeMap,
     BoxNodeObject,
-    BoxNodesMap,
+    ExtractResultByName,
     getBoxLiteralValue,
 } from "@box-extractor/core";
 import { useSelector } from "@xstate/react";
@@ -18,7 +18,7 @@ import { Stack } from "../theme/components";
 import { Switch } from "../theme/Switch";
 import { usePlaygroundContext } from "./Playground.machine";
 
-export const ExtractedTreeMinimal = ({ extracted }: { extracted: BoxNodesMap }) => {
+export const ExtractedTreeMinimal = ({ extracted }: { extracted: ExtractResultByName }) => {
     const entries = Array.from(extracted.entries());
 
     const service = usePlaygroundContext();
@@ -79,7 +79,7 @@ export const ExtractedTreeMinimal = ({ extracted }: { extracted: BoxNodesMap }) 
     );
 };
 
-export const ExtractedTreeBasic = ({ extracted }: { extracted: BoxNodesMap }) => {
+export const ExtractedTreeBasic = ({ extracted }: { extracted: ExtractResultByName }) => {
     const entries = Array.from(extracted.entries());
     const service = usePlaygroundContext();
     const hidden = useSelector(service, (state) => state.context.hidden);
@@ -286,7 +286,7 @@ const BasicBoxNode = ({ name, propName, node }: { name: string; propName: string
     );
 };
 
-export const ExtractedTreeComfy = ({ extracted }: { extracted: BoxNodesMap }) => {
+export const ExtractedTreeComfy = ({ extracted }: { extracted: ExtractResultByName }) => {
     const entries = Array.from(extracted.entries());
     const [isOpen, setOpen] = useState(true);
 

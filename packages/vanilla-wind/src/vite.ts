@@ -3,7 +3,7 @@ import { createFilter, FilterPattern, ModuleNode, normalizePath, Plugin, Resolve
 
 import { Node, Project, ts } from "ts-morph";
 
-import { ensureAbsolute, extract, extractFunctionFrom, FunctionNodesMap, unbox } from "@box-extractor/core";
+import { ensureAbsolute, extract, extractFunctionFrom, ExtractedFunctionResult, unbox } from "@box-extractor/core";
 import { createLogger } from "@box-extractor/logger";
 import { assignVars } from "@vanilla-extract/css";
 import { endFileScope, setFileScope } from "@vanilla-extract/css/fileScope";
@@ -514,7 +514,7 @@ export const vanillaWind = (
                     // console.time("usage:fn:extract");
                     const extractResult = extract({ ast: sourceFile, functions: [name] });
                     // console.timeEnd("usage:fn:extract");
-                    const extracted = extractResult.get(name)! as FunctionNodesMap;
+                    const extracted = extractResult.get(name)! as ExtractedFunctionResult;
                     if (!extracted) {
                         logger.scoped("usage", `no usage found for <${name} />. (skipped)`);
                         return;
@@ -542,7 +542,7 @@ export const vanillaWind = (
                     // console.time("usage:component:extract");
                     const extractResult = extract({ ast: sourceFile, components: [name] });
                     // console.timeEnd("usage:component:extract");
-                    const extracted = extractResult.get(name)! as FunctionNodesMap;
+                    const extracted = extractResult.get(name)! as ExtractedFunctionResult;
                     if (!extracted) {
                         logger.scoped("usage", `no usage found for <${name} />. (skipped)`);
                         return;

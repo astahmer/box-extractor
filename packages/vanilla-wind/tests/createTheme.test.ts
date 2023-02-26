@@ -1,4 +1,4 @@
-import type { BoxNodesMap, ExtractOptions } from "@box-extractor/core";
+import type { ExtractResultByName, ExtractOptions } from "@box-extractor/core";
 import { extract } from "@box-extractor/core";
 import { Project, SourceFile, ts } from "ts-morph";
 import { afterEach, expect, test } from "vitest";
@@ -41,7 +41,7 @@ afterEach(() => {
 });
 
 const extractFromCode = (code: string | SourceFile, options: Partial<ExtractOptions>) => {
-    const extractMap = new Map() as BoxNodesMap;
+    const extractMap = new Map() as ExtractResultByName;
     const fileName = `file${fileCount++}.tsx`;
     sourceFile =
         typeof code === "string" ? project.createSourceFile(fileName, code, { scriptKind: ts.ScriptKind.TSX }) : code;

@@ -3,7 +3,7 @@ import { BindingName, Identifier, Node, SourceFile, ts } from "ts-morph";
 import { createLogger } from "@box-extractor/logger";
 import { extract } from "./extract";
 import type { BoxNodeList } from "./type-factory";
-import type { FunctionNodesMap } from "./types";
+import type { ExtractedFunctionResult } from "./types";
 import { unwrapExpression } from "./utils";
 
 const logger = createLogger("box-ex:extract-function-from");
@@ -39,7 +39,7 @@ export const extractFunctionFrom = <Result>(
 ) => {
     const resultByName = new Map<string, { result: Result; queryBox: BoxNodeList; nameNode: () => BindingName }>();
     const extractedTheme = extract({ ast: sourceFile, functions: [functionName] });
-    const fnExtraction = extractedTheme.get(functionName) as FunctionNodesMap;
+    const fnExtraction = extractedTheme.get(functionName) as ExtractedFunctionResult;
     if (!fnExtraction) return resultByName;
 
     const queryList = fnExtraction.queryList;

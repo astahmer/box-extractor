@@ -26,7 +26,7 @@ import { findIdentifierValueDeclaration } from "./findIdentifierValueDeclaration
 // eslint-disable-next-line import/no-cycle
 import { maybeObjectLikeBox } from "./maybeObjectLikeBox";
 import { box, BoxNode, ConditionalKind, isBoxNode, LiteralValue } from "./type-factory";
-import type { ExtractedPropMap, PrimitiveType } from "./types";
+import type { EvaluatedObjectResult, PrimitiveType } from "./types";
 import { isNotNullish, unwrapExpression } from "./utils";
 
 const logger = createLogger("box-ex:extractor:maybe-box");
@@ -113,7 +113,7 @@ export function maybeBoxNode(node: Node, stack: Node[]): MaybeBoxNodeReturn {
 
     // <ColorBox color={isDark ? darkValue : "whiteAlpha.100"} />
     if (Node.isConditionalExpression(node)) {
-        const maybeLiteral = safeEvaluateNode<PrimitiveType | PrimitiveType[] | ExtractedPropMap>(node);
+        const maybeLiteral = safeEvaluateNode<PrimitiveType | PrimitiveType[] | EvaluatedObjectResult>(node);
         if (isNotNullish(maybeLiteral)) return cache(box.cast(maybeLiteral, node, stack));
 
         // unresolvable condition will return both possible outcome
@@ -134,7 +134,7 @@ export function maybeBoxNode(node: Node, stack: Node[]): MaybeBoxNodeReturn {
 
     // <ColorBox color={fn()} />
     if (Node.isCallExpression(node)) {
-        const maybeLiteral = safeEvaluateNode<PrimitiveType | ExtractedPropMap>(node);
+        const maybeLiteral = safeEvaluateNode<PrimitiveType | EvaluatedObjectResult>(node);
         if (!maybeLiteral) return;
 
         return cache(box.cast(maybeLiteral, node, stack));
@@ -1124,7 +1124,7 @@ const getPropertyAccessedExpressionValue = (
     }
 
     // TODO evaluate as fallback instead of upfront everywhere possible
-    const maybeLiteral = safeEvaluateNode<PrimitiveType | PrimitiveType[] | ExtractedPropMap>(expression);
+    const maybeLiteral = safeEvaluateNode<PrimitiveType | PrimitiveType[] | EvaluatedObjectResult>(expression);
     logger.scoped("prop-access-value", { maybeValue: Boolean(maybeLiteral) });
     if (isNotNullish(maybeLiteral)) return box.cast(maybeLiteral, expression, stack);
 };

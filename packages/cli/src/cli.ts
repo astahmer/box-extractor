@@ -1,4 +1,4 @@
-import { extract, PropNodesMap, unbox } from "@box-extractor/core";
+import { extract, ExtractResultItem, unbox } from "@box-extractor/core";
 
 import { Command } from "@molt/command";
 import fs from "node:fs";
@@ -79,7 +79,7 @@ const main = async () => {
     const extraction =
         extracted.size === 1
             ? serializeBoxNode(
-                  (extracted.values().next().value.queryList as PropNodesMap["queryList"]).map((qb) => ({
+                  (extracted.values().next().value.queryList as ExtractResultItem["queryList"]).map((qb) => ({
                       ...qb,
                       unboxed: unbox(qb.box),
                   }))

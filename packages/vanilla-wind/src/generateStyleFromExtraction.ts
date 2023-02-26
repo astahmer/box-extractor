@@ -1,4 +1,4 @@
-import { box, BoxNode, BoxNodeMap, isPrimitiveType, LiteralValue, PropNodesMap, unbox } from "@box-extractor/core";
+import { box, BoxNode, BoxNodeMap, isPrimitiveType, LiteralValue, ExtractResultItem, unbox } from "@box-extractor/core";
 import { createLogger } from "@box-extractor/logger";
 import { StyleRule, globalStyle, GlobalStyleRule, style } from "@vanilla-extract/css";
 import { deepMerge, isObject } from "pastable";
@@ -62,7 +62,7 @@ export type CssBox = AtomicLocalCssBox | GroupedLocalCssBox | GroupedGlobalCssBo
 
 type GenerateRulesArgs = {
     name: string;
-    extracted: PropNodesMap;
+    extracted: ExtractResultItem;
     config: GenericConfig;
     generateClassName: (config: CssBox) => string | undefined;
     getDebugId?: (args: GetDebugIdArgs) => string;

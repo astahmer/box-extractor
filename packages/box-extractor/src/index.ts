@@ -38,16 +38,16 @@ export {
     isPrimitiveType,
 } from "./extractor/type-factory";
 export type {
-    BoxNodesMap,
-    ComponentNodesMap,
     Extractable,
     ExtractableMap,
+    ExtractedComponentInstance,
+    ExtractedComponentResult,
+    ExtractedFunctionInstance,
+    ExtractedFunctionResult,
     ExtractOptions,
-    FunctionNodesMap,
+    ExtractResultByName,
+    ExtractResultItem,
     PrimitiveType,
-    PropNodesMap,
-    QueryComponentBox,
-    QueryFnBox,
 } from "./extractor/types";
 export { unbox } from "./extractor/unbox";
 export { castAsExtractableMap, unquote, unwrapExpression } from "./extractor/utils";

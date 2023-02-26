@@ -8,14 +8,14 @@ import { extractJsxAttributeIdentifierValue } from "./extractJsxAttributeIdentif
 import { extractJsxSpreadAttributeValues } from "./extractJsxSpreadAttributeValues";
 import { box, BoxNode, BoxNodeMap, BoxNodeObject, castObjectLikeAsMapValue, MapTypeValue } from "./type-factory";
 import type {
-    BoxNodesMap,
-    ComponentNodesMap,
+    ExtractResultByName,
+    ExtractedComponentResult,
     ExtractableMap,
     ExtractOptions,
-    FunctionNodesMap,
+    ExtractedFunctionResult,
     ListOrAll,
-    QueryComponentBox,
-    QueryFnBox,
+    ExtractedComponentInstance,
+    ExtractedFunctionInstance,
 } from "./types";
 import { castAsExtractableMap, isNotNullish } from "./utils";
 
@@ -59,7 +59,7 @@ export const extract = ({
 
     // contains all the extracted nodes from this ast parsing
     // whereas `extractMap` is the global map that could be populated by this function in multiple `extract` calls
-    const localExtraction = new Map() as BoxNodesMap;
+    const localExtraction = new Map() as ExtractResultByName;
     const queryComponentMap = new Map() as QueryComponentMap;
 
     const visitedCallExpressionList = new WeakSet<Node>();
@@ -110,7 +110,7 @@ export const extract = ({
                 extractMap.set(componentName, { kind: "component", nodesByProp: new Map(), queryList: [] });
             }
 
-            const componentMap = extractMap.get(componentName)! as ComponentNodesMap;
+            const componentMap = extractMap.get(componentName)! as ExtractedComponentResult;
             // console.log(componentName, componentMap);
 
             if (!queryComponentMap.has(componentNode)) {
@@ -209,7 +209,7 @@ export const extract = ({
                     extractMap.set(componentName, { kind: "component", nodesByProp: new Map(), queryList: [] });
                 }
 
-                const componentMap = extractMap.get(componentName)! as ComponentNodesMap;
+                const componentMap = extractMap.get(componentName)! as ExtractedComponentResult;
 
                 localNodes.set(propName, (localNodes.get(propName) ?? []).concat(maybeBox));
 
@@ -252,8 +252,8 @@ export const extract = ({
                     extractMap.set(functionName, { kind: "component", nodesByProp: new Map(), queryList: [] });
                 }
 
-                const fnMap = extractMap.get(functionName)! as FunctionNodesMap;
-                const localFnMap = localExtraction.get(functionName)! as FunctionNodesMap;
+                const fnMap = extractMap.get(functionName)! as ExtractedFunctionResult;
+                const localFnMap = localExtraction.get(functionName)! as ExtractedFunctionResult;
 
                 const localNodes = localFnMap.nodesByProp;
                 const localList = localFnMap.queryList;
@@ -294,7 +294,7 @@ export const extract = ({
                     name: functionName,
                     fromNode,
                     box: box.list(boxList, parentNode, [parentNode]),
-                } as QueryFnBox;
+                } as ExtractedFunctionInstance;
                 fnMap.queryList.push(query);
                 localList.push(query);
             }
@@ -303,14 +303,14 @@ export const extract = ({
 
     queryComponentMap.forEach((parentRef, componentNode) => {
         const componentName = parentRef.name;
-        const componentMap = extractMap.get(componentName)! as ComponentNodesMap;
-        const localList = (localExtraction.get(componentName)! as ComponentNodesMap).queryList;
+        const componentMap = extractMap.get(componentName)! as ExtractedComponentResult;
+        const localList = (localExtraction.get(componentName)! as ExtractedComponentResult).queryList;
 
         const query = {
             name: parentRef.name,
             fromNode: () => componentNode,
             box: box.map(parentRef.props, componentNode, []),
-        } as QueryComponentBox;
+        } as ExtractedComponentInstance;
         queryComponentMap;
 
         componentMap.queryList.push(query);

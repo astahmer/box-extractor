@@ -3,7 +3,7 @@ import { afterEach, expect, test } from "vitest";
 import { extract } from "../src/extractor/extract";
 import { getBoxLiteralValue } from "../src/extractor/getBoxLiteralValue";
 import { unbox } from "../src/extractor/unbox";
-import { ExtractOptions, FunctionNodesMap } from "../src/extractor/types";
+import { ExtractOptions, ExtractedFunctionResult } from "../src/extractor/types";
 // @ts-ignore
 import { default as BigThemeSampleInlined } from "./samples/BigThemeSampleInlined?raw";
 
@@ -49,7 +49,7 @@ const getExtract = (code: string, options: Omit<ExtractOptions, "ast">) => {
 test("unbox", () => {
     const extracted = getExtract(BigThemeSampleInlined, { functions: ["defineProperties"] });
     const defineProperties = extracted.get("defineProperties")!;
-    const properties = (defineProperties as FunctionNodesMap).queryList[0].box;
+    const properties = (defineProperties as ExtractedFunctionResult).queryList[0].box;
 
     const getBoxLiteralValueResult = getBoxLiteralValue(properties);
     const unboxResult = unbox(properties);

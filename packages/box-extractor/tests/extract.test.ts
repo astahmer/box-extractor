@@ -2,7 +2,7 @@ import { Project, SourceFile, ts } from "ts-morph";
 import { afterEach, expect, it } from "vitest";
 import { extract } from "../src/extractor/extract";
 import { getBoxLiteralValue } from "../src/extractor/getBoxLiteralValue";
-import type { ExtractOptions, FunctionNodesMap } from "../src/extractor/types";
+import type { ExtractOptions, ExtractedFunctionResult } from "../src/extractor/types";
 // @ts-ignore
 import { default as ExtractSample } from "./ExtractSample?raw";
 
@@ -8245,7 +8245,7 @@ it("extract defineProperties config", () => {
     `,
         { functions: ["defineProperties"], extractMap }
     );
-    const definePropsConfig = extractMap.get("defineProperties") as FunctionNodesMap;
+    const definePropsConfig = extractMap.get("defineProperties") as ExtractedFunctionResult;
 
     expect(definePropsConfig.queryList).toMatchInlineSnapshot(`
       [
