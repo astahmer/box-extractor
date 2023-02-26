@@ -4,6 +4,7 @@ import { cacheMap } from "./getBoxLiteralValue";
 
 export const unbox = (rootNode: BoxNode | undefined, localCacheMap: WeakMap<BoxNode, unknown> = cacheMap) => {
     if (!rootNode) return;
+    if (rootNode.isObject() || rootNode.isLiteral()) return rootNode.value;
     if (!rootNode.isMap() && !rootNode.isList()) return;
 
     const reconstructed = rootNode.isMap() ? {} : [];
