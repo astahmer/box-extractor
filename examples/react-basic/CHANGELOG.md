@@ -1,5 +1,12 @@
 # @box-extractor/example-react-basic
 
+## 0.4.1
+
+### Patch Changes
+
+-   Updated dependencies [[`cd6acab`](https://github.com/astahmer/box-extractor/commit/cd6acabe0d3ed5a2f352c436924cec5b6cb4a4f7), [`252ce35`](https://github.com/astahmer/box-extractor/commit/252ce35e2797c55cf80a4531edddcdf2737d71ad)]:
+    -   @box-extractor/vanilla-wind@0.3.1
+
 ## 0.4.0
 
 ### Minor Changes

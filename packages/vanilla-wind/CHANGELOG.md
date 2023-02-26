@@ -1,5 +1,36 @@
 # @box-extractor/vanilla-wind
 
+## 0.3.1
+
+### Patch Changes
+
+-   [#38](https://github.com/astahmer/box-extractor/pull/38) [`cd6acab`](https://github.com/astahmer/box-extractor/commit/cd6acabe0d3ed5a2f352c436924cec5b6cb4a4f7) Thanks [@astahmer](https://github.com/astahmer)! - fix(core): skip re-extracting nested spread attribute
+
+    -   increment count since there might be conditional so it doesn't override the whole spread prop
+        chore: fix eslint warnings/errors
+    -   try maybeBoxNode logic for spread attribute first
+    -   allow returning BoxNodeConditional from maybeObjectLikeBox
+
+    refactor(core): BoxMap[prop].value no longer an Array
+    it was a temporary workaround but now BoxNodeList fill that needs
+
+    -   rm useless cast calls, early returns when possible
+    -   rm maybeObjectLikeBox duplicated checks/jumps & fallback to maybeBox if object-like instead
+    -   add a few logs for conditionals
+
+    feat(core): add BoxNodeMap.spreadConditions
+    fix(core): rm evaluate typeChecker usage (cost dozens/hundreds of ms) TODO add it back if using a flag
+
+-   [#38](https://github.com/astahmer/box-extractor/pull/38) [`252ce35`](https://github.com/astahmer/box-extractor/commit/252ce35e2797c55cf80a4531edddcdf2737d71ad) Thanks [@astahmer](https://github.com/astahmer)! - renamed types:
+    BoxNodesMap -> ExtractResultByName
+    ComponentNodesMap -> ExtractedComponentResult
+    FunctionNodesMap -> ExtractedFunctionResult
+    PropNodesMap -> ExtractResultItem
+    QueryComponentBox -> ExtractedComponentInstance
+    QueryFnBox -> ExtractedFunctionInstance
+-   Updated dependencies [[`1901c66`](https://github.com/astahmer/box-extractor/commit/1901c66526bfda479de085e9088e8fa582796bd5), [`cd6acab`](https://github.com/astahmer/box-extractor/commit/cd6acabe0d3ed5a2f352c436924cec5b6cb4a4f7), [`252ce35`](https://github.com/astahmer/box-extractor/commit/252ce35e2797c55cf80a4531edddcdf2737d71ad)]:
+    -   @box-extractor/core@0.7.0
+
 ## 0.3.0
 
 ### Minor Changes
