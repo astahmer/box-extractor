@@ -9562,3 +9562,39 @@ it("extract assignVars args", () => {
       ]
     `);
 });
+
+it("extract CallExpression > no args", () => {
+    expect(
+        getExtract(
+            `
+            const css = defineProperties()
+        `,
+            { functions: ["defineProperties"] }
+        )
+    ).toMatchInlineSnapshot(`
+      {
+          defineProperties: {
+              kind: "function",
+              nodesByProp: {},
+              queryList: [
+                  {
+                      name: "defineProperties",
+                      box: {
+                          stack: ["CallExpression"],
+                          type: "list",
+                          node: "CallExpression",
+                          value: [
+                              {
+                                  stack: [],
+                                  type: "list",
+                                  node: "CallExpression",
+                                  value: [],
+                              },
+                          ],
+                      },
+                  },
+              ],
+          },
+      }
+    `);
+});

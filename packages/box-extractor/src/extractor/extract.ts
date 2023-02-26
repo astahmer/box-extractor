@@ -3,7 +3,7 @@ import { tsquery } from "@phenomnomnominal/tsquery";
 import { castAsArray } from "pastable";
 import { JsxOpeningElement, JsxSelfClosingElement, Node } from "ts-morph";
 
-import { extractCallExpressionValues } from "./extractCallExpressionIdentifierValues";
+import { extractCallExpressionValues } from "./extractCallExpressionValues";
 import { extractJsxAttributeIdentifierValue } from "./extractJsxAttributeIdentifierValue";
 import { extractJsxSpreadAttributeValues } from "./extractJsxSpreadAttributeValues";
 import { box, BoxNode, BoxNodeMap, BoxNodeObject, castObjectLikeAsMapValue, MapTypeValue } from "./type-factory";
