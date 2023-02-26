@@ -4,14 +4,14 @@ import { createContextWithHook } from "pastable/react";
 import type { InterpreterFrom } from "xstate";
 import { assign, createMachine } from "xstate";
 import { Identifier, Node, Project, SourceFile, ts } from "ts-morph";
-import { BoxNode, BoxNodesMap, extract } from "@box-extractor/core";
+import { BoxNode, ExtractResultByName, extract } from "@box-extractor/core";
 import { tsquery } from "@phenomnomnominal/tsquery";
 
 type PlaygroundContext = {
     monaco: Monaco | null;
     inputEditor: editor.IStandaloneCodeEditor | null;
     sourceFile: SourceFile | null;
-    extracted: BoxNodesMap | null;
+    extracted: ExtractResultByName | null;
     components: string[];
     functions: string[];
     viewMode: "minimal" | "basic" | "comfy";

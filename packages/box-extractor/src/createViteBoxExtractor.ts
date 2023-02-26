@@ -5,7 +5,7 @@ import { createFilter, normalizePath } from "vite";
 import { ensureAbsolute } from "./extensions-helpers";
 
 import { extract } from "./extractor/extract";
-import type { ExtractOptions, BoxNodesMap } from "./extractor/types";
+import type { ExtractOptions, ExtractResultByName } from "./extractor/types";
 import { createLogger } from "@box-extractor/logger";
 
 // Components
@@ -18,7 +18,7 @@ export type OnExtractedArgs = {
     extracted: ReturnType<typeof extract>;
     id: string;
     isSsr?: boolean;
-    extractMap: BoxNodesMap;
+    extractMap: ExtractResultByName;
 };
 export type CreateViteBoxExtractorOptions = Pick<ExtractOptions, "components" | "functions" | "extractMap"> & {
     onExtracted?: (args: OnExtractedArgs) => void;

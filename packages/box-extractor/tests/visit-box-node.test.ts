@@ -4,7 +4,7 @@ import { extract } from "../src/extractor/extract";
 import { visitBoxNode } from "../src/extractor/visitBoxNode";
 import { unbox } from "../src/extractor/unbox";
 import { BoxNode, BoxNodeMap } from "../src/extractor/type-factory";
-import { ExtractOptions, FunctionNodesMap } from "../src/extractor/types";
+import { ExtractOptions, ExtractedFunctionResult } from "../src/extractor/types";
 
 const createProject = () => {
     return new Project({
@@ -66,7 +66,7 @@ it("can visit box node", () => {
         { functions: ["defineProperties"] }
     );
     const defineProperties = extracted.get("defineProperties")!;
-    const properties = (defineProperties as FunctionNodesMap).queryList[0].box;
+    const properties = (defineProperties as ExtractedFunctionResult).queryList[0].box;
 
     const visiteds = new Set<BoxNode>();
     visitBoxNode(properties, (node, _key, _parent, traversal) => {
@@ -342,7 +342,7 @@ it("can unbox literal", () => {
         { functions: ["defineProperties"] }
     );
     const defineProperties = extracted.get("defineProperties")!;
-    const argsList = (defineProperties as FunctionNodesMap).queryList[0].box;
+    const argsList = (defineProperties as ExtractedFunctionResult).queryList[0].box;
     const objectArg = argsList.value[0] as BoxNodeMap;
 
     expect(unbox(objectArg)).toMatchInlineSnapshot(`
@@ -446,7 +446,7 @@ test("can unbox #2", () => {
 
     const extracted = getExtract(codeSample, { functions: ["defineProperties"] });
     const defineProperties = extracted.get("defineProperties")!;
-    const argsList = (defineProperties as FunctionNodesMap).queryList[0].box;
+    const argsList = (defineProperties as ExtractedFunctionResult).queryList[0].box;
     const objectArg = argsList.value[0] as BoxNodeMap;
 
     expect(unbox(objectArg)).toMatchInlineSnapshot(`

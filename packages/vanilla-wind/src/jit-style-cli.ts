@@ -1,4 +1,4 @@
-import { extract, FunctionNodesMap, getBoxLiteralValue, QueryFnBox } from "@box-extractor/core";
+import { extract, ExtractedFunctionResult, getBoxLiteralValue, ExtractedFunctionInstance } from "@box-extractor/core";
 import { endFileScope, setFileScope } from "@vanilla-extract/css/fileScope";
 import { Project, ts } from "ts-morph";
 import type { GenericConfig } from "./defineProperties";
@@ -39,9 +39,9 @@ export const main = () => {
     const usage = sources[1]!;
 
     const extractedTheme = extract({ ast: theme, functions: ["defineProperties"] });
-    const queryList = (extractedTheme.get("defineProperties") as FunctionNodesMap).queryList;
+    const queryList = (extractedTheme.get("defineProperties") as ExtractedFunctionResult).queryList;
 
-    const configByName = new Map<string, { query: QueryFnBox; config: GenericConfig }>();
+    const configByName = new Map<string, { query: ExtractedFunctionInstance; config: GenericConfig }>();
     queryList.forEach((query) => {
         const from = query.fromNode();
         const declaration = from.getParentIfKindOrThrow(ts.SyntaxKind.VariableDeclaration);
@@ -58,7 +58,7 @@ export const main = () => {
 
     const twStyles = generateStyleFromExtraction({
         name: "tw",
-        extracted: extractedUsage.get("tw")! as FunctionNodesMap,
+        extracted: extractedUsage.get("tw")! as ExtractedFunctionResult,
         config: configByName.get("tw")!.config,
     });
     twStyles.toReplace.forEach((className, node) => node.replaceWithText(`"${className}"`));

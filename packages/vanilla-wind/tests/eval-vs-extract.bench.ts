@@ -1,4 +1,4 @@
-import { extract, FunctionNodesMap, getBoxLiteralValue, unwrapExpression } from "@box-extractor/core";
+import { extract, ExtractedFunctionResult, getBoxLiteralValue, unwrapExpression } from "@box-extractor/core";
 import esbuild from "esbuild";
 import evalCode from "eval";
 import fs from "node:fs";
@@ -66,7 +66,7 @@ describe("eval-vs-extract", () => {
 const extractThemeConfig = (sourceFile: SourceFile) => {
     const configByName = new Map<string, GenericConfig>();
     const extractedTheme = extract({ ast: sourceFile, functions: ["defineProperties"] });
-    const queryList = (extractedTheme.get("defineProperties") as FunctionNodesMap).queryList;
+    const queryList = (extractedTheme.get("defineProperties") as ExtractedFunctionResult).queryList;
 
     queryList.forEach((query) => {
         const from = query.fromNode();

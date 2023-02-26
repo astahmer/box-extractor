@@ -1,12 +1,12 @@
 import { isObject } from "pastable";
 import type { Node } from "ts-morph";
 import type { MaybeObjectLikeBoxReturn } from "./maybeObjectLikeBox";
-import type { ExtractedPropMap, PrimitiveType } from "./types";
+import type { EvaluatedObjectResult, PrimitiveType } from "./types";
 import { isNotNullish } from "./utils";
 
 type WithNode = { node: Node; stack: Node[] };
 
-export type ObjectType = WithNode & { type: "object"; value: ExtractedPropMap; isEmpty?: boolean };
+export type ObjectType = WithNode & { type: "object"; value: EvaluatedObjectResult; isEmpty?: boolean };
 export type LiteralKind = "array" | "string" | "number" | "boolean" | "null" | "undefined";
 export type LiteralType = WithNode & {
     type: "literal";
@@ -165,7 +165,7 @@ const getTypeOfLiteral = (value: PrimitiveType | PrimitiveType[]): LiteralKind =
 };
 
 const boxTypeFactory = {
-    object(value: ExtractedPropMap, node: Node, stack: Node[]) {
+    object(value: EvaluatedObjectResult, node: Node, stack: Node[]) {
         return new BoxNodeObject({ type: "object", value, node, stack });
     },
     literal(value: PrimitiveType, node: Node, stack: Node[]) {
@@ -226,7 +226,7 @@ export type SingleLiteralValue = PrimitiveType | LiteralObject;
 export type LiteralValue = SingleLiteralValue | SingleLiteralValue[];
 
 function toBoxType<Value extends PrimitiveType>(value: Value, node: Node, stack: Node[]): BoxNodeLiteral;
-function toBoxType<Value extends ExtractedPropMap>(value: Value, node: Node, stack: Node[]): BoxNodeObject;
+function toBoxType<Value extends EvaluatedObjectResult>(value: Value, node: Node, stack: Node[]): BoxNodeObject;
 function toBoxType<Value extends PrimitiveType[]>(value: Value, node: Node, stack: Node[]): BoxNodeLiteral[];
 function toBoxType<Value extends BoxNode | BoxNode[]>(value: Value, node: Node, stack: Node[]): Value;
 function toBoxType<Value extends LiteralValue>(
@@ -240,7 +240,7 @@ function toBoxType<Value>(value: Value, node: Node, stack: Node[]): BoxNode | Bo
     if (isBoxNode(value)) return value;
 
     if (isObject(value) && !Array.isArray(value)) {
-        return box.object(value as ExtractedPropMap, node, stack);
+        return box.object(value as EvaluatedObjectResult, node, stack);
     }
 
     if (Array.isArray(value)) {

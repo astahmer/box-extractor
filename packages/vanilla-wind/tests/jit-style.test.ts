@@ -1,10 +1,10 @@
 import {
-    BoxNodesMap,
-    ComponentNodesMap,
+    ExtractResultByName,
+    ExtractedComponentResult,
     extract,
     ExtractOptions,
-    FunctionNodesMap,
-    QueryFnBox,
+    ExtractedFunctionResult,
+    ExtractedFunctionInstance,
     unbox,
 } from "@box-extractor/core";
 import { Project, SourceFile, ts } from "ts-morph";
@@ -53,7 +53,7 @@ afterEach(() => {
 });
 
 const extractFromCode = (code: string | SourceFile, options?: Partial<ExtractOptions>) => {
-    const extractMap = new Map() as BoxNodesMap;
+    const extractMap = new Map() as ExtractResultByName;
     const fileName = `file${fileCount++}.tsx`;
     sourceFile =
         typeof code === "string" ? project.createSourceFile(fileName, code, { scriptKind: ts.ScriptKind.TSX }) : code;
@@ -93,9 +93,9 @@ it("minimal atomic local class", () => {
     );
 
     const extractDefs = extractFromCode(sourceFile, { functions: ["defineProperties"] });
-    const queryList = (extractDefs.get("defineProperties") as FunctionNodesMap).queryList;
+    const queryList = (extractDefs.get("defineProperties") as ExtractedFunctionResult).queryList;
 
-    const configByName = new Map<string, { query: QueryFnBox; config: GenericConfig }>();
+    const configByName = new Map<string, { query: ExtractedFunctionInstance; config: GenericConfig }>();
     queryList.forEach((query) => {
         const from = query.fromNode();
         const declaration = from.getParentIfKindOrThrow(ts.SyntaxKind.VariableDeclaration);
@@ -112,7 +112,7 @@ it("minimal atomic local class", () => {
     const extracted = extractFromCode(sourceFile, { functions: [fnName] });
     const styles = generateStyleFromExtraction({
         name: fnName,
-        extracted: extracted.get(fnName)! as FunctionNodesMap,
+        extracted: extracted.get(fnName)! as ExtractedFunctionResult,
         config: configByName.get(fnName)!.config,
     });
 
@@ -296,9 +296,9 @@ it("minimal grouped local class", () => {
     );
 
     const extractDefs = extractFromCode(sourceFile, { functions: ["defineProperties"] });
-    const queryList = (extractDefs.get("defineProperties") as FunctionNodesMap).queryList;
+    const queryList = (extractDefs.get("defineProperties") as ExtractedFunctionResult).queryList;
 
-    const configByName = new Map<string, { query: QueryFnBox; config: GenericConfig }>();
+    const configByName = new Map<string, { query: ExtractedFunctionInstance; config: GenericConfig }>();
     queryList.forEach((query) => {
         const from = query.fromNode();
         const declaration = from.getParentIfKindOrThrow(ts.SyntaxKind.VariableDeclaration);
@@ -315,7 +315,7 @@ it("minimal grouped local class", () => {
     const extracted = extractFromCode(sourceFile, { functions: [fnName] });
     const styles = generateStyleFromExtraction({
         name: fnName,
-        extracted: extracted.get(fnName)! as FunctionNodesMap,
+        extracted: extracted.get(fnName)! as ExtractedFunctionResult,
         config: configByName.get(fnName)!.config,
     });
 
@@ -530,9 +530,9 @@ it("minimal global", () => {
     );
 
     const extractDefs = extractFromCode(sourceFile, { functions: ["defineProperties"] });
-    const queryList = (extractDefs.get("defineProperties") as FunctionNodesMap).queryList;
+    const queryList = (extractDefs.get("defineProperties") as ExtractedFunctionResult).queryList;
 
-    const configByName = new Map<string, { query: QueryFnBox; config: GenericConfig }>();
+    const configByName = new Map<string, { query: ExtractedFunctionInstance; config: GenericConfig }>();
     queryList.forEach((query) => {
         const from = query.fromNode();
         const declaration = from.getParentIfKindOrThrow(ts.SyntaxKind.VariableDeclaration);
@@ -549,7 +549,7 @@ it("minimal global", () => {
     const extracted = extractFromCode(sourceFile, { functions: [fnName] });
     const styles = generateStyleFromExtraction({
         name: fnName,
-        extracted: extracted.get(fnName)! as FunctionNodesMap,
+        extracted: extracted.get(fnName)! as ExtractedFunctionResult,
         config: configByName.get(fnName)!.config,
     });
 
@@ -793,7 +793,7 @@ it("simple CallExpression extract + JIT style + replace call by generated classN
     );
 
     const extractDefs = extractFromCode(sourceFile, { functions: ["defineProperties"] });
-    const queryList = (extractDefs.get("defineProperties") as FunctionNodesMap).queryList;
+    const queryList = (extractDefs.get("defineProperties") as ExtractedFunctionResult).queryList;
     expect(queryList).toMatchInlineSnapshot(`
       [
           {
@@ -1312,7 +1312,7 @@ it("simple CallExpression extract + JIT style + replace call by generated classN
       ]
     `);
 
-    const configByName = new Map<string, { query: QueryFnBox; config: GenericConfig }>();
+    const configByName = new Map<string, { query: ExtractedFunctionInstance; config: GenericConfig }>();
     queryList.forEach((query) => {
         const from = query.fromNode();
         const declaration = from.getParentIfKindOrThrow(ts.SyntaxKind.VariableDeclaration);
@@ -1328,7 +1328,7 @@ it("simple CallExpression extract + JIT style + replace call by generated classN
     ctx.setAdapter();
     setFileScope("test/jit-style.test.ts");
 
-    const minimalSprinkles = extracted.get("minimalSprinkles")! as FunctionNodesMap;
+    const minimalSprinkles = extracted.get("minimalSprinkles")! as ExtractedFunctionResult;
     expect(minimalSprinkles.queryList).toMatchInlineSnapshot(`
       [
           {
@@ -1433,7 +1433,7 @@ it("simple CallExpression extract + JIT style + replace call by generated classN
     const generateStyleResults = new Set<ReturnType<typeof generateStyleFromExtraction>>();
     generateStyleResults.add(minimalStyles);
 
-    const tw = extracted.get("tw")! as FunctionNodesMap;
+    const tw = extracted.get("tw")! as ExtractedFunctionResult;
     expect(tw.queryList).toMatchInlineSnapshot(`
       [
           {
@@ -1712,9 +1712,9 @@ it("will generate multiple styles with nested conditions", () => {
     const sourceFile = project.createSourceFile("multiple.css.ts", codeSample);
 
     const extractDefs = extractFromCode(sourceFile, { functions: ["defineProperties"] });
-    const queryList = (extractDefs.get("defineProperties") as FunctionNodesMap).queryList;
+    const queryList = (extractDefs.get("defineProperties") as ExtractedFunctionResult).queryList;
 
-    const configByName = new Map<string, { query: QueryFnBox; config: GenericConfig }>();
+    const configByName = new Map<string, { query: ExtractedFunctionInstance; config: GenericConfig }>();
     queryList.forEach((query) => {
         const from = query.fromNode();
         const declaration = from.getParentIfKindOrThrow(ts.SyntaxKind.VariableDeclaration);
@@ -1728,7 +1728,7 @@ it("will generate multiple styles with nested conditions", () => {
     setFileScope("test/jit-style.test.ts");
 
     const extracted = extractFromCode(sourceFile, { functions: ["tw"] });
-    const tw = extracted.get("tw")! as FunctionNodesMap;
+    const tw = extracted.get("tw")! as ExtractedFunctionResult;
     const twStyles = generateStyleFromExtraction({
         name: "tw",
         extracted: tw,
@@ -1738,7 +1738,7 @@ it("will generate multiple styles with nested conditions", () => {
     const magicStr = new MagicString(sourceFile.getFullText());
     const generateStyleResults = new Set<ReturnType<typeof generateStyleFromExtraction>>();
 
-    expect(twStyles.classByDebugId.size).toMatchInlineSnapshot('22');
+    expect(twStyles.classByDebugId.size).toMatchInlineSnapshot("22");
     expect(twStyles.classByDebugId).toMatchInlineSnapshot(`
       {
           "tw_backgroundColor_blue.500": "tw_backgroundColor_blue.500__1rxundp0",
@@ -2298,9 +2298,9 @@ it("will generate multiple styles with nested conditions - grouped", () => {
     const sourceFile = project.createSourceFile("multiple.grouped.css.ts", codeSample);
 
     const extractDefs = extractFromCode(sourceFile, { functions: ["defineProperties"] });
-    const queryList = (extractDefs.get("defineProperties") as FunctionNodesMap).queryList;
+    const queryList = (extractDefs.get("defineProperties") as ExtractedFunctionResult).queryList;
 
-    const configByName = new Map<string, { query: QueryFnBox; config: GenericConfig }>();
+    const configByName = new Map<string, { query: ExtractedFunctionInstance; config: GenericConfig }>();
     queryList.forEach((query) => {
         const from = query.fromNode();
         const declaration = from.getParentIfKindOrThrow(ts.SyntaxKind.VariableDeclaration);
@@ -2314,7 +2314,7 @@ it("will generate multiple styles with nested conditions - grouped", () => {
     setFileScope("test/jit-style.test.ts");
 
     const extracted = extractFromCode(sourceFile, { functions: ["tw"] });
-    const tw = extracted.get("tw")! as FunctionNodesMap;
+    const tw = extracted.get("tw")! as ExtractedFunctionResult;
     const twStyles = generateStyleFromExtraction({
         name: "tw",
         extracted: tw,
@@ -2951,9 +2951,9 @@ it("minimal example with <Box /> component", () => {
     );
 
     const extractDefs = extractFromCode(sourceFile, { functions: ["defineProperties"] });
-    const queryList = (extractDefs.get("defineProperties") as FunctionNodesMap).queryList;
+    const queryList = (extractDefs.get("defineProperties") as ExtractedFunctionResult).queryList;
 
-    const configByName = new Map<string, { query: QueryFnBox; config: GenericConfig }>();
+    const configByName = new Map<string, { query: ExtractedFunctionInstance; config: GenericConfig }>();
     queryList.forEach((query) => {
         const from = query.fromNode();
         const declaration = from.getParentIfKindOrThrow(ts.SyntaxKind.VariableDeclaration);
@@ -2968,7 +2968,7 @@ it("minimal example with <Box /> component", () => {
 
     const name = "Box";
     const extractResult = extractFromCode(sourceFile, { components: [name] });
-    const extracted = extractResult.get(name)! as ComponentNodesMap;
+    const extracted = extractResult.get(name)! as ExtractedComponentResult;
 
     const conf = configByName.get("tw")!;
     const boxStyles = generateStyleFromExtraction({
@@ -3219,9 +3219,9 @@ it("minimal example with global style", () => {
     );
 
     const extractDefs = extractFromCode(sourceFile, { functions: ["defineProperties"] });
-    const queryList = (extractDefs.get("defineProperties") as FunctionNodesMap).queryList;
+    const queryList = (extractDefs.get("defineProperties") as ExtractedFunctionResult).queryList;
 
-    const configByName = new Map<string, { query: QueryFnBox; config: GenericConfig }>();
+    const configByName = new Map<string, { query: ExtractedFunctionInstance; config: GenericConfig }>();
     queryList.forEach((query) => {
         const from = query.fromNode();
         const declaration = from.getParentIfKindOrThrow(ts.SyntaxKind.VariableDeclaration);
@@ -3236,7 +3236,7 @@ it("minimal example with global style", () => {
 
     const name = "css";
     const extractResult = extractFromCode(sourceFile, { functions: [name] });
-    const extracted = extractResult.get(name)! as ComponentNodesMap;
+    const extracted = extractResult.get(name)! as ExtractedComponentResult;
 
     const conf = configByName.get("css")!;
     const globalStyles = generateStyleFromExtraction({ name, extracted, config: conf.config });

@@ -3,7 +3,7 @@ import { afterEach, bench, describe } from "vitest";
 import { extract } from "../src/extractor/extract";
 import { getBoxLiteralValue } from "../src/extractor/getBoxLiteralValue";
 import { unbox } from "../src/extractor/unbox";
-import type { ExtractOptions, FunctionNodesMap } from "../src/extractor/types";
+import type { ExtractOptions, ExtractedFunctionResult } from "../src/extractor/types";
 // @ts-expect-error
 import { default as BigThemeSampleInlined } from "./samples/BigThemeSampleInlined?raw";
 
@@ -50,7 +50,7 @@ describe("unbox", () => {
     bench("getBoxLiteralValue", () => {
         const extracted = getExtract(BigThemeSampleInlined, { functions: ["defineProperties"] });
         const defineProperties = extracted.get("defineProperties")!;
-        const properties = (defineProperties as FunctionNodesMap).queryList[0].box;
+        const properties = (defineProperties as ExtractedFunctionResult).queryList[0].box;
         const cache = new WeakMap();
         getBoxLiteralValue(properties, cache);
     });
@@ -58,7 +58,7 @@ describe("unbox", () => {
     bench("unbox", () => {
         const extracted = getExtract(BigThemeSampleInlined, { functions: ["defineProperties"] });
         const defineProperties = extracted.get("defineProperties")!;
-        const properties = (defineProperties as FunctionNodesMap).queryList[0].box;
+        const properties = (defineProperties as ExtractedFunctionResult).queryList[0].box;
         const cache = new WeakMap();
         unbox(properties, cache);
     });
