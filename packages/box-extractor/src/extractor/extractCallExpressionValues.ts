@@ -3,16 +3,14 @@ import type { CallExpression, Node } from "ts-morph";
 import { maybeBoxNode } from "./maybeBoxNode";
 
 import { maybeObjectLikeBox } from "./maybeObjectLikeBox";
+import { box } from "./type-factory";
 import { isNotNullish, unwrapExpression } from "./utils";
 
 const logger = createLogger("box-ex:extractor:call-expr");
 
-// TODO rename file
 export const extractCallExpressionValues = (node: CallExpression) => {
     const argList = node.getArguments();
-    // TODO also return a BoxNode (with a isEmpty: true ? flag or kind: "empty" ) when no arguments provided ?
-    // needed for `const css = defineProperties()`
-    if (argList.length === 0) return;
+    if (argList.length === 0) return box.list([], node, []);
 
     const boxes = argList
         .map((arg) => {

@@ -1,6 +1,6 @@
 export { ensureAbsolute } from "./extensions-helpers";
 export { extract, query } from "./extractor/extract";
-export { extractCallExpressionValues } from "./extractor/extractCallExpressionIdentifierValues";
+export { extractCallExpressionValues } from "./extractor/extractCallExpressionValues";
 export { extractFunctionFrom, isImportedFrom } from "./extractor/extractFunctionFrom";
 export { extractJsxAttributeIdentifierValue } from "./extractor/extractJsxAttributeIdentifierValue";
 export { extractJsxSpreadAttributeValues } from "./extractor/extractJsxSpreadAttributeValues";
