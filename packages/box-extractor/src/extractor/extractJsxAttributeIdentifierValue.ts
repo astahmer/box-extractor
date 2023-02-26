@@ -5,7 +5,7 @@ import { createLogger } from "@box-extractor/logger";
 import { maybeBoxNode } from "./maybeBoxNode";
 import { maybeObjectLikeBox } from "./maybeObjectLikeBox";
 import { box } from "./type-factory";
-import { isNotNullish, unwrapExpression } from "./utils";
+import { unwrapExpression } from "./utils";
 
 const logger = createLogger("box-ex:extractor:jsx-attr");
 
