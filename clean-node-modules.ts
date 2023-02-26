@@ -1,41 +1,17 @@
-import fs from "node:fs";
-import { exec } from "node:child_process";
+import rimraf from "rimraf";
+import fg from "fast-glob";
 
-const cwd = process.cwd();
-
-const rm = (path: string) => {
-    if (fs.existsSync(path)) {
-        exec(`rm -r ${path}`, (err) => {
-            if (err) {
-                console.log(err);
-            }
+const clean = async () => {
+    console.log("cleaning...");
+    await fg
+        .sync(["./node_modules", "./packages/*/{node_modules,dist}", "./examples/*/{node_modules,dist}"], {
+            onlyDirectories: true,
+        })
+        .map((dir) => {
+            console.log({ dir });
+            return rimraf(dir);
         });
-    }
+    console.log("cleaned");
 };
 
-const clean = (dir: string) => {
-    rm(`${dir}/node_modules`);
-    rm(`${dir}/dist`);
-};
-
-const cleanRoot = () => clean(cwd);
-
-const cleanWorkSpaces = () => {
-    const workspaces = ["./packages", "./examples"];
-
-    workspaces.forEach((workspace) => {
-        fs.readdir(workspace, (err, folders) => {
-            folders.forEach((folder) => {
-                console.log("cleaning", `${cwd}/${workspace}/${folder}`);
-                clean(`${cwd}/${workspace}/${folder}`);
-            });
-
-            if (err) {
-                throw err;
-            }
-        });
-    });
-};
-
-cleanRoot();
-cleanWorkSpaces();
+clean();
