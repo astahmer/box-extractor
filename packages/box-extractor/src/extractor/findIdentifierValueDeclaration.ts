@@ -1,5 +1,5 @@
 import { createLogger } from "@box-extractor/logger";
-import { Identifier, Node, ts } from "ts-morph";
+import { Identifier, Node } from "ts-morph";
 // eslint-disable-next-line import/no-cycle
 import { getExportedVarDeclarationWithName, getModuleSpecifierSourceFile } from "./maybeBoxNode";
 
@@ -28,9 +28,10 @@ export function getDeclarationFor(node: Identifier, stack: Node[] = []) {
 
     let declaration;
     if (
-        (parent.isKind(ts.SyntaxKind.VariableDeclaration) ||
-            parent.isKind(ts.SyntaxKind.Parameter) ||
-            parent.isKind(ts.SyntaxKind.BindingElement)) &&
+        (Node.isVariableDeclaration(parent) ||
+            Node.isParameterDeclaration(parent) ||
+            Node.isFunctionDeclaration(parent) ||
+            Node.isBindingElement(parent)) &&
         parent.getNameNode() == node
     ) {
         logger.scoped("getDeclarationFor", { isDeclarationLike: true, kind: parent.getKindName() });

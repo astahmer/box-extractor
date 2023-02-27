@@ -137,6 +137,12 @@ export function maybeBoxNode(node: Node, stack: Node[]): MaybeBoxNodeReturn {
 
     // <ColorBox color={fn()} />
     if (Node.isCallExpression(node)) {
+        const expr = unwrapExpression(node.getExpression());
+        if (Node.isIdentifier(expr)) {
+            const valueDeclaration = findIdentifierValueDeclaration(expr, []);
+            if (!valueDeclaration) return;
+        }
+
         const maybeLiteral = safeEvaluateNode<PrimitiveType | EvaluatedObjectResult>(node);
         if (!maybeLiteral) return;
 
