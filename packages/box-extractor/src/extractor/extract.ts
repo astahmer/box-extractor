@@ -117,7 +117,7 @@ export const extract = ({
                 queryComponentMap.set(componentNode, { name: componentName, props: new Map() });
             }
 
-            const spreadNode = extractJsxSpreadAttributeValues(node);
+            const spreadNode = extractJsxSpreadAttributeValues(node, component.properties);
             const parentRef = queryComponentMap.get(componentNode)!;
 
             // increment count since there might be conditional
@@ -137,7 +137,7 @@ export const extract = ({
 
                 const entries = mergeSpreadEntries({ map: mapValue, propNameList: component.properties });
                 entries.forEach(([propName, propValue]) => {
-                    logger.scoped("merge-spread", { jsx: true, propName, propValue });
+                    logger.scoped("merge-spread", { jsx: true, propName, propValue: (propValue as any).value });
 
                     localNodes.set(propName, (localNodes.get(propName) ?? []).concat(propValue));
                     componentMap.nodesByProp.set(
@@ -236,7 +236,7 @@ export const extract = ({
                 const component = functions[functionName];
                 if (!component) return;
 
-                const maybeBox = extractCallExpressionValues(parentNode);
+                const maybeBox = extractCallExpressionValues(parentNode, component.properties);
                 if (!maybeBox) return;
                 // console.log({ objectOrMapType });
 
@@ -274,7 +274,11 @@ export const extract = ({
                             });
 
                             entries.forEach(([propName, propValue]) => {
-                                logger.scoped("merge-spread", { fn: true, propName, propValue });
+                                logger.scoped("merge-spread", {
+                                    fn: true,
+                                    propName,
+                                    propValue: (propValue as any).value,
+                                });
 
                                 localNodes.set(propName, (localNodes.get(propName) ?? []).concat(propValue));
                                 fnMap.nodesByProp.set(

@@ -5,10 +5,11 @@ import { maybeObjectLikeBox } from "./maybeObjectLikeBox";
 import { box } from "./type-factory";
 import { unwrapExpression } from "./utils";
 import { maybeBoxNode } from "./maybeBoxNode";
+import type { ListOrAll } from "./types";
 
 const logger = createLogger("box-ex:extractor:jsx-spread");
 
-export const extractJsxSpreadAttributeValues = (spreadAttribute: JsxSpreadAttribute) => {
+export const extractJsxSpreadAttributeValues = (spreadAttribute: JsxSpreadAttribute, properties: ListOrAll) => {
     const node = unwrapExpression(spreadAttribute.getExpression());
     logger.scoped("extractJsxSpreadAttributeValues", { node: node.getKindName() });
 
@@ -21,7 +22,7 @@ export const extractJsxSpreadAttributeValues = (spreadAttribute: JsxSpreadAttrib
         return maybeValue;
     }
 
-    const maybeEntries = maybeObjectLikeBox(node, stack);
+    const maybeEntries = maybeObjectLikeBox(node, stack, properties);
     logger({ maybeEntries });
     if (maybeEntries) return maybeEntries;
 

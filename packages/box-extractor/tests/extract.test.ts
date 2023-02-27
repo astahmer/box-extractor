@@ -5385,6 +5385,44 @@ it("extract JsxSpreadAttribute > ObjectLiteralExpression", () => {
     `);
 });
 
+it("extract JsxSpreadAttribute > ObjectLiteralExpression with allowed properties list", () => {
+    expect(
+        extractFromCode(`
+            <ColorBox {...{ color: "orange.725", flexDirection: "flex", ...{ backgroundColor: "orange.750", justifyContent: "center" } }}>spread</ColorBox>
+        `)
+    ).toMatchInlineSnapshot(`
+      [
+          [
+              "ColorBox",
+              [
+                  ["color", "orange.725"],
+                  ["backgroundColor", "orange.750"],
+              ],
+              {
+                  color: [
+                      {
+                          stack: ["PropertyAssignment", "StringLiteral"],
+                          type: "literal",
+                          node: "StringLiteral",
+                          value: "orange.725",
+                          kind: "string",
+                      },
+                  ],
+                  backgroundColor: [
+                      {
+                          stack: ["SpreadAssignment", "ObjectLiteralExpression", "PropertyAssignment", "StringLiteral"],
+                          type: "literal",
+                          node: "StringLiteral",
+                          value: "orange.750",
+                          kind: "string",
+                      },
+                  ],
+              },
+          ],
+      ]
+    `);
+});
+
 it("extract JsxSpreadAttribute > Identifier > ObjectLiteralExpression", () => {
     expect(
         extractFromCode(`
@@ -5611,6 +5649,45 @@ it("extract JsxSpreadAttribute > CallExpression", () => {
                           type: "literal",
                           node: "CallExpression",
                           value: "teal.650",
+                          kind: "string",
+                      },
+                  ],
+              },
+          ],
+      ]
+    `);
+});
+
+it("extract JsxSpreadAttribute > CallExpression with allowed properties list", () => {
+    expect(
+        extractFromCode(`
+            const getColorConfig = () => ({ color: "teal.625", backgroundColor: "teal.675", flexDirection: "flex", ...{ backgroundColor: "teal.699", justifyContent: "center" } });
+            <ColorBox {...getColorConfig()}>spread fn result</ColorBox>
+        `)
+    ).toMatchInlineSnapshot(`
+      [
+          [
+              "ColorBox",
+              [
+                  ["color", "teal.625"],
+                  ["backgroundColor", "teal.699"],
+              ],
+              {
+                  color: [
+                      {
+                          stack: [],
+                          type: "literal",
+                          node: "CallExpression",
+                          value: "teal.625",
+                          kind: "string",
+                      },
+                  ],
+                  backgroundColor: [
+                      {
+                          stack: [],
+                          type: "literal",
+                          node: "CallExpression",
+                          value: "teal.699",
                           kind: "string",
                       },
                   ],

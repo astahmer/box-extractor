@@ -4,11 +4,12 @@ import { maybeBoxNode } from "./maybeBoxNode";
 
 import { maybeObjectLikeBox } from "./maybeObjectLikeBox";
 import { box } from "./type-factory";
+import type { ListOrAll } from "./types";
 import { isNotNullish, unwrapExpression } from "./utils";
 
 const logger = createLogger("box-ex:extractor:call-expr");
 
-export const extractCallExpressionValues = (node: CallExpression) => {
+export const extractCallExpressionValues = (node: CallExpression, properties: ListOrAll) => {
     const argList = node.getArguments();
     if (argList.length === 0) return box.list([], node, []);
 
@@ -26,7 +27,7 @@ export const extractCallExpressionValues = (node: CallExpression) => {
                 return maybeValue;
             }
 
-            const maybeObject = maybeObjectLikeBox(argNode, stack);
+            const maybeObject = maybeObjectLikeBox(argNode, stack, properties);
             logger({ maybeObject });
             // console.log("expr", expression.getKindName(), expression.getText());
             if (maybeObject) return maybeObject;
