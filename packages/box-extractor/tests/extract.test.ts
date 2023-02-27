@@ -2315,6 +2315,11 @@ it("ExtractSample - groups extract props in parent component instance", () => {
                   node: "JsxOpeningElement",
                   value: {
                       _SPREAD_0_0: {
+                          stack: ["Identifier", "BindingElement"],
+                          type: "unresolvable",
+                          node: "BindingElement",
+                      },
+                      _SPREAD_0_1: {
                           stack: ["JsxOpeningElement"],
                           type: "map",
                           node: "JsxSpreadAttribute",
@@ -5987,9 +5992,23 @@ it("extract JsxSpreadAttribute > ElementAccessExpression + PropertyAccessExpress
               {
                   color: [
                       {
-                          stack: ["ElementAccessExpression"],
+                          stack: [
+                              "ElementAccessExpression",
+                              "Identifier",
+                              "NoSubstitutionTemplateLiteral",
+                              "Identifier",
+                              "VariableDeclaration",
+                              "PropertyAssignment",
+                              "PropertyAssignment",
+                              "Identifier",
+                              "Identifier",
+                              "VariableDeclaration",
+                              "ObjectLiteralExpression",
+                              "PropertyAssignment",
+                              "StringLiteral",
+                          ],
                           type: "literal",
-                          node: "PropertyAccessExpression",
+                          node: "StringLiteral",
                           value: "salmon.300",
                           kind: "string",
                       },
@@ -6358,9 +6377,24 @@ it("extract JsxAttribute > ElementAccessExpression > CallExpression > PropertyAc
               {
                   color: [
                       {
-                          stack: ["JsxAttribute", "JsxExpression", "PropertyAccessExpression", "ElementAccessExpression"],
+                          stack: [
+                              "JsxAttribute",
+                              "JsxExpression",
+                              "PropertyAccessExpression",
+                              "ElementAccessExpression",
+                              "Identifier",
+                              "CallExpression",
+                              "Identifier",
+                              "VariableDeclaration",
+                              "PropertyAssignment",
+                              "Identifier",
+                              "VariableDeclaration",
+                              "ObjectLiteralExpression",
+                              "PropertyAssignment",
+                              "StringLiteral",
+                          ],
                           type: "literal",
-                          node: "PropertyAccessExpression",
+                          node: "StringLiteral",
                           value: "white.200",
                           kind: "string",
                       },
@@ -8355,8 +8389,8 @@ it("extract real-world Stack example ", () => {
                   ["display", "flex"],
                   ["flexDirection", ["column"]],
                   ["key", null],
-                  ["pr", null],
-                  ["pb", null],
+                  ["pr", []],
+                  ["pb", []],
               ],
               {
                   display: [
@@ -8422,17 +8456,111 @@ it("extract real-world Stack example ", () => {
                   pr: [
                       {
                           stack: ["JsxAttribute", "JsxExpression", "ConditionalExpression", "Identifier", "BindingElement"],
-                          type: "literal",
-                          node: "Identifier",
-                          kind: "undefined",
+                          type: "conditional",
+                          node: "ConditionalExpression",
+                          whenTrue: {
+                              stack: [
+                                  "JsxAttribute",
+                                  "JsxExpression",
+                                  "ConditionalExpression",
+                                  "Identifier",
+                                  "BindingElement",
+                              ],
+                              type: "conditional",
+                              node: "ConditionalExpression",
+                              whenTrue: {
+                                  stack: [
+                                      "JsxAttribute",
+                                      "JsxExpression",
+                                      "ConditionalExpression",
+                                      "Identifier",
+                                      "BindingElement",
+                                  ],
+                                  type: "unresolvable",
+                                  node: "BindingElement",
+                              },
+                              whenFalse: {
+                                  stack: [
+                                      "JsxAttribute",
+                                      "JsxExpression",
+                                      "ConditionalExpression",
+                                      "Identifier",
+                                      "BindingElement",
+                                  ],
+                                  type: "literal",
+                                  node: "Identifier",
+                                  kind: "undefined",
+                              },
+                              kind: "ternary",
+                          },
+                          whenFalse: {
+                              stack: [
+                                  "JsxAttribute",
+                                  "JsxExpression",
+                                  "ConditionalExpression",
+                                  "Identifier",
+                                  "BindingElement",
+                              ],
+                              type: "literal",
+                              node: "Identifier",
+                              kind: "undefined",
+                          },
+                          kind: "ternary",
                       },
                   ],
                   pb: [
                       {
                           stack: ["JsxAttribute", "JsxExpression", "ConditionalExpression", "Identifier", "BindingElement"],
-                          type: "literal",
-                          node: "Identifier",
-                          kind: "undefined",
+                          type: "conditional",
+                          node: "ConditionalExpression",
+                          whenTrue: {
+                              stack: [
+                                  "JsxAttribute",
+                                  "JsxExpression",
+                                  "ConditionalExpression",
+                                  "Identifier",
+                                  "BindingElement",
+                              ],
+                              type: "conditional",
+                              node: "ConditionalExpression",
+                              whenTrue: {
+                                  stack: [
+                                      "JsxAttribute",
+                                      "JsxExpression",
+                                      "ConditionalExpression",
+                                      "Identifier",
+                                      "BindingElement",
+                                  ],
+                                  type: "unresolvable",
+                                  node: "BindingElement",
+                              },
+                              whenFalse: {
+                                  stack: [
+                                      "JsxAttribute",
+                                      "JsxExpression",
+                                      "ConditionalExpression",
+                                      "Identifier",
+                                      "BindingElement",
+                                  ],
+                                  type: "literal",
+                                  node: "Identifier",
+                                  kind: "undefined",
+                              },
+                              kind: "ternary",
+                          },
+                          whenFalse: {
+                              stack: [
+                                  "JsxAttribute",
+                                  "JsxExpression",
+                                  "ConditionalExpression",
+                                  "Identifier",
+                                  "BindingElement",
+                              ],
+                              type: "literal",
+                              node: "Identifier",
+                              kind: "undefined",
+                          },
+                          kind: "ternary",
                       },
                   ],
               },

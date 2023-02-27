@@ -207,6 +207,12 @@ importers:
       vite: 4.1.1
       vitest: 0.28.5
 
+  packages/box-extractor/tests/samples:
+    specifiers:
+      '@box-extractor/vanilla-theme': link:../../../vanilla-theme
+    dependencies:
+      '@box-extractor/vanilla-theme': link:../../../vanilla-theme
+
   packages/cli:
     specifiers:
       '@box-extractor/core': workspace:*

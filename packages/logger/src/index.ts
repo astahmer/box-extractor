@@ -193,7 +193,8 @@ const scopedCache = new Map<string, CreateLoggerReturn>();
 export function createLogger(name: string, _onEmit?: Reporter): CreateLoggerReturn {
     const onEmit = _onEmit ?? default_reporter;
     const color = selectColor(name);
-    const logFn = isEnabled(name)
+    const isLogEnabled = isEnabled(name);
+    const logFn = isLogEnabled
         ? (...messages: unknown[]) => logger(name, onEmit, "debug", color, ...messages)
         : // eslint-disable-next-line @typescript-eslint/no-empty-function
           () => {};
@@ -211,6 +212,7 @@ export function createLogger(name: string, _onEmit?: Reporter): CreateLoggerRetu
             loggerFn(...messages);
         },
         lazy: (fn: () => any) => {
+            if (!isLogEnabled) return;
             logFn(fn());
         },
         lazyScoped: (scoped: string, fn: () => any) => {
