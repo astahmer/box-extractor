@@ -1,5 +1,11 @@
 # @box-extractor/core
 
+## 0.7.4
+
+### Patch Changes
+
+-   [`e2057f2`](https://github.com/astahmer/box-extractor/commit/e2057f2b56c8d33cf444bd899d15108ea17f8057) Thanks [@astahmer](https://github.com/astahmer)! - opti(core): skip CallExpression eval if declaration but no initializer
+
 ## 0.7.3
 
 ### Patch Changes
