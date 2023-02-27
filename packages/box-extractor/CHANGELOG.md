@@ -1,5 +1,13 @@
 # @box-extractor/core
 
+## 0.7.3
+
+### Patch Changes
+
+-   [`762d285`](https://github.com/astahmer/box-extractor/commit/762d285e6aa98d32a4a788b739682b475949ccd2) Thanks [@astahmer](https://github.com/astahmer)! - fix(core): getLiteralValue instead of text for Numeric/Boolean
+
+-   [`73c3b25`](https://github.com/astahmer/box-extractor/commit/73c3b2551dd322a000a2e5ef50d151bc4787768f) Thanks [@astahmer](https://github.com/astahmer)! - opti(core): skip CallExpression eval if unresolvable identifier
+
 ## 0.7.2
 
 ### Patch Changes

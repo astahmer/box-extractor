@@ -1,5 +1,12 @@
 # @box-extractor/example-react-basic
 
+## 0.4.4
+
+### Patch Changes
+
+-   Updated dependencies []:
+    -   @box-extractor/vanilla-wind@0.3.4
+
 ## 0.4.3
 
 ### Patch Changes
