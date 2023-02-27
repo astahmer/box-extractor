@@ -1,5 +1,12 @@
 # @box-extractor/examples-react-rakkas
 
+## 0.2.3
+
+### Patch Changes
+
+-   Updated dependencies []:
+    -   @box-extractor/vanilla-wind@0.3.2
+
 ## 0.2.2
 
 ### Patch Changes
