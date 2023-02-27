@@ -48,7 +48,7 @@ export function maybeBoxNode(node: Node, stack: Node[]): MaybeBoxNodeReturn {
 
     // <ColorBox color={"xxx"} />
     if (Node.isStringLiteral(node)) {
-        return cache(box.literal(node.getLiteralText(), node, stack));
+        return cache(box.literal(node.getLiteralValue(), node, stack));
     }
 
     // <ColorBox color={[xxx, yyy, zzz]} />
@@ -65,12 +65,12 @@ export function maybeBoxNode(node: Node, stack: Node[]): MaybeBoxNodeReturn {
 
     // <ColorBox color={`xxx`} />
     if (Node.isNoSubstitutionTemplateLiteral(node)) {
-        return cache(box.literal(node.getLiteralText(), node, stack));
+        return cache(box.literal(node.getLiteralValue(), node, stack));
     }
 
     // <ColorBox color={123} />
     if (Node.isNumericLiteral(node)) {
-        return cache(box.literal(node.getLiteralText(), node, stack));
+        return cache(box.literal(node.getLiteralValue(), node, stack));
     }
 
     // <ColorBox bool={true} falsy={false} />

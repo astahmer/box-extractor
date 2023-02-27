@@ -1474,8 +1474,8 @@ it("simple CallExpression extract + JIT style + replace call by generated classN
                                   ],
                                   type: "literal",
                                   node: "NumericLiteral",
-                                  value: "24",
-                                  kind: "string",
+                                  value: 24,
+                                  kind: "number",
                               },
                               rounded: {
                                   stack: ["CallExpression", "ObjectLiteralExpression", "PropertyAssignment", "StringLiteral"],
@@ -1515,7 +1515,7 @@ it("simple CallExpression extract + JIT style + replace call by generated classN
               debugId: "tw_padding_24",
               propName: "padding",
               value: "24px",
-              token: "24",
+              token: 24,
           },
           {
               name: "tw",
@@ -1807,7 +1807,7 @@ it("will generate multiple styles with nested conditions", () => {
               debugId: "tw_padding_24",
               propName: "padding",
               value: "24px",
-              token: "24",
+              token: 24,
           },
           {
               name: "tw",
@@ -2056,7 +2056,7 @@ it("will generate multiple styles with nested conditions", () => {
               debugId: "tw_padding_dark_24",
               propName: "padding",
               value: "24px",
-              token: "24",
+              token: 24,
               conditionPath: ["dark"],
           },
           {
@@ -2465,7 +2465,7 @@ it("will generate multiple styles with nested conditions - grouped", () => {
                       debugId: "tw_padding_24",
                       propName: "padding",
                       value: "24px",
-                      token: "24",
+                      token: 24,
                   },
                   {
                       name: "tw",
@@ -2714,7 +2714,7 @@ it("will generate multiple styles with nested conditions - grouped", () => {
                       debugId: "tw_padding_dark_24",
                       propName: "padding",
                       value: "24px",
-                      token: "24",
+                      token: 24,
                       conditionPath: ["dark"],
                   },
                   {
@@ -3030,7 +3030,7 @@ it("minimal example with <Box /> component", () => {
               debugId: "Box_padding_4",
               propName: "padding",
               value: "4px",
-              token: "4",
+              token: 4,
           },
           {
               name: "Box",

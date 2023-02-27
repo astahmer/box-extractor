@@ -322,8 +322,8 @@ it("types are fine", () => {
                           stack: ["CallExpression", "ObjectLiteralExpression", "PropertyAssignment", "NumericLiteral"],
                           type: "literal",
                           node: "NumericLiteral",
-                          value: "24",
-                          kind: "string",
+                          value: 24,
+                          kind: "number",
                       },
                   ],
                   rounded: [
@@ -770,8 +770,8 @@ it("types are fine", () => {
                                           ],
                                           type: "literal",
                                           node: "NumericLiteral",
-                                          value: "24",
-                                          kind: "string",
+                                          value: 24,
+                                          kind: "number",
                                       },
                                       rounded: {
                                           stack: [

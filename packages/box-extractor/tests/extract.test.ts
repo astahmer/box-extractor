@@ -6491,15 +6491,15 @@ it("extract JsxAttribute > JsxExpression  > NumericLiteral", () => {
       [
           [
               "ColorBox",
-              [["zIndex", "1"]],
+              [["zIndex", 1]],
               {
                   zIndex: [
                       {
                           stack: ["JsxAttribute", "JsxExpression", "NumericLiteral"],
                           type: "literal",
                           node: "NumericLiteral",
-                          value: "1",
-                          kind: "string",
+                          value: 1,
+                          kind: "number",
                       },
                   ],
               },
@@ -6518,7 +6518,7 @@ it("extract JsxAttribute > JsxExpression > Identifier > NumericLiteral", () => {
       [
           [
               "ColorBox",
-              [["zIndex", "2"]],
+              [["zIndex", 2]],
               {
                   zIndex: [
                       {
@@ -6532,8 +6532,8 @@ it("extract JsxAttribute > JsxExpression > Identifier > NumericLiteral", () => {
                           ],
                           type: "literal",
                           node: "NumericLiteral",
-                          value: "2",
-                          kind: "string",
+                          value: 2,
+                          kind: "number",
                       },
                   ],
               },
@@ -6633,7 +6633,7 @@ it("extract JsxAttribute > JsxExpression > ElementAccessExpression > NumericLite
       [
           [
               "ColorBox",
-              [["zIndex", "6"]],
+              [["zIndex", 6]],
               {
                   zIndex: [
                       {
@@ -6649,8 +6649,8 @@ it("extract JsxAttribute > JsxExpression > ElementAccessExpression > NumericLite
                           ],
                           type: "literal",
                           node: "NumericLiteral",
-                          value: "6",
-                          kind: "string",
+                          value: 6,
+                          kind: "number",
                       },
                   ],
               },
@@ -8649,8 +8649,8 @@ it("extract real-world Stack example ", () => {
                   ["flexWrap", "wrap"],
                   ["alignItems", "flex-end"],
                   ["justifyContent", "flex-end"],
-                  ["paddingRight", "2"],
-                  ["paddingBottom", "2"],
+                  ["paddingRight", 2],
+                  ["paddingBottom", 2],
                   ["borderBottomWidth", "1px"],
                   ["borderBottomColor", "gray.400"],
                   ["className", null],
@@ -8703,8 +8703,8 @@ it("extract real-world Stack example ", () => {
                           stack: ["JsxAttribute", "JsxExpression", "NumericLiteral"],
                           type: "literal",
                           node: "NumericLiteral",
-                          value: "2",
-                          kind: "string",
+                          value: 2,
+                          kind: "number",
                       },
                   ],
                   paddingBottom: [
@@ -8712,8 +8712,8 @@ it("extract real-world Stack example ", () => {
                           stack: ["JsxAttribute", "JsxExpression", "NumericLiteral"],
                           type: "literal",
                           node: "NumericLiteral",
-                          value: "2",
-                          kind: "string",
+                          value: 2,
+                          kind: "number",
                       },
                   ],
                   borderBottomWidth: [
