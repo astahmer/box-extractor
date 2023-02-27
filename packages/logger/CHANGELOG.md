@@ -1,5 +1,14 @@
 # @box-extractor/logger
 
+## 0.2.1
+
+### Patch Changes
+
+-   [`dda111d`](https://github.com/astahmer/box-extractor/commit/dda111d96997241f7c3b2331759123883baa61c5) Thanks [@astahmer](https://github.com/astahmer)! - feat(core): rm 2 more eval calls
+    only use safeEvaluate (from ts-evaluator) for ConditionalExpression && CallExpression
+
+    fix(logger): prevent lazy logs to execute their thunk if not enabled
+
 ## 0.2.0
 
 ### Minor Changes
