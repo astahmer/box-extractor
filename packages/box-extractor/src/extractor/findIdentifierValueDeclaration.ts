@@ -88,9 +88,9 @@ export function findIdentifierValueDeclaration(
     identifier: Identifier,
     stack: Node[] = [],
     visitedsWithStack: WeakMap<Node, Node[]> = new Map()
-): Node | undefined {
+): ReturnType<typeof getDeclarationFor> | undefined {
     let scope = identifier as Node | undefined;
-    let foundNode: Node | undefined;
+    let foundNode: ReturnType<typeof getDeclarationFor> | undefined;
     let isUnresolvable = false;
     let count = 0;
     const innerStack = [] as Node[];

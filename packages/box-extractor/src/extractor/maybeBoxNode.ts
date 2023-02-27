@@ -141,6 +141,18 @@ export function maybeBoxNode(node: Node, stack: Node[]): MaybeBoxNodeReturn {
         if (Node.isIdentifier(expr)) {
             const valueDeclaration = findIdentifierValueDeclaration(expr, []);
             if (!valueDeclaration) return;
+
+            if (
+                Node.isVariableDeclaration(valueDeclaration) ||
+                Node.isBindingElement(valueDeclaration) ||
+                Node.isParameterDeclaration(valueDeclaration)
+            ) {
+                const initializer = valueDeclaration.getInitializer();
+
+                // skip evaluation if no initializer (only a type)
+                // since ts-evaluator will throw an error
+                if (!initializer) return;
+            }
         }
 
         const maybeLiteral = safeEvaluateNode<PrimitiveType | EvaluatedObjectResult>(node);
