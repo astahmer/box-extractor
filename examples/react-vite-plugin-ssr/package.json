@@ -1,7 +1,7 @@
 {
     "name": "@box-extractor/example-vite-plugin-ssr",
     "private": true,
-    "version": "0.3.3",
+    "version": "0.3.4",
     "type": "module",
     "scripts": {
         "dev": "tsx ./src/server/index.ts",

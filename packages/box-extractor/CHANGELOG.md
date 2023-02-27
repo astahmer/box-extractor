@@ -1,5 +1,11 @@
 # @box-extractor/core
 
+## 0.7.2
+
+### Patch Changes
+
+-   [`4d84389`](https://github.com/astahmer/box-extractor/commit/4d843896f2a20de66f4bec5b7d3f4828c6337f9b) Thanks [@astahmer](https://github.com/astahmer)! - fix(core): pass allowed properties down to maybeObjectLikeBox, from spread / call expression extraction
+
 ## 0.7.1
 
 ### Patch Changes
