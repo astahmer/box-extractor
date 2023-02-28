@@ -1,5 +1,6 @@
 export { ensureAbsolute } from "./extensions-helpers";
 export { extract, query } from "./extractor/extract";
+export { extractAtRange, extractJsxElementProps } from "./extractor/extractAtRange";
 export { extractCallExpressionValues } from "./extractor/extractCallExpressionValues";
 export { extractFunctionFrom, isImportedFrom } from "./extractor/extractFunctionFrom";
 export { extractJsxAttributeIdentifierValue } from "./extractor/extractJsxAttributeIdentifierValue";
