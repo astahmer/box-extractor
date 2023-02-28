@@ -214,7 +214,7 @@ it("extract it all", () => {
                       {
                           stack: ["JsxAttribute", "JsxExpression", "ConditionalExpression"],
                           type: "literal",
-                          node: "ConditionalExpression",
+                          node: "StringLiteral",
                           value: "facebook.500",
                           kind: "string",
                       },
@@ -1357,7 +1357,7 @@ it("ExtractSample - groups extract props in parent component instance", () => {
                       color: {
                           stack: ["JsxAttribute", "JsxExpression", "ConditionalExpression"],
                           type: "literal",
-                          node: "ConditionalExpression",
+                          node: "StringLiteral",
                           value: "facebook.500",
                           kind: "string",
                       },
@@ -2236,6 +2236,13 @@ it("ExtractSample - groups extract props in parent component instance", () => {
                               },
                           },
                       },
+                      _SPREAD_0_1: {
+                          stack: ["Identifier", "VariableDeclaration"],
+                          type: "literal",
+                          node: "NullKeyword",
+                          value: null,
+                          kind: "null",
+                      },
                   },
               },
           },
@@ -2303,6 +2310,12 @@ it("ExtractSample - groups extract props in parent component instance", () => {
                                   kind: "string",
                               },
                           },
+                      },
+                      _SPREAD_0_1: {
+                          stack: [],
+                          type: "literal",
+                          node: "Identifier",
+                          kind: "undefined",
                       },
                   },
               },
@@ -4868,7 +4881,7 @@ it("extract JsxAttribute > JsxExpression > ConditionalExpression > BinaryExpress
                       {
                           stack: ["JsxAttribute", "JsxExpression", "ConditionalExpression"],
                           type: "literal",
-                          node: "ConditionalExpression",
+                          node: "StringLiteral",
                           value: "purple.100",
                           kind: "string",
                       },
@@ -4999,9 +5012,20 @@ it("extract JsxAttribute > JsxExpression > resolvable ConditionalExpression resu
               {
                   color: [
                       {
-                          stack: ["JsxAttribute", "JsxExpression", "ConditionalExpression"],
+                          stack: [
+                              "JsxAttribute",
+                              "JsxExpression",
+                              "ConditionalExpression",
+                              "Identifier",
+                              "Identifier",
+                              "Identifier",
+                              "VariableDeclaration",
+                              "Identifier",
+                              "VariableDeclaration",
+                              "PropertyAssignment",
+                          ],
                           type: "literal",
-                          node: "ConditionalExpression",
+                          node: "StringLiteral",
                           value: "purple.500",
                           kind: "string",
                       },
@@ -5108,7 +5132,7 @@ it("extract JsxAttribute > JsxExpression > ConditionalExpression > unresolvable 
       [
           [
               "ColorBox",
-              [["color", ["purple.800", "purple.900", "purple.950"]]],
+              [["color", ["purple.900", "purple.950"]]],
               {
                   color: [
                       {
@@ -5119,28 +5143,15 @@ it("extract JsxAttribute > JsxExpression > ConditionalExpression > unresolvable 
                               stack: ["JsxAttribute", "JsxExpression", "ConditionalExpression"],
                               type: "literal",
                               node: "StringLiteral",
-                              value: "purple.800",
+                              value: "purple.900",
                               kind: "string",
                           },
                           whenFalse: {
                               stack: ["JsxAttribute", "JsxExpression", "ConditionalExpression"],
-                              type: "conditional",
-                              node: "ConditionalExpression",
-                              whenTrue: {
-                                  stack: ["JsxAttribute", "JsxExpression", "ConditionalExpression"],
-                                  type: "literal",
-                                  node: "StringLiteral",
-                                  value: "purple.900",
-                                  kind: "string",
-                              },
-                              whenFalse: {
-                                  stack: ["JsxAttribute", "JsxExpression", "ConditionalExpression"],
-                                  type: "literal",
-                                  node: "StringLiteral",
-                                  value: "purple.950",
-                                  kind: "string",
-                              },
-                              kind: "ternary",
+                              type: "literal",
+                              node: "StringLiteral",
+                              value: "purple.950",
+                              kind: "string",
                           },
                           kind: "ternary",
                       },
@@ -5168,18 +5179,39 @@ it("extract JsxAttribute > JsxExpression > ConditionalExpression > ElementAccess
       [
           [
               "ColorBox",
-              [["color", ["orange.100", "orange.200", "orange.300"]]],
+              [["color", ["orange.200", "orange.300"]]],
               {
                   color: [
                       {
-                          stack: ["JsxAttribute", "JsxExpression", "ConditionalExpression"],
+                          stack: [
+                              "JsxAttribute",
+                              "JsxExpression",
+                              "ConditionalExpression",
+                              "Identifier",
+                              "ConditionalExpression",
+                              "Identifier",
+                              "VariableDeclaration",
+                              "ObjectLiteralExpression",
+                              "Identifier",
+                              "VariableDeclaration",
+                              "ObjectLiteralExpression",
+                          ],
                           type: "conditional",
                           node: "ConditionalExpression",
                           whenTrue: {
-                              stack: ["JsxAttribute", "JsxExpression", "ConditionalExpression"],
+                              stack: [
+                                  "JsxAttribute",
+                                  "JsxExpression",
+                                  "ConditionalExpression",
+                                  "Identifier",
+                                  "ConditionalExpression",
+                                  "Identifier",
+                                  "VariableDeclaration",
+                                  "PropertyAssignment",
+                              ],
                               type: "literal",
                               node: "StringLiteral",
-                              value: "orange.100",
+                              value: "orange.200",
                               kind: "string",
                           },
                           whenFalse: {
@@ -5194,46 +5226,12 @@ it("extract JsxAttribute > JsxExpression > ConditionalExpression > ElementAccess
                                   "ObjectLiteralExpression",
                                   "Identifier",
                                   "VariableDeclaration",
-                                  "ObjectLiteralExpression",
+                                  "PropertyAssignment",
                               ],
-                              type: "conditional",
-                              node: "ConditionalExpression",
-                              whenTrue: {
-                                  stack: [
-                                      "JsxAttribute",
-                                      "JsxExpression",
-                                      "ConditionalExpression",
-                                      "Identifier",
-                                      "ConditionalExpression",
-                                      "Identifier",
-                                      "VariableDeclaration",
-                                      "PropertyAssignment",
-                                  ],
-                                  type: "literal",
-                                  node: "StringLiteral",
-                                  value: "orange.200",
-                                  kind: "string",
-                              },
-                              whenFalse: {
-                                  stack: [
-                                      "JsxAttribute",
-                                      "JsxExpression",
-                                      "ConditionalExpression",
-                                      "Identifier",
-                                      "ConditionalExpression",
-                                      "Identifier",
-                                      "VariableDeclaration",
-                                      "ObjectLiteralExpression",
-                                      "Identifier",
-                                      "VariableDeclaration",
-                                      "PropertyAssignment",
-                                  ],
-                                  type: "literal",
-                                  node: "StringLiteral",
-                                  value: "orange.300",
-                                  kind: "string",
-                              },
-                              kind: "ternary",
+                              type: "literal",
+                              node: "StringLiteral",
+                              value: "orange.300",
+                              kind: "string",
                           },
                           kind: "ternary",
                       },
@@ -5267,7 +5265,7 @@ it("extract JsxAttribute > JsxExpression > ConditionalExpression > ElementAccess
                       {
                           stack: ["JsxAttribute", "JsxExpression", "ConditionalExpression"],
                           type: "literal",
-                          node: "ConditionalExpression",
+                          node: "StringLiteral",
                           value: "orange.400",
                           kind: "string",
                       },
@@ -5464,31 +5462,7 @@ it("extract JsxSpreadAttribute > ConditionalExpression > Identifier/NullKeyword 
             const objectWithAttributes = { color: "never.400" } as any;
             <ColorBox {...(isShown ? objectWithAttributes : null)}>conditional var spread</ColorBox>
         `)
-    ).toMatchInlineSnapshot(`
-      [
-          [
-              "ColorBox",
-              [["color", "never.400"]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "Identifier",
-                              "VariableDeclaration",
-                              "ObjectLiteralExpression",
-                              "PropertyAssignment",
-                              "StringLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "never.400",
-                          kind: "string",
-                      },
-                  ],
-              },
-          ],
-      ]
-    `);
+    ).toMatchInlineSnapshot('[["ColorBox", [], {}]]');
 });
 
 it("extract JsxSpreadAttribute > ConditionalExpression > Identifier/NullKeyword > truthy", () => {
@@ -5506,9 +5480,15 @@ it("extract JsxSpreadAttribute > ConditionalExpression > Identifier/NullKeyword 
               {
                   color: [
                       {
-                          stack: [],
+                          stack: [
+                              "Identifier",
+                              "VariableDeclaration",
+                              "ObjectLiteralExpression",
+                              "PropertyAssignment",
+                              "StringLiteral",
+                          ],
                           type: "literal",
-                          node: "ConditionalExpression",
+                          node: "StringLiteral",
                           value: "orange.900",
                           kind: "string",
                       },
@@ -5580,9 +5560,9 @@ it("extract JsxSpreadAttribute > ConditionalExpression > ObjectLiteralExpression
               {
                   color: [
                       {
-                          stack: [],
+                          stack: ["PropertyAssignment", "StringLiteral"],
                           type: "literal",
-                          node: "ConditionalExpression",
+                          node: "StringLiteral",
                           value: "teal.400",
                           kind: "string",
                       },
@@ -6261,7 +6241,7 @@ it("extract JsxSpreadAttribute > JsxExpression > ConditionalExpression > complex
                       {
                           stack: [],
                           type: "literal",
-                          node: "ConditionalExpression",
+                          node: "CallExpression",
                           value: "salmon.700",
                           kind: "string",
                       },
@@ -6299,9 +6279,21 @@ it("extract JsxSpreadAttribute > JsxExpression > ConditionalExpression > complex
               {
                   color: [
                       {
-                          stack: [],
+                          stack: [
+                              "Identifier",
+                              "BinaryExpression",
+                              "Identifier",
+                              "VariableDeclaration",
+                              "Identifier",
+                              "VariableDeclaration",
+                              "Identifier",
+                              "VariableDeclaration",
+                              "PropertyAssignment",
+                              "PropertyAssignment",
+                              "StringLiteral",
+                          ],
                           type: "literal",
-                          node: "ConditionalExpression",
+                          node: "StringLiteral",
                           value: "salmon.800",
                           kind: "string",
                       },
@@ -6331,27 +6323,9 @@ it("extract JsxSpreadAttribute > JsxExpression > ConditionalExpression > unresol
       [
           [
               "ColorBox",
-              [["color", ["never.250", "salmon.850", "salmon.900"]]],
+              [["color", ["salmon.850", "salmon.900"]]],
               {
                   color: [
-                      {
-                          stack: [
-                              "Identifier",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "ObjectLiteralExpression",
-                              "Identifier",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "ObjectLiteralExpression",
-                              "PropertyAssignment",
-                              "StringLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "never.250",
-                          kind: "string",
-                      },
                       {
                           stack: [
                               "Identifier",
@@ -6559,7 +6533,7 @@ it("extract JsxAttribute > JsxExpression > Identifier > ConditionExpression > Nu
                       {
                           stack: ["JsxAttribute", "JsxExpression", "ConditionalExpression"],
                           type: "literal",
-                          node: "ConditionalExpression",
+                          node: "NumericLiteral",
                           value: 3,
                           kind: "number",
                       },
@@ -6954,12 +6928,48 @@ it("extract JsxAttribute > JsxExpression > ConditionalExpression > StringLiteral
                   color: [
                       {
                           stack: ["JsxAttribute", "JsxExpression", "ConditionalExpression"],
-                          type: "object",
-                          node: "ConditionalExpression",
+                          type: "map",
+                          node: "ObjectLiteralExpression",
                           value: {
-                              mobile: "black.400",
-                              tablet: "black.500",
-                              desktop: "black.600",
+                              mobile: {
+                                  stack: [
+                                      "JsxAttribute",
+                                      "JsxExpression",
+                                      "ConditionalExpression",
+                                      "PropertyAssignment",
+                                      "StringLiteral",
+                                  ],
+                                  type: "literal",
+                                  node: "StringLiteral",
+                                  value: "black.400",
+                                  kind: "string",
+                              },
+                              tablet: {
+                                  stack: [
+                                      "JsxAttribute",
+                                      "JsxExpression",
+                                      "ConditionalExpression",
+                                      "PropertyAssignment",
+                                      "StringLiteral",
+                                  ],
+                                  type: "literal",
+                                  node: "StringLiteral",
+                                  value: "black.500",
+                                  kind: "string",
+                              },
+                              desktop: {
+                                  stack: [
+                                      "JsxAttribute",
+                                      "JsxExpression",
+                                      "ConditionalExpression",
+                                      "PropertyAssignment",
+                                      "StringLiteral",
+                                  ],
+                                  type: "literal",
+                                  node: "StringLiteral",
+                                  value: "black.600",
+                                  kind: "string",
+                              },
                           },
                       },
                   ],
@@ -6984,7 +6994,7 @@ it("extract JsxAttribute > JsxExpression > ConditionalExpression > StringLiteral
                       {
                           stack: ["JsxAttribute", "JsxExpression", "ConditionalExpression"],
                           type: "literal",
-                          node: "ConditionalExpression",
+                          node: "StringLiteral",
                           value: "black.700",
                           kind: "string",
                       },
@@ -7266,7 +7276,7 @@ it("extract JsxAttribute > ObjectLiteralExpression > css prop", () => {
                                               "ConditionalExpression",
                                           ],
                                           type: "literal",
-                                          node: "ConditionalExpression",
+                                          node: "StringLiteral",
                                           value: "flex",
                                           kind: "string",
                                       },
@@ -7331,71 +7341,91 @@ it("extract JsxAttribute > ObjectLiteralExpression > css prop > ConditionalExpre
               [
                   [
                       "css",
-                      [
-                          {
-                              backgroundColor: "sky.600",
-                              __color: "##ff0",
-                              mobile: {
-                                  fontSize: "2xl",
-                                  display: ["flex", "block"],
-                              },
-                              zIndex: {
-                                  desktop: "10",
-                              },
+                      {
+                          backgroundColor: "sky.600",
+                          __color: "##ff0",
+                          mobile: {
+                              fontSize: "2xl",
+                              display: ["flex", "block"],
                           },
-                          "sky.700",
-                      ],
+                          zIndex: {
+                              desktop: "10",
+                          },
+                      },
                   ],
               ],
               {
                   css: [
                       {
                           stack: ["JsxAttribute", "JsxExpression", "ConditionalExpression"],
-                          type: "conditional",
-                          node: "ConditionalExpression",
-                          whenTrue: {
-                              stack: ["JsxAttribute", "JsxExpression", "ConditionalExpression"],
-                              type: "map",
-                              node: "ObjectLiteralExpression",
-                              value: {
-                                  backgroundColor: {
-                                      stack: [
-                                          "JsxAttribute",
-                                          "JsxExpression",
-                                          "ConditionalExpression",
-                                          "PropertyAssignment",
-                                          "StringLiteral",
-                                      ],
-                                      type: "literal",
-                                      node: "StringLiteral",
-                                      value: "sky.600",
-                                      kind: "string",
-                                  },
-                                  __color: {
-                                      stack: [
-                                          "JsxAttribute",
-                                          "JsxExpression",
-                                          "ConditionalExpression",
-                                          "PropertyAssignment",
-                                          "StringLiteral",
-                                      ],
-                                      type: "literal",
-                                      node: "StringLiteral",
-                                      value: "##ff0",
-                                      kind: "string",
-                                  },
-                                  mobile: {
-                                      stack: [
-                                          "JsxAttribute",
-                                          "JsxExpression",
-                                          "ConditionalExpression",
-                                          "PropertyAssignment",
-                                          "ObjectLiteralExpression",
-                                      ],
-                                      type: "map",
-                                      node: "ObjectLiteralExpression",
-                                      value: {
-                                          fontSize: {
+                          type: "map",
+                          node: "ObjectLiteralExpression",
+                          value: {
+                              backgroundColor: {
+                                  stack: [
+                                      "JsxAttribute",
+                                      "JsxExpression",
+                                      "ConditionalExpression",
+                                      "PropertyAssignment",
+                                      "StringLiteral",
+                                  ],
+                                  type: "literal",
+                                  node: "StringLiteral",
+                                  value: "sky.600",
+                                  kind: "string",
+                              },
+                              __color: {
+                                  stack: [
+                                      "JsxAttribute",
+                                      "JsxExpression",
+                                      "ConditionalExpression",
+                                      "PropertyAssignment",
+                                      "StringLiteral",
+                                  ],
+                                  type: "literal",
+                                  node: "StringLiteral",
+                                  value: "##ff0",
+                                  kind: "string",
+                              },
+                              mobile: {
+                                  stack: [
+                                      "JsxAttribute",
+                                      "JsxExpression",
+                                      "ConditionalExpression",
+                                      "PropertyAssignment",
+                                      "ObjectLiteralExpression",
+                                  ],
+                                  type: "map",
+                                  node: "ObjectLiteralExpression",
+                                  value: {
+                                      fontSize: {
+                                          stack: [
+                                              "JsxAttribute",
+                                              "JsxExpression",
+                                              "ConditionalExpression",
+                                              "PropertyAssignment",
+                                              "ObjectLiteralExpression",
+                                              "PropertyAssignment",
+                                              "StringLiteral",
+                                          ],
+                                          type: "literal",
+                                          node: "StringLiteral",
+                                          value: "2xl",
+                                          kind: "string",
+                                      },
+                                      display: {
+                                          stack: [
+                                              "JsxAttribute",
+                                              "JsxExpression",
+                                              "ConditionalExpression",
+                                              "PropertyAssignment",
+                                              "ObjectLiteralExpression",
+                                              "PropertyAssignment",
+                                              "ConditionalExpression",
+                                          ],
+                                          type: "conditional",
+                                          node: "ConditionalExpression",
+                                          whenTrue: {
                                               stack: [
                                                   "JsxAttribute",
                                                   "JsxExpression",
@@ -7403,14 +7433,14 @@ it("extract JsxAttribute > ObjectLiteralExpression > css prop > ConditionalExpre
                                                   "PropertyAssignment",
                                                   "ObjectLiteralExpression",
                                                   "PropertyAssignment",
-                                                  "StringLiteral",
+                                                  "ConditionalExpression",
                                               ],
                                               type: "literal",
                                               node: "StringLiteral",
-                                              value: "2xl",
+                                              value: "flex",
                                               kind: "string",
                                           },
-                                          display: {
+                                          whenFalse: {
                                               stack: [
                                                   "JsxAttribute",
                                                   "JsxExpression",
@@ -7420,80 +7450,44 @@ it("extract JsxAttribute > ObjectLiteralExpression > css prop > ConditionalExpre
                                                   "PropertyAssignment",
                                                   "ConditionalExpression",
                                               ],
-                                              type: "conditional",
-                                              node: "ConditionalExpression",
-                                              whenTrue: {
-                                                  stack: [
-                                                      "JsxAttribute",
-                                                      "JsxExpression",
-                                                      "ConditionalExpression",
-                                                      "PropertyAssignment",
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "ConditionalExpression",
-                                                  ],
-                                                  type: "literal",
-                                                  node: "StringLiteral",
-                                                  value: "flex",
-                                                  kind: "string",
-                                              },
-                                              whenFalse: {
-                                                  stack: [
-                                                      "JsxAttribute",
-                                                      "JsxExpression",
-                                                      "ConditionalExpression",
-                                                      "PropertyAssignment",
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "ConditionalExpression",
-                                                  ],
-                                                  type: "literal",
-                                                  node: "StringLiteral",
-                                                  value: "block",
-                                                  kind: "string",
-                                              },
-                                              kind: "ternary",
+                                              type: "literal",
+                                              node: "StringLiteral",
+                                              value: "block",
+                                              kind: "string",
                                           },
+                                          kind: "ternary",
                                       },
                                   },
-                                  zIndex: {
-                                      stack: [
-                                          "JsxAttribute",
-                                          "JsxExpression",
-                                          "ConditionalExpression",
-                                          "PropertyAssignment",
-                                          "ObjectLiteralExpression",
-                                      ],
-                                      type: "map",
-                                      node: "ObjectLiteralExpression",
-                                      value: {
-                                          desktop: {
-                                              stack: [
-                                                  "JsxAttribute",
-                                                  "JsxExpression",
-                                                  "ConditionalExpression",
-                                                  "PropertyAssignment",
-                                                  "ObjectLiteralExpression",
-                                                  "PropertyAssignment",
-                                                  "StringLiteral",
-                                              ],
-                                              type: "literal",
-                                              node: "StringLiteral",
-                                              value: "10",
-                                              kind: "string",
-                                          },
+                              },
+                              zIndex: {
+                                  stack: [
+                                      "JsxAttribute",
+                                      "JsxExpression",
+                                      "ConditionalExpression",
+                                      "PropertyAssignment",
+                                      "ObjectLiteralExpression",
+                                  ],
+                                  type: "map",
+                                  node: "ObjectLiteralExpression",
+                                  value: {
+                                      desktop: {
+                                          stack: [
+                                              "JsxAttribute",
+                                              "JsxExpression",
+                                              "ConditionalExpression",
+                                              "PropertyAssignment",
+                                              "ObjectLiteralExpression",
+                                              "PropertyAssignment",
+                                              "StringLiteral",
+                                          ],
+                                          type: "literal",
+                                          node: "StringLiteral",
+                                          value: "10",
+                                          kind: "string",
                                       },
                                   },
                               },
                           },
-                          whenFalse: {
-                              stack: ["JsxAttribute", "JsxExpression", "ConditionalExpression"],
-                              type: "literal",
-                              node: "StringLiteral",
-                              value: "sky.700",
-                              kind: "string",
-                          },
-                          kind: "ternary",
                       },
                   ],
               },
@@ -7645,7 +7639,7 @@ it("extract JsxAttribute > ObjectLiteralExpression > css prop > PropertyAssignme
                                                   "ConditionalExpression",
                                               ],
                                               type: "literal",
-                                              node: "ConditionalExpression",
+                                              node: "StringLiteral",
                                               value: "flex",
                                               kind: "string",
                                           },
@@ -8571,13 +8565,7 @@ it("extract real-world Stack example ", () => {
                               kind: "ternary",
                           },
                           whenFalse: {
-                              stack: [
-                                  "JsxAttribute",
-                                  "JsxExpression",
-                                  "ConditionalExpression",
-                                  "Identifier",
-                                  "BindingElement",
-                              ],
+                              stack: ["JsxAttribute", "JsxExpression", "ConditionalExpression"],
                               type: "literal",
                               node: "Identifier",
                               kind: "undefined",
@@ -8626,13 +8614,7 @@ it("extract real-world Stack example ", () => {
                               kind: "ternary",
                           },
                           whenFalse: {
-                              stack: [
-                                  "JsxAttribute",
-                                  "JsxExpression",
-                                  "ConditionalExpression",
-                                  "Identifier",
-                                  "BindingElement",
-                              ],
+                              stack: ["JsxAttribute", "JsxExpression", "ConditionalExpression"],
                               type: "literal",
                               node: "Identifier",
                               kind: "undefined",
@@ -10349,4 +10331,134 @@ it("extract CallExpression > no args", () => {
           },
       }
     `);
+});
+
+it("extract CallExpression nested ObjectLiteralExpression", () => {
+    expect(
+        extractFromCode(
+            `
+        import { css } from '.xxx/css'
+
+        console.log(
+          console.log(
+            css({
+              selectors: {
+                '&:hover': {
+                  background: 'red.200',
+                },
+              },
+            }),
+          ),
+        )
+        `,
+            { functions: ["css"] }
+        )
+    ).toMatchInlineSnapshot(`
+      [
+          [
+              "css",
+              [
+                  [
+                      "selectors",
+                      {
+                          "&:hover": {
+                              background: "red.200",
+                          },
+                      },
+                  ],
+              ],
+              {
+                  selectors: [
+                      {
+                          stack: [
+                              "CallExpression",
+                              "ObjectLiteralExpression",
+                              "PropertyAssignment",
+                              "ObjectLiteralExpression",
+                          ],
+                          type: "map",
+                          node: "ObjectLiteralExpression",
+                          value: {
+                              "&:hover": {
+                                  stack: [
+                                      "CallExpression",
+                                      "ObjectLiteralExpression",
+                                      "PropertyAssignment",
+                                      "ObjectLiteralExpression",
+                                      "PropertyAssignment",
+                                      "ObjectLiteralExpression",
+                                  ],
+                                  type: "map",
+                                  node: "ObjectLiteralExpression",
+                                  value: {
+                                      background: {
+                                          stack: [
+                                              "CallExpression",
+                                              "ObjectLiteralExpression",
+                                              "PropertyAssignment",
+                                              "ObjectLiteralExpression",
+                                              "PropertyAssignment",
+                                              "ObjectLiteralExpression",
+                                              "PropertyAssignment",
+                                              "StringLiteral",
+                                          ],
+                                          type: "literal",
+                                          node: "StringLiteral",
+                                          value: "red.200",
+                                          kind: "string",
+                                      },
+                                  },
+                              },
+                          },
+                      },
+                  ],
+              },
+          ],
+      ]
+    `);
+});
+
+it("extract CallExpression nested ObjectLiteralExpression", () => {
+    expect(
+        extractFromCode(
+            `
+            import { factory } from '../design-system/jsx'
+            import { cva } from '../design-system/css'
+
+            export const badge = cva({
+              base: {
+                fontWeight: 'medium',
+                letterSpacing: 'wide',
+                flexGrow: '0',
+                px: '3',
+                alignSelf: 'flex-start',
+                borderRadius: 'md',
+              },
+              variants: {
+                status: {
+                  default: {
+                    color: 'white',
+                    bg: 'gray.500',
+                  },
+                  success: {
+                    color: 'white',
+                    bg: 'green.500',
+                  },
+                  warning: {
+                    color: 'white',
+                    bg: 'yellow.500',
+                  },
+                },
+              },
+              defaultVariants: {
+                status: 'default',
+              },
+            })
+
+            export const Badge = factory('span', badge)
+
+        `,
+            { functions: ["factory"] }
+        )
+    ).toMatchInlineSnapshot('[["factory", [], {}]]');
 });

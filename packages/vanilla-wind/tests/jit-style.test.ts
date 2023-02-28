@@ -1755,7 +1755,7 @@ it("will generate multiple styles with nested conditions", () => {
     const magicStr = new MagicString(sourceFile.getFullText());
     const generateStyleResults = new Set<ReturnType<typeof generateStyleFromExtraction>>();
 
-    expect(twStyles.classByDebugId.size).toMatchInlineSnapshot("22");
+    expect(twStyles.classByDebugId.size).toMatchInlineSnapshot('21');
     expect(twStyles.classByDebugId).toMatchInlineSnapshot(`
       {
           "tw_backgroundColor_blue.500": "tw_backgroundColor_blue.500__1rxundp0",
@@ -1766,21 +1766,20 @@ it("will generate multiple styles with nested conditions", () => {
           tw_backgroundColor_hover_whitesmoke: "tw_backgroundColor_hover_whitesmoke__1rxundp5",
           tw_borderRadius_hover_2xl: "tw_borderRadius_hover_2xl__1rxundp6",
           tw_color_hover_darkseagreen: "tw_color_hover_darkseagreen__1rxundp7",
-          tw_width_hover_12px: "tw_width_hover_12px__1rxundp8",
-          tw_padding_hover_100px: "tw_padding_hover_100px__1rxundp9",
-          tw_padding_hover_4: "tw_padding_hover_4__1rxundpa",
-          tw_display_hover_dark_large_flex: "tw_display_hover_dark_large_flex__1rxundpb",
-          "tw_display_hover_light_inline-flex": "tw_display_hover_light_inline-flex__1rxundpc",
-          "tw_backgroundColor_hover_dark_blue.700": "tw_backgroundColor_hover_dark_blue.700__1rxundpd",
-          "tw_backgroundColor_hover_light_large_red.200": "tw_backgroundColor_hover_light_large_red.200__1rxundpe",
+          tw_padding_hover_100px: "tw_padding_hover_100px__1rxundp8",
+          tw_padding_hover_4: "tw_padding_hover_4__1rxundp9",
+          tw_display_hover_dark_large_flex: "tw_display_hover_dark_large_flex__1rxundpa",
+          "tw_display_hover_light_inline-flex": "tw_display_hover_light_inline-flex__1rxundpb",
+          "tw_backgroundColor_hover_dark_blue.700": "tw_backgroundColor_hover_dark_blue.700__1rxundpc",
+          "tw_backgroundColor_hover_light_large_red.200": "tw_backgroundColor_hover_light_large_red.200__1rxundpd",
           tw_backgroundColor_hover_light_dark_ThreeDHighlight:
-              "tw_backgroundColor_hover_light_dark_ThreeDHighlight__1rxundpf",
-          tw_padding_dark_24: "tw_padding_dark_24__1rxundpg",
-          "tw_backgroundColor_dark_red.800": "tw_backgroundColor_dark_red.800__1rxundph",
-          tw_backgroundColor_dark_whitesmoke: "tw_backgroundColor_dark_whitesmoke__1rxundpi",
-          "tw_color_dark_hover_blue.600": "tw_color_dark_hover_blue.600__1rxundpj",
-          tw_display_dark_hover_light_flex: "tw_display_dark_hover_light_flex__1rxundpk",
-          tw_display_dark_hover_large_small_contents: "tw_display_dark_hover_large_small_contents__1rxundpl",
+              "tw_backgroundColor_hover_light_dark_ThreeDHighlight__1rxundpe",
+          tw_padding_dark_24: "tw_padding_dark_24__1rxundpf",
+          "tw_backgroundColor_dark_red.800": "tw_backgroundColor_dark_red.800__1rxundpg",
+          tw_backgroundColor_dark_whitesmoke: "tw_backgroundColor_dark_whitesmoke__1rxundph",
+          "tw_color_dark_hover_blue.600": "tw_color_dark_hover_blue.600__1rxundpi",
+          tw_display_dark_hover_light_flex: "tw_display_dark_hover_light_flex__1rxundpj",
+          tw_display_dark_hover_large_small_contents: "tw_display_dark_hover_large_small_contents__1rxundpk",
       }
     `);
     expect(twStyles.allRules).toMatchInlineSnapshot(`
@@ -1904,23 +1903,6 @@ it("will generate multiple styles with nested conditions", () => {
               propName: "color",
               value: "darkseagreen",
               token: "darkseagreen",
-              conditionPath: ["hover"],
-          },
-          {
-              name: "tw",
-              type: "local",
-              mode: "atomic",
-              rule: {
-                  selectors: {
-                      " &:hover": {
-                          width: "12px",
-                      },
-                  },
-              },
-              debugId: "tw_width_hover_12px",
-              propName: "width",
-              value: "12px",
-              token: "12px",
               conditionPath: ["hover"],
           },
           {
@@ -2235,7 +2217,7 @@ it("will generate multiple styles with nested conditions", () => {
           },
       });
 
-      const className = "tw_backgroundColor_blue.500__1rxundp0 tw_padding_24__1rxundp1 tw_borderRadius_lg__1rxundp2 tw_display_dark_hover_table-footer-group__1rxundp3 tw_color_navItem_hoverNotActive_brand.100__1rxundp4 tw_backgroundColor_hover_whitesmoke__1rxundp5 tw_borderRadius_hover_2xl__1rxundp6 tw_color_hover_darkseagreen__1rxundp7 tw_width_hover_12px__1rxundp8 tw_padding_hover_100px__1rxundp9 tw_padding_hover_4__1rxundpa tw_display_hover_dark_large_flex__1rxundpb tw_display_hover_light_inline-flex__1rxundpc tw_backgroundColor_hover_dark_blue.700__1rxundpd tw_backgroundColor_hover_light_large_red.200__1rxundpe tw_backgroundColor_hover_light_dark_ThreeDHighlight__1rxundpf tw_padding_dark_24__1rxundpg tw_backgroundColor_dark_red.800__1rxundph tw_backgroundColor_dark_whitesmoke__1rxundpi tw_color_dark_hover_blue.600__1rxundpj tw_display_dark_hover_light_flex__1rxundpk tw_display_dark_hover_large_small_contents__1rxundpl";"
+      const className = "tw_backgroundColor_blue.500__1rxundp0 tw_padding_24__1rxundp1 tw_borderRadius_lg__1rxundp2 tw_display_dark_hover_table-footer-group__1rxundp3 tw_color_navItem_hoverNotActive_brand.100__1rxundp4 tw_backgroundColor_hover_whitesmoke__1rxundp5 tw_borderRadius_hover_2xl__1rxundp6 tw_color_hover_darkseagreen__1rxundp7 tw_padding_hover_100px__1rxundp8 tw_padding_hover_4__1rxundp9 tw_display_hover_dark_large_flex__1rxundpa tw_display_hover_light_inline-flex__1rxundpb tw_backgroundColor_hover_dark_blue.700__1rxundpc tw_backgroundColor_hover_light_large_red.200__1rxundpd tw_backgroundColor_hover_light_dark_ThreeDHighlight__1rxundpe tw_padding_dark_24__1rxundpf tw_backgroundColor_dark_red.800__1rxundpg tw_backgroundColor_dark_whitesmoke__1rxundph tw_color_dark_hover_blue.600__1rxundpi tw_display_dark_hover_light_flex__1rxundpj tw_display_dark_hover_large_small_contents__1rxundpk";"
     `);
 
     expect(ctx.getCss().cssMap.get("test/jit-style.test.ts")).toMatchInlineSnapshot(`
@@ -2263,46 +2245,43 @@ it("will generate multiple styles with nested conditions", () => {
        .tw_color_hover_darkseagreen__1rxundp7:hover {
         color: darkseagreen;
       }
-       .tw_width_hover_12px__1rxundp8:hover {
-        width: 12px;
-      }
-       .tw_padding_hover_100px__1rxundp9:hover {
+       .tw_padding_hover_100px__1rxundp8:hover {
         padding: 100px;
       }
-       .tw_padding_hover_4__1rxundpa:hover {
+       .tw_padding_hover_4__1rxundp9:hover {
         padding: 4px;
       }
-      .dark.large .tw_display_hover_dark_large_flex__1rxundpb:hover {
+      .dark.large .tw_display_hover_dark_large_flex__1rxundpa:hover {
         display: flex;
       }
-      .light .tw_display_hover_light_inline-flex__1rxundpc:hover {
+      .light .tw_display_hover_light_inline-flex__1rxundpb:hover {
         display: inline-flex;
       }
-      .dark .tw_backgroundColor_hover_dark_blue\\.700__1rxundpd:hover {
+      .dark .tw_backgroundColor_hover_dark_blue\\.700__1rxundpc:hover {
         background-color: #2c5282;
       }
-      .light.large .tw_backgroundColor_hover_light_large_red\\.200__1rxundpe:hover {
+      .light.large .tw_backgroundColor_hover_light_large_red\\.200__1rxundpd:hover {
         background-color: #FEB2B2;
       }
-      .light.dark .tw_backgroundColor_hover_light_dark_ThreeDHighlight__1rxundpf:hover {
+      .light.dark .tw_backgroundColor_hover_light_dark_ThreeDHighlight__1rxundpe:hover {
         background-color: ThreeDHighlight;
       }
-      .dark .tw_padding_dark_24__1rxundpg {
+      .dark .tw_padding_dark_24__1rxundpf {
         padding: 24px;
       }
-      .dark .tw_backgroundColor_dark_red\\.800__1rxundph {
+      .dark .tw_backgroundColor_dark_red\\.800__1rxundpg {
         background-color: #822727;
       }
-      .dark .tw_backgroundColor_dark_whitesmoke__1rxundpi {
+      .dark .tw_backgroundColor_dark_whitesmoke__1rxundph {
         background-color: whitesmoke;
       }
-      .dark .tw_color_dark_hover_blue\\.600__1rxundpj:hover {
+      .dark .tw_color_dark_hover_blue\\.600__1rxundpi:hover {
         color: #2b6cb0;
       }
-      .dark.light .tw_display_dark_hover_light_flex__1rxundpk:hover {
+      .dark.light .tw_display_dark_hover_light_flex__1rxundpj:hover {
         display: flex;
       }
-      .dark.large.small .tw_display_dark_hover_large_small_contents__1rxundpl:hover {
+      .dark.large.small .tw_display_dark_hover_large_small_contents__1rxundpk:hover {
         display: contents;
       }"
     `);
@@ -2345,8 +2324,8 @@ it("will generate multiple styles with nested conditions - grouped", () => {
     expect(twStyles.classByDebugId.size).toMatchInlineSnapshot("1");
     expect(twStyles.classByDebugId).toMatchInlineSnapshot(`
       {
-          "tw__backgroundColor_blue.500__padding_24__borderRadius_lg__display_dark_hover_table-footer-group__color_navItem_hoverNotActive_brand.100__backgroundColor_hover_whitesmoke__borderRadius_hover_2xl__color_hover_darkseagreen__width_hover_12px__padding_hover_100px__padding_hover_4__display_hover_dark_large_flex__display_hover_light_inline-flex__backgroundColor_hover_dark_blue.700__backgroundColor_hover_light_large_red.200__backgroundColor_hover_light_dark_ThreeDHighlight__padding_dark_24__backgroundColor_dark_red.800__backgroundColor_dark_whitesmoke__color_dark_hover_blue.600__display_dark_hover_light_flex__display_dark_hover_large_small_contents":
-              "tw__backgroundColor_blue.500__padding_24__borderRadius_lg__display_dark_hover_table-footer-group__color_navItem_hoverNotActive_brand.100__backgroundColor_hover_whitesmoke__borderRadius_hover_2xl__color_hover_darkseagreen__width_hover_12px__padding_hover_100px__padding_hover_4__display_hover_dark_large_flex__display_hover_light_inline-flex__backgroundColor_hover_dark_blue.700__backgroundColor_hover_light_large_red.200__backgroundColor_hover_light_dark_ThreeDHighlight__padding_dark_24__backgroundColor_dark_red.800__backgroundColor_dark_whitesmoke__color_dark_hover_blue.600__display_dark_hover_light_flex__display_dark_hover_large_small_contents__1rxundp0",
+          "tw__backgroundColor_blue.500__padding_24__borderRadius_lg__display_dark_hover_table-footer-group__color_navItem_hoverNotActive_brand.100__backgroundColor_hover_whitesmoke__borderRadius_hover_2xl__color_hover_darkseagreen__padding_hover_100px__padding_hover_4__display_hover_dark_large_flex__display_hover_light_inline-flex__backgroundColor_hover_dark_blue.700__backgroundColor_hover_light_large_red.200__backgroundColor_hover_light_dark_ThreeDHighlight__padding_dark_24__backgroundColor_dark_red.800__backgroundColor_dark_whitesmoke__color_dark_hover_blue.600__display_dark_hover_light_flex__display_dark_hover_large_small_contents":
+              "tw__backgroundColor_blue.500__padding_24__borderRadius_lg__display_dark_hover_table-footer-group__color_navItem_hoverNotActive_brand.100__backgroundColor_hover_whitesmoke__borderRadius_hover_2xl__color_hover_darkseagreen__padding_hover_100px__padding_hover_4__display_hover_dark_large_flex__display_hover_light_inline-flex__backgroundColor_hover_dark_blue.700__backgroundColor_hover_light_large_red.200__backgroundColor_hover_light_dark_ThreeDHighlight__padding_dark_24__backgroundColor_dark_red.800__backgroundColor_dark_whitesmoke__color_dark_hover_blue.600__display_dark_hover_light_flex__display_dark_hover_large_small_contents__1rxundp0",
       }
     `);
     expect(twStyles.allRules).toMatchInlineSnapshot(`
@@ -2372,7 +2351,6 @@ it("will generate multiple styles with nested conditions - grouped", () => {
                           backgroundColor: "whitesmoke",
                           borderRadius: "1rem",
                           color: "darkseagreen",
-                          width: "12px",
                           padding: "4px",
                       },
                       ".dark.large &:hover": {
@@ -2400,7 +2378,7 @@ it("will generate multiple styles with nested conditions - grouped", () => {
                   },
               },
               debugId:
-                  "tw__backgroundColor_blue.500__padding_24__borderRadius_lg__display_dark_hover_table-footer-group__color_navItem_hoverNotActive_brand.100__backgroundColor_hover_whitesmoke__borderRadius_hover_2xl__color_hover_darkseagreen__width_hover_12px__padding_hover_100px__padding_hover_4__display_hover_dark_large_flex__display_hover_light_inline-flex__backgroundColor_hover_dark_blue.700__backgroundColor_hover_light_large_red.200__backgroundColor_hover_light_dark_ThreeDHighlight__padding_dark_24__backgroundColor_dark_red.800__backgroundColor_dark_whitesmoke__color_dark_hover_blue.600__display_dark_hover_light_flex__display_dark_hover_large_small_contents",
+                  "tw__backgroundColor_blue.500__padding_24__borderRadius_lg__display_dark_hover_table-footer-group__color_navItem_hoverNotActive_brand.100__backgroundColor_hover_whitesmoke__borderRadius_hover_2xl__color_hover_darkseagreen__padding_hover_100px__padding_hover_4__display_hover_dark_large_flex__display_hover_light_inline-flex__backgroundColor_hover_dark_blue.700__backgroundColor_hover_light_large_red.200__backgroundColor_hover_light_dark_ThreeDHighlight__padding_dark_24__backgroundColor_dark_red.800__backgroundColor_dark_whitesmoke__color_dark_hover_blue.600__display_dark_hover_light_flex__display_dark_hover_large_small_contents",
               fromRules: [
                   {
                       name: "tw",
@@ -2423,7 +2401,6 @@ it("will generate multiple styles with nested conditions - grouped", () => {
                                   backgroundColor: "whitesmoke",
                                   borderRadius: "1rem",
                                   color: "darkseagreen",
-                                  width: "12px",
                                   padding: "4px",
                               },
                               ".dark.large &:hover": {
@@ -2562,23 +2539,6 @@ it("will generate multiple styles with nested conditions - grouped", () => {
                       propName: "color",
                       value: "darkseagreen",
                       token: "darkseagreen",
-                      conditionPath: ["hover"],
-                  },
-                  {
-                      name: "tw",
-                      type: "local",
-                      mode: "atomic",
-                      rule: {
-                          selectors: {
-                              " &:hover": {
-                                  width: "12px",
-                              },
-                          },
-                      },
-                      debugId: "tw_width_hover_12px",
-                      propName: "width",
-                      value: "12px",
-                      token: "12px",
                       conditionPath: ["hover"],
                   },
                   {
@@ -2895,50 +2855,49 @@ it("will generate multiple styles with nested conditions - grouped", () => {
           },
       });
 
-      const className = "tw__backgroundColor_blue.500__padding_24__borderRadius_lg__display_dark_hover_table-footer-group__color_navItem_hoverNotActive_brand.100__backgroundColor_hover_whitesmoke__borderRadius_hover_2xl__color_hover_darkseagreen__width_hover_12px__padding_hover_100px__padding_hover_4__display_hover_dark_large_flex__display_hover_light_inline-flex__backgroundColor_hover_dark_blue.700__backgroundColor_hover_light_large_red.200__backgroundColor_hover_light_dark_ThreeDHighlight__padding_dark_24__backgroundColor_dark_red.800__backgroundColor_dark_whitesmoke__color_dark_hover_blue.600__display_dark_hover_light_flex__display_dark_hover_large_small_contents__1rxundp0";"
+      const className = "tw__backgroundColor_blue.500__padding_24__borderRadius_lg__display_dark_hover_table-footer-group__color_navItem_hoverNotActive_brand.100__backgroundColor_hover_whitesmoke__borderRadius_hover_2xl__color_hover_darkseagreen__padding_hover_100px__padding_hover_4__display_hover_dark_large_flex__display_hover_light_inline-flex__backgroundColor_hover_dark_blue.700__backgroundColor_hover_light_large_red.200__backgroundColor_hover_light_dark_ThreeDHighlight__padding_dark_24__backgroundColor_dark_red.800__backgroundColor_dark_whitesmoke__color_dark_hover_blue.600__display_dark_hover_light_flex__display_dark_hover_large_small_contents__1rxundp0";"
     `);
 
     expect(ctx.getCss().cssMap.get("test/jit-style.test.ts")).toMatchInlineSnapshot(`
-      ".tw__backgroundColor_blue\\.500__padding_24__borderRadius_lg__display_dark_hover_table-footer-group__color_navItem_hoverNotActive_brand\\.100__backgroundColor_hover_whitesmoke__borderRadius_hover_2xl__color_hover_darkseagreen__width_hover_12px__padding_hover_100px__padding_hover_4__display_hover_dark_large_flex__display_hover_light_inline-flex__backgroundColor_hover_dark_blue\\.700__backgroundColor_hover_light_large_red\\.200__backgroundColor_hover_light_dark_ThreeDHighlight__padding_dark_24__backgroundColor_dark_red\\.800__backgroundColor_dark_whitesmoke__color_dark_hover_blue\\.600__display_dark_hover_light_flex__display_dark_hover_large_small_contents__1rxundp0 {
+      ".tw__backgroundColor_blue\\.500__padding_24__borderRadius_lg__display_dark_hover_table-footer-group__color_navItem_hoverNotActive_brand\\.100__backgroundColor_hover_whitesmoke__borderRadius_hover_2xl__color_hover_darkseagreen__padding_hover_100px__padding_hover_4__display_hover_dark_large_flex__display_hover_light_inline-flex__backgroundColor_hover_dark_blue\\.700__backgroundColor_hover_light_large_red\\.200__backgroundColor_hover_light_dark_ThreeDHighlight__padding_dark_24__backgroundColor_dark_red\\.800__backgroundColor_dark_whitesmoke__color_dark_hover_blue\\.600__display_dark_hover_light_flex__display_dark_hover_large_small_contents__1rxundp0 {
         background-color: #3182ce;
         padding: 24px;
         border-radius: 0.5rem;
       }
-      .dark .tw__backgroundColor_blue\\.500__padding_24__borderRadius_lg__display_dark_hover_table-footer-group__color_navItem_hoverNotActive_brand\\.100__backgroundColor_hover_whitesmoke__borderRadius_hover_2xl__color_hover_darkseagreen__width_hover_12px__padding_hover_100px__padding_hover_4__display_hover_dark_large_flex__display_hover_light_inline-flex__backgroundColor_hover_dark_blue\\.700__backgroundColor_hover_light_large_red\\.200__backgroundColor_hover_light_dark_ThreeDHighlight__padding_dark_24__backgroundColor_dark_red\\.800__backgroundColor_dark_whitesmoke__color_dark_hover_blue\\.600__display_dark_hover_light_flex__display_dark_hover_large_small_contents__1rxundp0:hover {
+      .dark .tw__backgroundColor_blue\\.500__padding_24__borderRadius_lg__display_dark_hover_table-footer-group__color_navItem_hoverNotActive_brand\\.100__backgroundColor_hover_whitesmoke__borderRadius_hover_2xl__color_hover_darkseagreen__padding_hover_100px__padding_hover_4__display_hover_dark_large_flex__display_hover_light_inline-flex__backgroundColor_hover_dark_blue\\.700__backgroundColor_hover_light_large_red\\.200__backgroundColor_hover_light_dark_ThreeDHighlight__padding_dark_24__backgroundColor_dark_red\\.800__backgroundColor_dark_whitesmoke__color_dark_hover_blue\\.600__display_dark_hover_light_flex__display_dark_hover_large_small_contents__1rxundp0:hover {
         display: table-footer-group;
         background-color: #2c5282;
         color: #2b6cb0;
       }
-      nav li > .tw__backgroundColor_blue\\.500__padding_24__borderRadius_lg__display_dark_hover_table-footer-group__color_navItem_hoverNotActive_brand\\.100__backgroundColor_hover_whitesmoke__borderRadius_hover_2xl__color_hover_darkseagreen__width_hover_12px__padding_hover_100px__padding_hover_4__display_hover_dark_large_flex__display_hover_light_inline-flex__backgroundColor_hover_dark_blue\\.700__backgroundColor_hover_light_large_red\\.200__backgroundColor_hover_light_dark_ThreeDHighlight__padding_dark_24__backgroundColor_dark_red\\.800__backgroundColor_dark_whitesmoke__color_dark_hover_blue\\.600__display_dark_hover_light_flex__display_dark_hover_large_small_contents__1rxundp0:hover:not(:active) {
+      nav li > .tw__backgroundColor_blue\\.500__padding_24__borderRadius_lg__display_dark_hover_table-footer-group__color_navItem_hoverNotActive_brand\\.100__backgroundColor_hover_whitesmoke__borderRadius_hover_2xl__color_hover_darkseagreen__padding_hover_100px__padding_hover_4__display_hover_dark_large_flex__display_hover_light_inline-flex__backgroundColor_hover_dark_blue\\.700__backgroundColor_hover_light_large_red\\.200__backgroundColor_hover_light_dark_ThreeDHighlight__padding_dark_24__backgroundColor_dark_red\\.800__backgroundColor_dark_whitesmoke__color_dark_hover_blue\\.600__display_dark_hover_light_flex__display_dark_hover_large_small_contents__1rxundp0:hover:not(:active) {
         color: #EFF6F8;
       }
-       .tw__backgroundColor_blue\\.500__padding_24__borderRadius_lg__display_dark_hover_table-footer-group__color_navItem_hoverNotActive_brand\\.100__backgroundColor_hover_whitesmoke__borderRadius_hover_2xl__color_hover_darkseagreen__width_hover_12px__padding_hover_100px__padding_hover_4__display_hover_dark_large_flex__display_hover_light_inline-flex__backgroundColor_hover_dark_blue\\.700__backgroundColor_hover_light_large_red\\.200__backgroundColor_hover_light_dark_ThreeDHighlight__padding_dark_24__backgroundColor_dark_red\\.800__backgroundColor_dark_whitesmoke__color_dark_hover_blue\\.600__display_dark_hover_light_flex__display_dark_hover_large_small_contents__1rxundp0:hover {
+       .tw__backgroundColor_blue\\.500__padding_24__borderRadius_lg__display_dark_hover_table-footer-group__color_navItem_hoverNotActive_brand\\.100__backgroundColor_hover_whitesmoke__borderRadius_hover_2xl__color_hover_darkseagreen__padding_hover_100px__padding_hover_4__display_hover_dark_large_flex__display_hover_light_inline-flex__backgroundColor_hover_dark_blue\\.700__backgroundColor_hover_light_large_red\\.200__backgroundColor_hover_light_dark_ThreeDHighlight__padding_dark_24__backgroundColor_dark_red\\.800__backgroundColor_dark_whitesmoke__color_dark_hover_blue\\.600__display_dark_hover_light_flex__display_dark_hover_large_small_contents__1rxundp0:hover {
         background-color: whitesmoke;
         border-radius: 1rem;
         color: darkseagreen;
-        width: 12px;
         padding: 4px;
       }
-      .dark.large .tw__backgroundColor_blue\\.500__padding_24__borderRadius_lg__display_dark_hover_table-footer-group__color_navItem_hoverNotActive_brand\\.100__backgroundColor_hover_whitesmoke__borderRadius_hover_2xl__color_hover_darkseagreen__width_hover_12px__padding_hover_100px__padding_hover_4__display_hover_dark_large_flex__display_hover_light_inline-flex__backgroundColor_hover_dark_blue\\.700__backgroundColor_hover_light_large_red\\.200__backgroundColor_hover_light_dark_ThreeDHighlight__padding_dark_24__backgroundColor_dark_red\\.800__backgroundColor_dark_whitesmoke__color_dark_hover_blue\\.600__display_dark_hover_light_flex__display_dark_hover_large_small_contents__1rxundp0:hover {
+      .dark.large .tw__backgroundColor_blue\\.500__padding_24__borderRadius_lg__display_dark_hover_table-footer-group__color_navItem_hoverNotActive_brand\\.100__backgroundColor_hover_whitesmoke__borderRadius_hover_2xl__color_hover_darkseagreen__padding_hover_100px__padding_hover_4__display_hover_dark_large_flex__display_hover_light_inline-flex__backgroundColor_hover_dark_blue\\.700__backgroundColor_hover_light_large_red\\.200__backgroundColor_hover_light_dark_ThreeDHighlight__padding_dark_24__backgroundColor_dark_red\\.800__backgroundColor_dark_whitesmoke__color_dark_hover_blue\\.600__display_dark_hover_light_flex__display_dark_hover_large_small_contents__1rxundp0:hover {
         display: flex;
       }
-      .light .tw__backgroundColor_blue\\.500__padding_24__borderRadius_lg__display_dark_hover_table-footer-group__color_navItem_hoverNotActive_brand\\.100__backgroundColor_hover_whitesmoke__borderRadius_hover_2xl__color_hover_darkseagreen__width_hover_12px__padding_hover_100px__padding_hover_4__display_hover_dark_large_flex__display_hover_light_inline-flex__backgroundColor_hover_dark_blue\\.700__backgroundColor_hover_light_large_red\\.200__backgroundColor_hover_light_dark_ThreeDHighlight__padding_dark_24__backgroundColor_dark_red\\.800__backgroundColor_dark_whitesmoke__color_dark_hover_blue\\.600__display_dark_hover_light_flex__display_dark_hover_large_small_contents__1rxundp0:hover {
+      .light .tw__backgroundColor_blue\\.500__padding_24__borderRadius_lg__display_dark_hover_table-footer-group__color_navItem_hoverNotActive_brand\\.100__backgroundColor_hover_whitesmoke__borderRadius_hover_2xl__color_hover_darkseagreen__padding_hover_100px__padding_hover_4__display_hover_dark_large_flex__display_hover_light_inline-flex__backgroundColor_hover_dark_blue\\.700__backgroundColor_hover_light_large_red\\.200__backgroundColor_hover_light_dark_ThreeDHighlight__padding_dark_24__backgroundColor_dark_red\\.800__backgroundColor_dark_whitesmoke__color_dark_hover_blue\\.600__display_dark_hover_light_flex__display_dark_hover_large_small_contents__1rxundp0:hover {
         display: inline-flex;
       }
-      .light.large .tw__backgroundColor_blue\\.500__padding_24__borderRadius_lg__display_dark_hover_table-footer-group__color_navItem_hoverNotActive_brand\\.100__backgroundColor_hover_whitesmoke__borderRadius_hover_2xl__color_hover_darkseagreen__width_hover_12px__padding_hover_100px__padding_hover_4__display_hover_dark_large_flex__display_hover_light_inline-flex__backgroundColor_hover_dark_blue\\.700__backgroundColor_hover_light_large_red\\.200__backgroundColor_hover_light_dark_ThreeDHighlight__padding_dark_24__backgroundColor_dark_red\\.800__backgroundColor_dark_whitesmoke__color_dark_hover_blue\\.600__display_dark_hover_light_flex__display_dark_hover_large_small_contents__1rxundp0:hover {
+      .light.large .tw__backgroundColor_blue\\.500__padding_24__borderRadius_lg__display_dark_hover_table-footer-group__color_navItem_hoverNotActive_brand\\.100__backgroundColor_hover_whitesmoke__borderRadius_hover_2xl__color_hover_darkseagreen__padding_hover_100px__padding_hover_4__display_hover_dark_large_flex__display_hover_light_inline-flex__backgroundColor_hover_dark_blue\\.700__backgroundColor_hover_light_large_red\\.200__backgroundColor_hover_light_dark_ThreeDHighlight__padding_dark_24__backgroundColor_dark_red\\.800__backgroundColor_dark_whitesmoke__color_dark_hover_blue\\.600__display_dark_hover_light_flex__display_dark_hover_large_small_contents__1rxundp0:hover {
         background-color: #FEB2B2;
       }
-      .light.dark .tw__backgroundColor_blue\\.500__padding_24__borderRadius_lg__display_dark_hover_table-footer-group__color_navItem_hoverNotActive_brand\\.100__backgroundColor_hover_whitesmoke__borderRadius_hover_2xl__color_hover_darkseagreen__width_hover_12px__padding_hover_100px__padding_hover_4__display_hover_dark_large_flex__display_hover_light_inline-flex__backgroundColor_hover_dark_blue\\.700__backgroundColor_hover_light_large_red\\.200__backgroundColor_hover_light_dark_ThreeDHighlight__padding_dark_24__backgroundColor_dark_red\\.800__backgroundColor_dark_whitesmoke__color_dark_hover_blue\\.600__display_dark_hover_light_flex__display_dark_hover_large_small_contents__1rxundp0:hover {
+      .light.dark .tw__backgroundColor_blue\\.500__padding_24__borderRadius_lg__display_dark_hover_table-footer-group__color_navItem_hoverNotActive_brand\\.100__backgroundColor_hover_whitesmoke__borderRadius_hover_2xl__color_hover_darkseagreen__padding_hover_100px__padding_hover_4__display_hover_dark_large_flex__display_hover_light_inline-flex__backgroundColor_hover_dark_blue\\.700__backgroundColor_hover_light_large_red\\.200__backgroundColor_hover_light_dark_ThreeDHighlight__padding_dark_24__backgroundColor_dark_red\\.800__backgroundColor_dark_whitesmoke__color_dark_hover_blue\\.600__display_dark_hover_light_flex__display_dark_hover_large_small_contents__1rxundp0:hover {
         background-color: ThreeDHighlight;
       }
-      .dark .tw__backgroundColor_blue\\.500__padding_24__borderRadius_lg__display_dark_hover_table-footer-group__color_navItem_hoverNotActive_brand\\.100__backgroundColor_hover_whitesmoke__borderRadius_hover_2xl__color_hover_darkseagreen__width_hover_12px__padding_hover_100px__padding_hover_4__display_hover_dark_large_flex__display_hover_light_inline-flex__backgroundColor_hover_dark_blue\\.700__backgroundColor_hover_light_large_red\\.200__backgroundColor_hover_light_dark_ThreeDHighlight__padding_dark_24__backgroundColor_dark_red\\.800__backgroundColor_dark_whitesmoke__color_dark_hover_blue\\.600__display_dark_hover_light_flex__display_dark_hover_large_small_contents__1rxundp0 {
+      .dark .tw__backgroundColor_blue\\.500__padding_24__borderRadius_lg__display_dark_hover_table-footer-group__color_navItem_hoverNotActive_brand\\.100__backgroundColor_hover_whitesmoke__borderRadius_hover_2xl__color_hover_darkseagreen__padding_hover_100px__padding_hover_4__display_hover_dark_large_flex__display_hover_light_inline-flex__backgroundColor_hover_dark_blue\\.700__backgroundColor_hover_light_large_red\\.200__backgroundColor_hover_light_dark_ThreeDHighlight__padding_dark_24__backgroundColor_dark_red\\.800__backgroundColor_dark_whitesmoke__color_dark_hover_blue\\.600__display_dark_hover_light_flex__display_dark_hover_large_small_contents__1rxundp0 {
         padding: 24px;
         background-color: whitesmoke;
       }
-      .dark.light .tw__backgroundColor_blue\\.500__padding_24__borderRadius_lg__display_dark_hover_table-footer-group__color_navItem_hoverNotActive_brand\\.100__backgroundColor_hover_whitesmoke__borderRadius_hover_2xl__color_hover_darkseagreen__width_hover_12px__padding_hover_100px__padding_hover_4__display_hover_dark_large_flex__display_hover_light_inline-flex__backgroundColor_hover_dark_blue\\.700__backgroundColor_hover_light_large_red\\.200__backgroundColor_hover_light_dark_ThreeDHighlight__padding_dark_24__backgroundColor_dark_red\\.800__backgroundColor_dark_whitesmoke__color_dark_hover_blue\\.600__display_dark_hover_light_flex__display_dark_hover_large_small_contents__1rxundp0:hover {
+      .dark.light .tw__backgroundColor_blue\\.500__padding_24__borderRadius_lg__display_dark_hover_table-footer-group__color_navItem_hoverNotActive_brand\\.100__backgroundColor_hover_whitesmoke__borderRadius_hover_2xl__color_hover_darkseagreen__padding_hover_100px__padding_hover_4__display_hover_dark_large_flex__display_hover_light_inline-flex__backgroundColor_hover_dark_blue\\.700__backgroundColor_hover_light_large_red\\.200__backgroundColor_hover_light_dark_ThreeDHighlight__padding_dark_24__backgroundColor_dark_red\\.800__backgroundColor_dark_whitesmoke__color_dark_hover_blue\\.600__display_dark_hover_light_flex__display_dark_hover_large_small_contents__1rxundp0:hover {
         display: flex;
       }
-      .dark.large.small .tw__backgroundColor_blue\\.500__padding_24__borderRadius_lg__display_dark_hover_table-footer-group__color_navItem_hoverNotActive_brand\\.100__backgroundColor_hover_whitesmoke__borderRadius_hover_2xl__color_hover_darkseagreen__width_hover_12px__padding_hover_100px__padding_hover_4__display_hover_dark_large_flex__display_hover_light_inline-flex__backgroundColor_hover_dark_blue\\.700__backgroundColor_hover_light_large_red\\.200__backgroundColor_hover_light_dark_ThreeDHighlight__padding_dark_24__backgroundColor_dark_red\\.800__backgroundColor_dark_whitesmoke__color_dark_hover_blue\\.600__display_dark_hover_light_flex__display_dark_hover_large_small_contents__1rxundp0:hover {
+      .dark.large.small .tw__backgroundColor_blue\\.500__padding_24__borderRadius_lg__display_dark_hover_table-footer-group__color_navItem_hoverNotActive_brand\\.100__backgroundColor_hover_whitesmoke__borderRadius_hover_2xl__color_hover_darkseagreen__padding_hover_100px__padding_hover_4__display_hover_dark_large_flex__display_hover_light_inline-flex__backgroundColor_hover_dark_blue\\.700__backgroundColor_hover_light_large_red\\.200__backgroundColor_hover_light_dark_ThreeDHighlight__padding_dark_24__backgroundColor_dark_red\\.800__backgroundColor_dark_whitesmoke__color_dark_hover_blue\\.600__display_dark_hover_light_flex__display_dark_hover_large_small_contents__1rxundp0:hover {
         display: contents;
       }"
     `);

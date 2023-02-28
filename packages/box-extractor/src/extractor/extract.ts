@@ -156,6 +156,12 @@ export const extract = ({
                 if (boxNode.isConditional()) {
                     processBoxNode(boxNode.whenTrue);
                     processBoxNode(boxNode.whenFalse);
+                    return;
+                }
+
+                if (boxNode.isLiteral() && (boxNode.kind === "null" || boxNode.kind === "undefined")) {
+                    parentRef.props.set(getSpreadPropName(), boxNode);
+                    return;
                 }
 
                 // shouldnt' happen

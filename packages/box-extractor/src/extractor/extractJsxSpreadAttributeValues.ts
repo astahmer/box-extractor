@@ -15,11 +15,14 @@ export const extractJsxSpreadAttributeValues = (spreadAttribute: JsxSpreadAttrib
 
     const stack = [] as Node[];
     const maybeValue = maybeBoxNode(node, stack);
-    if (
-        maybeValue &&
-        (maybeValue.isMap() || maybeValue.isObject() || maybeValue.isUnresolvable() || maybeValue.isConditional())
-    ) {
-        return maybeValue;
+    if (maybeValue) {
+        if (maybeValue.isMap() || maybeValue.isObject() || maybeValue.isUnresolvable() || maybeValue.isConditional()) {
+            return maybeValue;
+        }
+
+        if (maybeValue.isLiteral() && (maybeValue.kind == "null" || maybeValue.kind == "undefined")) {
+            return maybeValue;
+        }
     }
 
     const maybeEntries = maybeObjectLikeBox(node, stack, properties);

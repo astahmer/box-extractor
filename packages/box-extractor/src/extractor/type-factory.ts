@@ -218,7 +218,8 @@ const boxTypeFactory = {
 export const box = boxTypeFactory;
 
 export const isPrimitiveType = (value: unknown): value is PrimitiveType => {
-    return typeof value === "string" || typeof value === "number";
+    const type = typeof value;
+    return type === "string" || type === "number" || type === "boolean" || value === null || value === undefined;
 };
 
 export type LiteralObject = Record<string, unknown>;

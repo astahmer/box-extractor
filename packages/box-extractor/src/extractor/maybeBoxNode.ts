@@ -6,6 +6,7 @@ import type {
     BindingElement,
     ElementAccessExpression,
     ExportDeclaration,
+    Expression,
     Identifier,
     ImportDeclaration,
     ObjectLiteralElementLike,
@@ -116,23 +117,55 @@ export function maybeBoxNode(node: Node, stack: Node[]): MaybeBoxNodeReturn {
 
     // <ColorBox color={isDark ? darkValue : "whiteAlpha.100"} />
     if (Node.isConditionalExpression(node)) {
-        const maybeLiteral = safeEvaluateNode<PrimitiveType | PrimitiveType[] | EvaluatedObjectResult>(node);
-        if (isNotNullish(maybeLiteral)) return cache(box.cast(maybeLiteral, node, stack));
+        const condExpr = unwrapExpression(node.getCondition());
+        let condValue = Node.isIdentifier(condExpr)
+            ? maybeBoxNode(condExpr, [])
+            : (safeEvaluateNode(condExpr as Expression) as LiteralValue);
+        if (!isNotNullish(condValue)) return;
 
-        // unresolvable condition will return both possible outcome
-        const whenTrueExpr = unwrapExpression(node.getWhenTrue());
+        if (!isBoxNode(condValue)) {
+            condValue = box.cast(condValue, node, stack);
+        }
+
+        if (condValue.isEmptyInitializer()) return;
+        if (condValue.isUnresolvable() || condValue.isConditional()) {
+            // unresolvable condition will return both possible outcome
+            const whenTrueExpr = unwrapExpression(node.getWhenTrue());
+            const whenFalseExpr = unwrapExpression(node.getWhenFalse());
+
+            return cache(
+                maybeExpandConditionalExpression({
+                    whenTrueExpr,
+                    whenFalseExpr,
+                    node,
+                    stack,
+                    kind: "ternary",
+                    // canReturnWhenTrue: true,
+                })
+            );
+        }
+
+        // console.log([condValue.getNode().getKindName(), condValue.getNode().getText(), condValue.value]);
+
+        if (condValue.value) {
+            const whenTrueExpr = unwrapExpression(node.getWhenTrue());
+            const innerStack = [...stack] as Node[];
+            const maybeValue = maybeBoxNode(whenTrueExpr, innerStack) ?? maybeObjectLikeBox(whenTrueExpr, innerStack);
+            if (maybeValue) {
+                return cache(maybeValue);
+            }
+
+            return cache(box.unresolvable(whenTrueExpr, stack));
+        }
+
         const whenFalseExpr = unwrapExpression(node.getWhenFalse());
+        const innerStack = [...stack] as Node[];
+        const maybeValue = maybeBoxNode(whenFalseExpr, innerStack) ?? maybeObjectLikeBox(whenFalseExpr, innerStack);
+        if (maybeValue) {
+            return cache(maybeValue);
+        }
 
-        return cache(
-            maybeExpandConditionalExpression({
-                whenTrueExpr,
-                whenFalseExpr,
-                node,
-                stack,
-                kind: "ternary",
-                // canReturnWhenTrue: true,
-            })
-        );
+        return cache(box.unresolvable(node, stack));
     }
 
     // <ColorBox color={fn()} />
