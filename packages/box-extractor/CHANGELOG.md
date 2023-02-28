@@ -1,5 +1,14 @@
 # @box-extractor/core
 
+## 0.7.5
+
+### Patch Changes
+
+-   [`190a6dd`](https://github.com/astahmer/box-extractor/commit/190a6dd5ea0703cb98408e19528fc51f7b73c3c9) Thanks [@astahmer](https://github.com/astahmer)! - opti(core): smarter condition resolving
+    try to resolve cond identfier or fallback to evaluating it, then reduce ternary based on the condition truthy/falsy value
+
+    feat(core): extract null/undefined on JsxSpreadAttribute
+
 ## 0.7.4
 
 ### Patch Changes
