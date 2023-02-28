@@ -6482,6 +6482,90 @@ it("extract JsxAttribute > JsxExpression  > NumericLiteral", () => {
     `);
 });
 
+it("extract JsxAttribute > JsxExpression > NumericLiteral > PrefixUnaryExpression", () => {
+    expect(
+        extractFromCode(
+            `
+            <ThreeBox zIndex={1} position={[
+                -1.2466866852487384, 0.3325255778835592, -0.6517939595349769,
+              ]} scale={+1.25} someProp={-2}></ThreeBox>
+        `,
+            { components: ["ThreeBox"] }
+        )
+    ).toMatchInlineSnapshot(`
+      [
+          [
+              "ThreeBox",
+              [
+                  ["zIndex", 1],
+                  ["position", [-1.2466866852487384, 0.3325255778835592, -0.6517939595349769]],
+                  ["scale", 1.25],
+                  ["someProp", -2],
+              ],
+              {
+                  zIndex: [
+                      {
+                          stack: ["JsxAttribute", "JsxExpression", "NumericLiteral"],
+                          type: "literal",
+                          node: "NumericLiteral",
+                          value: 1,
+                          kind: "number",
+                      },
+                  ],
+                  position: [
+                      {
+                          stack: ["JsxAttribute", "JsxExpression", "ArrayLiteralExpression"],
+                          type: "list",
+                          node: "ArrayLiteralExpression",
+                          value: [
+                              {
+                                  stack: ["JsxAttribute", "JsxExpression", "ArrayLiteralExpression"],
+                                  type: "literal",
+                                  node: "PrefixUnaryExpression",
+                                  value: -1.2466866852487384,
+                                  kind: "number",
+                              },
+                              {
+                                  stack: ["JsxAttribute", "JsxExpression", "ArrayLiteralExpression"],
+                                  type: "literal",
+                                  node: "NumericLiteral",
+                                  value: 0.3325255778835592,
+                                  kind: "number",
+                              },
+                              {
+                                  stack: ["JsxAttribute", "JsxExpression", "ArrayLiteralExpression"],
+                                  type: "literal",
+                                  node: "PrefixUnaryExpression",
+                                  value: -0.6517939595349769,
+                                  kind: "number",
+                              },
+                          ],
+                      },
+                  ],
+                  scale: [
+                      {
+                          stack: ["JsxAttribute", "JsxExpression", "PrefixUnaryExpression"],
+                          type: "literal",
+                          node: "NumericLiteral",
+                          value: 1.25,
+                          kind: "number",
+                      },
+                  ],
+                  someProp: [
+                      {
+                          stack: ["JsxAttribute", "JsxExpression", "PrefixUnaryExpression"],
+                          type: "literal",
+                          node: "PrefixUnaryExpression",
+                          value: -2,
+                          kind: "number",
+                      },
+                  ],
+              },
+          ],
+      ]
+    `);
+});
+
 it("extract JsxAttribute > JsxExpression > Identifier > NumericLiteral", () => {
     expect(
         extractFromCode(`

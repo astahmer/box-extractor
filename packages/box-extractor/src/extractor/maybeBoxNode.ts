@@ -74,6 +74,17 @@ export function maybeBoxNode(node: Node, stack: Node[]): MaybeBoxNodeReturn {
         return cache(box.literal(node.getLiteralValue(), node, stack));
     }
 
+    if (Node.isPrefixUnaryExpression(node)) {
+        const operand = node.getOperand();
+        const operator = node.getOperatorToken();
+        const maybeBox = maybeBoxNode(operand, stack);
+        if (!maybeBox || !(maybeBox.isLiteral() && maybeBox.kind === "number")) return;
+
+        return cache(
+            operator === ts.SyntaxKind.MinusToken ? box.literal(-(maybeBox.value as number), node, stack) : maybeBox
+        );
+    }
+
     // <ColorBox bool={true} falsy={false} />
     if (Node.isTrueLiteral(node) || Node.isFalseLiteral(node)) {
         return cache(box.literal(node.getLiteralValue(), node, stack));
