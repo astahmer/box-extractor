@@ -1,5 +1,19 @@
 # @box-extractor/core
 
+## 0.8.0
+
+### Minor Changes
+
+-   [#46](https://github.com/astahmer/box-extractor/pull/46) [`cec6e1e`](https://github.com/astahmer/box-extractor/commit/cec6e1e4059d87e31b0dc5665991ea1bda12141c) Thanks [@astahmer](https://github.com/astahmer)! - refactor(core): match tag/fn/prop functions for better control on what gets extracted
+
+    opti: forEachDescendant directly on extractable nodes rather than identifier
+
+-   [`484db8c`](https://github.com/astahmer/box-extractor/commit/484db8c721ae5cf1f179ff4863b1c8c3b8e925b5) Thanks [@astahmer](https://github.com/astahmer)! - feat(core): extractAtRange / extractJsxElementProps
+
+### Patch Changes
+
+-   [`83bfd0a`](https://github.com/astahmer/box-extractor/commit/83bfd0a8e7f271d1fd4df1985a3cd538d7ebe498) Thanks [@astahmer](https://github.com/astahmer)! - feat(core): handle PrefixUnaryExpression.MinusToken
+
 ## 0.7.5
 
 ### Patch Changes
