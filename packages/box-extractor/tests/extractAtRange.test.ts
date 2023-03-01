@@ -87,18 +87,25 @@ test("extractAtRange", () => {
     extracted = extractAtRange(sourceFile, 15, 19);
     expect(extracted).toMatchInlineSnapshot(`
       {
-          stack: ["CallExpression", "ObjectLiteralExpression"],
-          type: "map",
-          node: "ObjectLiteralExpression",
-          value: {
-              prop: {
-                  stack: ["CallExpression", "ObjectLiteralExpression", "PropertyAssignment", "NumericLiteral"],
-                  type: "literal",
-                  node: "NumericLiteral",
-                  value: 123,
-                  kind: "number",
+          stack: [],
+          type: "list",
+          node: "CallExpression",
+          value: [
+              {
+                  stack: ["CallExpression", "ObjectLiteralExpression"],
+                  type: "map",
+                  node: "ObjectLiteralExpression",
+                  value: {
+                      prop: {
+                          stack: ["CallExpression", "ObjectLiteralExpression", "PropertyAssignment", "NumericLiteral"],
+                          type: "literal",
+                          node: "NumericLiteral",
+                          value: 123,
+                          kind: "number",
+                      },
+                  },
               },
-          },
+          ],
       }
     `);
 

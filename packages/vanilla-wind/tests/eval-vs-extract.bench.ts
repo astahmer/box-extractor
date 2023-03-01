@@ -2,7 +2,7 @@ import { extract, ExtractedFunctionResult, getBoxLiteralValue, unwrapExpression 
 import esbuild from "esbuild";
 import evalCode from "eval";
 import fs from "node:fs";
-import { Node, Project, SourceFile, ts } from "ts-morph";
+import { CallExpression, Node, Project, SourceFile, ts } from "ts-morph";
 import { bench, describe } from "vitest";
 import type { GenericConfig } from "../src";
 
@@ -67,12 +67,16 @@ const extractThemeConfig = (sourceFile: SourceFile) => {
     const configByName = new Map<string, GenericConfig>();
     const extractedTheme = extract({
         ast: sourceFile,
-        functions: { matchFn: ({ fnName }) => fnName === "defineProperties", matchProp: () => true },
+        functions: {
+            matchFn: ({ fnName }) => fnName === "defineProperties",
+            matchProp: () => true,
+            matchArg: () => true,
+        },
     });
     const queryList = (extractedTheme.get("defineProperties") as ExtractedFunctionResult).queryList;
 
     queryList.forEach((query) => {
-        const from = query.fromNode();
+        const from = query.box.getNode() as CallExpression;
         const declaration = from.getParentIfKind(ts.SyntaxKind.VariableDeclaration);
         if (!declaration) return;
 

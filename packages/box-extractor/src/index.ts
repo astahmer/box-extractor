@@ -1,9 +1,9 @@
 export { ensureAbsolute } from "./extensions-helpers";
 export { extract, query } from "./extractor/extract";
 export { extractAtRange, extractJsxElementProps } from "./extractor/extractAtRange";
-export { extractCallExpressionValues } from "./extractor/extractCallExpressionValues";
+export { extractCallExpressionArguments } from "./extractor/extractCallExpressionArguments";
 export { extractFunctionFrom, isImportedFrom } from "./extractor/extractFunctionFrom";
-export { extractJsxAttribute } from "./extractor/extractJsxAttributeIdentifierValue";
+export { extractJsxAttribute } from "./extractor/extractJsxAttribute";
 export { extractJsxSpreadAttributeValues } from "./extractor/extractJsxSpreadAttributeValues";
 export type {
     FindAllTransitiveComponentsOptions,

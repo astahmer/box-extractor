@@ -1,8 +1,8 @@
 import { createLogger } from "@box-extractor/logger";
 import { JsxOpeningElement, JsxSelfClosingElement, Node, SourceFile, ts } from "ts-morph";
 
-import { extractCallExpressionValues } from "./extractCallExpressionValues";
-import { extractJsxAttribute } from "./extractJsxAttributeIdentifierValue";
+import { extractCallExpressionArguments } from "./extractCallExpressionArguments";
+import { extractJsxAttribute } from "./extractJsxAttribute";
 import { extractJsxSpreadAttributeValues } from "./extractJsxSpreadAttributeValues";
 import { box, BoxNode } from "./type-factory";
 import type { ComponentMatchers, FunctionMatchers } from "./types";
@@ -26,7 +26,7 @@ export const extractAtRange = (
 
     if (Node.isCallExpression(node)) {
         // TODO box.function(node) ?
-        return extractCallExpressionValues(node, (prop) =>
+        return extractCallExpressionArguments(node, (prop) =>
             (matchProp as FunctionMatchers["matchProp"])({
                 ...prop,
                 fnNode: node,
@@ -54,7 +54,7 @@ export const extractAtRange = (
 
         if (Node.isCallExpression(parent)) {
             // TODO box.function(node) ?
-            return extractCallExpressionValues(parent, (prop) =>
+            return extractCallExpressionArguments(parent, (prop) =>
                 (matchProp as FunctionMatchers["matchProp"])({
                     ...prop,
                     fnNode: parent,

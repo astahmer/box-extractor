@@ -4,19 +4,26 @@ import { maybeBoxNode } from "./maybeBoxNode";
 
 import { maybeObjectLikeBox } from "./maybeObjectLikeBox";
 import { box } from "./type-factory";
-import type { MatchFnPropArgs } from "./types";
-import { isNotNullish, unwrapExpression } from "./utils";
+import type { MatchFnArgs, MatchFnArguments, MatchFnPropArgs } from "./types";
+import { unwrapExpression } from "./utils";
 
 const logger = createLogger("box-ex:extractor:call-expr");
 
-export const extractCallExpressionValues = (node: CallExpression, matchProp: (prop: MatchFnPropArgs) => boolean) => {
+export const extractCallExpressionArguments = (
+    node: CallExpression,
+    matchProp: (prop: MatchFnPropArgs) => boolean = () => true,
+    matchArg: (prop: MatchFnArgs & MatchFnArguments) => boolean = () => true
+) => {
     const argList = node.getArguments();
+    const fnName = node.getExpression().getText();
+
     if (argList.length === 0) return box.list([], node, []);
 
-    const boxes = argList
-        .map((arg) => {
+    return box.list(
+        argList.map((arg, index) => {
             const argNode = unwrapExpression(arg);
-            if (!argNode) return;
+            if (!argNode) return box.unresolvable(argNode, []);
+            if (!matchArg({ fnNode: node, fnName, argNode, index })) return box.unresolvable(argNode, []);
 
             const stack = [node, argNode] as Node[];
 
@@ -29,12 +36,10 @@ export const extractCallExpressionValues = (node: CallExpression, matchProp: (pr
             const maybeObject = maybeObjectLikeBox(argNode, stack, matchProp);
             logger({ maybeObject });
             if (maybeObject) return maybeObject;
-        })
-        .filter(isNotNullish);
 
-    // TODO box.function
-    if (boxes.length === 0) return;
-    if (boxes.length === 1) return boxes[0]!;
-
-    return boxes;
+            return box.unresolvable(argNode, stack);
+        }),
+        node,
+        []
+    );
 };

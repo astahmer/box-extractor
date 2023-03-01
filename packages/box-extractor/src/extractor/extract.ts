@@ -1,10 +1,9 @@
 import { createLogger } from "@box-extractor/logger";
 import { tsquery } from "@phenomnomnominal/tsquery";
-import { castAsArray } from "pastable";
 import { JsxOpeningElement, JsxSelfClosingElement, Node } from "ts-morph";
 
-import { extractCallExpressionValues } from "./extractCallExpressionValues";
-import { extractJsxAttribute } from "./extractJsxAttributeIdentifierValue";
+import { extractCallExpressionArguments } from "./extractCallExpressionArguments";
+import { extractJsxAttribute } from "./extractJsxAttribute";
 import { extractJsxSpreadAttributeValues } from "./extractJsxSpreadAttributeValues";
 import { box, BoxNode, BoxNodeMap, BoxNodeObject, castObjectLikeAsMapValue, MapTypeValue } from "./type-factory";
 import type {
@@ -17,7 +16,6 @@ import type {
     MatchFnPropArgs,
     MatchPropArgs,
 } from "./types";
-import { isNotNullish } from "./utils";
 
 const logger = createLogger("box-ex:extractor:extract");
 type QueryComponentMap = Map<JsxOpeningElement | JsxSelfClosingElement, { name: string; props: MapTypeValue }>;
@@ -235,8 +233,6 @@ export const extract = ({ ast, components, functions, extractMap = new Map() }: 
 
             const matchProp = ({ propName, propNode }: MatchFnPropArgs) =>
                 functions.matchProp({ fnNode: node, fnName, propName, propNode });
-            const maybeBox = extractCallExpressionValues(node, matchProp);
-            if (!maybeBox) return;
             // console.log({ objectOrMapType });
 
             if (!localExtraction.has(fnName)) {
@@ -254,17 +250,15 @@ export const extract = ({ ast, components, functions, extractMap = new Map() }: 
             const localList = localFnMap.queryList;
             // console.log(componentName, componentMap);
 
-            // TODO rm
-            const fromNode = () => node;
-            const boxList = castAsArray(maybeBox)
-                .map((boxNode) => {
+            const nodeList = extractCallExpressionArguments(node, matchProp, functions.matchArg).value.map(
+                (boxNode) => {
                     if (boxNode.isObject() || boxNode.isMap()) {
                         const map = castObjectLikeAsMapValue(boxNode, node);
                         const entries = mergeSpreadEntries({
                             map,
                             // if the boxNode is an object
                             // that means it was evaluated so we need to filter its props
-                            // otherwise, it was already filtered in extractCallExpressionValues
+                            // otherwise, it was already filtered in extractCallExpressionArguments
                             matchProp: boxNode.isObject() ? (matchProp as any) : undefined,
                         });
 
@@ -288,16 +282,11 @@ export const extract = ({ ast, components, functions, extractMap = new Map() }: 
                     }
 
                     return boxNode;
-                })
-                .filter(isNotNullish);
-            // console.log({ boxList, maybeBox });
+                }
+            );
 
             // TODO box.function
-            const query = {
-                name: fnName,
-                fromNode,
-                box: box.list(boxList, node, []),
-            } as ExtractedFunctionInstance;
+            const query = { name: fnName, box: box.list(nodeList, node, []) } as ExtractedFunctionInstance;
             fnMap.queryList.push(query);
             localList.push(query);
         }
@@ -311,7 +300,6 @@ export const extract = ({ ast, components, functions, extractMap = new Map() }: 
         // TODO box.component
         const query = {
             name: parentRef.name,
-            fromNode: () => componentNode, // TODO rm
             box: box.map(parentRef.props, componentNode, []),
         } as ExtractedComponentInstance;
         queryComponentMap;
