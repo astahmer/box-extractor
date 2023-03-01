@@ -41,6 +41,7 @@ export const getTestExtract = (
             ? {
                   matchFn: ({ fnName }) => functionNameList.includes(fnName),
                   matchProp: () => true,
+                  matchArg: () => true,
               }
             : options.functions,
     });

@@ -9,7 +9,6 @@ import { unwrapExpression } from "./utils";
 
 const logger = createLogger("box-ex:extractor:jsx-attr");
 
-// TODO rename file to extractJsxAttribute
 export const extractJsxAttribute = (jsxAttribute: JsxAttribute) => {
     // <ColorBox color="red.200" backgroundColor="blackAlpha.100" />
     //           ^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

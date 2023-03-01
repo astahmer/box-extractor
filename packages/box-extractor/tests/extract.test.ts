@@ -10397,14 +10397,7 @@ it("extract CallExpression > no args", () => {
                           stack: [],
                           type: "list",
                           node: "CallExpression",
-                          value: [
-                              {
-                                  stack: [],
-                                  type: "list",
-                                  node: "CallExpression",
-                                  value: [],
-                              },
-                          ],
+                          value: [],
                       },
                   },
               ],

@@ -3,6 +3,7 @@ import type {
     JsxAttribute,
     JsxOpeningElement,
     JsxSelfClosingElement,
+    Node,
     PropertyAssignment,
     ShorthandPropertyAssignment,
     SourceFile,
@@ -50,6 +51,10 @@ export type MatchFnArgs = {
     fnName: string;
     fnNode: CallExpression;
 };
+export type MatchFnArguments = {
+    argNode: Node;
+    index: number;
+};
 export type MatchFnPropArgs = {
     propName: string;
     propNode: PropertyAssignment | ShorthandPropertyAssignment;
@@ -57,6 +62,7 @@ export type MatchFnPropArgs = {
 export type MatchPropFn = (prop: MatchPropArgs) => boolean;
 export type FunctionMatchers = {
     matchFn: (element: MatchFnArgs) => boolean;
+    matchArg: (arg: Pick<MatchFnArgs, "fnName" | "fnNode"> & MatchFnArguments) => boolean;
     matchProp: (prop: Pick<MatchFnArgs, "fnName" | "fnNode"> & MatchFnPropArgs) => boolean;
 };
 

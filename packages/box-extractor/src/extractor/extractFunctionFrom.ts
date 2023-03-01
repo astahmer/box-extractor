@@ -1,4 +1,4 @@
-import { BindingName, Identifier, Node, SourceFile, ts } from "ts-morph";
+import { BindingName, CallExpression, Identifier, Node, SourceFile, ts } from "ts-morph";
 
 import { createLogger } from "@box-extractor/logger";
 import { extract } from "./extract";
@@ -40,7 +40,7 @@ export const extractFunctionFrom = <Result>(
     const resultByName = new Map<string, { result: Result; queryBox: BoxNodeList; nameNode: () => BindingName }>();
     const extractedTheme = extract({
         ast: sourceFile,
-        functions: { matchFn: ({ fnName }) => fnName === functionName, matchProp: () => true },
+        functions: { matchFn: ({ fnName }) => fnName === functionName, matchProp: () => true, matchArg: () => true },
     });
     const fnExtraction = extractedTheme.get(functionName) as ExtractedFunctionResult;
     if (!fnExtraction) return resultByName;
@@ -50,7 +50,7 @@ export const extractFunctionFrom = <Result>(
     logger({ from, queryList: queryList.length });
 
     queryList.forEach((query) => {
-        const fromNode = query.fromNode();
+        const fromNode = query.box.getNode() as CallExpression;
         const declaration = fromNode.getParentIfKind(ts.SyntaxKind.VariableDeclaration);
         if (!declaration) return;
 

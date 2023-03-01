@@ -1,6 +1,6 @@
 import { extract, ExtractedFunctionResult, getBoxLiteralValue, ExtractedFunctionInstance } from "@box-extractor/core";
 import { endFileScope, setFileScope } from "@vanilla-extract/css/fileScope";
-import { Project, ts } from "ts-morph";
+import { CallExpression, Project, ts } from "ts-morph";
 import type { GenericConfig } from "./defineProperties";
 import { generateStyleFromExtraction } from "./generateStyleFromExtraction";
 import { createAdapterContext } from "./jit-style";
@@ -40,13 +40,17 @@ export const main = () => {
 
     const extractedTheme = extract({
         ast: theme,
-        functions: { matchFn: ({ fnName }) => fnName === "defineProperties", matchProp: () => true },
+        functions: {
+            matchFn: ({ fnName }) => fnName === "defineProperties",
+            matchProp: () => true,
+            matchArg: () => true,
+        },
     });
     const queryList = (extractedTheme.get("defineProperties") as ExtractedFunctionResult).queryList;
 
     const configByName = new Map<string, { query: ExtractedFunctionInstance; config: GenericConfig }>();
     queryList.forEach((query) => {
-        const from = query.fromNode();
+        const from = query.box.getNode() as CallExpression;
         const declaration = from.getParentIfKindOrThrow(ts.SyntaxKind.VariableDeclaration);
         const nameNode = declaration.getNameNode();
         const name = nameNode.getText();
@@ -55,7 +59,7 @@ export const main = () => {
 
     const extractedUsage = extract({
         ast: usage,
-        functions: { matchFn: ({ fnName }) => fnName === "tw", matchProp: () => true },
+        functions: { matchFn: ({ fnName }) => fnName === "tw", matchProp: () => true, matchArg: () => true },
     });
 
     const ctx = createAdapterContext("debug");
