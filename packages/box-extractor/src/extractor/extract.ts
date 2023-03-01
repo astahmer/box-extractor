@@ -22,10 +22,10 @@ import { isNotNullish } from "./utils";
 const logger = createLogger("box-ex:extractor:extract");
 type QueryComponentMap = Map<JsxOpeningElement | JsxSelfClosingElement, { name: string; props: MapTypeValue }>;
 
-const getComponentName = ({ node }: { node: JsxOpeningElement | JsxSelfClosingElement }) => {
+const getComponentName = (node: JsxOpeningElement | JsxSelfClosingElement) => {
     const tagNameNode = node.getTagNameNode();
     if (Node.isPropertyAccessExpression(tagNameNode)) {
-        return tagNameNode.getExpression().getText();
+        return tagNameNode.getName();
     }
 
     return tagNameNode.getText();
@@ -64,7 +64,7 @@ export const extract = ({ ast, components, functions, extractMap = new Map() }: 
 
             visitedComponentFromSpreadList.add(componentNode);
 
-            const componentName = getComponentName({ node: componentNode });
+            const componentName = getComponentName(componentNode);
             if (
                 !components.matchTag({
                     tagNode: componentNode,
@@ -171,7 +171,7 @@ export const extract = ({ ast, components, functions, extractMap = new Map() }: 
             );
             if (!componentNode) return;
 
-            const componentName = getComponentName({ node: componentNode });
+            const componentName = getComponentName(componentNode);
             if (
                 !components.matchTag({
                     tagNode: componentNode,
