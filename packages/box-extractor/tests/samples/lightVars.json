@@ -2,9 +2,7 @@
     {
         "name": "assignVars",
         "box": {
-            "stack": [
-                "CallExpression"
-            ],
+            "stack": [],
             "type": "list",
             "node": "CallExpression",
             "value": [
