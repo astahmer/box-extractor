@@ -207,11 +207,16 @@ importers:
       vite: 4.1.1
       vitest: 0.28.5
 
-  packages/box-extractor/tests/samples:
+  packages/box-extractor/tests/npm-bench:
     specifiers:
-      '@box-extractor/vanilla-theme': link:../../../vanilla-theme
+      '@box-extractor/core-0-7-5': npm:@box-extractor/core@0.7.5
+      '@box-extractor/core-0-8-0': npm:@box-extractor/core@0.8.0
+      vitest: ^0.28.5
     dependencies:
-      '@box-extractor/vanilla-theme': link:../../../vanilla-theme
+      '@box-extractor/core-0-7-5': /@box-extractor/core/0.7.5
+      '@box-extractor/core-0-8-0': /@box-extractor/core/0.8.0
+    devDependencies:
+      vitest: 0.28.5
 
   packages/cli:
     specifiers:
@@ -1946,6 +1951,54 @@ packages:
       '@babel/helper-validator-identifier': 7.19.1
       to-fast-properties: 2.0.0
 
+  /@box-extractor/core/0.7.5:
+    resolution: {integrity: sha512-leGQyPKe/DiNC0ieEh+BiMMRCaAQi/8mO5SPT9X2KsRonuU6Pr3xVgpvdL2hZsuFiN7k0az4ueGvuynURadgQg==}
+    peerDependencies:
+      vite: ^2.2.3 || ^3.0.0 || ^4.0.3
+    dependencies:
+      '@box-extractor/logger': 0.2.1
+      '@phenomnomnominal/tsquery': 5.0.0
+      '@types/debug': 4.1.7
+      pastable: 2.2.0
+      ts-evaluator: 1.1.0
+      ts-morph: 17.0.1
+      ts-pattern: 4.1.4
+    transitivePeerDependencies:
+      - jsdom
+      - react
+      - supports-color
+      - typescript
+      - xstate
+    dev: false
+
+  /@box-extractor/core/0.8.0:
+    resolution: {integrity: sha512-VbuN1kYxRUIluu87uV3Byq9QFwieZj6R6R0Ly1zxNF7XT0rxVjPnoaHjAfTT8CUqwNCpF5BwXv8gPrblyMztaA==}
+    peerDependencies:
+      vite: ^2.2.3 || ^3.0.0 || ^4.0.3
+    dependencies:
+      '@box-extractor/logger': 0.2.1
+      '@phenomnomnominal/tsquery': 5.0.0
+      '@types/debug': 4.1.7
+      pastable: 2.2.0
+      ts-evaluator: 1.1.0
+      ts-morph: 17.0.1
+      ts-pattern: 4.1.4
+    transitivePeerDependencies:
+      - jsdom
+      - react
+      - supports-color
+      - typescript
+      - xstate
+    dev: false
+
+  /@box-extractor/logger/0.2.1:
+    resolution: {integrity: sha512-Pk4G03dB169BHj50LnJ/86zHBLDy0wWkIF5pjoSG2Yw+cjWrmvugJ1K3TH3SzXRQFvY7UUjcJLi2DaaHa3LfVg==}
+    dependencies:
+      callsites: 4.0.0
+      humanize-duration: 3.28.0
+      picocolors: 1.0.0
+    dev: false
+
   /@brillout/import/0.2.2:
     resolution: {integrity: sha512-JatRCkrFxss1iwRrFlnY3yPFyD2yGWIeFprMH++TmZ+wqnRlwfN0ECDJea0EyagSGXlb2CUxFIH3dBMBiV05sw==}
     dev: false
@@ -2951,6 +3004,14 @@ packages:
     dependencies:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.15.0
+
+  /@phenomnomnominal/tsquery/5.0.0:
+    resolution: {integrity: sha512-1k9H74MJJrlZbUuM6rG0Kwifu/ZoshH+Qs1QXJ2P2RD6MRE/D49uSzXosOXIpIrRQNtij3bnkukexIZhgM/Q8g==}
+    peerDependencies:
+      typescript: ^3 || ^4
+    dependencies:
+      esquery: 1.4.0
+    dev: false
 
   /@phenomnomnominal/tsquery/5.0.0_typescript@4.9.4:
     resolution: {integrity: sha512-1k9H74MJJrlZbUuM6rG0Kwifu/ZoshH+Qs1QXJ2P2RD6MRE/D49uSzXosOXIpIrRQNtij3bnkukexIZhgM/Q8g==}
@@ -9990,6 +10051,21 @@ packages:
       crosspath: 2.0.0
       object-path: 0.11.8
       typescript: 4.9.4
+    dev: false
+
+  /ts-evaluator/1.1.0:
+    resolution: {integrity: sha512-B7j9Gw7NisfV+vTjZgYBjPAyNj48CgjFhHLmxpvN24mwln6v4sumL4LaQJn5ZMwFAQx2gGrzRE4V1Xt/0B5tvA==}
+    engines: {node: '>=14.19.0'}
+    peerDependencies:
+      jsdom: '>=14.x'
+      typescript: '>=3.2.x || >= 4.x'
+    peerDependenciesMeta:
+      jsdom:
+        optional: true
+    dependencies:
+      ansi-colors: 4.1.3
+      crosspath: 2.0.0
+      object-path: 0.11.8
     dev: false
 
   /ts-evaluator/1.1.0_typescript@4.9.5:
