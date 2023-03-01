@@ -1,5 +1,12 @@
 # @box-extractor/cli
 
+## 0.3.7
+
+### Patch Changes
+
+-   Updated dependencies [[`cec6e1e`](https://github.com/astahmer/box-extractor/commit/cec6e1e4059d87e31b0dc5665991ea1bda12141c), [`83bfd0a`](https://github.com/astahmer/box-extractor/commit/83bfd0a8e7f271d1fd4df1985a3cd538d7ebe498), [`484db8c`](https://github.com/astahmer/box-extractor/commit/484db8c721ae5cf1f179ff4863b1c8c3b8e925b5)]:
+    -   @box-extractor/core@0.8.0
+
 ## 0.3.6
 
 ### Patch Changes
