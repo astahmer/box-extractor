@@ -1,6 +1,6 @@
-import type { Identifier } from "ts-morph";
-import { Node } from "ts-morph";
 import { createLogger } from "@box-extractor/logger";
+import type { JsxAttribute } from "ts-morph";
+import { Node } from "ts-morph";
 
 import { maybeBoxNode } from "./maybeBoxNode";
 import { maybeObjectLikeBox } from "./maybeObjectLikeBox";
@@ -9,18 +9,16 @@ import { unwrapExpression } from "./utils";
 
 const logger = createLogger("box-ex:extractor:jsx-attr");
 
-export const extractJsxAttributeIdentifierValue = (identifier: Identifier) => {
-    // console.log(n.getText(), n.parent.getText());
-    const parent = identifier.getParent();
-    if (!Node.isJsxAttribute(parent)) return;
+// TODO rename file to extractJsxAttribute
+export const extractJsxAttribute = (jsxAttribute: JsxAttribute) => {
     // <ColorBox color="red.200" backgroundColor="blackAlpha.100" />
     //           ^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
     // identifier = `color` (and then backgroundColor)
     // parent = `color="red.200"` (and then backgroundColor="blackAlpha.100")
 
-    const initializer = parent.getInitializer();
-    const stack = [parent, initializer] as Node[];
-    if (!initializer) return box.emptyInitializer(identifier, stack);
+    const initializer = jsxAttribute.getInitializer();
+    const stack = [jsxAttribute, initializer] as Node[];
+    if (!initializer) return box.emptyInitializer(jsxAttribute.getNameNode(), stack);
 
     if (Node.isStringLiteral(initializer)) {
         // initializer = `"red.200"` (and then "blackAlpha.100")

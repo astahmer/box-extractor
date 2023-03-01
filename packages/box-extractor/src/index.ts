@@ -3,7 +3,7 @@ export { extract, query } from "./extractor/extract";
 export { extractAtRange, extractJsxElementProps } from "./extractor/extractAtRange";
 export { extractCallExpressionValues } from "./extractor/extractCallExpressionValues";
 export { extractFunctionFrom, isImportedFrom } from "./extractor/extractFunctionFrom";
-export { extractJsxAttributeIdentifierValue } from "./extractor/extractJsxAttributeIdentifierValue";
+export { extractJsxAttribute } from "./extractor/extractJsxAttributeIdentifierValue";
 export { extractJsxSpreadAttributeValues } from "./extractor/extractJsxSpreadAttributeValues";
 export type {
     FindAllTransitiveComponentsOptions,
@@ -11,6 +11,7 @@ export type {
     TransitiveMap,
 } from "./extractor/findAllTransitiveComponents";
 export { findAllTransitiveComponents, getAncestorComponent } from "./extractor/findAllTransitiveComponents";
+export { findIdentifierValueDeclaration, getDeclarationFor, isScope } from "./extractor/findIdentifierValueDeclaration";
 export { getBoxLiteralValue } from "./extractor/getBoxLiteralValue";
 export type { MaybeBoxNodeReturn } from "./extractor/maybeBoxNode";
 export { getNameLiteral, maybeBoxNode } from "./extractor/maybeBoxNode";
@@ -39,8 +40,6 @@ export {
     isPrimitiveType,
 } from "./extractor/type-factory";
 export type {
-    Extractable,
-    ExtractableMap,
     ExtractedComponentInstance,
     ExtractedComponentResult,
     ExtractedFunctionInstance,
@@ -51,5 +50,5 @@ export type {
     PrimitiveType,
 } from "./extractor/types";
 export { unbox } from "./extractor/unbox";
-export { castAsExtractableMap, unquote, unwrapExpression } from "./extractor/utils";
+export { unquote, unwrapExpression } from "./extractor/utils";
 export { visitBoxNode } from "./extractor/visitBoxNode";

@@ -1,65 +1,32 @@
-import { Project, SourceFile, ts } from "ts-morph";
-import { afterEach, expect, it } from "vitest";
-import { extract } from "../src/extractor/extract";
-import { getBoxLiteralValue } from "../src/extractor/getBoxLiteralValue";
-import type { ExtractOptions, ExtractResultByName } from "../src/extractor/types";
 import * as path from "node:path";
+import { SourceFile, ts } from "ts-morph";
+import { expect, it } from "vitest";
+import { getBoxLiteralValue } from "../src/extractor/getBoxLiteralValue";
+import { createProject, getTestExtract, TestExtractOptions } from "./createProject";
 
-const createProject = () => {
-    return new Project({
-        compilerOptions: {
-            jsx: ts.JsxEmit.React,
-            jsxFactory: "React.createElement",
-            jsxFragmentFactory: "React.Fragment",
-            module: ts.ModuleKind.ESNext,
-            target: ts.ScriptTarget.ESNext,
-            noUnusedParameters: false,
-            declaration: false,
-            noEmit: true,
-            emitDeclaratio: false,
-            // allowJs: true,
-            // useVirtualFileSystem: true,
-        },
-        tsConfigFilePath: path.resolve(__dirname, "./sample-files-split/tsconfig.json"),
-        skipAddingFilesFromTsConfig: true,
-        skipFileDependencyResolution: true,
-        skipLoadingLibFiles: true,
-    });
-};
+const project = createProject();
+const getExtract = (code: string, options: TestExtractOptions) => getTestExtract(project, code, options);
 
-let project: Project = createProject();
-let fileCount = 0;
-
-let sourceFile: SourceFile;
-afterEach(() => {
-    if (!sourceFile) return;
-
-    if (sourceFile.wasForgotten()) return;
-    project.removeSourceFile(sourceFile);
-});
-
-const extractFromCode = (code: string | SourceFile, options?: Partial<ExtractOptions>) => {
-    const extractMap = new Map() as ExtractResultByName;
-    const fileName = `file${fileCount++}.tsx`;
-    sourceFile =
-        typeof code === "string" ? project.createSourceFile(fileName, code, { scriptKind: ts.ScriptKind.TSX }) : code;
-    // console.log(sourceFile.forEachDescendant((c) => [c.getKindName(), c.getText()]));
-    const extracted = extract({ ast: sourceFile, extractMap, ...options });
-    // console.dir({ test: true, usedMap, extracted }, { depth: null });
+const extractFromCode = (codeOrSource: string | SourceFile, options?: TestExtractOptions) => {
+    const code =
+        typeof codeOrSource === "string"
+            ? project.createSourceFile("file.tsx", codeOrSource, { overwrite: true, scriptKind: ts.ScriptKind.TSX })
+            : codeOrSource;
+    const extracted = getExtract(code.getFullText(), { ...options });
     return Array.from(extracted.entries()).map(([name, props]) => [
         name,
         Array.from(props.nodesByProp.entries()).map(([propName, propValues]) => [
             propName,
             getBoxLiteralValue(propValues),
         ]),
-        extractMap.get(name)!.nodesByProp,
+        extracted.get(name)!.nodesByProp,
     ]);
 };
 
 it("extract example.css.ts defineProperties arg result", () => {
-    sourceFile = project.addSourceFileAtPath(path.resolve(__dirname, "./sample-files-split/example.css.ts"));
+    const sourceFile = project.addSourceFileAtPath(path.resolve(__dirname, "./sample-files-split/example.css.ts"));
 
-    expect(extractFromCode(sourceFile, { functions: ["defineProperties"] })).toMatchInlineSnapshot(
+    expect(extractFromCode(sourceFile, { functionNameList: ["defineProperties"] })).toMatchInlineSnapshot(
         `
       [
           [
@@ -545,10 +512,10 @@ it("extract example.css.ts defineProperties arg result", () => {
 // run this instead of the test to see the output, from `packages/cli`
 // DEBUG=box* ./bin.js -i /Users/astahmer/dev/alex/vite-box-extractor/packages/box-extractor/tests/samples/lightVars.ts --functions=assignVars -o /Users/astahmer/dev/alex/vite-box-extractor/packages/box-extractor/tests/samples/lightVars.json
 it.skip("extract lightVars.ts assignVars using another file values", () => {
-    sourceFile = project.addSourceFileAtPath(path.resolve(__dirname, "./samples/lightVars.ts"));
+    const sourceFile = project.addSourceFileAtPath(path.resolve(__dirname, "./samples/lightVars.ts"));
     project.resolveSourceFileDependencies();
 
-    expect(extractFromCode(sourceFile, { functions: ["assignVars"] })).toMatchInlineSnapshot(`
+    expect(extractFromCode(sourceFile, { functionNameList: ["assignVars"] })).toMatchInlineSnapshot(`
       [
           [
               "assignVars",

@@ -24,28 +24,8 @@ if you need the static analysis (using [ts-morph](https://github.com/dsherret/ts
 pnpm add @box-extractor/core
 ```
 
-### core/vite
-
-there are 2 plugins from `@box-extractor/core` :
-
--   `createViteBoxExtractor` that will statically analyze your TS(X) files & extract functions args / JSX component props values
--   `createViteBoxRefUsageFinder` will statically analyze your TS(X) files & recursively find every transitive components (the one being spread onto) used from a list of root components
+or you could try it like this:
 
 ```ts
-import { createViteBoxExtractor, createViteBoxRefUsageFinder } from "@box-extractor/core";
+pnpx @box-extractor/cli -i path/to/input.ts -o path/to/report.json --functions="css,styled" --components="div,factory.*,SomeComponent"
 ```
-
-### core/esbuild
-
-only the `createEsbuildBoxExtractor` is made/exported atm from `@box-extractor/core`, it does the same as its vite counterpart
-
-```ts
-import { createEsbuildBoxExtractor } from "@box-extractor/core";
-```
-
-## TODO
-
-some things that are missing:
-
--   tsup/esbuild example (the esbuild plugins are ready today: `createEsbuildBoxExtractor`)
--   [maybe TODO - finder - find all wrapping functions recursively, just like components](https://github.com/astahmer/box-extractor/issues/13)

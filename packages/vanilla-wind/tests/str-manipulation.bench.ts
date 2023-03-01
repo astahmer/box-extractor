@@ -57,14 +57,16 @@ describe("ts-morph remove/replaceWihtText vs magic-string update", () => {
     bench("ts-morph replaceWithText", () => {
         resetSourceFile();
 
-        const extracted = extract({ ast: sourceFile, components: ["Box", "Stack"] });
+        const extracted = extract({
+            ast: sourceFile,
+            components: { matchTag: ({ tagName }) => ["Box", "Stack"].includes(tagName), matchProp: () => true },
+        });
         let count = 0;
 
         extracted.forEach((map) => {
             map.queryList.forEach((query) => {
                 if (query.box.isMap()) {
-                    query.box.value.forEach((nodeList) => {
-                        const boxNode = nodeList[0]!;
+                    query.box.value.forEach((boxNode) => {
                         const jsxAttribute = boxNode.getStack()[0];
                         if (Node.isJsxAttribute(jsxAttribute)) {
                             count++;
@@ -90,14 +92,16 @@ describe("ts-morph remove/replaceWihtText vs magic-string update", () => {
     bench("ts-morph remove", () => {
         resetSourceFile();
 
-        const extracted = extract({ ast: sourceFile, components: ["Box", "Stack"] });
+        const extracted = extract({
+            ast: sourceFile,
+            components: { matchTag: ({ tagName }) => ["Box", "Stack"].includes(tagName), matchProp: () => true },
+        });
         let count = 0;
 
         extracted.forEach((map) => {
             map.queryList.forEach((query) => {
                 if (query.box.isMap()) {
-                    query.box.value.forEach((nodeList) => {
-                        const boxNode = nodeList[0]!;
+                    query.box.value.forEach((boxNode) => {
                         const jsxAttribute = boxNode.getStack()[0];
                         if (Node.isJsxAttribute(jsxAttribute)) {
                             count++;
@@ -131,7 +135,10 @@ describe("ts-morph remove/replaceWihtText vs magic-string update", () => {
     bench("magic-string update", () => {
         resetSourceFile();
 
-        const extracted = extract({ ast: sourceFile, components: ["Box", "Stack"] });
+        const extracted = extract({
+            ast: sourceFile,
+            components: { matchTag: ({ tagName }) => ["Box", "Stack"].includes(tagName), matchProp: () => true },
+        });
         let count = 0;
 
         const original = sourceFile.getFullText();
@@ -140,8 +147,7 @@ describe("ts-morph remove/replaceWihtText vs magic-string update", () => {
         extracted.forEach((map) => {
             map.queryList.forEach((query) => {
                 if (query.box.isMap()) {
-                    query.box.value.forEach((nodeList) => {
-                        const boxNode = nodeList[0]!;
+                    query.box.value.forEach((boxNode) => {
                         const jsxAttribute = boxNode.getStack()[0];
                         if (Node.isJsxAttribute(jsxAttribute)) {
                             count++;

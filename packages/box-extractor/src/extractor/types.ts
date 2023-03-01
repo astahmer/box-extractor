@@ -1,4 +1,12 @@
-import type { CallExpression, JsxOpeningElement, JsxSelfClosingElement, SourceFile } from "ts-morph";
+import type {
+    CallExpression,
+    JsxAttribute,
+    JsxOpeningElement,
+    JsxSelfClosingElement,
+    PropertyAssignment,
+    ShorthandPropertyAssignment,
+    SourceFile,
+} from "ts-morph";
 import type { BoxNode, BoxNodeList, BoxNodeMap, LiteralValue } from "./type-factory";
 
 export type PrimitiveType = string | number | boolean | null | undefined;
@@ -28,12 +36,45 @@ export type ExtractResultItem = ExtractedComponentResult | ExtractedFunctionResu
 export type ExtractResultByName = Map<string, ExtractResultItem>;
 
 export type ListOrAll = "all" | string[];
-export type ExtractOptions = {
-    ast: SourceFile;
-    components?: Extractable;
-    functions?: Extractable;
-    extractMap?: ExtractResultByName;
+
+export type MatchTagArgs = {
+    tagName: string;
+    tagNode: JsxOpeningElement | JsxSelfClosingElement;
+    isFactory: boolean;
+};
+export type MatchPropArgs = {
+    propName: string;
+    propNode: JsxAttribute | undefined;
+};
+export type MatchFnArgs = {
+    fnName: string;
+    fnNode: CallExpression;
+};
+export type MatchFnPropArgs = {
+    propName: string;
+    propNode: PropertyAssignment | ShorthandPropertyAssignment;
+};
+export type MatchPropFn = (prop: MatchPropArgs) => boolean;
+export type FunctionMatchers = {
+    matchFn: (element: MatchFnArgs) => boolean;
+    matchProp: (prop: Pick<MatchFnArgs, "fnName" | "fnNode"> & MatchFnPropArgs) => boolean;
 };
 
-export type ExtractableMap = Record<string, { properties: ListOrAll }>;
-export type Extractable = ExtractableMap | string[];
+export type ComponentMatchers = {
+    matchTag: (element: MatchTagArgs) => boolean;
+    matchProp: (prop: Pick<MatchTagArgs, "tagName" | "tagNode"> & MatchPropArgs) => boolean;
+};
+
+export type ExtractOptions = {
+    ast: SourceFile;
+    components?: ComponentMatchers;
+    functions?: FunctionMatchers;
+    // TODO
+    // evaluateOptions?: EvaluateOptions;
+    // flags?: {
+    //     skipEvaluate?: boolean; // TODO allow list of Node.kind ? = [ts.SyntaxKind.CallExpression, ts.SyntaxKind.ConditionalExpression, ts.SyntaxKind.BinaryExpression]
+    //     skipTraverseFiles?: boolean;
+    //     skipConditions?: boolean;
+    // };
+    extractMap?: ExtractResultByName;
+};

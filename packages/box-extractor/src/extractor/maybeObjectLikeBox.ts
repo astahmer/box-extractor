@@ -15,7 +15,7 @@ import {
     BoxNodeObject,
     BoxNodeUnresolvable,
 } from "./type-factory";
-import type { ListOrAll } from "./types";
+import type { MatchFnPropArgs } from "./types";
 import { isNotNullish, unwrapExpression } from "./utils";
 
 const logger = createLogger("box-ex:extractor:maybe-object");
@@ -28,7 +28,11 @@ export type MaybeObjectLikeBoxReturn =
     | BoxNodeConditional
     | undefined;
 
-export const maybeObjectLikeBox = (node: Node, stack: Node[], properties?: ListOrAll): MaybeObjectLikeBoxReturn => {
+export const maybeObjectLikeBox = (
+    node: Node,
+    stack: Node[],
+    matchProp?: (prop: MatchFnPropArgs) => boolean
+): MaybeObjectLikeBoxReturn => {
     const isCached = cacheMap.has(node);
     logger({ kind: node.getKindName(), isCached });
     if (isCached) {
@@ -42,7 +46,7 @@ export const maybeObjectLikeBox = (node: Node, stack: Node[], properties?: ListO
     };
 
     if (Node.isObjectLiteralExpression(node)) {
-        return cache(getObjectLiteralExpressionPropPairs(node, stack, properties));
+        return cache(getObjectLiteralExpressionPropPairs(node, stack, matchProp));
     }
 
     // <ColorBox {...(xxx ? yyy : zzz)} />
@@ -83,11 +87,8 @@ export const maybeObjectLikeBox = (node: Node, stack: Node[], properties?: ListO
 const getObjectLiteralExpressionPropPairs = (
     expression: ObjectLiteralExpression,
     _stack: Node[],
-    allowed?: ListOrAll
+    matchProp?: (prop: MatchFnPropArgs) => boolean
 ) => {
-    const canTakeAllProp = !allowed || allowed === "all";
-    const propNameList = allowed ?? [];
-
     const properties = expression.getProperties();
     if (properties.length === 0) return box.emptyObject(expression, _stack);
 
@@ -109,7 +110,9 @@ const getObjectLiteralExpressionPropPairs = (
 
             const propName = propNameBox.value;
             if (!isNotNullish(propName)) return;
-            if (!canTakeAllProp && !propNameList.includes(propName as string)) return;
+            if (matchProp && !matchProp?.({ propName: propName as string, propNode: propElement })) {
+                return;
+            }
 
             const init = propElement.getInitializer();
             if (!init) return;
@@ -141,7 +144,7 @@ const getObjectLiteralExpressionPropPairs = (
             const initializer = unwrapExpression(propElement.getExpression());
             stack.push(initializer);
 
-            const maybeObject = maybeObjectLikeBox(initializer, stack, allowed);
+            const maybeObject = maybeObjectLikeBox(initializer, stack, matchProp);
             logger("isSpreadAssignment", { extracted: Boolean(maybeObject) });
             if (!maybeObject) return;
 
