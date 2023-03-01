@@ -370,7 +370,7 @@ it("can extract function args when imported from a specific module", () => {
                   },
               },
               queryBox: {
-                  stack: ["CallExpression"],
+                  stack: [],
                   type: "list",
                   node: "CallExpression",
                   value: [

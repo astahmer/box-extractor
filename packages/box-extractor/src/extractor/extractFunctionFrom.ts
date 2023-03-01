@@ -38,7 +38,10 @@ export const extractFunctionFrom = <Result>(
     } = {}
 ) => {
     const resultByName = new Map<string, { result: Result; queryBox: BoxNodeList; nameNode: () => BindingName }>();
-    const extractedTheme = extract({ ast: sourceFile, functions: [functionName] });
+    const extractedTheme = extract({
+        ast: sourceFile,
+        functions: { matchFn: ({ fnName }) => fnName === functionName, matchProp: () => true },
+    });
     const fnExtraction = extractedTheme.get(functionName) as ExtractedFunctionResult;
     if (!fnExtraction) return resultByName;
 

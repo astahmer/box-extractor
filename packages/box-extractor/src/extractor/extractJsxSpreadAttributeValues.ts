@@ -1,15 +1,18 @@
-import type { JsxSpreadAttribute, Node } from "ts-morph";
 import { createLogger } from "@box-extractor/logger";
+import type { JsxSpreadAttribute, Node } from "ts-morph";
 
+import { maybeBoxNode } from "./maybeBoxNode";
 import { maybeObjectLikeBox } from "./maybeObjectLikeBox";
 import { box } from "./type-factory";
+import type { MatchFnPropArgs, MatchPropArgs } from "./types";
 import { unwrapExpression } from "./utils";
-import { maybeBoxNode } from "./maybeBoxNode";
-import type { ListOrAll } from "./types";
 
 const logger = createLogger("box-ex:extractor:jsx-spread");
 
-export const extractJsxSpreadAttributeValues = (spreadAttribute: JsxSpreadAttribute, properties: ListOrAll) => {
+export const extractJsxSpreadAttributeValues = (
+    spreadAttribute: JsxSpreadAttribute,
+    matchProp: (prop: MatchFnPropArgs | MatchPropArgs) => boolean
+) => {
     const node = unwrapExpression(spreadAttribute.getExpression());
     logger.scoped("extractJsxSpreadAttributeValues", { node: node.getKindName() });
 
@@ -25,7 +28,7 @@ export const extractJsxSpreadAttributeValues = (spreadAttribute: JsxSpreadAttrib
         }
     }
 
-    const maybeEntries = maybeObjectLikeBox(node, stack, properties);
+    const maybeEntries = maybeObjectLikeBox(node, stack, matchProp);
     logger({ maybeEntries });
     if (maybeEntries) return maybeEntries;
 

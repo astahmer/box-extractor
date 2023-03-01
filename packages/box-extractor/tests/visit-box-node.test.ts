@@ -1,49 +1,12 @@
-import { Project, SourceFile, ts } from "ts-morph";
-import { afterEach, expect, it, test } from "vitest";
-import { extract } from "../src/extractor/extract";
-import { visitBoxNode } from "../src/extractor/visitBoxNode";
-import { unbox } from "../src/extractor/unbox";
+import { expect, it, test } from "vitest";
 import { BoxNode, BoxNodeMap } from "../src/extractor/type-factory";
-import { ExtractOptions, ExtractedFunctionResult } from "../src/extractor/types";
+import { ExtractedFunctionResult } from "../src/extractor/types";
+import { unbox } from "../src/extractor/unbox";
+import { visitBoxNode } from "../src/extractor/visitBoxNode";
+import { createProject, getTestExtract, TestExtractOptions } from "./createProject";
 
-const createProject = () => {
-    return new Project({
-        compilerOptions: {
-            jsx: ts.JsxEmit.React,
-            jsxFactory: "React.createElement",
-            jsxFragmentFactory: "React.Fragment",
-            module: ts.ModuleKind.ESNext,
-            target: ts.ScriptTarget.ESNext,
-            noUnusedParameters: false,
-            declaration: false,
-            noEmit: true,
-            emitDeclaratio: false,
-            // allowJs: true,
-            // useVirtualFileSystem: true,
-        },
-        // tsConfigFilePath: tsConfigPath,
-        skipAddingFilesFromTsConfig: true,
-        skipFileDependencyResolution: true,
-        skipLoadingLibFiles: true,
-    });
-};
-
-let project: Project = createProject();
-
-let sourceFile: SourceFile;
-afterEach(() => {
-    if (!sourceFile) return;
-
-    if (sourceFile.wasForgotten()) return;
-    project.removeSourceFile(sourceFile);
-});
-
-let fileCount = 0;
-const getExtract = (code: string, options: Omit<ExtractOptions, "ast">) => {
-    const fileName = `file${fileCount++}.tsx`;
-    sourceFile = project.createSourceFile(fileName, code, { scriptKind: ts.ScriptKind.TSX });
-    return extract({ ast: sourceFile, ...options });
-};
+const project = createProject();
+const getExtract = (code: string, options: TestExtractOptions) => getTestExtract(project, code, options);
 
 it("can visit box node", () => {
     const extracted = getExtract(
@@ -63,7 +26,7 @@ it("can visit box node", () => {
         },
     });
     `,
-        { functions: ["defineProperties"] }
+        { functionNameList: ["defineProperties"] }
     );
     const defineProperties = extracted.get("defineProperties")!;
     const properties = (defineProperties as ExtractedFunctionResult).queryList[0].box;
@@ -346,7 +309,7 @@ it("can unbox literal", () => {
             },
         });
     `,
-        { functions: ["defineProperties"] }
+        { functionNameList: ["defineProperties"] }
     );
     const defineProperties = extracted.get("defineProperties")!;
     const argsList = (defineProperties as ExtractedFunctionResult).queryList[0].box;
@@ -451,7 +414,7 @@ test("can unbox #2", () => {
     });
     `;
 
-    const extracted = getExtract(codeSample, { functions: ["defineProperties"] });
+    const extracted = getExtract(codeSample, { functionNameList: ["defineProperties"] });
     const defineProperties = extracted.get("defineProperties")!;
     const argsList = (defineProperties as ExtractedFunctionResult).queryList[0].box;
     const objectArg = argsList.value[0] as BoxNodeMap;

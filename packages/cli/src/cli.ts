@@ -70,8 +70,8 @@ const main = async () => {
     console.time("extracting");
     const extracted = extract({
         ast: sourceFile,
-        components: args.components.split(",").filter(Boolean),
-        functions: args.functions.split(",").filter(Boolean),
+        components: { matchTag: ({ tagName }) => args.components.split(",").includes(tagName), matchProp: () => true },
+        functions: { matchFn: ({ fnName }) => args.functions.split(",").includes(fnName), matchProp: () => true },
     });
     console.timeEnd("extracting");
     console.log("found:", extracted.size);

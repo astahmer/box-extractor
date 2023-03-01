@@ -1,8 +1,8 @@
 import { Project, SourceFile, ts } from "ts-morph";
 import { afterEach, expect, it } from "vitest";
-import { extract } from "../src/extractor/extract";
 import { getBoxLiteralValue } from "../src/extractor/getBoxLiteralValue";
-import type { ExtractOptions, ExtractedFunctionResult } from "../src/extractor/types";
+import type { ExtractedFunctionResult, ExtractOptions } from "../src/extractor/types";
+import { getTestExtract } from "./createProject";
 // @ts-ignore
 import { default as ExtractSample } from "./ExtractSample?raw";
 
@@ -28,8 +28,7 @@ const createProject = () => {
     });
 };
 
-let project: Project = createProject();
-let fileCount = 0;
+const project = createProject();
 
 let sourceFile: SourceFile;
 afterEach(() => {
@@ -39,23 +38,20 @@ afterEach(() => {
     project.removeSourceFile(sourceFile);
 });
 
-const config: ExtractOptions["components"] = {
-    ColorBox: {
-        properties: ["color", "backgroundColor", "zIndex", "fontSize", "display", "mobile", "tablet", "desktop", "css"],
-    },
-};
-const getExtract = (code: string, options: Omit<ExtractOptions, "ast">) => {
-    const fileName = `file${fileCount++}.tsx`;
-    sourceFile = project.createSourceFile(fileName, code, { scriptKind: ts.ScriptKind.TSX });
-    return extract({ ast: sourceFile, components: config, ...options });
+const config: Record<string, string[]> = {
+    ColorBox: ["color", "backgroundColor", "zIndex", "fontSize", "display", "mobile", "tablet", "desktop", "css"],
 };
 
-const extractFromCode = (code: string, options?: Partial<ExtractOptions>) => {
-    const fileName = `file${fileCount++}.tsx`;
-    sourceFile = project.createSourceFile(fileName, code, { scriptKind: ts.ScriptKind.TSX });
-    // console.log(sourceFile.forEachDescendant((c) => [c.getKindName(), c.getText()]));
-    const extracted = extract({ ast: sourceFile, components: config, ...options });
-    // console.dir({ test: true, usedMap, extracted }, { depth: null });
+const componentsMatcher = {
+    matchTag: ({ tagName }) => Boolean(config[tagName]),
+    matchProp: ({ tagName, propName }) => config[tagName].includes(propName),
+};
+
+type TestExtractOptions = Omit<ExtractOptions, "ast"> & { tagNameList?: string[]; functionNameList?: string[] };
+const getExtract = (code: string, options: TestExtractOptions) => getTestExtract(project, code, options);
+
+const extractFromCode = (code: string, options?: TestExtractOptions) => {
+    const extracted = getExtract(code, { components: componentsMatcher, ...options });
     return Array.from(extracted.entries()).map(([name, props]) => [
         name,
         Array.from(props.nodesByProp.entries()).map(([propName, propValues]) => [
@@ -1091,7 +1087,7 @@ it("minimal - groups extract props in parent component instance", () => {
     children
 </ColorBox>
     `,
-        { components: ["ColorBox"] }
+        { tagNameList: ["ColorBox"] }
     );
     expect(extracted.get("ColorBox")!.queryList).toMatchInlineSnapshot(`
       [
@@ -1232,7 +1228,7 @@ it("minimal - groups extract props in parent component instance", () => {
 });
 
 it("ExtractSample - groups extract props in parent component instance", () => {
-    const extracted = getExtract(ExtractSample, { components: ["ColorBox"] });
+    const extracted = getExtract(ExtractSample, { tagNameList: ["ColorBox"] });
     expect(extracted.get("ColorBox")!.queryList).toMatchInlineSnapshot(`
       [
           {
@@ -6490,7 +6486,7 @@ it("extract JsxAttribute > JsxExpression > NumericLiteral > PrefixUnaryExpressio
                 -1.2466866852487384, 0.3325255778835592, -0.6517939595349769,
               ]} scale={+1.25} someProp={-2}></ThreeBox>
         `,
-            { components: ["ThreeBox"] }
+            { tagNameList: ["ThreeBox"] }
         )
     ).toMatchInlineSnapshot(`
       [
@@ -8077,7 +8073,7 @@ it("extract JsxAttribute + CallExpression > booleans", () => {
             `
             <Container className={someFn({ isFlex: false })} withBorder={true} />
         `,
-            { components: ["Container"], functions: ["someFn"] }
+            { tagNameList: ["Container"], functionNameList: ["someFn"] }
         )
     ).toMatchInlineSnapshot(`
       [
@@ -8131,7 +8127,7 @@ it("extract JsxAttribute > JsxExpression > ArrayLiteralExpression", () => {
             `
             <Container classNames={["color:main", "hover:secondary"]} config={{ state: ["hovered", "focused"] }} />
         `,
-            { components: ["Container"] }
+            { tagNameList: ["Container"] }
         )
     ).toMatchInlineSnapshot(`
       [
@@ -8230,7 +8226,7 @@ it("extract JsxAttribute > Identifier without initializer", () => {
             `
             <Flex col />
         `,
-            { components: ["Flex"] }
+            { tagNameList: ["Flex"] }
         )
     ).toMatchInlineSnapshot(`
       [
@@ -8266,7 +8262,7 @@ it("extract CallExpression > ObjectLiteralExpression > PropertyAssignment > Obje
                 },
             });
         `,
-            { components: [], functions: ["defineProperties"] }
+            { tagNameList: [], functionNameList: ["defineProperties"] }
         )
     ).toMatchInlineSnapshot(`
       [
@@ -8534,7 +8530,7 @@ it("extract real-world Stack example ", () => {
             );
         };
         `,
-            { components: ["Box", "Stack"] }
+            { tagNameList: ["Box", "Stack"] }
         )
     ).toMatchInlineSnapshot(`
       [
@@ -8841,7 +8837,7 @@ it("extract JsxAttribute > JsxExpression > CallExpression > ObjectLiteralExpress
             `
         <button class={button({ color: "accent", size: "large", rounded: true })}>
         `,
-            { components: [], functions: ["button"] }
+            { tagNameList: [], functionNameList: ["button"] }
         )
     ).toMatchInlineSnapshot(`
       [
@@ -8917,7 +8913,7 @@ it("extract JsxAttribute > Identifier > StringLiteral tailwind-like", () => {
             const [unresolvable] = useState(true);
             <div className={clsx("basic", { ["fine"]: true, stillFine: false, nope: unresolvable })} />
         `,
-            { components: ["div"] }
+            { tagNameList: ["div"] }
         )
     ).toMatchInlineSnapshot(`
       [
@@ -9045,7 +9041,7 @@ it("extract defineProperties config", () => {
         },
     });
     `,
-        { functions: ["defineProperties"], extractMap }
+        { functionNameList: ["defineProperties"], extractMap }
     );
     const definePropsConfig = extractMap.get("defineProperties") as ExtractedFunctionResult;
 
@@ -9054,7 +9050,7 @@ it("extract defineProperties config", () => {
           {
               name: "defineProperties",
               box: {
-                  stack: ["CallExpression"],
+                  stack: [],
                   type: "list",
                   node: "CallExpression",
                   value: [
@@ -9695,7 +9691,7 @@ it("extract CallExpression > ObjectLiteralExpression > PropertyAssignment > Iden
             }
             });
         `,
-            { components: [], functions: ["defineProperties"] }
+            { tagNameList: [], functionNameList: ["defineProperties"] }
         )
     ).toMatchInlineSnapshot(`
       [
@@ -9890,7 +9886,7 @@ it("extract function with multiple args even if not starting by ObjectLiteralExp
             },
         });
         `,
-        { components: [], functions: ["createTheme"] }
+        { tagNameList: [], functionNameList: ["createTheme"] }
     );
 
     expect(extracted.get("createTheme")!.queryList).toMatchInlineSnapshot(`
@@ -9898,7 +9894,7 @@ it("extract function with multiple args even if not starting by ObjectLiteralExp
           {
               name: "createTheme",
               box: {
-                  stack: ["CallExpression"],
+                  stack: [],
                   type: "list",
                   node: "CallExpression",
                   value: [
@@ -9970,7 +9966,7 @@ it("extract NullKeyword", () => {
             },
         });
         `,
-        { components: [], functions: ["createTheme"] }
+        { tagNameList: [], functionNameList: ["createTheme"] }
     );
 
     expect(extracted.get("createTheme")!.queryList).toMatchInlineSnapshot(`
@@ -9978,7 +9974,7 @@ it("extract NullKeyword", () => {
           {
               name: "createTheme",
               box: {
-                  stack: ["CallExpression"],
+                  stack: [],
                   type: "list",
                   node: "CallExpression",
                   value: [
@@ -10143,7 +10139,7 @@ it("extract css from createTheme result", () => {
     );
 
 `,
-        { functions: ["css"] }
+        { functionNameList: ["css"] }
     );
 
     expect(extracted.get("css")!.queryList).toMatchInlineSnapshot(`
@@ -10151,7 +10147,7 @@ it("extract css from createTheme result", () => {
           {
               name: "css",
               box: {
-                  stack: ["CallExpression"],
+                  stack: [],
                   type: "list",
                   node: "CallExpression",
                   value: [
@@ -10243,7 +10239,7 @@ it("extract assignVars args", () => {
             },
         });
 `,
-        { functions: ["assignVars"] }
+        { functionNameList: ["assignVars"] }
     );
 
     expect(extracted.get("assignVars")!.queryList).toMatchInlineSnapshot(`
@@ -10251,7 +10247,7 @@ it("extract assignVars args", () => {
           {
               name: "assignVars",
               box: {
-                  stack: ["CallExpression"],
+                  stack: [],
                   type: "list",
                   node: "CallExpression",
                   value: [
@@ -10387,7 +10383,7 @@ it("extract CallExpression > no args", () => {
             `
             const css = defineProperties()
         `,
-            { functions: ["defineProperties"] }
+            { functionNameList: ["defineProperties"] }
         )
     ).toMatchInlineSnapshot(`
       {
@@ -10398,7 +10394,7 @@ it("extract CallExpression > no args", () => {
                   {
                       name: "defineProperties",
                       box: {
-                          stack: ["CallExpression"],
+                          stack: [],
                           type: "list",
                           node: "CallExpression",
                           value: [
@@ -10435,7 +10431,7 @@ it("extract CallExpression nested ObjectLiteralExpression", () => {
           ),
         )
         `,
-            { functions: ["css"] }
+            { functionNameList: ["css"] }
         )
     ).toMatchInlineSnapshot(`
       [
@@ -10542,7 +10538,7 @@ it("extract CallExpression nested ObjectLiteralExpression", () => {
             export const Badge = factory('span', badge)
 
         `,
-            { functions: ["factory"] }
+            { functionNameList: ["factory"] }
         )
     ).toMatchInlineSnapshot('[["factory", [], {}]]');
 });

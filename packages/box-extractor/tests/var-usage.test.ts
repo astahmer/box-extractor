@@ -1,40 +1,11 @@
-import { Project, SourceFile, ts } from "ts-morph";
-import { afterEach, expect, it } from "vitest";
+import { ts } from "ts-morph";
+import { expect, it } from "vitest";
 import { extractFunctionFrom } from "../src/extractor/extractFunctionFrom";
-import { unbox } from "../src/extractor/unbox";
 import type { BoxNodeLiteral, BoxNodeMap } from "../src/extractor/type-factory";
+import { unbox } from "../src/extractor/unbox";
+import { createProject } from "./createProject";
 
-const createProject = () => {
-    return new Project({
-        compilerOptions: {
-            jsx: ts.JsxEmit.React,
-            jsxFactory: "React.createElement",
-            jsxFragmentFactory: "React.Fragment",
-            module: ts.ModuleKind.ESNext,
-            target: ts.ScriptTarget.ESNext,
-            noUnusedParameters: false,
-            declaration: false,
-            noEmit: true,
-            emitDeclaratio: false,
-            // allowJs: true,
-            // useVirtualFileSystem: true,
-        },
-        // tsConfigFilePath: tsConfigPath,
-        skipAddingFilesFromTsConfig: true,
-        skipFileDependencyResolution: true,
-        skipLoadingLibFiles: true,
-    });
-};
-
-let project: Project = createProject();
-
-let sourceFile: SourceFile;
-afterEach(() => {
-    if (!sourceFile) return;
-
-    if (sourceFile.wasForgotten()) return;
-    project.removeSourceFile(sourceFile);
-});
+const project = createProject();
 
 it("can find usage references from a variable", () => {
     const code = `

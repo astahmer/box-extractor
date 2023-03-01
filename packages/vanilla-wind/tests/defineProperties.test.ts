@@ -310,7 +310,7 @@ it("types are fine", () => {
             )
         }
     `,
-            { functions: ["tw"] }
+            { functions: { matchFn: ({ fnName }) => ["tw"].includes(fnName), matchProp: () => true } }
         )
     ).toMatchInlineSnapshot(`
       {
@@ -752,7 +752,7 @@ it("types are fine", () => {
                   {
                       name: "tw",
                       box: {
-                          stack: ["CallExpression"],
+                          stack: [],
                           type: "list",
                           node: "CallExpression",
                           value: [

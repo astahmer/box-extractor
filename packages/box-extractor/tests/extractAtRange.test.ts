@@ -1,51 +1,11 @@
-import { Project, SourceFile, ts } from "ts-morph";
-import { afterEach, expect, test } from "vitest";
+import { ts } from "ts-morph";
+import { expect, test } from "vitest";
 import { extractAtRange, getTsNodeAtPosition } from "../src/extractor/extractAtRange";
-import type { ExtractOptions } from "../src/extractor/types";
+import { createProject } from "./createProject";
 
-const createProject = () => {
-    return new Project({
-        compilerOptions: {
-            jsx: ts.JsxEmit.React,
-            jsxFactory: "React.createElement",
-            jsxFragmentFactory: "React.Fragment",
-            module: ts.ModuleKind.ESNext,
-            target: ts.ScriptTarget.ESNext,
-            noUnusedParameters: false,
-            declaration: false,
-            noEmit: true,
-            emitDeclaratio: false,
-            // allowJs: true,
-            // useVirtualFileSystem: true,
-        },
-        // tsConfigFilePath: tsConfigPath,
-        skipAddingFilesFromTsConfig: true,
-        skipFileDependencyResolution: true,
-        skipLoadingLibFiles: true,
-    });
-};
-
-let project: Project = createProject();
-let fileCount = 0;
-
-let sourceFile: SourceFile;
-afterEach(() => {
-    if (!sourceFile) return;
-
-    if (sourceFile.wasForgotten()) return;
-    project.removeSourceFile(sourceFile);
-});
-
-const config: ExtractOptions["components"] = {
-    ColorBox: {
-        properties: ["color", "backgroundColor", "zIndex", "fontSize", "display", "mobile", "tablet", "desktop", "css"],
-    },
-};
+const project = createProject();
 const getSourceFile = (code: string) => {
-    const fileName = `file${fileCount++}.tsx`;
-    sourceFile = project.createSourceFile(fileName, code, { scriptKind: ts.ScriptKind.TSX });
-    // return extract({ ast: sourceFile, components: config, ...options });
-    return sourceFile;
+    return project.createSourceFile("file.tsx", code, { overwrite: true, scriptKind: ts.ScriptKind.TSX });
 };
 
 const codeSample = `import Cylinder from "@/cylinder";

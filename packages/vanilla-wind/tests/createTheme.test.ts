@@ -1,5 +1,3 @@
-import type { ExtractResultByName, ExtractOptions } from "@box-extractor/core";
-import { extract } from "@box-extractor/core";
 import { Project, SourceFile, ts } from "ts-morph";
 import { afterEach, expect, test } from "vitest";
 import { extractCreateTheme } from "../src/extractCreateTheme";
@@ -29,8 +27,7 @@ const createProject = () => {
     });
 };
 
-let project: Project = createProject();
-let fileCount = 0;
+const project = createProject();
 
 let sourceFile: SourceFile;
 afterEach(() => {
@@ -39,14 +36,6 @@ afterEach(() => {
     if (sourceFile.wasForgotten()) return;
     project.removeSourceFile(sourceFile);
 });
-
-const extractFromCode = (code: string | SourceFile, options: Partial<ExtractOptions>) => {
-    const extractMap = new Map() as ExtractResultByName;
-    const fileName = `file${fileCount++}.tsx`;
-    sourceFile =
-        typeof code === "string" ? project.createSourceFile(fileName, code, { scriptKind: ts.ScriptKind.TSX }) : code;
-    return extract({ ast: sourceFile, extractMap, ...options });
-};
 
 const withImportAndTokens = `
     import { ConfigConditions, createTheme, defineProperties } from "@box-extractor/vanilla-wind";

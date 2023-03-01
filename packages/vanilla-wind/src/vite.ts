@@ -512,7 +512,10 @@ export const vanillaWind = (
                 functionsNameFound.forEach((name) => {
                     logger.scoped("usage", `extracting ${name}() usage...`);
                     // console.time("usage:fn:extract");
-                    const extractResult = extract({ ast: sourceFile, functions: [name] });
+                    const extractResult = extract({
+                        ast: sourceFile,
+                        functions: { matchFn: ({ fnName }) => fnName === name, matchProp: () => true },
+                    });
                     // console.timeEnd("usage:fn:extract");
                     const extracted = extractResult.get(name)! as ExtractedFunctionResult;
                     if (!extracted) {
@@ -540,7 +543,10 @@ export const vanillaWind = (
                     const themeName = component.themeName;
                     logger.scoped("usage", `extracting <${name} /> usage...`);
                     // console.time("usage:component:extract");
-                    const extractResult = extract({ ast: sourceFile, components: [name] });
+                    const extractResult = extract({
+                        ast: sourceFile,
+                        components: { matchTag: ({ tagName }) => tagName === name, matchProp: () => true },
+                    });
                     // console.timeEnd("usage:component:extract");
                     const extracted = extractResult.get(name)! as ExtractedFunctionResult;
                     if (!extracted) {

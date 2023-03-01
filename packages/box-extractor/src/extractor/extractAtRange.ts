@@ -2,25 +2,37 @@ import { createLogger } from "@box-extractor/logger";
 import { JsxOpeningElement, JsxSelfClosingElement, Node, SourceFile, ts } from "ts-morph";
 
 import { extractCallExpressionValues } from "./extractCallExpressionValues";
-import { extractJsxAttributeIdentifierValue } from "./extractJsxAttributeIdentifierValue";
+import { extractJsxAttribute } from "./extractJsxAttributeIdentifierValue";
 import { extractJsxSpreadAttributeValues } from "./extractJsxSpreadAttributeValues";
 import { box, BoxNode } from "./type-factory";
+import type { ComponentMatchers, FunctionMatchers } from "./types";
 
 const logger = createLogger("box-ex:extractor:extractAtRange");
 
-export const extractAtRange = (source: SourceFile, line: number, column: number) => {
+export const extractAtRange = (
+    source: SourceFile,
+    line: number,
+    column: number,
+    matchProp: ComponentMatchers["matchProp"] | FunctionMatchers["matchProp"] = () => true
+) => {
     const node = getTsNodeAtPosition(source, line, column);
     logger({ line, column, node: node?.getKindName() });
     if (!node) return;
 
     // pointing directly at the node
     if (Node.isJsxOpeningElement(node) || Node.isJsxSelfClosingElement(node)) {
-        return extractJsxElementProps(node);
+        return extractJsxElementProps(node, matchProp as ComponentMatchers["matchProp"]);
     }
 
     if (Node.isCallExpression(node)) {
         // TODO box.function(node) ?
-        return extractCallExpressionValues(node, "all");
+        return extractCallExpressionValues(node, (prop) =>
+            (matchProp as FunctionMatchers["matchProp"])({
+                ...prop,
+                fnNode: node,
+                fnName: node.getExpression().getText(),
+            })
+        );
     }
 
     // pointing at the name
@@ -30,24 +42,33 @@ export const extractAtRange = (source: SourceFile, line: number, column: number)
         logger({ line, column, parent: parent?.getKindName() });
 
         if (Node.isJsxOpeningElement(parent) || Node.isJsxSelfClosingElement(parent)) {
-            return extractJsxElementProps(parent);
+            return extractJsxElementProps(parent, matchProp as ComponentMatchers["matchProp"]);
         }
 
         if (Node.isPropertyAccessExpression(parent)) {
             const grandParent = parent.getParent();
             if (Node.isJsxOpeningElement(grandParent) || Node.isJsxSelfClosingElement(grandParent)) {
-                return extractJsxElementProps(grandParent);
+                return extractJsxElementProps(grandParent, matchProp as ComponentMatchers["matchProp"]);
             }
         }
 
         if (Node.isCallExpression(parent)) {
             // TODO box.function(node) ?
-            return extractCallExpressionValues(parent, "all");
+            return extractCallExpressionValues(parent, (prop) =>
+                (matchProp as FunctionMatchers["matchProp"])({
+                    ...prop,
+                    fnNode: parent,
+                    fnName: parent.getExpression().getText(),
+                })
+            );
         }
     }
 };
 
-export const extractJsxElementProps = (node: JsxOpeningElement | JsxSelfClosingElement) => {
+export const extractJsxElementProps = (
+    node: JsxOpeningElement | JsxSelfClosingElement,
+    matchProp: ComponentMatchers["matchProp"]
+) => {
     const tagName = node.getTagNameNode().getText();
     const jsxAttributes = node.getAttributes();
     logger.scoped("jsx", { tagName, jsxAttributes: jsxAttributes.length });
@@ -56,8 +77,7 @@ export const extractJsxElementProps = (node: JsxOpeningElement | JsxSelfClosingE
     jsxAttributes.forEach((attrNode) => {
         if (Node.isJsxAttribute(attrNode)) {
             const nameNode = attrNode.getNameNode();
-            const maybeValue =
-                extractJsxAttributeIdentifierValue(attrNode.getNameNode()) ?? box.unresolvable(nameNode, []);
+            const maybeValue = extractJsxAttribute(attrNode) ?? box.unresolvable(nameNode, []);
             props.set(nameNode.getText(), maybeValue);
             return;
         }
@@ -70,7 +90,10 @@ export const extractJsxElementProps = (node: JsxOpeningElement | JsxSelfClosingE
             const getSpreadPropName = () => `_SPREAD_${propSizeAtThisPoint}_${count++}`;
 
             const spreadPropName = getSpreadPropName();
-            const maybeValue = extractJsxSpreadAttributeValues(attrNode, "all") ?? box.unresolvable(attrNode, []);
+            const maybeValue =
+                extractJsxSpreadAttributeValues(attrNode, (prop) =>
+                    matchProp({ ...prop, tagName, tagNode: node } as any)
+                ) ?? box.unresolvable(attrNode, []);
             props.set(spreadPropName, maybeValue);
         }
     });

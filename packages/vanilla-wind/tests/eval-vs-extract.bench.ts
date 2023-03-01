@@ -65,7 +65,10 @@ describe("eval-vs-extract", () => {
 
 const extractThemeConfig = (sourceFile: SourceFile) => {
     const configByName = new Map<string, GenericConfig>();
-    const extractedTheme = extract({ ast: sourceFile, functions: ["defineProperties"] });
+    const extractedTheme = extract({
+        ast: sourceFile,
+        functions: { matchFn: ({ fnName }) => fnName === "defineProperties", matchProp: () => true },
+    });
     const queryList = (extractedTheme.get("defineProperties") as ExtractedFunctionResult).queryList;
 
     queryList.forEach((query) => {

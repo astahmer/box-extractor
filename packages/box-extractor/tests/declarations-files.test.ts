@@ -1,51 +1,13 @@
-import { Project, SourceFile, ts } from "ts-morph";
-import { afterEach, expect, it } from "vitest";
-import { extract } from "../src/extractor/extract";
-import type { ExtractOptions } from "../src/extractor/types";
+import { expect, it } from "vitest";
+import { createProject, getTestExtract, TestExtractOptions } from "./createProject";
 // @ts-ignore
 import { default as ThemeSample } from "./samples/theme?raw";
 
-const createProject = () => {
-    return new Project({
-        compilerOptions: {
-            jsx: ts.JsxEmit.React,
-            jsxFactory: "React.createElement",
-            jsxFragmentFactory: "React.Fragment",
-            module: ts.ModuleKind.ESNext,
-            target: ts.ScriptTarget.ESNext,
-            noUnusedParameters: false,
-            declaration: false,
-            noEmit: true,
-            emitDeclaratio: false,
-            // allowJs: true,
-            // useVirtualFileSystem: true,
-        },
-        // tsConfigFilePath: tsConfigPath,
-        skipAddingFilesFromTsConfig: true,
-        skipFileDependencyResolution: true,
-        skipLoadingLibFiles: true,
-    });
-};
-
-let project: Project = createProject();
-let fileCount = 0;
-
-let sourceFile: SourceFile;
-afterEach(() => {
-    if (!sourceFile) return;
-
-    if (sourceFile.wasForgotten()) return;
-    project.removeSourceFile(sourceFile);
-});
-
-const getExtract = (code: string, options: Omit<ExtractOptions, "ast">) => {
-    const fileName = `file${fileCount++}.tsx`;
-    sourceFile = project.createSourceFile(fileName, code, { scriptKind: ts.ScriptKind.TSX });
-    return extract({ ast: sourceFile, ...options });
-};
+const project = createProject();
+const getExtract = (code: string, options: TestExtractOptions) => getTestExtract(project, code, options);
 
 it("can extract theme with tokens from another package with declaration files", () => {
-    const extracted = getExtract(ThemeSample, { functions: ["defineProperties"] });
+    const extracted = getExtract(ThemeSample, { functionNameList: ["defineProperties"] });
     const defineProperties = extracted.get("defineProperties")!;
 
     expect(defineProperties.nodesByProp).toMatchInlineSnapshot(`

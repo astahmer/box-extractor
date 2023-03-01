@@ -38,7 +38,10 @@ export const main = () => {
     const theme = sources[0]!;
     const usage = sources[1]!;
 
-    const extractedTheme = extract({ ast: theme, functions: ["defineProperties"] });
+    const extractedTheme = extract({
+        ast: theme,
+        functions: { matchFn: ({ fnName }) => fnName === "defineProperties", matchProp: () => true },
+    });
     const queryList = (extractedTheme.get("defineProperties") as ExtractedFunctionResult).queryList;
 
     const configByName = new Map<string, { query: ExtractedFunctionInstance; config: GenericConfig }>();
@@ -50,7 +53,10 @@ export const main = () => {
         configByName.set(name, { query, config: getBoxLiteralValue(query.box) as GenericConfig });
     });
 
-    const extractedUsage = extract({ ast: usage, functions: ["tw"] });
+    const extractedUsage = extract({
+        ast: usage,
+        functions: { matchFn: ({ fnName }) => fnName === "tw", matchProp: () => true },
+    });
 
     const ctx = createAdapterContext("debug");
     ctx.setAdapter();
