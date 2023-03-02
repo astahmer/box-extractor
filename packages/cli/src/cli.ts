@@ -15,6 +15,9 @@ const main = async () => {
         components: z.string().default(""),
         "resolveSourceFileDependencies rdeps": z.boolean().default(false),
         "printSourceFileDependencies pdeps": z.boolean().default(false),
+        skipEvaluate: z.boolean().default(false),
+        skipTraverseFiles: z.boolean().default(false),
+        skipConditions: z.boolean().default(false),
     }).parse();
     console.log(args);
 
@@ -71,7 +74,16 @@ const main = async () => {
     const extracted = extract({
         ast: sourceFile,
         components: { matchTag: ({ tagName }) => args.components.split(",").includes(tagName), matchProp: () => true },
-        functions: { matchFn: ({ fnName }) => args.functions.split(",").includes(fnName), matchProp: () => true },
+        functions: {
+            matchFn: ({ fnName }) => args.functions.split(",").includes(fnName),
+            matchProp: () => true,
+            matchArg: () => true,
+        },
+        flags: {
+            skipEvaluate: args.skipEvaluate,
+            skipTraverseFiles: args.skipTraverseFiles,
+            skipConditions: args.skipConditions,
+        },
     });
     console.timeEnd("extracting");
     console.log("found:", extracted.size);
@@ -85,7 +97,7 @@ const main = async () => {
                   }))
               )
             : Array.from(extracted.entries()).flatMap(([_name, map]) =>
-                  serializeBoxNode(map.queryList.map((qb) => ({ ...qb, unboxed: unbox(qb.box) })) as any)
+                  serializeBoxNode(map.queryList.map((qb) => ({ ...qb, unboxed: unbox(qb.box) })))
               );
 
     console.log("writing", args.output);
