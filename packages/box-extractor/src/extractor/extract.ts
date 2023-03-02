@@ -23,7 +23,7 @@ type QueryComponentMap = Map<JsxOpeningElement | JsxSelfClosingElement, { name: 
 const getComponentName = (node: JsxOpeningElement | JsxSelfClosingElement) => {
     const tagNameNode = node.getTagNameNode();
     if (Node.isPropertyAccessExpression(tagNameNode)) {
-        return tagNameNode.getName();
+        return tagNameNode.getText();
     }
 
     return tagNameNode.getText();
