@@ -4,20 +4,21 @@ import type { JsxSpreadAttribute, Node } from "ts-morph";
 import { maybeBoxNode } from "./maybeBoxNode";
 import { maybeObjectLikeBox } from "./maybeObjectLikeBox";
 import { box } from "./type-factory";
-import type { MatchFnPropArgs, MatchPropArgs } from "./types";
+import type { BoxContext, MatchFnPropArgs, MatchPropArgs } from "./types";
 import { unwrapExpression } from "./utils";
 
 const logger = createLogger("box-ex:extractor:jsx-spread");
 
 export const extractJsxSpreadAttributeValues = (
     spreadAttribute: JsxSpreadAttribute,
+    ctx: BoxContext,
     matchProp: (prop: MatchFnPropArgs | MatchPropArgs) => boolean
 ) => {
     const node = unwrapExpression(spreadAttribute.getExpression());
     logger.scoped("extractJsxSpreadAttributeValues", { node: node.getKindName() });
 
     const stack = [] as Node[];
-    const maybeValue = maybeBoxNode(node, stack);
+    const maybeValue = maybeBoxNode(node, stack, ctx);
     if (maybeValue) {
         if (maybeValue.isMap() || maybeValue.isObject() || maybeValue.isUnresolvable() || maybeValue.isConditional()) {
             return maybeValue;
@@ -28,7 +29,7 @@ export const extractJsxSpreadAttributeValues = (
         }
     }
 
-    const maybeEntries = maybeObjectLikeBox(node, stack, matchProp);
+    const maybeEntries = maybeObjectLikeBox(node, stack, ctx, matchProp);
     logger({ maybeEntries });
     if (maybeEntries) return maybeEntries;
 

@@ -29,13 +29,14 @@ const getComponentName = (node: JsxOpeningElement | JsxSelfClosingElement) => {
     return tagNameNode.getText();
 };
 
-export const extract = ({ ast, components, functions, extractMap = new Map() }: ExtractOptions) => {
+export const extract = ({ ast, extractMap = new Map(), ...ctx }: ExtractOptions) => {
     // contains all the extracted nodes from this ast parsing
     // whereas `extractMap` is the global map that could be populated by this function in multiple `extract` calls
     const localExtraction = new Map() as ExtractResultByName;
     const queryComponentMap = new Map() as QueryComponentMap;
 
     const visitedComponentFromSpreadList = new WeakSet<Node>();
+    const { components, functions } = ctx;
 
     ast.forEachDescendant((node, traversal) => {
         // quick win
@@ -92,7 +93,7 @@ export const extract = ({ ast, components, functions, extractMap = new Map() }: 
 
             const matchProp = ({ propName, propNode }: MatchPropArgs) =>
                 components.matchProp({ tagNode: componentNode, tagName: componentName, propName, propNode });
-            const spreadNode = extractJsxSpreadAttributeValues(node, matchProp as any);
+            const spreadNode = extractJsxSpreadAttributeValues(node, ctx, matchProp as any);
             const parentRef = queryComponentMap.get(componentNode)!;
 
             // increment count since there might be conditional
@@ -193,7 +194,7 @@ export const extract = ({ ast, components, functions, extractMap = new Map() }: 
             }
             // console.log({ componentName, propName });
 
-            const maybeBox = extractJsxAttribute(node);
+            const maybeBox = extractJsxAttribute(node, ctx);
             if (!maybeBox) return;
 
             logger({ propName, maybeBox });
@@ -250,7 +251,7 @@ export const extract = ({ ast, components, functions, extractMap = new Map() }: 
             const localList = localFnMap.queryList;
             // console.log(componentName, componentMap);
 
-            const nodeList = extractCallExpressionArguments(node, matchProp, functions.matchArg).value.map(
+            const nodeList = extractCallExpressionArguments(node, ctx, matchProp, functions.matchArg).value.map(
                 (boxNode) => {
                     if (boxNode.isObject() || boxNode.isMap()) {
                         const map = castObjectLikeAsMapValue(boxNode, node);

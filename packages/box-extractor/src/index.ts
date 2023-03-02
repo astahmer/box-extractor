@@ -40,6 +40,7 @@ export {
     isPrimitiveType,
 } from "./extractor/type-factory";
 export type {
+    BoxContext,
     ExtractedComponentInstance,
     ExtractedComponentResult,
     ExtractedFunctionInstance,

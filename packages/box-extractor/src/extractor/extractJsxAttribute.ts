@@ -5,11 +5,12 @@ import { Node } from "ts-morph";
 import { maybeBoxNode } from "./maybeBoxNode";
 import { maybeObjectLikeBox } from "./maybeObjectLikeBox";
 import { box } from "./type-factory";
+import type { BoxContext } from "./types";
 import { unwrapExpression } from "./utils";
 
 const logger = createLogger("box-ex:extractor:jsx-attr");
 
-export const extractJsxAttribute = (jsxAttribute: JsxAttribute) => {
+export const extractJsxAttribute = (jsxAttribute: JsxAttribute, ctx: BoxContext) => {
     // <ColorBox color="red.200" backgroundColor="blackAlpha.100" />
     //           ^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
     // identifier = `color` (and then backgroundColor)
@@ -33,14 +34,14 @@ export const extractJsxAttribute = (jsxAttribute: JsxAttribute) => {
         if (!expression) return;
 
         stack.push(expression);
-        const maybeValue = maybeBoxNode(expression, stack);
+        const maybeValue = maybeBoxNode(expression, stack, ctx);
         logger({ extractJsx: true, maybeValue });
         // !maybeValue && console.log("maybeBoxNode empty", expression.getKindName(), expression.getText());
         if (maybeValue) {
             return maybeValue;
         }
 
-        const maybeObject = maybeObjectLikeBox(expression, stack);
+        const maybeObject = maybeObjectLikeBox(expression, stack, ctx);
         logger({ maybeObject });
         // console.log("expr", expression.getKindName(), expression.getText());
         if (maybeObject) return maybeObject;
