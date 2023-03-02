@@ -1,5 +1,19 @@
 # @box-extractor/core
 
+## 0.8.1
+
+### Patch Changes
+
+-   [#47](https://github.com/astahmer/box-extractor/pull/47) [`21e61bf`](https://github.com/astahmer/box-extractor/commit/21e61bf69ad727355e43d037c1ee3d62d245daff) Thanks [@astahmer](https://github.com/astahmer)! - refactor: always return a BoxNodeList from extractCallExpressionValues
+
+    feat: functions.matchArg
+
+    rename: extractCallExpressionValues -> extractCallExpressionArguments
+
+-   [#47](https://github.com/astahmer/box-extractor/pull/47) [`10ffcb0`](https://github.com/astahmer/box-extractor/commit/10ffcb03129698fcbdfffe9a37eb6fcc251654c1) Thanks [@astahmer](https://github.com/astahmer)! - feat: add BoxContext with flags + eval callbacks
+
+-   [#47](https://github.com/astahmer/box-extractor/pull/47) [`8cac8be`](https://github.com/astahmer/box-extractor/commit/8cac8be9af51822876d5d6e219fe0ea9243f74e6) Thanks [@astahmer](https://github.com/astahmer)! - fix: getComponentName for factories (PropertyAccessExpression)
+
 ## 0.8.0
 
 ### Minor Changes
