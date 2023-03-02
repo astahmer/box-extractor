@@ -2,6 +2,7 @@ import { createLogger } from "@box-extractor/logger";
 import { Identifier, Node } from "ts-morph";
 // eslint-disable-next-line import/no-cycle
 import { getExportedVarDeclarationWithName, getModuleSpecifierSourceFile } from "./maybeBoxNode";
+import type { BoxContext } from "./types";
 
 const logger = createLogger("box-extractor:extractor:findIdentifierValueDeclaration");
 
@@ -18,7 +19,7 @@ export function isScope(node: Node): boolean {
     );
 }
 
-export function getDeclarationFor(node: Identifier, stack: Node[] = []) {
+export function getDeclarationFor(node: Identifier, stack: Node[], ctx: BoxContext) {
     const parent = node.getParent();
     if (!parent) {
         return;
@@ -38,12 +39,14 @@ export function getDeclarationFor(node: Identifier, stack: Node[] = []) {
         declarationStack.push(parent);
         declaration = parent;
     } else if (Node.isImportSpecifier(parent) && parent.getNameNode() == node) {
+        if (ctx.flags?.skipTraverseFiles) return;
+
         const sourceFile = getModuleSpecifierSourceFile(parent.getImportDeclaration());
         logger.scoped("getDeclarationFor", { isImportDeclaration: true, sourceFile: Boolean(sourceFile) });
 
         if (sourceFile) {
             const exportStack = [parent, sourceFile] as Node[];
-            const maybeVar = getExportedVarDeclarationWithName(node.getText(), sourceFile, exportStack);
+            const maybeVar = getExportedVarDeclarationWithName(node.getText(), sourceFile, exportStack, ctx);
 
             logger.scoped("getDeclarationFor", {
                 from: sourceFile.getFilePath(),
@@ -86,7 +89,8 @@ const getInnermostScope = (from: Node) => {
 
 export function findIdentifierValueDeclaration(
     identifier: Identifier,
-    stack: Node[] = [],
+    stack: Node[],
+    ctx: BoxContext,
     visitedsWithStack: WeakMap<Node, Node[]> = new Map()
 ): ReturnType<typeof getDeclarationFor> | undefined {
     let scope = identifier as Node | undefined;
@@ -119,7 +123,7 @@ export function findIdentifierValueDeclaration(
 
             if (Node.isIdentifier(node) && node.getText() == refName) {
                 const declarationStack = [node] as Node[];
-                const maybeDeclaration = getDeclarationFor(node, declarationStack);
+                const maybeDeclaration = getDeclarationFor(node, declarationStack, ctx);
                 if (maybeDeclaration) {
                     if (Node.isParameterDeclaration(maybeDeclaration)) {
                         const initializer = maybeDeclaration.getInitializer();

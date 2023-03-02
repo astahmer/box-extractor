@@ -1,7 +1,8 @@
 import { createLogger } from "@box-extractor/logger";
 import { evaluate } from "ts-evaluator";
 import type { Expression } from "ts-morph";
-import { ts } from "ts-morph";
+import { ts, Node } from "ts-morph";
+import type { BoxContext } from "./types";
 
 const TsEvalError = Symbol("EvalError");
 const logger = createLogger("box-ex:extractor:evaluator");
@@ -15,17 +16,16 @@ const cacheMap = new WeakMap<Expression, unknown>();
  * Evaluates with strict policies restrictions
  * @see https://github.com/wessberg/ts-evaluator#setting-up-policies
  */
-export const evaluateNode = (node: Expression) => {
-    // console.trace();
-    // return;
-    const compilerNode = node.compilerNode;
+export const evaluateNode = (node: Expression, stack: Node[], ctx: BoxContext) => {
+    if (ctx.flags?.skipEvaluate) return;
+    if (ctx.canEval && !ctx.canEval?.(node, stack)) return;
 
     if (cacheMap.has(node)) {
         return cacheMap.get(node);
     }
 
     const result = evaluate({
-        node: compilerNode as any,
+        node: node.compilerNode as any,
         // TODO only with a flag
         // typeChecker: node.getProject().getTypeChecker().compilerObject as any,
         typescript: ts as any,
@@ -41,6 +41,7 @@ export const evaluateNode = (node: Expression) => {
         environment: {
             preset: envPreset.startsWith("__REPLACE_ME_") ? "NODE" : (envPreset as any),
         },
+        ...ctx.getEvaluateOptions?.(node, stack),
     });
 
     logger({ compilerNodeKind: node.getKindName() });
@@ -75,8 +76,8 @@ export const evaluateNode = (node: Expression) => {
     return expr;
 };
 
-export const safeEvaluateNode = <T>(node: Expression) => {
-    const result = evaluateNode(node);
+export const safeEvaluateNode = <T>(node: Expression, stack: Node[], ctx: BoxContext) => {
+    const result = evaluateNode(node, stack, ctx);
     if (result === TsEvalError) return;
 
     return result as T;

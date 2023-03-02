@@ -4,13 +4,14 @@ import { maybeBoxNode } from "./maybeBoxNode";
 
 import { maybeObjectLikeBox } from "./maybeObjectLikeBox";
 import { box } from "./type-factory";
-import type { MatchFnArgs, MatchFnArguments, MatchFnPropArgs } from "./types";
+import type { BoxContext, MatchFnArgs, MatchFnArguments, MatchFnPropArgs } from "./types";
 import { unwrapExpression } from "./utils";
 
 const logger = createLogger("box-ex:extractor:call-expr");
 
 export const extractCallExpressionArguments = (
     node: CallExpression,
+    ctx: BoxContext,
     matchProp: (prop: MatchFnPropArgs) => boolean = () => true,
     matchArg: (prop: MatchFnArgs & MatchFnArguments) => boolean = () => true
 ) => {
@@ -27,13 +28,13 @@ export const extractCallExpressionArguments = (
 
             const stack = [node, argNode] as Node[];
 
-            const maybeValue = maybeBoxNode(argNode, stack);
+            const maybeValue = maybeBoxNode(argNode, stack, ctx);
             logger({ extractCallExpression: true, maybeValue });
             if (maybeValue) {
                 return maybeValue;
             }
 
-            const maybeObject = maybeObjectLikeBox(argNode, stack, matchProp);
+            const maybeObject = maybeObjectLikeBox(argNode, stack, ctx, matchProp);
             logger({ maybeObject });
             if (maybeObject) return maybeObject;
 
