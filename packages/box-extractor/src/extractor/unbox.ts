@@ -2,6 +2,12 @@ import type { BoxNode, LiteralValue } from "./type-factory";
 import { visitBoxNode } from "./visitBoxNode";
 import { cacheMap } from "./getBoxLiteralValue";
 
+const unresolvable = Symbol.for("unresolvable");
+const conditional = Symbol.for("conditional");
+
+export const isUnresolvable = (value: unknown): value is typeof unresolvable => value === unresolvable;
+export const isConditional = (value: unknown): value is typeof conditional => value === conditional;
+
 export const unbox = (rootNode: BoxNode | undefined, localCacheMap: WeakMap<BoxNode, unknown> = cacheMap) => {
     if (!rootNode) return;
     if (rootNode.isObject() || rootNode.isLiteral()) return rootNode.value;
@@ -14,11 +20,6 @@ export const unbox = (rootNode: BoxNode | undefined, localCacheMap: WeakMap<BoxN
 
     // TODO return infos like: has circular ? has unresolvable ? has conditional ? has empty initializer ?
     visitBoxNode(rootNode, (node, key, parentNode, traversal) => {
-        if (node.isUnresolvable() || node.isConditional() || node.isEmptyInitializer()) {
-            traversal.skip();
-            return;
-        }
-
         if (localCacheMap.has(node)) {
             if (parentNode) {
                 const parentPath = pathByNode.get(parentNode) ?? [];
@@ -32,7 +33,7 @@ export const unbox = (rootNode: BoxNode | undefined, localCacheMap: WeakMap<BoxN
             return;
         }
 
-        let current: LiteralValue;
+        let current: LiteralValue | typeof unresolvable | typeof conditional;
         if (node.isObject()) {
             current = node.value;
             traversal.skip();
@@ -42,6 +43,12 @@ export const unbox = (rootNode: BoxNode | undefined, localCacheMap: WeakMap<BoxN
             current = [];
         } else if (node.isLiteral()) {
             current = node.value;
+        } else if (node.isUnresolvable()) {
+            current = unresolvable;
+        } else if (node.isConditional()) {
+            current = conditional;
+        } else if (node.isEmptyInitializer()) {
+            current = true;
         }
 
         if (parentNode && parentNode !== prevParent) {
