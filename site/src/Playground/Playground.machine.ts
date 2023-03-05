@@ -132,7 +132,11 @@ export const playgroundMachine = createMachine(
                     ast: sourceFile,
                     extractMap: new Map(),
                     components: { matchTag: ({ tagName }) => ctx.components.includes(tagName), matchProp: () => true },
-                    functions: { matchFn: ({ fnName }) => ctx.components.includes(fnName), matchProp: () => true },
+                    functions: {
+                        matchFn: ({ fnName }) => ctx.components.includes(fnName),
+                        matchProp: () => true,
+                        matchArg: () => true,
+                    },
                 });
                 // console.log({ value });
                 console.log(result);
