@@ -123,7 +123,6 @@ export const extract = ({ ast, extractMap = new Map(), ...ctx }: ExtractOptions)
 
             const processBoxNode = (boxNode: BoxNode) => {
                 if (boxNode.isUnresolvable()) {
-                    parentRef.props.set(getSpreadPropName(), boxNode);
                     return;
                 }
 

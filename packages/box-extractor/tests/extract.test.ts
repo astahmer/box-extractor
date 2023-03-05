@@ -2324,11 +2324,6 @@ it("ExtractSample - groups extract props in parent component instance", () => {
                   node: "JsxOpeningElement",
                   value: {
                       _SPREAD_0_0: {
-                          stack: ["Identifier", "BindingElement"],
-                          type: "unresolvable",
-                          node: "BindingElement",
-                      },
-                      _SPREAD_0_1: {
                           stack: ["JsxOpeningElement"],
                           type: "map",
                           node: "JsxSpreadAttribute",
@@ -2680,11 +2675,6 @@ it("ExtractSample - groups extract props in parent component instance", () => {
                   type: "map",
                   node: "JsxOpeningElement",
                   value: {
-                      _SPREAD_0_0: {
-                          stack: [],
-                          type: "unresolvable",
-                          node: "Identifier",
-                      },
                       color: {
                           stack: ["JsxAttribute", "StringLiteral"],
                           type: "literal",
@@ -2708,11 +2698,6 @@ it("ExtractSample - groups extract props in parent component instance", () => {
                           node: "StringLiteral",
                           value: "facebook.900",
                           kind: "string",
-                      },
-                      _SPREAD_1_0: {
-                          stack: [],
-                          type: "unresolvable",
-                          node: "Identifier",
                       },
                   },
               },
@@ -2748,11 +2733,6 @@ it("ExtractSample - groups extract props in parent component instance", () => {
                           value: "red.100",
                           kind: "string",
                       },
-                      _SPREAD_1_0: {
-                          stack: [],
-                          type: "unresolvable",
-                          node: "Identifier",
-                      },
                   },
               },
           },
@@ -2769,11 +2749,6 @@ it("ExtractSample - groups extract props in parent component instance", () => {
                           node: "StringLiteral",
                           value: "red.100",
                           kind: "string",
-                      },
-                      _SPREAD_1_0: {
-                          stack: [],
-                          type: "unresolvable",
-                          node: "Identifier",
                       },
                   },
               },
@@ -2792,11 +2767,6 @@ it("ExtractSample - groups extract props in parent component instance", () => {
                           value: "green.100",
                           kind: "string",
                       },
-                      _SPREAD_1_0: {
-                          stack: [],
-                          type: "unresolvable",
-                          node: "Identifier",
-                      },
                   },
               },
           },
@@ -2813,11 +2783,6 @@ it("ExtractSample - groups extract props in parent component instance", () => {
                           node: "StringLiteral",
                           value: "blue.100",
                           kind: "string",
-                      },
-                      _SPREAD_1_0: {
-                          stack: [],
-                          type: "unresolvable",
-                          node: "Identifier",
                       },
                   },
               },
@@ -2836,11 +2801,6 @@ it("ExtractSample - groups extract props in parent component instance", () => {
                           value: "yellow.100",
                           kind: "string",
                       },
-                      _SPREAD_1_0: {
-                          stack: [],
-                          type: "unresolvable",
-                          node: "Identifier",
-                      },
                   },
               },
           },
@@ -2857,11 +2817,6 @@ it("ExtractSample - groups extract props in parent component instance", () => {
                           node: "StringLiteral",
                           value: "orange.100",
                           kind: "string",
-                      },
-                      _SPREAD_1_0: {
-                          stack: [],
-                          type: "unresolvable",
-                          node: "Identifier",
                       },
                   },
               },
@@ -2880,11 +2835,6 @@ it("ExtractSample - groups extract props in parent component instance", () => {
                           value: "orange.300",
                           kind: "string",
                       },
-                      _SPREAD_1_0: {
-                          stack: [],
-                          type: "unresolvable",
-                          node: "Identifier",
-                      },
                   },
               },
           },
@@ -2902,11 +2852,6 @@ it("ExtractSample - groups extract props in parent component instance", () => {
                           value: "red.100",
                           kind: "string",
                       },
-                      _SPREAD_1_0: {
-                          stack: [],
-                          type: "unresolvable",
-                          node: "Identifier",
-                      },
                   },
               },
           },
@@ -2923,11 +2868,6 @@ it("ExtractSample - groups extract props in parent component instance", () => {
                           node: "StringLiteral",
                           value: "orange.400",
                           kind: "string",
-                      },
-                      _SPREAD_1_0: {
-                          stack: [],
-                          type: "unresolvable",
-                          node: "Identifier",
                       },
                   },
               },

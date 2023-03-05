@@ -4058,3 +4058,145 @@ test("unbox", () => {
       ]
     `);
 });
+
+test("unbox with unresolvable spread", () => {
+    const extracted = getExtract(
+        `
+    const className = css({ color: "red", ...something, ...{ ...another, backgroundColor: "blue.100" } })
+
+    const component = () => {
+        return (
+            <HStack
+            style={{
+                background: itemBackground || 'rgb(99 102 241)',
+            }}
+            paddingInline="4"
+            // justify="center"
+            // fontWeight="bold"
+            // height="14"
+            {...rest}
+            >
+                {padding}
+            </HStack>
+        )
+    }
+
+    `,
+        { functionNameList: ["css"], tagNameList: ["HStack"] }
+    );
+    const [css, HStack] = [extracted.get("css")?.queryList[0].box, extracted.get("HStack")?.queryList[0].box];
+
+    expect(css).toMatchInlineSnapshot(`
+      {
+          stack: [],
+          type: "list",
+          node: "CallExpression",
+          value: [
+              {
+                  stack: ["CallExpression", "ObjectLiteralExpression"],
+                  type: "map",
+                  node: "CallExpression",
+                  value: {
+                      color: {
+                          stack: ["CallExpression", "ObjectLiteralExpression", "PropertyAssignment", "StringLiteral"],
+                          type: "literal",
+                          node: "StringLiteral",
+                          value: "red",
+                          kind: "string",
+                      },
+                      backgroundColor: {
+                          stack: [
+                              "CallExpression",
+                              "ObjectLiteralExpression",
+                              "SpreadAssignment",
+                              "ObjectLiteralExpression",
+                              "PropertyAssignment",
+                              "StringLiteral",
+                          ],
+                          type: "literal",
+                          node: "StringLiteral",
+                          value: "blue.100",
+                          kind: "string",
+                      },
+                  },
+              },
+          ],
+      }
+    `);
+
+    expect(unbox(css)).toMatchInlineSnapshot(`
+      [
+          {
+              color: "red",
+              backgroundColor: "blue.100",
+          },
+      ]
+    `);
+
+    expect(HStack).toMatchInlineSnapshot(`
+      {
+          stack: [],
+          type: "map",
+          node: "JsxOpeningElement",
+          value: {
+              style: {
+                  stack: ["JsxAttribute", "JsxExpression", "ObjectLiteralExpression"],
+                  type: "map",
+                  node: "ObjectLiteralExpression",
+                  value: {
+                      background: {
+                          stack: [
+                              "JsxAttribute",
+                              "JsxExpression",
+                              "ObjectLiteralExpression",
+                              "PropertyAssignment",
+                              "BinaryExpression",
+                          ],
+                          type: "conditional",
+                          node: "BinaryExpression",
+                          whenTrue: {
+                              stack: [
+                                  "JsxAttribute",
+                                  "JsxExpression",
+                                  "ObjectLiteralExpression",
+                                  "PropertyAssignment",
+                                  "BinaryExpression",
+                              ],
+                              type: "unresolvable",
+                              node: "Identifier",
+                          },
+                          whenFalse: {
+                              stack: [
+                                  "JsxAttribute",
+                                  "JsxExpression",
+                                  "ObjectLiteralExpression",
+                                  "PropertyAssignment",
+                                  "BinaryExpression",
+                              ],
+                              type: "literal",
+                              node: "StringLiteral",
+                              value: "rgb(99 102 241)",
+                              kind: "string",
+                          },
+                          kind: "or",
+                      },
+                  },
+              },
+              paddingInline: {
+                  stack: ["JsxAttribute", "StringLiteral"],
+                  type: "literal",
+                  node: "StringLiteral",
+                  value: "4",
+                  kind: "string",
+              },
+          },
+      }
+    `);
+
+    expect(unbox(HStack)).toMatchInlineSnapshot(`
+      {
+          style: {},
+          paddingInline: "4",
+      }
+    `);
+});
