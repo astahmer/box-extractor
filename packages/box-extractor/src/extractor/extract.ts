@@ -1,5 +1,4 @@
 import { createLogger } from "@box-extractor/logger";
-import { tsquery } from "@phenomnomnominal/tsquery";
 import { JsxOpeningElement, JsxSelfClosingElement, Node } from "ts-morph";
 
 import { extractCallExpressionArguments } from "./extractCallExpressionArguments";
@@ -16,18 +15,10 @@ import type {
     MatchFnPropArgs,
     MatchPropArgs,
 } from "./types";
+import { getComponentName } from "./utils";
 
 const logger = createLogger("box-ex:extractor:extract");
 type QueryComponentMap = Map<JsxOpeningElement | JsxSelfClosingElement, { name: string; props: MapTypeValue }>;
-
-const getComponentName = (node: JsxOpeningElement | JsxSelfClosingElement) => {
-    const tagNameNode = node.getTagNameNode();
-    if (Node.isPropertyAccessExpression(tagNameNode)) {
-        return tagNameNode.getText();
-    }
-
-    return tagNameNode.getText();
-};
 
 export const extract = ({ ast, extractMap = new Map(), ...ctx }: ExtractOptions) => {
     // contains all the extracted nodes from this ast parsing
@@ -335,9 +326,4 @@ function mergeSpreadEntries({ map, matchProp }: { map: MapTypeValue; matchProp?:
 
     // reverse again to keep the original order
     return merged.reverse();
-}
-
-// https://gist.github.com/dsherret/826fe77613be22676778b8c4ba7390e7
-export function query<T extends Node = Node>(node: Node, q: string): T[] {
-    return tsquery(node.compilerNode as any, q).map((n) => (node as any)._getNodeFromCompilerNode(n) as T);
 }

@@ -16,10 +16,9 @@ import {
     StringLiteral,
     ts,
 } from "ts-morph";
-import { query } from "./extract";
 import { maybeIdentifierValue, getNameLiteral, onlyStringLiteral } from "./maybeBoxNode";
 import type { ExtractOptions } from "./types";
-import { unquote, unwrapExpression } from "./utils";
+import { getComponentName, unquote, unwrapExpression } from "./utils";
 
 // :matches(JsxOpeningElement, JsxSelfClosingElement):has(Identifier[name="Box"])
 
@@ -28,11 +27,49 @@ const logger = createLogger("box-ex:finder:components");
 
 // const CustomBox = ({ render, ...props }) => <Box {...props} >{render()}</Box>;
 //                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-const getJsxComponentWithSpreadByName = (ast: SourceFile, name: string) =>
-    query<JsxOpeningElement | JsxSelfClosingElement>(
-        ast,
-        `:matches(JsxOpeningElement, JsxSelfClosingElement):has(Identifier[name="${name}"]):has(JsxAttributes:has(JsxSpreadAttribute))`
-    );
+const getJsxComponentWithSpreadByName = (ast: SourceFile, name: string) => {
+    const visitedComponentFromSpreadList = new WeakSet<Node>();
+    const nodes = new Set<JsxOpeningElement | JsxSelfClosingElement>();
+
+    ast.forEachDescendant((node, traversal) => {
+        // quick win
+        if (Node.isImportDeclaration(node) || Node.isExportDeclaration(node)) {
+            traversal.skip();
+            return;
+        }
+
+        if (Node.isJsxSpreadAttribute(node)) {
+            const componentNode = node.getFirstAncestor(
+                (n): n is JsxOpeningElement | JsxSelfClosingElement =>
+                    Node.isJsxOpeningElement(n) || Node.isJsxSelfClosingElement(n)
+            );
+            if (!componentNode) return;
+
+            // skip re-extracting nested spread attribute
+            if (visitedComponentFromSpreadList.has(componentNode)) {
+                traversal.skip();
+                return;
+            }
+
+            visitedComponentFromSpreadList.add(componentNode);
+
+            let componentName = getComponentName(componentNode);
+            if (!componentName) return;
+
+            // factory.div => div
+            if (componentName.includes(".")) {
+                componentName = componentName.split(".").pop()!;
+            }
+
+            if (componentName === name) {
+                nodes.add(componentNode);
+                return;
+            }
+        }
+    });
+
+    return nodes;
+};
 
 export type TransitiveInfo = { from: string | null; referencedBy: Set<string>; refUsedWithSpread: Set<string> };
 export type TransitiveMap = Map<string, TransitiveInfo>;
@@ -69,7 +106,7 @@ export const findAllTransitiveComponents = ({
                 const parent = unwrapExpression(wrapper.getParent());
 
                 if (Node.isComputedPropertyName(parent)) {
-                    const identifierValue = onlyStringLiteral(maybeIdentifierValue(wrapper, []));
+                    const identifierValue = onlyStringLiteral(maybeIdentifierValue(wrapper, [], {}));
                     if (!identifierValue) return;
 
                     nameLiteral = identifierValue.value as string;

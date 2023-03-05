@@ -1,4 +1,4 @@
-import { Node } from "ts-morph";
+import { JsxOpeningElement, JsxSelfClosingElement, Node } from "ts-morph";
 
 type Nullable<T> = T | null | undefined;
 
@@ -36,4 +36,13 @@ export const unquote = (str: string) => {
     if (str.startsWith('"') && str.endsWith('"')) return str.slice(1, -1);
     if (str.startsWith("'") && str.endsWith("'")) return str.slice(1, -1);
     return str;
+};
+
+export const getComponentName = (node: JsxOpeningElement | JsxSelfClosingElement) => {
+    const tagNameNode = node.getTagNameNode();
+    if (Node.isPropertyAccessExpression(tagNameNode)) {
+        return tagNameNode.getText();
+    }
+
+    return tagNameNode.getText();
 };

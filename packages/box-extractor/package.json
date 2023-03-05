@@ -51,7 +51,6 @@
     "license": "ISC",
     "dependencies": {
         "@box-extractor/logger": "workspace:*",
-        "@phenomnomnominal/tsquery": "^5.0.0",
         "@types/debug": "^4.1.7",
         "pastable": "^2.2.0",
         "ts-evaluator": "^1.1.0",

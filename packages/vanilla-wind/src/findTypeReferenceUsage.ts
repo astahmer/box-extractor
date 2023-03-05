@@ -1,14 +1,40 @@
-import { getAncestorComponent, getNameLiteral, query, unquote } from "@box-extractor/core";
+import { getAncestorComponent, getNameLiteral, unquote } from "@box-extractor/core";
 import { createLogger } from "@box-extractor/logger";
-import { Identifier, Node, SourceFile, ts, TypeAliasDeclaration } from "ts-morph";
+import { Node, SourceFile, ts, TypeAliasDeclaration } from "ts-morph";
 
 const logger = createLogger("box-ex:vanilla-wind:create-theme");
 
+const getTypeReferenceIdentifierList = (ast: SourceFile, name: string) => {
+    const nodes = new Set<Node>();
+    ast.forEachDescendant((node, traversal) => {
+        // quick win
+        if (Node.isImportDeclaration(node) || Node.isExportDeclaration(node)) {
+            traversal.skip();
+            return;
+        }
+
+        // WithStyledProps<typeof css>
+        if (Node.isTypeQuery(node)) {
+            const typeReference = node.getFirstAncestorByKind(ts.SyntaxKind.TypeReference);
+            if (!typeReference) return;
+
+            // WithStyledProps
+            const typeName = typeReference.getTypeName().getText();
+            if (!typeName) return;
+
+            if (typeName === name) {
+                // css
+                nodes.add(node.getExprName());
+                return;
+            }
+        }
+    });
+
+    return nodes;
+};
+
 export const findTypeReferenceUsage = (sourceFile: SourceFile, typeReferenceName: string) => {
-    const identifierList = query<Identifier>(
-        sourceFile,
-        `TypeReference:has(Identifier[name="${typeReferenceName}"]) > TypeQuery > Identifier`
-    );
+    const identifierList = getTypeReferenceIdentifierList(sourceFile, typeReferenceName);
     const foundComponentsWithTheirThemeName = new Map<string, string>();
     const visiteds = new WeakSet<Node>();
 
@@ -20,7 +46,7 @@ export const findTypeReferenceUsage = (sourceFile: SourceFile, typeReferenceName
         // console.log({ identifier: identifier.getText(), component: component?.getText() });
 
         if (component) {
-            const [themeNameStr, componentNameStr] = [getNameLiteral(identifier, []), getNameLiteral(component, [])];
+            const [themeNameStr, componentNameStr] = [getNameLiteral(identifier), getNameLiteral(component)];
             if (!themeNameStr || !componentNameStr) return null;
 
             const themeName = unquote(themeNameStr);
@@ -81,11 +107,11 @@ export const findTypeReferenceUsage = (sourceFile: SourceFile, typeReferenceName
                     const nameNode = declaration.getNameNode();
                     if (!nameNode) continue;
 
-                    const componentNameStr = getNameLiteral(nameNode, []);
+                    const componentNameStr = getNameLiteral(nameNode);
                     if (!componentNameStr) continue;
 
                     // foundComponentNameList.add(unquote(name));
-                    const themeNameStr = getNameLiteral(identifier, []);
+                    const themeNameStr = getNameLiteral(identifier);
                     if (!themeNameStr) continue;
 
                     const themeName = unquote(themeNameStr);
