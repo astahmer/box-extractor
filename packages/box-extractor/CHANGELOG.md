@@ -1,5 +1,11 @@
 # @box-extractor/core
 
+## 0.8.3
+
+### Patch Changes
+
+-   [`aa52972`](https://github.com/astahmer/box-extractor/commit/aa5297219632792c8a2e8facee9cc5df3d297a8f) Thanks [@astahmer](https://github.com/astahmer)! - fix: rm spread prop when unresolvable + rm unbox symbols
+
 ## 0.8.2
 
 ### Patch Changes
