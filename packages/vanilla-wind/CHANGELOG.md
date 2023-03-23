@@ -1,5 +1,12 @@
 # @box-extractor/vanilla-wind
 
+## 0.3.11
+
+### Patch Changes
+
+-   Updated dependencies [[`1f5319c`](https://github.com/astahmer/box-extractor/commit/1f5319c57249f085a516e5ae39bb3402e1e95bf3)]:
+    -   @box-extractor/core@0.8.4
+
 ## 0.3.10
 
 ### Patch Changes
