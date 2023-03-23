@@ -21,22 +21,6 @@
             },
             "default": "./dist/box-extractor-core.cjs.js"
         },
-        "./vite-plugin": {
-            "module": {
-                "worker": "./vite-plugin/dist/box-extractor-core-vite-plugin.worker.esm.js",
-                "browser": "./vite-plugin/dist/box-extractor-core-vite-plugin.browser.esm.js",
-                "default": "./vite-plugin/dist/box-extractor-core-vite-plugin.esm.js"
-            },
-            "default": "./vite-plugin/dist/box-extractor-core-vite-plugin.cjs.js"
-        },
-        "./esbuild-plugin": {
-            "module": {
-                "worker": "./esbuild-plugin/dist/box-extractor-core-esbuild-plugin.worker.esm.js",
-                "browser": "./esbuild-plugin/dist/box-extractor-core-esbuild-plugin.browser.esm.js",
-                "default": "./esbuild-plugin/dist/box-extractor-core-esbuild-plugin.esm.js"
-            },
-            "default": "./esbuild-plugin/dist/box-extractor-core-esbuild-plugin.cjs.js"
-        },
         "./package.json": "./package.json"
     },
     "types": "dist/box-extractor-core.cjs.d.ts",
@@ -57,9 +41,6 @@
         "ts-morph": "^17.0.1",
         "ts-pattern": "^4.1.4"
     },
-    "peerDependencies": {
-        "vite": "^2.2.3 || ^3.0.0 || ^4.0.3"
-    },
     "devDependencies": {
         "esbuild": "^0.17.8",
         "prettier": "^2.8.4",
@@ -70,9 +51,7 @@
     },
     "preconstruct": {
         "entrypoints": [
-            "index.ts",
-            "vite-plugin.ts",
-            "esbuild-plugin.ts"
+            "index.ts"
         ],
         "exports": {
             "envConditions": [
@@ -85,9 +64,7 @@
         "package.json",
         "tsconfig.json",
         "src",
-        "dist",
-        "vite-plugin",
-        "esbuild-plugin"
+        "dist"
     ],
     "keywords": [
         "box",

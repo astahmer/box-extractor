@@ -3,7 +3,7 @@ import { createFilter, FilterPattern, ModuleNode, normalizePath, Plugin, Resolve
 
 import { Node, Project, ts } from "ts-morph";
 
-import { ensureAbsolute, extract, extractFunctionFrom, ExtractedFunctionResult, unbox } from "@box-extractor/core";
+import { extract, extractFunctionFrom, ExtractedFunctionResult, unbox } from "@box-extractor/core";
 import { createLogger } from "@box-extractor/logger";
 import { assignVars } from "@vanilla-extract/css";
 import { endFileScope, setFileScope } from "@vanilla-extract/css/fileScope";
@@ -24,8 +24,12 @@ import {
     tsConfigFilePath,
     virtualExtCss,
 } from "./utils";
+// eslint-disable-next-line unicorn/import-style, unicorn/prefer-node-protocol
+import { isAbsolute, resolve } from "path";
 
 const logger = createLogger("box-ex:vanilla-wind:vite");
+
+const ensureAbsolute = (path: string, root: string) => (path ? (isAbsolute(path) ? path : resolve(root, path)) : root);
 
 // TODO extract re-usable pieces from this file so it can be re-used with other plugins
 // TODO createSourceFile -> addSourceFile from transformedMap cache if possible
@@ -514,7 +518,11 @@ export const vanillaWind = (
                     // console.time("usage:fn:extract");
                     const extractResult = extract({
                         ast: sourceFile,
-                        functions: { matchFn: ({ fnName }) => fnName === name, matchProp: () => true },
+                        functions: {
+                            matchFn: ({ fnName }) => fnName === name,
+                            matchProp: () => true,
+                            matchArg: () => true,
+                        },
                     });
                     // console.timeEnd("usage:fn:extract");
                     const extracted = extractResult.get(name)! as ExtractedFunctionResult;
