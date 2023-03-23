@@ -1,6 +1,6 @@
 {
     "name": "@box-extractor/cli",
-    "version": "0.3.10",
+    "version": "0.3.11",
     "bin": {
         "box-extractor": "./bin.js"
     },

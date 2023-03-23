@@ -1,5 +1,11 @@
 # @box-extractor/core
 
+## 0.8.4
+
+### Patch Changes
+
+-   [`1f5319c`](https://github.com/astahmer/box-extractor/commit/1f5319c57249f085a516e5ae39bb3402e1e95bf3) Thanks [@astahmer](https://github.com/astahmer)! - fix(core): handle multiline literal values
+
 ## 0.8.3
 
 ### Patch Changes
