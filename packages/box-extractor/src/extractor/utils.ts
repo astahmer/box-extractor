@@ -46,3 +46,9 @@ export const getComponentName = (node: JsxOpeningElement | JsxSelfClosingElement
 
     return tagNameNode.getText();
 };
+
+const whitespaceRegex = /\s+/g;
+export const trimWhitespace = (str: string) => {
+    // @ts-expect-error
+    return str.replaceAll(whitespaceRegex, " ");
+};

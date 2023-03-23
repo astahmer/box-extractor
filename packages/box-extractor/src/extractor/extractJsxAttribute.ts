@@ -6,7 +6,7 @@ import { maybeBoxNode } from "./maybeBoxNode";
 import { maybeObjectLikeBox } from "./maybeObjectLikeBox";
 import { box } from "./type-factory";
 import type { BoxContext } from "./types";
-import { unwrapExpression } from "./utils";
+import { trimWhitespace, unwrapExpression } from "./utils";
 
 const logger = createLogger("box-ex:extractor:jsx-attr");
 
@@ -22,7 +22,7 @@ export const extractJsxAttribute = (jsxAttribute: JsxAttribute, ctx: BoxContext)
 
     if (Node.isStringLiteral(initializer)) {
         // initializer = `"red.200"` (and then "blackAlpha.100")
-        return box.literal(initializer.getLiteralText(), initializer, stack);
+        return box.literal(trimWhitespace(initializer.getLiteralText()), initializer, stack);
     }
 
     // <ColorBox color={xxx} />

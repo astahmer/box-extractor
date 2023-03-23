@@ -28,7 +28,7 @@ import { findIdentifierValueDeclaration } from "./findIdentifierValueDeclaration
 import { maybeObjectLikeBox } from "./maybeObjectLikeBox";
 import { box, BoxNode, ConditionalKind, isBoxNode, LiteralValue } from "./type-factory";
 import type { BoxContext, EvaluatedObjectResult, PrimitiveType } from "./types";
-import { isNotNullish, unwrapExpression } from "./utils";
+import { isNotNullish, trimWhitespace, unwrapExpression } from "./utils";
 
 const logger = createLogger("box-ex:extractor:maybe-box");
 const cacheMap = new WeakMap<Node, MaybeBoxNodeReturn>();
@@ -49,7 +49,7 @@ export function maybeBoxNode(node: Node, stack: Node[], ctx: BoxContext): MaybeB
 
     // <ColorBox color={"xxx"} />
     if (Node.isStringLiteral(node)) {
-        return cache(box.literal(node.getLiteralValue(), node, stack));
+        return cache(box.literal(trimWhitespace(node.getLiteralValue()), node, stack));
     }
 
     // <ColorBox color={[xxx, yyy, zzz]} />
@@ -66,7 +66,7 @@ export function maybeBoxNode(node: Node, stack: Node[], ctx: BoxContext): MaybeB
 
     // <ColorBox color={`xxx`} />
     if (Node.isNoSubstitutionTemplateLiteral(node)) {
-        return cache(box.literal(node.getLiteralValue(), node, stack));
+        return cache(box.literal(trimWhitespace(node.getLiteralValue()), node, stack));
     }
 
     // <ColorBox color={123} />

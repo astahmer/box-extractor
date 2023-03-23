@@ -10475,3 +10475,122 @@ it("extract CallExpression nested ObjectLiteralExpression", () => {
         )
     ).toMatchInlineSnapshot('[["factory", [], {}]]');
 });
+
+it("handles multiline string literal", () => {
+    expect(
+        extractFromCode(
+            `<div
+    marginTop="3"
+    display="flex"
+    flexDir="column"
+    background="#e879f91a"
+    backgroundSize="8px 8px"
+    style={{
+      gap,
+      backgroundImage: \`linear-gradient(
+        135deg,
+        #d946ef80 10%,
+        transparent 0,
+        transparent 50%,
+        #d946ef80 0,
+        #d946ef80 60%,
+        transparent 0,
+        transparent
+      )\`,
+    }}
+  >
+    {spacingItems}
+  </div>`,
+            { tagNameList: ["div"] }
+        )
+    ).toMatchInlineSnapshot(`
+      [
+          [
+              "div",
+              [
+                  ["marginTop", "3"],
+                  ["display", "flex"],
+                  ["flexDir", "column"],
+                  ["background", "#e879f91a"],
+                  ["backgroundSize", "8px 8px"],
+                  [
+                      "style",
+                      {
+                          backgroundImage:
+                              "linear-gradient( 135deg, #d946ef80 10%, transparent 0, transparent 50%, #d946ef80 0, #d946ef80 60%, transparent 0, transparent )",
+                      },
+                  ],
+              ],
+              {
+                  marginTop: [
+                      {
+                          stack: ["JsxAttribute", "StringLiteral"],
+                          type: "literal",
+                          node: "StringLiteral",
+                          value: "3",
+                          kind: "string",
+                      },
+                  ],
+                  display: [
+                      {
+                          stack: ["JsxAttribute", "StringLiteral"],
+                          type: "literal",
+                          node: "StringLiteral",
+                          value: "flex",
+                          kind: "string",
+                      },
+                  ],
+                  flexDir: [
+                      {
+                          stack: ["JsxAttribute", "StringLiteral"],
+                          type: "literal",
+                          node: "StringLiteral",
+                          value: "column",
+                          kind: "string",
+                      },
+                  ],
+                  background: [
+                      {
+                          stack: ["JsxAttribute", "StringLiteral"],
+                          type: "literal",
+                          node: "StringLiteral",
+                          value: "#e879f91a",
+                          kind: "string",
+                      },
+                  ],
+                  backgroundSize: [
+                      {
+                          stack: ["JsxAttribute", "StringLiteral"],
+                          type: "literal",
+                          node: "StringLiteral",
+                          value: "8px 8px",
+                          kind: "string",
+                      },
+                  ],
+                  style: [
+                      {
+                          stack: ["JsxAttribute", "JsxExpression", "ObjectLiteralExpression"],
+                          type: "map",
+                          node: "ObjectLiteralExpression",
+                          value: {
+                              backgroundImage: {
+                                  stack: [
+                                      "JsxAttribute",
+                                      "JsxExpression",
+                                      "ObjectLiteralExpression",
+                                      "PropertyAssignment",
+                                      "NoSubstitutionTemplateLiteral",
+                                  ],
+                                  type: "literal",
+                                  node: "NoSubstitutionTemplateLiteral",
+                                  value: "linear-gradient( 135deg, #d946ef80 10%, transparent 0, transparent 50%, #d946ef80 0, #d946ef80 60%, transparent 0, transparent )",
+                                  kind: "string",
+                              },
+                          },
+                      },
+                  ],
+              },
+          ],
+      ]
+    `);
+});
