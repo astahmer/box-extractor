@@ -11,8 +11,9 @@
         "dev": "preconstruct watch",
         "build": "preconstruct build",
         "postinstall": "preconstruct dev",
-        "test": "pnpm -r test:ci",
-        "ci": "pnpm -r ci",
+        "test": "pnpm -r --parallel test:ci",
+        "lint": "pnpm -r --parallel lint",
+        "ci": "pnpm -r --parallel ci",
         "release": "pnpm changeset publish",
         "clean": "tsx clean-node-modules.ts"
     },
