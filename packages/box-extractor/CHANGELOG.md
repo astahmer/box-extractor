@@ -1,5 +1,15 @@
 # @box-extractor/core
 
+## 0.9.0
+
+### Minor Changes
+
+-   [`7824ca7`](https://github.com/astahmer/box-extractor/commit/7824ca72bc6ea9ecea0ba39d6b7f5b295a22e25e) Thanks [@astahmer](https://github.com/astahmer)! - chore: rm core vite/esbuild plugins
+
+### Patch Changes
+
+-   [`d30c7e7`](https://github.com/astahmer/box-extractor/commit/d30c7e7585783e52862bcd5baa0a833e0eb6dedb) Thanks [@astahmer](https://github.com/astahmer)! - fix(core): extractAtRange after BoxContext addition
+
 ## 0.8.4
 
 ### Patch Changes
