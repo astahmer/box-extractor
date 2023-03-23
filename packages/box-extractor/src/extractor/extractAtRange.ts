@@ -5,7 +5,7 @@ import { extractCallExpressionArguments } from "./extractCallExpressionArguments
 import { extractJsxAttribute } from "./extractJsxAttribute";
 import { extractJsxSpreadAttributeValues } from "./extractJsxSpreadAttributeValues";
 import { box, BoxNode } from "./type-factory";
-import type { ComponentMatchers, FunctionMatchers } from "./types";
+import type { BoxContext, ComponentMatchers, FunctionMatchers } from "./types";
 
 const logger = createLogger("box-ex:extractor:extractAtRange");
 
@@ -13,7 +13,8 @@ export const extractAtRange = (
     source: SourceFile,
     line: number,
     column: number,
-    matchProp: ComponentMatchers["matchProp"] | FunctionMatchers["matchProp"] = () => true
+    matchProp: ComponentMatchers["matchProp"] | FunctionMatchers["matchProp"] = () => true,
+    ctx: BoxContext = {}
 ) => {
     const node = getTsNodeAtPosition(source, line, column);
     logger({ line, column, node: node?.getKindName() });
@@ -21,12 +22,12 @@ export const extractAtRange = (
 
     // pointing directly at the node
     if (Node.isJsxOpeningElement(node) || Node.isJsxSelfClosingElement(node)) {
-        return extractJsxElementProps(node, matchProp as ComponentMatchers["matchProp"]);
+        return extractJsxElementProps(node, ctx, matchProp as ComponentMatchers["matchProp"]);
     }
 
     if (Node.isCallExpression(node)) {
         // TODO box.function(node) ?
-        return extractCallExpressionArguments(node, (prop) =>
+        return extractCallExpressionArguments(node, ctx, (prop) =>
             (matchProp as FunctionMatchers["matchProp"])({
                 ...prop,
                 fnNode: node,
@@ -42,19 +43,19 @@ export const extractAtRange = (
         logger({ line, column, parent: parent?.getKindName() });
 
         if (Node.isJsxOpeningElement(parent) || Node.isJsxSelfClosingElement(parent)) {
-            return extractJsxElementProps(parent, matchProp as ComponentMatchers["matchProp"]);
+            return extractJsxElementProps(parent, ctx, matchProp as ComponentMatchers["matchProp"]);
         }
 
         if (Node.isPropertyAccessExpression(parent)) {
             const grandParent = parent.getParent();
             if (Node.isJsxOpeningElement(grandParent) || Node.isJsxSelfClosingElement(grandParent)) {
-                return extractJsxElementProps(grandParent, matchProp as ComponentMatchers["matchProp"]);
+                return extractJsxElementProps(grandParent, ctx, matchProp as ComponentMatchers["matchProp"]);
             }
         }
 
         if (Node.isCallExpression(parent)) {
             // TODO box.function(node) ?
-            return extractCallExpressionArguments(parent, (prop) =>
+            return extractCallExpressionArguments(parent, ctx, (prop) =>
                 (matchProp as FunctionMatchers["matchProp"])({
                     ...prop,
                     fnNode: parent,
@@ -67,6 +68,7 @@ export const extractAtRange = (
 
 export const extractJsxElementProps = (
     node: JsxOpeningElement | JsxSelfClosingElement,
+    ctx: BoxContext,
     matchProp: ComponentMatchers["matchProp"]
 ) => {
     const tagName = node.getTagNameNode().getText();
@@ -77,7 +79,7 @@ export const extractJsxElementProps = (
     jsxAttributes.forEach((attrNode) => {
         if (Node.isJsxAttribute(attrNode)) {
             const nameNode = attrNode.getNameNode();
-            const maybeValue = extractJsxAttribute(attrNode) ?? box.unresolvable(nameNode, []);
+            const maybeValue = extractJsxAttribute(attrNode, ctx) ?? box.unresolvable(nameNode, []);
             props.set(nameNode.getText(), maybeValue);
             return;
         }
@@ -91,7 +93,7 @@ export const extractJsxElementProps = (
 
             const spreadPropName = getSpreadPropName();
             const maybeValue =
-                extractJsxSpreadAttributeValues(attrNode, (prop) =>
+                extractJsxSpreadAttributeValues(attrNode, ctx, (prop) =>
                     matchProp({ ...prop, tagName, tagNode: node } as any)
                 ) ?? box.unresolvable(attrNode, []);
             props.set(spreadPropName, maybeValue);
