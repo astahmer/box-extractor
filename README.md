@@ -1,4 +1,4 @@
-this repo was inlined in [Panda CSS](https://panda-css.com/) and will therefore no longer be maintained (in [this PR]([https://github.com/chakra-ui/panda/commit/78f601296778b149e60ff0ed845b7fd362bd3a65](https://github.com/chakra-ui/panda/pull/387)), in [the current extractor package](https://github.com/chakra-ui/panda/tree/main/packages/extractor))
+this repo was inlined in [Panda CSS](https://panda-css.com/) (here in [this PR](https://github.com/chakra-ui/panda/pull/387)) and will therefore no longer be maintained, code now living in [the current @pandacss/extractor package](https://github.com/chakra-ui/panda/tree/main/packages/extractor)
 
 
 ---
